@@ -23,7 +23,7 @@ export interface AudioDeps {
     makeContext(): AudioContextLike | null;
     /** an empty utterance, inside the same activation: Chrome lets a page speak only after one */
     unlockSpeech(): void;
-    createEngine(o: { theme: ThemeDef; prefs: SonicPrefs; locale: Locale; speech?: SpeechOut | null; caption: (text: string, line: SpeechLine) => void }): PageEngine;
+    createEngine(o: { theme: ThemeDef; prefs: SonicPrefs; locale: Locale; speech?: SpeechOut | null; caption: (text: string, line: SpeechLine, o: { readonly quiet: boolean }) => void }): PageEngine;
 }
 
 export const browserDeps: AudioDeps = {
@@ -52,7 +52,7 @@ export interface SonicAudioOptions {
     readonly locale: Locale;
     readonly prefs?: SonicPrefs;
     /** every spoken line's text, for the captions region */
-    readonly onCaption?: (text: string, line: SpeechLine) => void;
+    readonly onCaption?: (text: string, line: SpeechLine, o?: { readonly quiet: boolean }) => void;
     readonly deps?: AudioDeps;
     /** default: the browser's speechSynthesis; null: captions only */
     readonly speech?: SpeechOut | null;
@@ -78,7 +78,7 @@ export class SonicAudio {
             prefs: this.prefsValue,
             locale: o.locale,
             ...(o.speech === undefined ? {} : { speech: o.speech }),
-            caption: (text, line) => o.onCaption?.(text, line)
+            caption: (text, line, c) => o.onCaption?.(text, line, c)
         });
     }
 

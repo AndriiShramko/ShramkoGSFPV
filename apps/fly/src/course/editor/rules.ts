@@ -24,10 +24,14 @@ export function badGates(problems: readonly CourseProblem[], ids: readonly strin
     return out;
 }
 
-/** The paint of every gate while editing: the selected one, the failing ones red, the rest 'later'. */
+/**
+ * The paint of every gate while editing: the selected one, the failing ones red, the rest 'later'. J1 (E4 of train 3): the
+ * selected gate has one mark in every tool, the yellow 'selected', also when the check refuses it ('selected-bad' drew it
+ * orange); red only for the other gates the check refuses (the top bar names the selected one's problem).
+ */
 export function editPaints(ids: readonly string[], selected: number, problems: readonly CourseProblem[]): EditPaint[] {
     const bad = badGates(problems, ids);
-    return ids.map((_, i) => (i === selected ? (bad.has(i) ? 'selected-bad' : 'selected') : bad.has(i) ? 'bad' : 'later'));
+    return ids.map((_, i) => (i === selected ? 'selected' : bad.has(i) ? 'bad' : 'later'));
 }
 
 /** The course ids this browser has a completed lap on: the best-lap keys are `<id>.v<n>.<scene>...` (course/link.ts bestKey). */

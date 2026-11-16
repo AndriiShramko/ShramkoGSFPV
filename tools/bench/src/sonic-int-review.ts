@@ -1307,9 +1307,11 @@ async function r11(browser: () => Promise<BrowserContext>, served: Served): Prom
     result.r11 = { scene, walls: process.env.Z5_WALLS ?? 'as served', runs: [] as object[] };
     for (const speed of speeds) {
         log(`R11: ${scene}, Backslash in place, a course at ${speed} m/s`);
-        const ctx = await newContext(browser, served, prefsDoc(), null);
+        // lane quiet3 (X2 row 1): Z5_NARRATOR=off flies with the narrator setting off; the run then lists what reached the voice
+        const narratorOff = process.env.Z5_NARRATOR === 'off';
+        const ctx = await newContext(browser, served, prefsDoc(narratorOff ? { narrator: false } : {}), null);
         const page = await ctx.newPage();
-        const tag = `R11 ${scene} ${speed}`;
+        const tag = `R11 ${scene} ${speed}${narratorOff ? ' narrator off' : ''}`;
         page.on('pageerror', (e) => problems.push(`${tag}: pageerror ${e.message.slice(0, 300)}`));
         page.on('console', (m) => { if (m.type() === 'error' && !m.text().startsWith('Failed to load resource')) problems.push(`${tag}: console ${m.text().slice(0, 300)}`); });
         const wallsFiles: string[] = [];
@@ -1320,6 +1322,22 @@ async function r11(browser: () => Promise<BrowserContext>, served: Served): Prom
         await page.focus('.screen.radio [data-action="radio-keyboard"]');
         await page.keyboard.press('Enter');
         await until('the Controls screen to go', () => page.evaluate(() => !document.querySelector('.screen.radio')), (v) => v, 10000);
+        // lane mix (X1): Z5_COURSE_FIRST=1 makes the course by Shift+G in the ORDINARY flight before the switch (a course with
+        // elements); Fly by Sound then takes that course and no course key is pressed. kinds: each gate's element as the page holds it
+        const courseFirst = process.env.Z5_COURSE_FIRST === '1';
+        let eyeCourse: { gates: number; kinds: string[]; s: number } | null = null;
+        if (courseFirst) {
+            const tG = Date.now();
+            await page.keyboard.press('Shift+KeyG');
+            await until('the course by eye', () => page.evaluate(() => (window as unknown as { __gsfpv: { course?: { gates?: number; drawn?: number } } }).__gsfpv.course ?? null), (c) => (c?.gates ?? 0) > 0 && (c?.drawn ?? 0) > 0, 300000, 250);
+            const kinds = await page.evaluate(() => {
+                const c = (window as unknown as { __gsfpv: { course: { sound?: { inUse: () => { track: { gates: { shape: { kind: string }; quat: number[] }[] } } | null } } } }).__gsfpv.course;
+                return (c.sound?.inUse()?.track.gates ?? []).map((g) => (g.shape.kind === 'square' && Math.abs(2 * ((g.quat[2] ?? 0) * (g.quat[3] ?? 0) - (g.quat[0] ?? 1) * (g.quat[1] ?? 0))) >= 0.7 ? 'flat' : g.shape.kind));
+            });
+            eyeCourse = { gates: kinds.length, kinds, s: (Date.now() - tG) / 1000 };
+            log(`R11: course by eye ${kinds.length} gates in ${eyeCourse.s} s: ${kinds.join(',')}`);
+            await sleep(800);
+        }
         await sleep(800);
         // the craft moving (SO-1): W held, the life spy on, then the one press: Backslash; nothing else is pressed until the first cue
         await lifeSpy(page);
@@ -1367,6 +1385,7 @@ async function r11(browser: () => Promise<BrowserContext>, served: Served): Prom
         });
         const onBefore = await craftNow();
         const t0 = Date.now();
+        const uttBefore = await page.evaluate(() => (window as unknown as { __utt: unknown[] }).__utt.length);
         await page.keyboard.press('Backslash');
         let firstCue: { s: number; cues: string[] } | null = null;
         let firstLine: { s: number; key: string } | null = null;
@@ -1418,8 +1437,8 @@ async function r11(browser: () => Promise<BrowserContext>, served: Served): Prom
         const from = (await events(page)).length;
         const lines = new Set<string>();
         // lane onecourse (D2): Shift+G makes the course in every mode; Z5_COURSE_KEY=KeyN keeps one run with N (the same action)
-        const courseKey = process.env.Z5_COURSE_KEY ?? 'Shift+KeyG';
-        await page.keyboard.press(courseKey);
+        const courseKey = courseFirst ? 'none (the course made by eye)' : process.env.Z5_COURSE_KEY ?? 'Shift+KeyG';
+        if (!courseFirst) await page.keyboard.press(courseKey);
         const tN = Date.now();
         const ready = await until('the course', async () => {
             const p = await probe10(page);
@@ -1428,6 +1447,12 @@ async function r11(browser: () => Promise<BrowserContext>, served: Served): Prom
         }, (p) => p.target !== null || lines.has('sonic.say.courseNone') || lines.has('sonic.say.scanNoWalls'), 420000, 250).catch((e: Error) => { log(e.message.slice(0, 300)); return null; });
         run.course = { key: courseKey, gates: ready?.course?.gates ?? null, s: (Date.now() - tN) / 1000, target: ready?.target?.id ?? null, lines: [...lines], wallsFiles: wallsFiles.slice(0, 6), walls: ready?.walls ?? null };
         check(`${tag}: N makes a course (gate 1 is the hum's target)`, ready?.target !== null && ready?.target !== undefined, run.course);
+        if (courseFirst) {
+            // lane mix (X1): the sound mode took the course by eye: same number of gates, and no line offered a course key
+            const offered = spokenAfter(await events(page), 0).filter((k) => k === 'sonic.say.courseOffer').length;
+            run.eyeCourse = { ...eyeCourse, offered, targetShape: (ready?.target?.shape as { kind?: string } | undefined)?.kind ?? null };
+            check(`${tag}: Fly by Sound takes the course made by eye (one set of gates, no line asks for a key)`, offered === 0 && (ready?.course?.gates ?? -1) === eyeCourse?.gates, run.eyeCourse);
+        }
         if (!ready?.target) {
             await r11Off(page, tag, run);
             await ctx.close();
@@ -1450,7 +1475,23 @@ async function r11(browser: () => Promise<BrowserContext>, served: Served): Prom
         // (reason.gate-missed, fly.moving-on): the runner moves on after the last attempt; only a course counted without it passes
         (run.flight as Record<string, unknown>).counted = (end.phase === 'passed' || end.phase === 'idle' || courseEnd(end)) && !spoken.includes('fly.moving-on');
         (run.flight as Record<string, unknown>).misses = spoken.filter((k) => k === 'reason.gate-missed' || k === 'lesson.free-garden.retry').length;
+        // lane mix (X2): the gates the hum led to, in order, with their element and the rule that counts them by ear
+        if (eyeCourse) (run.flight as Record<string, unknown>).byKind = stats.targets.map((id) => { const k = eyeCourse!.kinds[Number(id.slice(1)) - 1] ?? '?'; return `${id}:${k}:${k === 'flat' || k === 'cube-frame' ? 'ball' : 'strict'}`; });
         check(`${tag}: the course was flown to its end by the hum and counted (no fly.moving-on)`, (run.flight as Record<string, unknown>).counted === true, run.flight);
+        if (narratorOff) {
+            // the voice from the press to the course's end, the one-shot sounds (a gate, a lap, the finish) and the lines said quiet
+            const quiet = await page.evaluate((from: number) => {
+                const w = window as unknown as { __utt: { text: string; called: number }[]; __gsfpv: { sonic: (e?: boolean) => { oneShots?: { t: number; cue: string }[]; events?: { t: number; kind: string; key?: string }[] } } };
+                const h = w.__gsfpv.sonic(true);
+                return { voiced: w.__utt.slice(from).map((u) => u.text.slice(0, 80)), oneShots: h.oneShots ?? null, now: Math.round(performance.now()) };
+            }, uttBefore);
+            const lineTimes = (await events(page)).filter((e) => e.kind === 'speech' && e.key !== 'speech.end').slice(-60).map((e) => ({ t: Math.round(e.t * 1000) / 1000, key: e.key }));
+            run.quiet = { ...quiet, lines: lineTimes };
+            // X2 run 1 (Wroclaw): the one utterance was the engine's empty warm-up (text ''); a gate's sound is the planner's (not
+            // engine.cue), so the gates are judged by the hum's target moving on (run.flight.gates) and the one-shots list the lap
+            check(`${tag}: with the narrator off nothing reaches the voice from the press to the course's end`, quiet.voiced.filter((t) => t.trim() !== '').length === 0, quiet.voiced.slice(0, 10));
+            check(`${tag}: with the narrator off a sound is played at the lap's or the course's end`, (quiet.oneShots ?? []).some((o) => o.cue.includes('"lap"') || o.cue.includes('"fanfare"')), (quiet.oneShots ?? []).filter((o) => !o.cue.includes('"touch"')).slice(-12));
+        }
         await r11Off(page, tag, run);
         await ctx.close();
     }
@@ -1468,8 +1509,11 @@ async function r12(browser: () => Promise<BrowserContext>, served: Served): Prom
     result.r12 = [] as object[];
     for (const id of ids) {
         log(`R12: lesson ${id} opened and flown by the hum`);
-        const ctx = await newContext(browser, served, prefsDoc(), null);
-        const tag = `R12 ${id}`;
+        // lane quiet3 (X2 row 7): Z5_NARRATOR=off opens the lesson with the narrator setting off; Z5_HALF=1 leaves it with X after 15 s
+        const narratorOff = process.env.Z5_NARRATOR === 'off';
+        const half = process.env.Z5_HALF === '1';
+        const ctx = await newContext(browser, served, prefsDoc(narratorOff ? { narrator: false } : {}), null);
+        const tag = `R12 ${id}${narratorOff ? ' narrator off' : ''}${half ? ' left half way' : ''}`;
         const t0 = Date.now();
         const page = await openLesson(ctx, served, id, tag).catch((e: Error) => { log(e.message.slice(0, 300)); return null; });
         check(`${tag}: the lesson opens from its link with one Enter`, page !== null);
@@ -1479,12 +1523,26 @@ async function r12(browser: () => Promise<BrowserContext>, served: Served): Prom
         const trail: object[] = [];
         const stats: SteerStats = { speeds: [], dodges: 0, targets: [] };
         const tF = Date.now();
-        const end = await steerByHum(page, (p) => p.phase === 'passed', 300000, lines, trail, undefined, undefined, stats);
+        const end = await steerByHum(page, (p) => p.phase === 'passed', half ? 15000 : 300000, lines, trail, undefined, undefined, stats);
+        if (half) { await page.keyboard.press('KeyX'); await sleep(1500); }
         await sleep(2000);
         await page.screenshot({ path: `${shots}/z5-${id}-end.png`, fullPage: false });
         const spoken = spokenAfter(await events(page), 0);
         const run = { id, openedS: opened, flightS: Math.round((Date.now() - tF) / 1000), phase: end.phase, attempt: end.attempt, gates: stats.targets.length, dodges: stats.dodges, medianSpeed: Math.round(median(stats.speeds) * 100) / 100, maxSpeed: Math.round(Math.max(0, ...stats.speeds) * 100) / 100, spokenTail: spoken.slice(-10), trail: trail.slice(-6) };
         (result.r12 as object[]).push(run);
+        if (narratorOff) {
+            const saved = await page.evaluate(() => {
+                for (let i = 0; i < localStorage.length; i++) {
+                    try { const d = JSON.parse(localStorage.getItem(localStorage.key(i) ?? '') ?? ''); const n = d?.collections?.sonic?.prefs?.narrator; if (n !== undefined) return n; } catch { /* not json */ }
+                }
+                return null;
+            });
+            const why = spoken.filter((k) => k === 'sonic.say.lessonNarrator').length;
+            Object.assign(run, { narratorSaved: saved, lessonNarratorSaid: why, spokenCount: spoken.length });
+            check(`${tag}: the lesson speaks with the narrator off and says why once`, spoken.length > 1 && why === 1, run);
+            check(`${tag}: the narrator setting is off again after it`, saved === false, run);
+            if (half) { await ctx.close(); continue; }
+        }
         // Y2 pass 2: 'passed' also follows the last failed attempt ("Let's go on to the next lesson", fly.moving-on); only a counted pass passes
         check(`${tag}: flown to its end and counted (passed, no fly.moving-on)`, end.phase === 'passed' && !spoken.includes('fly.moving-on'), run);
         await ctx.close();

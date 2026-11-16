@@ -82,6 +82,19 @@ export function fliesBySound(host: SonicHost): boolean {
     return host.collection('sonic').fliesBySound === true;
 }
 
+/** Lane quiet2 (N6): the hint "switch the narrator off with its key" was said once, after the first course finished by sound. */
+export function narratorTipSaid(host: SonicHost): boolean {
+    return host.collection('sonic').narratorTip === true;
+}
+
+/** Marks the narrator hint as said (saved once; nothing is written when it is already so). */
+export function setNarratorTipSaid(host: SonicHost): void {
+    if (narratorTipSaid(host)) return;
+    host.updateCollection('sonic', (d) => {
+        d.narratorTip = true;
+    });
+}
+
 /** Marks that the pilot flies by sound (saved once; nothing is written when it is already so). */
 export function setFliesBySound(host: SonicHost): void {
     if (fliesBySound(host)) return;

@@ -67,6 +67,8 @@ export interface SonicState {
     keyHints?: boolean;
     /** train 2: the pilot once chose "I already fly by sound" on a scan link's start screen; absent means not (a first-timer) */
     fliesBySound?: boolean;
+    /** train 3, lane quiet2: the hint to switch the narrator off was said once (after the first course by sound); absent means not */
+    narratorTip?: boolean;
 }
 
 export interface Collections { radioProfiles: RadioProfiles; sceneLibrary: SceneLibraryData; stats: StatsTotals; ui: UiState; sonic: SonicState }
@@ -323,6 +325,8 @@ export function validateCollection<K extends CollectionId>(k: K, v: unknown, dro
             if (typeof o.keyHints === 'boolean') sonic.keyHints = o.keyHints;
             // train 2: the pilot said "I already fly by sound" (a scan link's start screen puts the scan first): kept only when true
             if (o.fliesBySound === true) sonic.fliesBySound = true;
+            // train 3, lane quiet2: the narrator hint was said once: kept only when true
+            if (o.narratorTip === true) sonic.narratorTip = true;
             return sonic as Collections[K];
         }
     }

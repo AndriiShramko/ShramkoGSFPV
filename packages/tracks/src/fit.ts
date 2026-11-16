@@ -9,18 +9,38 @@ import type { TrackFile, VoxelCollision } from './types';
 import { marginOf } from './check';
 import { wallsCheck } from './editor';
 import { upgradeTrack } from './format';
-import { COURSE_DEFAULTS, generateCourse } from './generate';
+import { COURSE_DEFAULTS, RING_DIAMETER_M, generateCourse } from './generate';
 import type { CourseOptions, CourseParams } from './generate';
-import type { FreeSpace } from './freespace';
+import { FREE_DEFAULTS, freeSpace } from './freespace';
+import type { FreeSpace, FreeSpaceOptions } from './freespace';
+import { MARGIN_M } from './check';
 
 /** The smallest drone's size: air65-1s and meteor65pro-1s, boundRadius 0.0425 m (measured: tools/bench/src/drone-sizes.ts,
  *  the simulator's compileParams over packages/sim-core/presets). */
 export const SMALLEST_DRONE_RADIUS_M = 0.0425;
 /** The smallest ring opening, in diameters of the smallest drone (estimate: room for a whoop to miss the centre). */
 export const RING_MIN_DRONE_DIAMETERS = 4;
-/** The scales tried, largest first. The last keeps the ring (1.2 m x scale) at RING_MIN_DRONE_DIAMETERS diameters of the
- *  smallest drone: 0.34 m / 1.2 m = 0.283, rounded up to 0.3. 0.5 is the step between (estimate). */
-export const COURSE_SCALES: readonly number[] = [1, 0.5, 0.3];
+/** The scales tried, largest first: the ladder of gate sizes (course4 C3, owner's message 57: a room gets gates for a
+ *  whoop). The square's opening (SQUARE_SIDE_M x scale) steps 1.5, 1.0, 0.6, 0.45 m, the ring's (RING_DIAMETER_M x scale)
+ *  1.2, 0.8, 0.48, 0.36 m. 0.6 m is about a tiny whoop's race gate (estimate). The last keeps the ring at
+ *  RING_MIN_DRONE_DIAMETERS diameters of the smallest drone: 0.34 m / 1.2 m = 0.283, rounded up to 0.3. */
+export const COURSE_SCALES: readonly number[] = [1, 2 / 3, 0.4, 0.3];
+
+/**
+ * course5 Z2 (lead's decision A3, review CU-7): the ladder for the craft that is flown. Its smallest ring keeps
+ * RING_MIN_DRONE_DIAMETERS diameters of that craft (pavo20pro-3s, boundRadius 0.0768 m: 0.61 m, step 0.512; the catalogue's
+ * sizes: tools/bench/src/drone-sizes.ts). The steps under that size are left out and the craft's own size ends the ladder;
+ * a craft whose ring would be wider than the plan's flies the plan's size only (taurusx8, boundRadius 0.3175 m: the 1.2 m
+ * ring is 1.9 of its diameters, the 1.5 m square 2.4). The smallest craft keeps COURSE_SCALES as they are.
+ */
+export function courseScales(craftRadiusM: number = SMALLEST_DRONE_RADIUS_M): readonly number[] {
+    const min = Math.max(COURSE_SCALES[COURSE_SCALES.length - 1]!, (RING_MIN_DRONE_DIAMETERS * 2 * craftRadiusM) / RING_DIAMETER_M);
+    if (min >= 1) return [1];
+    const out = COURSE_SCALES.filter((s) => s >= min - 1e-9);
+    // the craft's own step, rounded up to a thousandth so its ring is never under the rule
+    if (out[out.length - 1]! - min > 1e-9) out.push(Math.ceil(min * 1000) / 1000);
+    return out;
+}
 /** derived seeds tried per scale (the page's earlier rule, lane review TR-8: 3) */
 export const SEEDS_PER_SCALE = 3;
 /** Review T2-6, ESTIMATE: the worker's time for fitCourse, under the page's GENERATE_LIMIT_MS (150 s) by room for
@@ -39,6 +59,17 @@ export function fullOf(t: TrackFile, gatesMin: number): number {
     const want = (t.generator?.params as { wanted?: unknown } | undefined)?.wanted;
     return Math.max(gatesMin, major >= 3 && typeof want === 'number' ? Math.ceil(FULL_SHARE * want) : 0);
 }
+/** course5 Z2 (review CU-5): the gates a course of a step below the plan's size needs to stop the ladder: the generator's
+ *  whole wanted count (at least gatesMin). Half of it (fullOf) took 7 gates at step 2/3 on Forest Floor ab5efa0e, where the
+ *  next step gives 20 (gate-place-audit, course4/z2), and the whole count, as GOOD_GATES_BELOW_PLAN says. */
+export function wantOf(t: TrackFile, gatesMin: number): number {
+    const want = (t.generator?.params as { wanted?: unknown } | undefined)?.wanted;
+    return Math.max(fullOf(t, gatesMin), typeof want === 'number' ? want : 0, GOOD_GATES_BELOW_PLAN);
+}
+/** course5 Z2: below the plan's size a course stops the ladder only with at least this many gates (estimate: the 10 the
+ *  owner flew on Forest Floor ab5efa0e before C3). The generator's wanted count there is 7 at step 2/3 (a whole course by
+ *  its measure) and 20 at step 0.4 (gate-place-audit, course4/z2/ff-x1-after.log). */
+export const GOOD_GATES_BELOW_PLAN = 10;
 /** When fitCourse must stop: `at` on the clock `now` (ms). */
 export interface FitDeadline {
     readonly at: number;
@@ -57,6 +88,17 @@ export function scaledParams(scale: number, base: CourseParams = COURSE_DEFAULTS
         m3PerGate: base.m3PerGate * scale * scale * scale,
         scale
     };
+}
+
+/**
+ * course4 C3: the free space for a smaller step of the ladder: read at the step's margin, and a room counts from the
+ * plan's smallest room (minRoomM3) times the step cubed, as the gates and legs shrink by the step (the low room of
+ * every-scan.test.ts: 3.9 m3 of cells at the 0.4 step, under the plan's 8 m3).
+ */
+export function freeAtMargin(walls: VoxelCollision, opts: FreeSpaceOptions, marginM: number): FreeSpace {
+    const k = Math.min(1, marginM / MARGIN_M);
+    const U = Math.max(1, opts.unitM ?? 1);
+    return freeSpace(walls, { ...opts, marginM, minRoomM3: (opts.minRoomM3 ?? FREE_DEFAULTS.minRoomM3 * U * U * U) * k * k * k });
 }
 
 /** The next seed after `s` (the same derivation as the page's enoughGates). */
@@ -128,7 +170,18 @@ export function trimToSave(t: TrackFile, walls: VoxelCollision, transform: Scene
  * The first course of at least `gatesMin` gates over COURSE_SCALES (each with SEEDS_PER_SCALE derived seeds); at scale 1
  * the seeds and courses are exactly those of the page's enoughGates before K1.2. Else the course with the most gates.
  */
-export function fitCourse(free: FreeSpace, walls: VoxelCollision, opts: CourseOptions, gatesMin: number = COURSE_DEFAULTS.gatesMin, make: typeof generateCourse = generateCourse, deadline: FitDeadline | null = null): FitResult {
+export function fitCourse(free: FreeSpace, walls: VoxelCollision, opts: CourseOptions, gatesMin: number = COURSE_DEFAULTS.gatesMin, make: typeof generateCourse = generateCourse, deadline: FitDeadline | null = null, refree: ((marginM: number) => FreeSpace) | null = null): FitResult {
+    // course4 C3: a smaller gate needs a smaller margin, and the free space read at the plan's margin (0.5 m) may hold no
+    // cell at all in a room (Modlinek 39e63ce9: 0 usable cells at 0.5 m, 2204 at 0.25 m; Winter Garden 7a475d38: the spawn's
+    // fill reached 2 cells at 0.5 m, 3029488 at 0.25 m; gate-place-audit --diag --margin). A step whose margin is under the
+    // free space's reads it again at that margin (refree, once per margin)
+    const frees = new Map<number, FreeSpace>();
+    const freeAt = (m: number): FreeSpace => {
+        if (!refree || !(m < free.marginM - 1e-9)) return free;
+        let f = frees.get(m);
+        if (!f) frees.set(m, (f = refree(m)));
+        return f;
+    };
     let best: TrackFile | null = null;
     let bestScale = 1;
     let bestOk = false;
@@ -143,19 +196,21 @@ export function fitCourse(free: FreeSpace, walls: VoxelCollision, opts: CourseOp
         }
         return { track: best, short: best !== null && (best.gates.length < gatesMin || !bestOk), scale: bestScale, tried, proven: best !== null && bestOk };
     };
-    for (const scale of COURSE_SCALES) {
+    for (const scale of courseScales(opts.craftRadiusM)) {
         const params = { ...scaledParams(scale), ...(opts.params ?? {}) };
         let s = opts.seed >>> 0;
         for (let i = 0; i < SEEDS_PER_SCALE; i++) {
             // review T2-6: with a course in hand, a try that would end past the deadline is not started (the page's
-            // watchdog would end the worker and the pilot would get nothing); the longest try so far is the estimate
-            if (deadline && best && deadline.now() + longest > deadline.at) return end();
+            // watchdog would end the worker and the pilot would get nothing); the longest try so far is the estimate.
+            // Course5 review CV-5: with no course in hand too, so the page shows 'no course' with its one-press Scene size
+            // instead of the watchdog's failure
+            if (deadline && deadline.now() + longest > deadline.at) return end();
             const t0 = deadline ? deadline.now() : 0;
-            const t = make(free, walls, { ...opts, seed: s & 0x7fffffff, params });
+            const t = make(freeAt(params.marginM), walls, { ...opts, seed: s & 0x7fffffff, params });
             const ok = provenCourse(t) && savesUntouched(t, walls, opts.transform);
             if (deadline) longest = Math.max(longest, deadline.now() - t0);
             tried++;
-            if (ok && t.gates.length >= fullOf(t, gatesMin)) return { track: t, short: false, scale, tried, proven: true };
+            if (ok && t.gates.length >= (scale < 1 ? wantOf(t, gatesMin) : fullOf(t, gatesMin))) return { track: t, short: false, scale, tried, proven: true };
             // a proven course beats an unproven one of any length; among the same kind the one with more gates
             if (t.gates.length > 0 && ((ok && !bestOk) || (ok === bestOk && t.gates.length > (best?.gates.length ?? 0)))) {
                 best = t;
@@ -164,8 +219,11 @@ export function fitCourse(free: FreeSpace, walls: VoxelCollision, opts: CourseOp
             }
             s = nextSeed(s);
         }
-        // review FY-1: a proven course of at least gatesMin gates at this scale beats any course of a smaller one
-        if (best && bestOk && best.gates.length >= gatesMin) return end();
+        // review FY-1: a proven course of at least gatesMin gates at this scale beats any course of a smaller one.
+        // course4 review CU-5: below the plan's size a course under its full share does not stop the ladder: the next step
+        // is tried and the course with more gates kept (Forest Floor ab5efa0e: 10 gates at the old step 0.5, then 5-7 at the
+        // new 2/3, which stopped the ladder; c3/before.json, c3p2/after2.json). Step 1 keeps FY-1 (street tables unchanged).
+        if (best && bestOk && best.gates.length >= (scale < 1 ? wantOf(best, gatesMin) : gatesMin)) return end();
     }
     return end();
 }

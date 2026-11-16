@@ -5,7 +5,7 @@
 import { t } from '../../i18n';
 import type { CourseRow } from '../store';
 import type { KeyPress } from './keys';
-import { KEY_ROWS } from './keys';
+import { CAM_ROWS, KEY_ROWS } from './keys';
 import { markText } from './words';
 import { mayVote } from './rules';
 import './editor.css';
@@ -38,11 +38,28 @@ export class EditorPanel {
     private readonly all: HTMLButtonElement;
     private readonly admin: HTMLButtonElement;
     private readonly rows: HTMLElement;
+    private readonly drawer: HTMLButtonElement;
+    private readonly keys: HTMLElement;
+    private readonly listTitle: HTMLElement;
 
     constructor(ui: HTMLElement, private readonly host: PanelHost) {
         const root = el('section', 'course-editor interactive');
         root.setAttribute('aria-label', t('course.edit.title'));
-        root.append(el('h2', 'ce-title', t('course.edit.title')));
+        // lane editor3 E4.6: on a phone the window is a drawer, closed by default (only its title and the gate line); its
+        // title opens and closes it (editor.css); on a desktop the press changes nothing. Focus goes back to the page so
+        // Tab still takes the next gate.
+        const title = el('h2', 'ce-title');
+        const drawer = el('button', 'ce-drawer', t('course.edit.title'));
+        drawer.setAttribute('type', 'button');
+        drawer.setAttribute('aria-expanded', 'false');
+        drawer.addEventListener('click', () => {
+            const open = root.classList.toggle('ce-open');
+            drawer.setAttribute('aria-expanded', String(open));
+            drawer.blur();
+        });
+        title.append(drawer);
+        root.append(title);
+        this.drawer = drawer;
         this.gate = el('p', 'ce-gate');
         this.problems = el('p', 'ce-problems');
         this.live = el('p', 'ce-live');
@@ -61,7 +78,15 @@ export class EditorPanel {
             b.addEventListener('click', () => host.key(r.press));
             keys.append(b);
         }
+        // review ED-7: the camera's keys and the mouse as lines of the same table
+        for (const r of CAM_ROWS) {
+            const line = el('div', 'ce-key ce-cam');
+            if (r.caps) line.append(el('kbd', undefined, r.caps));
+            line.append(el('span', undefined, t(r.labelKey)));
+            keys.append(line);
+        }
         root.append(keys);
+        this.keys = keys;
 
         const save = el('div', 'ce-save');
         this.name = el('input', 'ce-name');
@@ -85,7 +110,8 @@ export class EditorPanel {
         save.append(this.name, this.title, this.mine, this.all, this.admin);
         root.append(save);
 
-        root.append(el('h3', 'ce-list-title', t('course.edit.list')));
+        this.listTitle = el('h3', 'ce-list-title', t('course.edit.list'));
+        root.append(this.listTitle);
         this.rows = el('ul', 'ce-list');
         root.append(this.rows);
         ui.append(root);
@@ -120,13 +146,23 @@ export class EditorPanel {
     /** Enter to save without a name: the name field takes the focus (true when it did) */
     askName(): boolean {
         if (this.name.value.trim()) return false;
+        this.reveal('save');
         this.name.focus();
         return true;
     }
 
     /** F6 (review TK-3): the keyboard's way into the window; Tab then walks its fields and buttons */
     focusName(): void {
+        this.reveal('save');
         this.name.focus();
+    }
+
+    /** review ED-7: the window opens (on a phone its drawer) and shows that part; the focus stays on the page */
+    reveal(part: 'save' | 'keys' | 'courses'): void {
+        this.root.classList.add('ce-open');
+        this.drawer.setAttribute('aria-expanded', 'true');
+        const at = part === 'keys' ? this.keys : part === 'courses' ? this.listTitle : this.name;
+        at.scrollIntoView({ block: 'nearest' });
     }
 
     names(): { name: string; title: string } {

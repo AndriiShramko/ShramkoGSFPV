@@ -19,7 +19,8 @@ function openEditBody(src: string): string {
 describe('the course page wiring after review', () => {
     it('T2-1: the editor and the worker prove a course at marginOf(track), not at the plan margin', () => {
         const body = openEditBody(COURSE_TS);
-        expect(body).toMatch(/wallsCheck\(col, flownTransform\(\), marginOf\(run\.track\)\)/);
+        // lane editor3 E2.1: the margin goes with each course to the editor's check worker
+        expect(body).toMatch(/edMargin = marginOf\(run\.track\)/);
         expect(WORKER_TS).toMatch(/checkTrack\(m\.track, walls, m\.transform, marginOf\(m\.track\), false\)/);
     });
 

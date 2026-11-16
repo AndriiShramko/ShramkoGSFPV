@@ -118,6 +118,7 @@ process.exit(ok ? 0 : 1);' "$OUT/course-path-$1.json" && [ $rc -eq 0 ]
 run course-path-wroclaw locked cpband 70b50d42
 # Train 3 integration C (lane fix3a): the guide to gate 1 after Shift+G on Wroclaw (gate-guide-probe.mjs header: presses
 # Shift+G and Escape only, the course lives in the page, nothing is saved).
+# Train 3 integration E: the same run also checks that gate 1 carries the START role (the read-only hook course.look).
 run gate-guide-wroclaw locked node scripts/gate-guide-probe.mjs "$SITE/en" 70b50d42 "$OUT/gate-guide-wroclaw.json" "$OUT" wroclaw --shiftg --wait-s=500
 # Train 3 integration C (lane onecourse): one course in the scene. onecourse-probe.mjs presses only flight keys (Shift+G,
 # Backslash, N; its scripted pilot passes two gates); the course lives in the page and nothing is sent or saved
@@ -168,6 +169,47 @@ process.exit(ok ? 0 : 1);' "$f" "$@"
 run sonic-in-place-tunis soniccheck tunis 887f27aa 1 60 Shift+KeyG 'gives the free flight by sound' 'starts no new life and keeps the speed'
 run sonic-course-wroclaw soniccheck wroclaw 70b50d42 0 60 Shift+KeyG 'gives the free flight by sound' 'starts no new life and keeps the speed' 'makes a course'
 run sonic-course-wroclaw-n soniccheck wroclaw-n 70b50d42 0 60 KeyN 'gives the free flight by sound' 'makes a course'
+# Train 3 integration D (lanes quiet, quiet2, quiet3): the narrator off. quiet-probe.mjs sets the Narrator setting off in the
+# prefs document of the probe's own browser (localStorage, nothing on the server), presses only flight keys (Backslash, W,
+# Shift+G; the course lives in the page) and sends or saves nothing. Render off, no GPU lock. The check: from the Backslash
+# press to 10 s later no line with words to the voice and none to a live region, and the craft moves (over 0.5 m/s) within
+# the 2 s that W is held from the press (the probe's own window).
+narratoroff() {
+  NARRATOR=off FLY_S=15 node scripts/quiet-probe.mjs "$SITE/en" "$OUT/narrator-off.json" 70b50d42 || return 1
+  node -e '
+const j = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
+const m4 = j.m4 || null;
+const voiced = m4 ? (j.voiced || []).filter((v) => v.t >= m4.press && v.t <= m4.press + 10 && String(v.text || "").trim() !== "").length : -1;
+const live = m4 ? m4.lines10 : -1;
+const moved = (j.samples || []).some((s) => s.tag === "w" && (s.speed > 0.5 || Math.abs(s.vy || 0) > 0.5));
+console.log("fail", j.fail || "-", "narrator", j.narrator, "voiced 0..10 s", voiced, "live 0..10 s", live, "moved with W", moved);
+process.exit(!j.fail && voiced === 0 && live === 0 && moved ? 0 : 1);' "$OUT/narrator-off.json"
+}
+run narrator-off narratoroff
+# Train 3 integration E (lanes fix3a and editor3). The edit mode on Wroclaw: editor3-smoke.ts (header: a course made in this
+# tab by Shift+G, never saved; Shift+B, a click selects a gate, drags on the centre box, an arrow and a ring, Ctrl+Z, Esc
+# leaves; it never presses a save, send or create control; its pictures go to U:/Temp/gsfpv-train3/shots). The check: the
+# mode opened with a gate selected, an arrow moved it, Esc closed the mode. The click on another gate is printed only: on
+# the local copy (dist of e38ce9c9) the probe found no other gate on screen on Wroclaw even after backing the view off
+# four times (click target -1); editor3-prove.ts proves the click there but presses Save, so it stays out of this file.
+editlive() {
+  SCENES=70b50d42 OUT="$OUT" TAG=live-edit npx tsx src/editor3-smoke.ts || return 1
+  node -e '
+const j = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
+const s = (j.scenes || {})["70b50d42"] || {};
+const open = !!(s.open && (s.open.ok || s.open.open || s.open === true));
+const sel = !!(s.click && s.click.ok);
+const moved = (s.move || []).some((m) => m.moved > 0.05);
+const closed = !!(s.exit && s.exit.closed);
+console.log("open", open, "selected by a click (information)", sel, "moved by an arrow", moved, "closed by Esc", closed, s.error || "");
+process.exit(open && moved && closed ? 0 : 1);' "$OUT/live-edit.json"
+}
+run edit-mode-wroclaw locked editlive
+# Fly by Sound over a course made in the ordinary flight (lane mix, sonic-int-review.ts r11 with Z5_COURSE_FIRST=1: Shift+G
+# in the ordinary flight, then Backslash; the same keys as soniccheck above, nothing sent or saved; rendering off, no lock).
+# The check: the sound mode takes that course (one set of gates) and the hum has a target.
+sonicfirst() { Z5_COURSE_FIRST=1 soniccheck "$@"; }
+run sonic-eye-course-wroclaw sonicfirst eye-wroclaw 70b50d42 0 60 Shift+KeyG 'takes the course made by eye' 'makes a course'
 
 if [ "$FAILED" = 0 ]; then echo "LIVE CHECKS: PASS"; exit 0; fi
 echo "LIVE CHECKS: FAIL"

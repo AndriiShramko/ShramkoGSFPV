@@ -40,11 +40,15 @@ export interface CourseHook {
     /** stage G1-progress: the course's progress line now (course/progress.ts), the arrival warning, or null */
     progress?: string | null;
     /** stage G4-prove: every gate's centre and rotation (w, x, y, z), flown frame; [] without a course */
-    gatePoses?: () => { pos: number[]; quat: number[] }[];
+    gatePoses?: () => { pos: number[]; quat: number[]; shape?: Record<string, unknown> }[];
     /** stage G4-prove: the course HUD's text now (lap clock and lines), null when it is not on the page */
     clockText?: () => string | null;
     /** stage X2-gate-one: what the guide to the next gate shows now (course/hud.ts GuideState) */
     guide?: () => { shown: boolean; gate: number; metres: number; side: 'left' | 'right'; behind: boolean; inFrame: boolean; bearingDeg: number; x: number; y: number };
+    /** lane course4 (S1, S2): banners over START / FINISH gates, lines on the ground, the gate carrying the number plate, roles */
+    look?: () => { banners: number; groundLines: number; plate: number; roles: ('start' | 'finish' | 'startFinish' | null)[] };
+    /** lane course4 (S4, S5): the lap's splash or the results card now (course/hud.ts SplashState) */
+    splash?: () => { kind: 'none' | 'splash' | 'card'; text: string; delta: string; tone: string; mode: string; at: number; alpha: number };
     /** lane fix3b, Y1: the edit mode's Save check of the course in use, untouched, with the measured report; null without
      *  a course or walls (test data, read only). `move` checks a copy with one gate at another place (flown frame): the
      *  negative row of Y3 (a gate pushed into a wall must still be refused); the course in use is not changed. */
@@ -83,4 +87,7 @@ export interface CourseEditorHook {
     /** F2 (asked by lane editor3): the drone flies in the edit mode now (the mode's 'fly'), false in the edit view; probes
      *  read it, the page writes it (the editor's wiring sets it, absent until then) */
     readonly flying?: boolean;
+    /** integration E (brief seam d): the selected gate's own flown pose from the course state (drag.ts gateFlownPose), so a
+     *  probe measures a turn ring by the gate and not by the view's stand-in; null when no gate is selected */
+    pose?: { pos: number[]; quat: number[] } | null;
 }

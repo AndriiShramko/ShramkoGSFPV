@@ -41,7 +41,9 @@ const V03_SHIPPED = [
     // v0.10 lane K (docs/wip/v10-k.md): the "How to fly" card shown when a scan opens, Settings -> Controls
     'input.howToFly',
     // lane center-throttle (docs/wip/center-throttle.md): a radio's or gamepad's left stick, in the centre or from zero
-    'input.throttleStyle'
+    'input.throttleStyle',
+    // lane course4 (lead decision S4): the lap's time shown large when a lap ends, Settings -> Display
+    'course.lapSplash'
 ];
 
 /**
@@ -80,6 +82,7 @@ const A8: [string, string, string, string, unknown, string][] = [
     ['display.reducedMotion', 'display', 'global', 'enum', 'system', 'live'],
     ['display.frameStats', 'display', 'global', 'bool', false, 'live'],
     ['stats.onDisarm', 'display', 'global', 'bool', true, 'live'],
+    ['course.lapSplash', 'display', 'global', 'enum', 'large', 'live'],
     ['ui.language', 'display', 'global', 'enum', 'browser', 'reload'],
     ['crosshair.shape', 'display', 'global', 'enum', 'off', 'live'],
     ['crosshair.size', 'display', 'global', 'number', 4, 'live'],
@@ -178,8 +181,8 @@ const WAVE2_SETTINGS = [
 ];
 
 describe('SCHEMA is the A.8 table', () => {
-    it('has the 83 settings (with the throttle style of lane center-throttle, train 3 lane loadq more detail at rest;the A.8 table of 53, the voxel opacity with the scan hidden, the walls switch, the latency guard, the v0.7 drawing, wind and ceiling, the v0.7 D1 seven, the v0.8 prop wash and lane A three, the v0.9 lane R splat budget, lane B three and lane D camera load, the v0.10 lane R device class and lane K How to fly card), each with its group, scope, type, default and apply', () => {
-        expect(SCHEMA.defs).toHaveLength(83);
+    it('has the 84 settings (with the lap time on screen of lane course4; the throttle style of lane center-throttle; train 3 lane loadq more detail at rest;the A.8 table of 53, the voxel opacity with the scan hidden, the walls switch, the latency guard, the v0.7 drawing, wind and ceiling, the v0.7 D1 seven, the v0.8 prop wash and lane A three, the v0.9 lane R splat budget, lane B three and lane D camera load, the v0.10 lane R device class and lane K How to fly card), each with its group, scope, type, default and apply', () => {
+        expect(SCHEMA.defs).toHaveLength(84);
         const got = SCHEMA.defs.map((d) => [d.id, d.group, d.scope, d.type, isPresetRef(d.default) ? `preset:${d.default.preset}` : isCuratedRef(d.default) ? `curated:${d.default.curated}|${String(d.default.fallback)}` : d.default, d.apply]);
         // order inside a group follows the def files, not the table's rows
         const byId = (a: unknown[], b: unknown[]) => String(a[0]).localeCompare(String(b[0]));

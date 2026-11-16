@@ -23,7 +23,13 @@ export const walls: Feature = {
     install(ctx) {
         // stage G1-progress: the build's progress is spoken in Fly by Sound (the spoken-line hook; nothing without the mode)
         const speech = sayVia(() => ctx.sonic ?? null);
-        const speak = (text: string): void => { if (ctx.sonic) void speech({ key: 'sonic.say.text', params: { text } }); };
+        // lane quiet2 (reviews QW-2, QW-6): with the narrator off a failed build plays one short falling sound, the warning that the
+        // picture may stop the "wait" sound (the package's cues; say-via.ts plays them only when the line is quiet)
+        const speak = (text: string, kind?: 'failed' | 'wait'): void => {
+            if (!ctx.sonic) return;
+            const quietCue = kind === 'failed' ? { kind: 'wrong-side' as const } : kind === 'wait' ? { kind: 'answer' as const, what: 'wait' as const } : undefined;
+            void speech({ key: 'sonic.say.text', params: { text } }, quietCue ? { quietCue } : undefined);
+        };
         const mount = () => mountWalls({
             speak,
             ui: ctx.ui, session: ctx.session, sceneId: ctx.scene.id, beacon, hook: ctx.hook,

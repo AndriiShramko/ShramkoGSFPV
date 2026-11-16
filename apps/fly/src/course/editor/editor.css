@@ -92,6 +92,146 @@
 @media (max-width: 640px), (max-height: 500px) {
     .course-editor { right: calc(max(8px, env(safe-area-inset-right)) + 56px); }
 }
+/* lane editor3 E2.4: the small bar next to the selected gate (gate-bar.ts places it each frame) */
+.ce-gatebar {
+    position: absolute;
+    left: 0;
+    top: 0;
+    display: flex;
+    gap: 4px;
+    padding: 4px;
+    background: rgb(12, 16, 22);
+    border: 1px solid #3a4656;
+    border-radius: 8px;
+    visibility: hidden;
+    z-index: 5;
+}
+.ce-gatebar .ce-gb {
+    width: 32px;
+    height: 32px;
+    padding: 5px;
+    background: #1b2330;
+    border: 1px solid #3a4656;
+    border-radius: 6px;
+    color: #f2f4f7;
+    cursor: pointer;
+}
+.ce-gatebar .ce-gb:hover, .ce-gatebar .ce-gb:focus-visible { border-color: #a6ff1a; }
+/* lane editor3 H1: Move, Turn, Size; the shown one is lit, a gap after Size */
+.ce-gatebar .ce-gb[aria-pressed='true'] { border-color: #a6ff1a; background: #2a3a12; color: #a6ff1a; }
+.ce-gatebar .ce-gb[data-bar='size'] { margin-right: 8px; }
+.ce-gatebar svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linejoin: round; }
+
+/* lane editor3 E3: the top bar (Add gate, Undo, Redo, Exit) and the line of what to do now */
+.ce-topbar {
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 6px;
+    max-width: calc(100vw - 16px);
+    background: rgb(12, 16, 22);
+    border: 1px solid #3a4656;
+    border-radius: 8px;
+    z-index: 5;
+}
+.ce-topbar .ce-tb {
+    min-height: 30px;
+    padding: 4px 10px;
+    background: #1b2330;
+    border: 1px solid #3a4656;
+    border-radius: 6px;
+    color: #f2f4f7;
+    cursor: pointer;
+    white-space: nowrap;
+}
+.ce-topbar .ce-tb:hover, .ce-topbar .ce-tb:focus-visible, .ce-topbar .ce-tb[aria-pressed='true'] { border-color: #a6ff1a; }
+.ce-topbar .ce-tb[aria-pressed='true'] { background: #2a3a12; }
+.ce-topbar .ce-tb-line {
+    color: #c9d1db;
+    font-size: 0.85rem;
+    padding: 0 4px;
+    /* train 3 I2 (D6): never two lines; at most 420 px with an ellipsis, the full text in its title (top-bar.ts) */
+    flex: 0 1 auto;
+    min-width: 0;
+    max-width: 420px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.ce-topbar .ce-tb-line.refused { color: #ffb347; }
+.ce-topbar.flying .ce-tb { display: none; }
+.ce-topbar.flying { pointer-events: none; }
+
+/* lane editor3 E4.6: the window's title is a button that only does something on a phone (a drawer, below) */
+.course-editor .ce-drawer {
+    display: inline;
+    min-height: 0;
+    padding: 0;
+    background: none;
+    border: 0;
+    color: inherit;
+    font: inherit;
+    cursor: default;
+}
+/* lane editor3 E4.6, a phone or a low window (844 x 390): the window is a drawer closed by default (its title and the gate
+   line, top right), so the scene, the handles and the gate bar stay free; the top bar keeps its buttons on one line and
+   drops its hint line (the window's gate line says what is selected) */
+/* lane editor3 H1 (the lead's decision): on every screen the window opens closed (only its title, a button), so the scene
+   and the handles stay free; the top bar's Courses and Keys open it at that part, the title closes it again */
+.course-editor:not(.ce-open) { bottom: auto; overflow: hidden; }
+.course-editor:not(.ce-open) > :not(.ce-title) { display: none; }
+.course-editor:not(.ce-open) .ce-title { margin: 0; }
+.course-editor .ce-drawer { cursor: pointer; }
+.course-editor .ce-drawer::after { content: ' \25BE'; }
+.course-editor.ce-open .ce-drawer::after { content: ' \25B4'; }
+@media (max-width: 900px), (max-height: 500px) {
+    /* H2-look pass 2: below the page's top row (Share, Feedback: ui/top-row.ts writes --top-row-bottom) and on the left,
+       so it covers neither that row nor the OSD line above it, and ends before the 'Course editor' window (x 400 at 844) */
+    .ce-topbar { top: calc(var(--top-row-bottom, 78px) + 4px); left: 8px; transform: none; padding: 3px 4px; gap: 4px; flex-wrap: nowrap; }
+    /* H2-look: every button of the two bars is a 44 px target on a phone */
+    .ce-topbar .ce-tb { min-height: 44px; min-width: 44px; padding: 3px 5px; }
+    .ce-topbar .ce-tb-line { display: none; }
+    .ce-gatebar .ce-gb { width: 44px; height: 44px; padding: 11px; }
+}
+/* train 3 I2 (D7): a view lower than 500 px: the bar goes under the scene credit and the Walls chip's summary (top-bar.ts
+   place() writes their lowest bottom edge to --ce-below), so 'Walls 5 cm' and the credit stay readable */
+@media (max-height: 500px) {
+    .ce-topbar { top: max(calc(var(--top-row-bottom, 78px) + 4px), var(--ce-below, 0px)); }
+}
+/* lane editor3 H2-look: the opening in metres beside the Size handle while it is dragged (view-mouse.ts showTag) */
+.ce-size-tag {
+    position: fixed;
+    z-index: 6;
+    padding: 2px 8px;
+    background: rgb(12, 16, 22);
+    color: #a6ff1a;
+    border: 1px solid #a6ff1a;
+    border-radius: 6px;
+    font: 600 0.95rem/1.4 system-ui, sans-serif;
+    white-space: nowrap;
+    pointer-events: none;
+}
+.ce-size-tag[hidden] { display: none; }
+/* lane editor3 H2-look (the lead's decision): in the edit view the flight's windows are hidden: the end-of-flight stats card
+   (ui/osd-stats.ts), the controller hint (ui/hud.ts arm-card), the lap clock and the course line (course/hud.ts), the
+   course's note and the take-off prompt (ui/hud.ts hud-note, gate-msg), the crash toast (ui/crash-overlay.ts). The mode
+   flag is the one the page reads (devices/keyboard.ts EDIT_MODE): back in the test flight (ce-flying) and after Exit. */
+body:has(.course-editor:not(.ce-flying)) :is(.osd-stats, .arm-card, .course-hud, .hud-note, .gate-msg, .crash-toast) { display: none !important; }
+/* train 3 I2 (D5, the lead's decision): the rest of the flight goes too: the throttle style hint under the mode line
+   (ui/mode-chip.ts), the THR, speed and ALT line, the key hints line and the voltage and time (ui/hud.ts .osd bl, br, tr),
+   F3's lines (.osd-col), the REC row with Auto and the folder button and its dot and notice (app/builtin/cinema.ts), the
+   crash card (ui/crash-overlay.ts), the next-scene hint after a crash (ui/next-hint.ts). The mode line (.osd.tl: DISARMED and the flight mode) stays. */
+body:has(.course-editor:not(.ce-flying)) :is(.mode-chip, .hud .osd.bl, .hud .osd.br, .hud .osd.tr, .osd-col, .rec-bar, .rec-dot, .rec-notice, .crash-overlay, .next-hint) { display: none !important; }
+/* train 3 I2 (D7, the lead's decision): on a view lower than 500 px the edit mode is a mouse and keyboard tool: the Walls chip's
+   open menu (walls switch, voxel grid, style, opacity, export, import: walls.ts walls-more) is hidden in the edit view, the
+   chip's summary line ('Walls 5 cm') stays; back in the test flight and after Exit */
+@media (max-height: 500px) {
+    body:has(.course-editor:not(.ce-flying)) [data-testid='walls-more'] > :not(summary) { display: none !important; }
+}
 @media (max-height: 480px) {
     .course-editor { font-size: 0.75rem; padding: 6px 8px; }
     .ce-keys { grid-template-columns: repeat(auto-fill, minmax(128px, 1fr)); }

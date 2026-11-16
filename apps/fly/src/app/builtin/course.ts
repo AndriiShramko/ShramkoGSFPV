@@ -14,15 +14,16 @@
 // table, course/editor/keys.ts; its window, course/editor/panel.ts): select, move, turn, shape, size, add and delete gates,
 // every change re-proven on the walls (packages/tracks editor.ts); "Save as my course" posts a pilot's course (a fork of a
 // saved one, or a new version of the pilot's own with the token kept in this tab), the scene's courses with marks and votes.
-import type { TrackFile } from '@shramko/sonic-fpv';
+import type { SonicObject, TrackFile } from '@shramko/sonic-fpv';
 import { t } from '../../i18n';
-import { liveSearch } from '../env';
+import { liveSearch, q as pageQuery } from '../env';
 import type { Feature, FlightContext } from '../context';
 import { withWalls } from '../../walls-first';
 import type { CourseHook } from '../../course/hook';
 import { CourseRun, courseLife } from '../../course/run';
 import { CourseStage } from '../../course/view';
 import { CourseHud, lapClock } from '../../course/hud';
+import { courseElements, gateRole, gateRoles, lapEnd, lapSplashMode, noCourseSize, soundGates } from '../../course/finish';
 import { aimOf } from '../../course/guide';
 import type { GuideCamera } from '../../course/guide';
 import { coveredBy } from '../../course/cover';
@@ -31,21 +32,39 @@ import { CourseStore, type CourseRow } from '../../course/store';
 import type { CheckJob, CourseGrid, CourseJob, FromCourseWorker } from '../../course/worker';
 import { COURSE_WARN_MS, PROGRESS_TICK_MS, ProgressClock, SpeechPacer, courseSteps, isParked, progressLine, spokenLine } from '../../course/progress';
 import { sayVia } from '../say-via';
+import type { CueEvent } from '@shramko/sonic-fpv';
 import { soundCourseSeed } from './sonic-flight';
 import { S } from '@gsfpv/sim-core';
-import { canSave, checkTrack, edit, flownCollision, flownStart, marginOf, nearestWall, openEditor, toTrackV1, upgradeTrack, wallsCheck } from '@gsfpv/tracks';
+import { MAX_GATES_EDIT, canSave, checkTrack, edit, flownCollision, flownStart, marginOf, nearestWall, openEditor, toTrackV1, upgradeTrack, wallsCheck } from '@gsfpv/tracks';
+import { CheckQueue, checkOnPage } from '../../course/editor/check-core';
+import type { FromCheckWorker } from '../../course/editor/check-core';
 import { aimAt, gateCamera, type GateView } from '../../course/editor/camera';
+import { frameGate, reframeOnDragEnd } from '../../course/editor/frame';
 import type { RayFn } from '../../course/editor/camera';
+import { EditView } from '../../course/editor/view-mouse';
+import { GateBar } from '../../course/editor/gate-bar';
+import { TopBar } from '../../course/editor/top-bar';
+import { ADD_RAY_M, addAction, addFacing, addLift, addPoint, facingFrom } from '../../course/editor/add-place';
+import { flyShows, modeStep, type EditMode } from '../../course/editor/fly-mode';
+import type { Ray } from '../../course/editor/pick';
+import { camFrom } from '../../course/editor/fly-cam';
+import { gateFlownPose, placeGate, placeInState, type FlownPose } from '../../course/editor/drag';
 import type { CourseCheck, EditorState } from '@gsfpv/tracks';
 import { myTokens, myVotes, rememberToken, rememberVote, voterId } from '../../course/store';
 import { EditorPanel } from '../../course/editor/panel';
 import { editorKey, forwardOf, keyRoute } from '../../course/editor/keys';
 import type { EditorCommand, KeyPress } from '../../course/editor/keys';
-import { ACTION_KEYS, gateLine, problemsLine, refusalText } from '../../course/editor/words';
+import { ACTION_KEYS, actionKey, gateLine, problemsLine, refusalText } from '../../course/editor/words';
+import { ADD_FIX_KEY, SAVE_FIX_KEY, firstWrong } from '../../course/editor/texts';
 import { adminVersionBody, editPaints, lapOf, lappedIds, mayVote } from '../../course/editor/rules';
+import { shareArrows, STAGE_NAME, type ScaleNode } from '../../course/editor/arrow-share';
+import { EDIT_ARROW_SHARE } from '../../course/editor/handle-look';
 import { readBests } from '../../course/link';
 import { AdminClient, ApiError, adminHinted } from '../../admin/api';
 import { TracksAdminClient } from '../../admin/tracks/api';
+
+/** Lane quiet (Q3): the course is ready, said with the narrator off by the short chime (sonic/quiet-cues.ts, the walls ready alike). */
+const COURSE_READY_CUE: CueEvent = Object.freeze({ kind: 'checkpoint' });
 
 function randomSeed(): number {
     const a = new Uint32Array(1);
@@ -67,8 +86,12 @@ export const course: Feature = {
         let adminLive = false;
         ctx.hook.course = hook;
         // stage G4-prove: the probes read where the gates stand (flown frame) to fly through them and draw them from above
-        hook.gatePoses = () => (run ? run.gates.map((g) => ({ pos: [g.pos[0], g.pos[1], g.pos[2]], quat: [g.quat[0], g.quat[1], g.quat[2], g.quat[3]] })) : []);
+        // course4 C4: and each gate's shape (the elements probe passes every kind)
+        hook.gatePoses = () => (run ? run.gates.map((g) => ({ pos: [g.pos[0], g.pos[1], g.pos[2]], quat: [g.quat[0], g.quat[1], g.quat[2], g.quat[3]], shape: { ...g.shape } })) : []);
         hook.guide = () => ({ ...hud.guideState });
+        // lane course4: the START / FINISH banners, the number plate, the lap's splash and the results card as drawn
+        hook.look = () => ({ ...stage.look, roles: [...stage.look.roles] });
+        hook.splash = () => ({ ...hud.splashState });
         hook.clockText = () => document.querySelector('[data-testid=course-hud]')?.textContent?.trim() ?? null;
         const stage = new CourseStage(ctx.renderer);
         const hud = new CourseHud(ctx.ui);
@@ -102,26 +125,62 @@ export const course: Feature = {
         // the editor (T3-editor-ui)
         let ed: EditorState | null = null;
         let panel: EditorPanel | null = null;
-        let checkFn: CourseCheck = () => [];
+        // lane editor3 E2.1: the walls check of the editor runs in course/editor/check-worker.ts (5.1-5.5 s per change on
+        // Wroclaw on this thread froze the page); an edit keeps the problems it had until the worker's answer repaints them
+        const keepProblems: CourseCheck = () => (ed ? [...ed.problems] : []);
+        let checks: CheckQueue | null = null;
+        /** review ED-5: the course that got an ok answer from the check (a save checks again when it is not the course now) */
+        let okCourse: unknown = null;
+        let checkWorker: Worker | null = null;
+        let checkWalls: unknown = null;
+        let edMargin = 0;
         /** stage K2: the walls as a ray for the editor's camera, and that camera's forward on the floor */
         let camRay: RayFn | null = null;
         let camForward: readonly [number, number] | null = null;
         let camView: GateView | null = null;
         /** stage K2.6: the camera looks right of the gate by the share of the width the editor's window covers, so the gate is in the free part */
+        /** lane editor3 E2: the free edit camera, the click selection and the handles (course/editor/view-mouse.ts) */
+        let view: EditView | null = null;
+        /** lane editor3 E2.4: the small bar next to the selected gate (kind, insert, delete, previous, next) */
+        let bar: GateBar | null = null;
+        /** lane editor3 E3: the top bar (Add gate, Undo, Redo, Exit) and whether the drone flies inside the mode */
+        let top: TopBar | null = null;
+        let mode: EditMode = 'edit';
+        /** review ED-3: a crash in flight holds the edit view until the drone is seen disarmed (fly-mode.ts modeStep) */
+        let crashHold = false;
+        /** the editor's state when a handle drag began (the drag is one undo step on it) */
+        let dragBase: EditorState | null = null;
+        let dragBox: readonly [number, number, number, number] | null = null;
+        let dragFrame = 0;
+        /** G2 measurement: the last Add gate click (ray, wall hit, the point, the selected gate, the flown transform) */
+        let lastPlace: Record<string, unknown> | null = null;
+        let camTaken = { n: 0, override: true, crash: false, t: 0 };
+        let crashCleared = 0;
+        /** a key selected a gate: the edit camera glides to see it (stage K2's view of the gate, now as the free camera's start) */
+        // train 3 I1 (D1): the framing of the selected gate (course/editor/frame.ts) replaced the K2 aim from the paused drone
         const aim = (): void => {
-            if (!camView || !panel) return;
-            const w = window.innerWidth;
-            const left = panel.root.getBoundingClientRect().left;
-            const free = w > 0 ? left / w : 1;
-            const cc = ctx.renderer.camera.camera;
-            const fov = cc?.fov ?? 115;
-            const h = cc && !cc.horizontalFov ? (2 * Math.atan(Math.tan((fov * Math.PI) / 360) * (w / Math.max(1, window.innerHeight))) * 180) / Math.PI : fov;
-            const look = aimAt(camView.eye, camView.at, free, h);
-            ctx.session.cameraOverride = true;
-            ctx.renderer.setCameraLookAt(camView.eye[0], camView.eye[1], camView.eye[2], look[0], look[1], look[2]);
-            edHook.view = { eye: [...camView.eye], at: [...camView.at], look: [...look], free };
+            frameSel();
         };
-        const onResize = (): void => aim();
+        /** the gate the edit view was last framed on (a new selection frames again, the same one does not) */
+        let framedId: string | number | null = null;
+        /** I1 (D1): the edit view glides to the selected gate, a third of the view high, 35 degrees aside, 20 above */
+        // review EI-7: true when the framing is done for this selection (a glide started, or no place is free: D1 keeps the
+        // view); false when it was skipped (flying, a drag, the view suspended), so a later repaint frames it
+        const frameSel = (): boolean => {
+            if (!ed || !view || mode === 'fly') return false;
+            const eg = ed.course.gates[ed.selected];
+            if (!eg) return false;
+            const p = gateFlownPose(eg, flownTransform());
+            // the axis through the opening: the gate's local z turned by its pose (quat w, x, y, z)
+            const [w, x, y, z] = p.quat;
+            const axis: [number, number, number] = [2 * (x * z + w * y), 2 * (y * z - w * x), 1 - 2 * (x * x + y * y)];
+            const cc = ctx.renderer.camera.camera;
+            const tf = Math.tan(((cc?.fov ?? 115) * Math.PI) / 360);
+            const tanHalfV = cc && cc.horizontalFov ? (tf * Math.max(1, window.innerHeight)) / Math.max(1, window.innerWidth) : tf;
+            const f = frameGate({ centre: p.pos, axis, size: p.opening, tanHalfV, from: view.cam.pos }, camRay);
+            (edHook as { frame?: unknown }).frame = f ? { side: f.sideDeg, dist: Math.round(f.dist * 100) / 100, skipped: f.skipped } : { blocked: true };
+            return f ? view.glideTo(camFrom(f.eye, f.at, view.cam.speed)) : true;
+        };
         /** the course the editing started from or was last saved as (the base of a fork or of a new version) */
         let edSource: TrackFile | null = null;
         let edChanged = false;
@@ -160,7 +219,9 @@ export const course: Feature = {
                 sync();
                 return;
             }
-            stage.show(run.gates);
+            // lane course4 (S1): the START / FINISH gate checkered with its banner, a checkered line on the ground under it
+            const col = ctx.session.collision;
+            stage.show(run.gates, gateRoles(run.gates.length, run.track.laps > 1), (role) => t(`course.gate.${role}`), (x, y, z) => col?.queryRay(x, y, z, 0, -1, 0, 80)?.y ?? null);
             shownNext = -2;
             frame();
         };
@@ -185,30 +246,49 @@ export const course: Feature = {
             draw();
         };
 
-        const frame = (): void => {
-            if (!run || !hook.on || ed) return;
+        const frame = (editing = false): void => {
+            if (!run || !hook.on || (ed && !editing)) return;
+            // lane mix (X2): while Fly by Sound is on (ctx.sonic) a flat square or cube frame passes by its ball
+            run.byEar(!!ctx.sonic);
+            // lane editor3 E3: flown inside the edit mode the next gate lights up; the best lap is not written (integration E:
+            // the lap clock, its splash and the guide are back in the test flight; the edit view hides them, showEd)
+            const shows = flyShows(editing);
             const { ev, view: v } = run.fromSim(ctx.session.runner.sim);
-            if (ev === 'lap' || ev === 'done') {
+            if (shows.lapClock && (ev === 'lap' || ev === 'done')) {
                 const last = v.lastLapMs ?? 0;
+                // lane course4 (S4, S5): the best is read before this lap writes it, so the splash shows the gain against it
                 const before = readBest(keyOf(run.track));
-                // lane onecourse fixes (review OC-2): the lap and the course end are said to Fly by Sound too, not only shown
-                const line = before === null || last < before ? t('course.best', { time: lapClock(last) }) : t('course.lapDone', { time: lapClock(last) });
-                if (before === null || last < before) writeBest(keyOf(run.track), last);
-                ctx.hud.flash(line, before === null || last < before ? 3000 : 2500);
-                sayLine(line);
+                const end = lapEnd(ev, last, before, v.lapTimes, t);
+                if (end.best && shows.writeBest) writeBest(keyOf(run.track), last);
+                const mode = lapSplashMode(ctx.prefs.get('course.lapSplash'));
+                const now = performance.now();
+                const c = end.card;
+                if (c) {
+                    hud.card(c, end.splash, mode, {
+                        title: t('course.card.title'), total: t('course.card.total', { time: c.total }), best: t('course.card.best', { time: c.best }),
+                        laps: c.laps.length > 1 ? c.laps.map((time, i) => t('course.card.lap', { n: i + 1, time })) : []
+                    }, now);
+                } else hud.splash(end.splash, mode, end.said, now);
+                // lane onecourse fixes (review OC-2), kept by course4 review CU-2: the lap and the course end are said to
+                // Fly by Sound too, not only shown; at the end the card's title and total follow the lap's line.
+                // Review CV-1: with the narrator off the lap's notes (lane quiet2, QW-1) and the course end's finish notes
+                // (lane quiet3, the lead's M3) still say it.
+                sayLine(end.spoken, ev === 'done' ? { kind: 'fanfare' } : { kind: 'lap' });
             }
+            hud.tick(performance.now());
             const next = v.running || v.next >= 0 ? v.next : -1;
             if (next !== shownNext) {
                 stage.setNext(next, run.path, run.track.laps > 1);
                 shownNext = next;
             }
-            hud.update(v, run.gates.length);
-            // stage X2-gate-one: the guide to the next gate (gate 1 before the start), from the moment the course appears
+            if (shows.lapClock) hud.update(v, run.gates.length);
+            // stage X2-gate-one: the guide to the next gate (gate 1 before the start), from the moment the course appears;
+            // lane editor3: not in the edit view (shows.lapClock is false there), as the lap clock
             const target = v.running || v.next >= 0 ? v.next : 0;
             const done = !v.running && v.laps >= v.lapsPerRun;
             const g = run.gates[target];
-            const cam = done || !g ? null : guideCamera();
-            hud.guide(cam && g ? aimOf(cam, [g.pos[0], g.pos[1], g.pos[2]]) : null, target);
+            const cam = done || !g || !shows.lapClock ? null : guideCamera();
+            hud.guide(cam && g ? aimOf(cam, [g.pos[0], g.pos[1], g.pos[2]]) : null, target, gateRole(target, run.gates.length, run.track.laps > 1));
             sync();
         };
         /** the drawn camera in the flown world (the gates are drawn at their flown places, course/view.ts) */
@@ -228,8 +308,9 @@ export const course: Feature = {
         let pacer = new SpeechPacer(() => performance.now());
         let progTimer = 0;
         const speak = sayVia(() => ctx.sonic ?? null);
-        const sayLine = (text: string): void => {
-            if (ctx.sonic) void speak({ key: 'sonic.say.text', params: { text } });
+        // lane quiet (Q3): with the narrator off a line is not said; `quietCue` is the sound played in its place (the course ready: the chime)
+        const sayLine = (text: string, quietCue?: CueEvent): void => {
+            if (ctx.sonic) void speak({ key: 'sonic.say.text', params: { text } }, quietCue ? { quietCue } : undefined);
         };
         const showProgress = (): void => {
             if (!prog) return;
@@ -251,13 +332,20 @@ export const course: Feature = {
             hook.progress = null;
         };
 
-        const fail = (problem: string, text: string): void => {
+        /** course4 review CU-4: the Scene size the next generate() sets first (after a 'no course fits') */
+        let resizeTo: number | null = null;
+        /** course5 review CV-3: the Scene size the 'no course fits' line was said at; resizeTo holds only while it is unchanged */
+        let resizeFrom = 1;
+        /** course5 review CV-4: the Scene sizes that gave no course in this scene (cleared with the scene) */
+        const noCourseAt = new Set<number>();
+        const fail =(problem: string, text: string): void => {
             stopProgress();
             hook.problem = problem;
             reopenAfter = false; // review TK-4: a failed load or generation does not open the editor later
             ctx.hud.flash(text, 4000);
             // lane onecourse fixes (review OC-1): a pilot by sound hears why no course came and what to press (the text names Shift+G)
-            sayLine(text);
+            // lane quiet2 (review QW-2): with the narrator off one short falling sound says no course came (no gate is there to miss)
+            sayLine(text, { kind: 'wrong-side' });
         };
 
         // lane review TR-3: a job that does not answer in time (a hostile course kept the worker in the sweeps for minutes) ends
@@ -319,7 +407,17 @@ export const course: Feature = {
                 ctx.hud.flash(t('course.server.loaded', { n: tr.gates.length }), 4000);
                 return;
             }
-            if (!m.track) return fail(m.short ? 'too few gates' : 'nothing fits', t('course.none'));
+            if (!m.track) {
+                // course4 review CU-4: no dead end; the line names the Scene size the next Shift+G sets, and that press sets it
+                // and builds again (Forest Floor at x15, x20, x100 gave no course for any seed)
+                const sc = ctx.hook.scale;
+                const size = sc ? sc.size() : 1;
+                resizeTo = sc ? noCourseSize(size, noCourseAt) : null;
+                noCourseAt.add(size);
+                resizeFrom = size;
+                const x = (v: number): string => String(Math.round(v * 100) / 100);
+                return fail(m.short ? 'too few gates' : 'nothing fits', resizeTo !== null ? t('course.noneResize', { s: x(size), to: x(resizeTo) }) : t('course.none'));
+            }
             const tr = m.track;
             const mine = job;
             const show = (): void => {
@@ -329,7 +427,7 @@ export const course: Feature = {
                 history.replaceState(history.state, '', withCourse(location.href, tr.id));
                 ctx.hud.flash(t('course.ready', { n: tr.gates.length }), 4000);
                 // lead's decision P2: the spoken line names the chord in words ("Shift and key T"), the written one keeps Shift+T
-                sayLine(t('course.readySpoken', { n: tr.gates.length }));
+                sayLine(t('course.readySpoken', { n: tr.gates.length }), COURSE_READY_CUE);
             };
             // G1-progress: a course that arrives while the drone flies is announced before its gates appear
             if (isParked(ctx.session.runner.sim.s, ctx.session.spawn)) return show();
@@ -366,6 +464,51 @@ export const course: Feature = {
         const flownTransform = (): [number, number, number, number] => {
             const tr = ctx.session.transform;
             return [tr.s, tr.t[0] ?? 0, tr.t[1] ?? 0, tr.t[2] ?? 0];
+        };
+        /** lane editor3 E2.1: the editor's check worker, given these walls once (again only when the walls change) */
+        const checksOn = (col: object): CheckQueue | null => {
+            if (!checkWorker || !checks) {
+                const wk = new Worker(new URL('../../course/editor/check-worker.ts', import.meta.url), { type: 'module' });
+                const q = new CheckQueue((m, transfer) => wk.postMessage(m, transfer));
+                wk.onmessage = (e: MessageEvent<FromCheckWorker>) => {
+                    const got = q.answer(e.data);
+                    if (!got || !ed) return;
+                    if (!got.ok) {
+                        hook.problem = `check: ${got.message}`.slice(0, 200);
+                        return;
+                    }
+                    ed = { ...ed, problems: got.problems };
+                    // review ED-5: an ok answer counts only when no newer course is still asked
+                    okCourse = q.pending ? null : ed.course;
+                    showEd();
+                    // train 3 H1: a floor-added gate the check refuses says why and what to do, and stays selected
+                    if (addedId !== null && !q.pending) {
+                        const id = addedId;
+                        addedId = null;
+                        showWrong(ADD_FIX_KEY, id);
+                    }
+                };
+                wk.onerror = (e) => {
+                    hook.problem = `check: ${e.message || 'worker error'}`.slice(0, 200);
+                    wk.terminate();
+                    if (checkWorker === wk) {
+                        checkWorker = null;
+                        checks = null;
+                        checkWalls = null;
+                    }
+                    q.drop();
+                };
+                checkWorker = wk;
+                checks = q;
+                checkWalls = null;
+            }
+            if (checkWalls !== col) {
+                const w = walls();
+                if (!w) return null;
+                checks.walls(w.grid, w.nodes, w.leaf);
+                checkWalls = col;
+            }
+            return checks;
         };
         // lane fix3b, Y1: the Save check of the course in use, untouched, the way the edit mode's Save runs it (wallsCheck on
         // the session's walls, the flown transform, the course's own margin), plus the measured report. Read only.
@@ -421,12 +564,28 @@ export const course: Feature = {
         };
 
         const generate = (seed: number): void => {
+            // course4 review CU-4: the press after 'no course fits' sets the Scene size the line named, waits until the
+            // scene has it (scale.ts pending), then builds
+            const sc = ctx.hook.scale;
+            // course5 review CV-3: a size the pilot changed himself since the line drops it
+            if (resizeTo !== null && sc && Math.abs(sc.size() - resizeFrom) > 1e-6) resizeTo = null;
+            if (resizeTo !== null && sc && !busy) {
+                const to = resizeTo;
+                resizeTo = null;
+                sc.set(to);
+                const wait = (n: number): void => {
+                    if (sc.pending() !== 1 && n < 50) return void window.setTimeout(() => wait(n + 1), 200);
+                    generate(seed);
+                };
+                return wait(0);
+            }
             const s = ctx.session;
             const w = walls();
             if (!w) return wallsFirst(() => generate(seed));
             // lane onecourse fixes (review OC-1): a press while a course is being made says how far it is (the progress line)
             if (busy) {
-                if (hook.progress) sayLine(hook.progress);
+                // lane quiet2 (review QW-2): with the narrator off the press is answered by the package's "wait" sound
+                if (hook.progress) sayLine(hook.progress, { kind: 'answer', what: 'wait' });
                 return;
             }
             busy = true;
@@ -438,7 +597,12 @@ export const course: Feature = {
                 spawn: [s.spawn[0], s.spawn[1], s.spawn[2]],
                 seed, scene: { id: s.scene.id, version: s.scene.version },
                 transform: flownTransform(),
-                created: new Date().toISOString()
+                created: new Date().toISOString(),
+                // course4 review CU-1: Fly by Sound asks its course through this generate() too (lane onecourse); the ear
+                // pilot was measured on single upright gates only, so the competition elements are for the eyes' mode
+                elements: courseElements(ctx.sonic),
+                // course5 Z2 (A3, review CU-7): the ladder's smallest gate is sized by the craft that is flown
+                craftRadiusM: s.params?.boundRadius
             };
             ensureWorker().postMessage(msg, [w.nodes.buffer, w.leaf.buffer]);
             arm(GENERATE_LIMIT_MS);
@@ -546,8 +710,15 @@ export const course: Feature = {
         // lane onecourse (message 52): the course in the scene for Fly by Sound: the course shown, its next gate (the same objects
         // the lap timer passes) and Shift+G's own action (D1, D2). No change event: the sound mode reads inUse() every frame (lead's
         // decision P3, review OC-6: nothing listened to it)
+        // lane mix (X1, message 52): every course in the scene is handed over, a course with elements too, with its progress; a
+        // flat square or cube frame as the zone of its ball (soundGates), built once per course so the objects stay the same
+        let earGates: { of: CourseRun; gates: readonly SonicObject[] } | null = null;
+        const gatesByEar = (r: CourseRun): readonly SonicObject[] => {
+            if (earGates?.of !== r) earGates = { of: r, gates: soundGates(r.gates) };
+            return earGates.gates;
+        };
         hook.sound = {
-            inUse: () => (run && hook.on ? { track: run.track, next: hook.next, gates: run.gates } : null),
+            inUse: () => (run && hook.on ? { track: run.track, next: hook.next, gates: gatesByEar(run) } : null),
             generate: () => generate(pressSeed())
         };
         // Shift+G makes a course in every mode, Fly by Sound too (D2): one key, one course in the scene
@@ -569,8 +740,22 @@ export const course: Feature = {
             run: () => void save(), enabled: () => run !== null && hook.source === 'generated' && hook.saved === null && !saving
         });
 
+        // J1 (E5): the course's arrows at a third of their width in the edit view (not in its test flight), full again after
+        let arrowsThin = false;
         ctx.events.on('frame', () => {
-            if (ed) return;
+            // review EJ-5: only the course stage's own roots (course/view.ts 'course-stage', children of the app's root), not
+            // the whole scene graph every frame; EJ-4: an arrow near the edit eye thinner still (arrow-share.ts nearShare)
+            const stages = (ctx.renderer.app.root as unknown as ScaleNode).children.filter((c) => c.name === STAGE_NAME);
+            if (ed) {
+                const thin = mode !== 'fly';
+                if (thin || arrowsThin) for (const r of stages) shareArrows(r, thin ? EDIT_ARROW_SHARE : 1, thin ? (edHook.view?.eye ?? null) : null);
+                arrowsThin = thin;
+                return editFrame();
+            }
+            if (arrowsThin) {
+                for (const r of stages) shareArrows(r, 1);
+                arrowsThin = false;
+            }
             // TR-5: the scale feature (session.setTransform) and the walls switch fire no 'session' event
             if (run && !busy && (run.stale(ctx.session.transform) || ctx.session.collision !== provenOn)) return proveAgain();
             frame();
@@ -592,6 +777,9 @@ export const course: Feature = {
         ctx.events.on('session', () => {
             closeEdit(true);
             job++;
+            // course5 review CV-3, CV-4: a 'no course fits' size belongs to the scene it was said in
+            resizeTo = null;
+            noCourseAt.clear();
             disarm();
             busy = false;
             checking = null;
@@ -607,6 +795,32 @@ export const course: Feature = {
         const say = (text: string, refused = false): void => {
             edHook.said = text;
             panel?.say(text, refused);
+            // lane editor3 H1: the window opens closed: the top bar's line says it, a refusal also on the HUD
+            top?.tell(text, refused);
+            if (refused) ctx.hud.flash(text, 5000);
+        };
+        /** train 3 H1: the gate a floor add put in, until the check's answer on it came */
+        let addedId: string | null = null;
+        /** train 3 H1, the probe's record of the last "this gate is wrong" (index from 0, the sentence's key) */
+        let lastWrong: { index: number; key: string; lead: string } | null = null;
+        /**
+         * train 3 H1 (the lead's decision): the first wrong gate (or the focused one) is selected, the edit view turns to it with its
+         * handles, and one sentence names it from 1 and says what to do. False when no problem points at a gate.
+         */
+        const showWrong = (lead: string, focus: string | null = null): boolean => {
+            if (!ed) return false;
+            const w = firstWrong(ed.course, ed.problems, focus);
+            if (!w) return false;
+            ed = { ...ed, selected: w.index };
+            lastWrong = { index: w.index, key: w.key, lead };
+            showEd();
+            aim();
+            say(t(lead, { fix: t(w.key, w.args) }), true);
+            return true;
+        };
+        const refusedSave = (): void => {
+            if (!ed || showWrong(SAVE_FIX_KEY)) return;
+            say(t('course.edit.saveRefused', { why: problemsLine(ed) }), true);
         };
         const renderList = (): void => {
             edHook.votes = myVotes();
@@ -615,7 +829,8 @@ export const course: Feature = {
             panel?.list(rows, edHook.votes, hook.saved ?? hook.track?.id ?? null, lapped);
         };
         const showEd = (): void => {
-            if (!ed || !panel) return;
+            // lane editor3 E3: while the drone flies the course stays as it was armed; the edit view comes back on disarm
+            if (!ed || !panel || mode === 'fly') return;
             // review TK-6: the edited gates on the source's identity (after a save: the saved id, version, author, title)
             const v1 = toTrackV1(ed.course);
             const track: TrackFile = edSource
@@ -624,8 +839,10 @@ export const course: Feature = {
             run = new CourseRun(track, ctx.session.transform, null);
             provenOn = ctx.session.collision;
             hook.on = true;
-            stage.show(run.gates);
-            stage.setNext(ed.selected, run.path, track.laps > 1);
+            // review CU-10: the editor shows START / FINISH as the flight does, and no number plate on the selected gate
+            const col = ctx.session.collision;
+            stage.show(run.gates, gateRoles(run.gates.length, track.laps > 1), (role) => t(`course.gate.${role}`), (x, y, z) => col?.queryRay(x, y, z, 0, -1, 0, 80)?.y ?? null);
+            stage.setNext(ed.selected, run.path, track.laps > 1, false);
             // stage F1-finish: the selected gate magenta, a failing gate red (tracks-plan 2.11)
             const paints = editPaints(ed.course.gates.map((g) => g.id), ed.selected, ed.problems);
             stage.paintEdit(paints);
@@ -641,8 +858,15 @@ export const course: Feature = {
             hud.update(null, 0);
             panel.status(gateLine(ed, scale()), problemsLine(ed), ed.problems.length > 0);
             panel.buttons(!edChanged && hook.source === 'generated' && hook.saved === null);
-            aim();
+            const eg = ed.course.gates[ed.selected];
+            const egPose = eg ? gateFlownPose(eg, flownTransform()) : null;
+            view?.put(egPose, eg ? eg.id : null, eg ? eg.shape.kind : null);
+            // integration E (brief seam d): the selected gate's own pose from the course state, read by the editor's probe
+            edHook.pose = egPose ? { pos: [...egPose.pos], quat: [...egPose.quat] } : null;
+            // I1 (D1): a new selection (a click, Tab, the bar, a gate added, a refused Save) frames that gate
+            if (eg && eg.id !== framedId && frameSel()) framedId = eg.id;
             edHook.open = true;
+            (edHook as { flying?: boolean }).flying = false;
             edHook.selected = ed.selected;
             edHook.changed = edChanged;
             edHook.problems = ed.problems.length;
@@ -664,23 +888,70 @@ export const course: Feature = {
                 return generate(randomSeed());
             }
             // review T2-1: a smaller course (K1.2) is edited at the margin it was laid with, as the worker proves it
-            checkFn = wallsCheck(col, flownTransform(), marginOf(run.track));
+            edMargin = marginOf(run.track);
+            const q = checksOn(col);
             const fc = flownCollision(col, flownTransform());
             camRay = (o, d, max) => {
                 const h = fc.queryRay(o[0], o[1], o[2], d[0], d[1], d[2], max);
                 return h ? Math.hypot(h.x - o[0], h.y - o[1], h.z - o[2]) : null;
             };
             edSource = run.track;
-            ed = openEditor(upgradeTrack(run.track), checkFn, 0);
+            ed = openEditor(upgradeTrack(run.track), keepProblems, 0);
+            q?.ask(ed.course, flownTransform(), edMargin);
             edChanged = false;
             askedFor = null;
             edHook.refused = null;
-            ctx.pause('panel');
-            unblock = ctx.keys.block(() => ed !== null);
+            // lane editor3 E3: no pause; the flight goes on in the mode (armed: the drone's view, disarmed: the edit view)
+            mode = 'edit';
+            crashHold = false;
+            unblock = ctx.keys.block(() => ed !== null && mode === 'edit');
             panel = new EditorPanel(ctx.ui, { key: (p) => applyKey(p), saveMine: (n, ti) => void saveMine(n, ti), saveAll: () => void saveAll(), saveAdmin: (ti) => void saveAdmin(ti), vote: (id, v) => void vote(id, v), open: (id) => openRow(id) });
             panel.defaults('', run.track.title);
             panel.adminOn(adminLive);
-            window.addEventListener('resize', onResize);
+            // lane editor3 E2: the edit camera starts where the flight camera is, looking its way
+            const ce = ctx.renderer.camera;
+            const ep = ce.getPosition();
+            const ef = ce.forward;
+            ctx.session.cameraOverride = true;
+            view = new EditView({
+                app: ctx.renderer.app,
+                camera: ce,
+                gates: () => run?.gates ?? [],
+                onCamera: (eye, at) => {
+                    ctx.session.cameraOverride = true;
+                    ctx.renderer.setCameraLookAt(eye[0], eye[1], eye[2], at[0], at[1], at[2]);
+                    edHook.view = { eye: [...eye], at: [...at], look: [...at], free: 1 };
+                },
+                onPick: (i) => pickAt(i),
+                onPlace: (ray) => placeAt(ray),
+                onDrag: (p, end) => dragTo(p, end),
+                onSpeed: (s) => ctx.hud.flash(t('course.edit.camSpeed', { v: s.toFixed(1) }), 1200),
+                typing: (target) => panel?.typing(target) ?? false,
+                sizeText: (m) => t('course.edit.sizeTag', { m: m.toFixed(1) }),
+                moveText: (m) => t('course.edit.moveTag', { m: m.toFixed(1) }),
+                turnText: (d) => t('course.edit.turnTag', { d: Math.round(d) }),
+                onFrame: () => frameSel()
+            }, camFrom([ep.x, ep.y, ep.z], [ep.x + ef.x, ep.y + ef.y, ep.z + ef.z]));
+            bar = new GateBar(ctx.ui, { key: (p) => applyKey(p), where: () => view?.standScreen() ?? null, tool: () => view?.tool ?? 'move', setTool: (tl) => view?.setTool(tl), dragging: () => view?.isDragging() ?? false });
+            top = new TopBar(ctx.ui, { key: (p) => applyKey(p), add: () => toggleAdd(), show: (part) => panel?.reveal(part) });
+            // read only, for the page probes (tools/bench/src/editor3-smoke.ts)
+            (window as unknown as { __gsfpvEditView?: () => unknown }).__gsfpvEditView = () => (view ? { ...view.debug(), mode, bar: bar?.debug() ?? null, place: lastPlace, wrong: lastWrong, course: ed ? { gates: ed.course.gates, start: (ed.course as { start?: unknown }).start ?? null, problems: ed.problems } : null, camTaken, crashCleared, crashActive: ctx.crash.active, drone: [S.px, S.py, S.pz].map((i) => Math.round((ctx.session.runner.sim.s[i] ?? 0) * 100) / 100), override: ctx.session.cameraOverride } : null);
+            // lane editor3 H1, read only: the shown handles' shape under a page point (the probe finds the ring it presses)
+            (window as unknown as { __gsfpvEditHit?: (x: number, y: number, own?: boolean) => unknown }).__gsfpvEditHit = (x, y, own) => view?.hitAt(x, y, own === true) ?? null;
+            // I1, read only: the eye's distance, the gate's height, the rings' minor axes and the handle parts' rectangles
+            (window as unknown as { __gsfpvEditMeasure?: () => unknown }).__gsfpvEditMeasure = () => (view ? { ...view.measure(), frame: (edHook as { frame?: unknown }).frame ?? null } : null);
+            // I2 (probe only, local runs): the selected gate `m` m ahead of the drone, its centre `up` m above it, facing it, with
+            // the opening `open` m (as one drag: one undo step and the walls check); returns the drone's flown position.
+            // Review EI-6: it changes the course, so it is there only on a page opened with ?probe=1 (the editor3 probes)
+            if (pageQuery.get('probe') === '1') (window as unknown as { __gsfpvEditPutAhead?: (m: number, up: number, open: number) => unknown }).__gsfpvEditPutAhead = (m, up, open) => {
+                const s = ctx.session.runner.sim.s;
+                const eye: [number, number, number] = [s[S.px] ?? 0, s[S.py] ?? 0, s[S.pz] ?? 0];
+                const f = forwardOf(s[S.qw] ?? 1, s[S.qx] ?? 0, s[S.qy] ?? 0, s[S.qz] ?? 0);
+                const n = Math.hypot(f[0], f[1]) || 1;
+                const at: [number, number, number] = [eye[0] + (f[0] / n) * m, eye[1] + up, eye[2] + (f[1] / n) * m];
+                dragTo({ pos: at, quat: facingFrom(eye, at), opening: open }, true);
+                return { drone: eye, gate: at };
+            };
             if (!adminLive && adminHinted()) {
                 void adminClient.resume().then((live) => {
                     adminLive = live === true;
@@ -706,9 +977,18 @@ export const course: Feature = {
             edHook.view = null;
             camForward = null;
             camView = null;
-            window.removeEventListener('resize', onResize);
+            framedId = null;
+            view?.dispose();
+            view = null;
+            bar?.destroy();
+            bar = null;
+            top?.destroy();
+            top = null;
+            mode = 'edit';
+            (edHook as { flying?: boolean }).flying = false;
+            dragBase = null;
+            cancelAnimationFrame(dragFrame);
             ctx.session.cameraOverride = false;
-            ctx.resume('panel');
             // review TK-1: unsaved changes are dropped, the course flown is the one editing started from (or was saved as)
             if (!quiet && edSource) {
                 run = new CourseRun(edSource, ctx.session.transform, readBest(keyOf(edSource)));
@@ -719,7 +999,154 @@ export const course: Feature = {
                 draw();
             }
         }
+        /** lane editor3 E2: a click took gate `i` (the camera stays: the pilot put it there) */
+        const pickAt = (i: number): void => {
+            if (!ed || dragBase || i === ed.selected) return;
+            const out = edit(ed, { kind: 'select', index: i }, keepProblems);
+            ed = out.state;
+            showEd();
+            if (out.ok) say(t('course.edit.did', { what: t(actionKey({ kind: 'select', index: i })), gate: gateLine(ed, scale()) }));
+        };
+        /** lane editor3 E3: Add gate pressed: the next click on the scene puts a gate (pressed again: no more) */
+        const toggleAdd = (): void => {
+            if (!view || mode === 'fly') return;
+            // lane editor3 H1, the owner's rule: no refusal with a number; a full course says in words what to delete
+            if (!view.adding && ed && ed.course.gates.length >= MAX_GATES_EDIT) return say(t('course.edit.r.maxGates'), true);
+            view.adding = !view.adding;
+            top?.adding(view.adding);
+            if (view.adding) say(t('course.edit.bar.addHint'));
+        };
+        /** lane editor3 E3: a click with Add gate armed: a gate at the wall that ray hits (or ahead), after the selected one */
+        const placeAt = (ray: Ray): void => {
+            top?.adding(false);
+            if (!ed) return;
+            const hit = camRay ? camRay(ray.o, ray.d, ADD_RAY_M) : null;
+            const at = addPoint(ray.o, ray.d, hit, addLift(ed, flownTransform(), edMargin));
+            // G1: lane course3's EditAction add (after the selected gate, its kind and opening, one undo step)
+            // G2: facing along the course, from the selected gate (course frame -> flown: s * pos + offset)
+            const tr = flownTransform();
+            const sel = ed.course.gates[ed.selected];
+            const prev: [number, number, number] | null = sel ? [sel.pos[0] * tr[0] + tr[1], sel.pos[1] * tr[0] + tr[2], sel.pos[2] * tr[0] + tr[3]] : null;
+            const out = edit(ed, addAction(at, addFacing(ray.o, at, prev), tr), keepProblems);
+            // G2 measurement: what the floor click gave (read by the probe through __gsfpvEditView().place)
+            lastPlace = { o: ray.o, d: ray.d, hit, at, prev, tr: [tr[0], tr[1], tr[2], tr[3]], camEye: camView ? [...camView.eye] : null };
+            if (!out.ok) {
+                ed = out.state;
+                edHook.refused = out.reason.code;
+                showEd();
+                return say(refusalText(ed.course, out.reason), true);
+            }
+            const st = out.state;
+            ed = st;
+            edChanged = true;
+            askedFor = null;
+            edHook.refused = null;
+            addedId = st.course.gates[st.selected]?.id ?? null;
+            checks?.ask(st.course, flownTransform(), edMargin);
+            showEd();
+            // G2: the camera stays where the pilot clicked from (the gate stands where he clicked, in his view). The H2 aim()
+            // here moved the edit eye to gateCamera's pose, which starts at the drone and stops at the first wall: g2/full3
+            // measured the eye 2 m from the drone on the floor (Tunis viewAfter [1.53, 0.45, 0.87]): the drone's view, no gate.
+            say(t('course.edit.did', { what: t('course.edit.bar.add'), gate: gateLine(st, scale()) }));
+        };
+        /** lane editor3 E3: armed flies (the drone's camera, the course from gate 1), disarmed or crashed edits again */
+        const editFrame = (): void => {
+            if (!ed) return;
+            const sim = ctx.session.sim;
+            const st = modeStep(mode, !!sim?.armed, !!sim?.crashed, crashHold);
+            crashHold = st.hold;
+            // review EI-5: a crashed drone under the edit view goes back to the start (the mode line said CRASH . ANGLE)
+            if (st.respawn) {
+                if (ctx.crash.active) { ctx.clearCrash(); crashCleared++; }
+                ctx.session.respawnStart();
+            }
+            // G3: the edit view holds the renderer's camera every frame. g2/full5 drew the drone's crash view after a floor add
+            // while the edit eye stood still (crashview.ts frame() poses its chase camera each frame while a crash is active,
+            // before the features' frame work); camTaken counts the frames another writer had moved it (read by the probes).
+            if (mode === 'edit' && view && !view.isSuspended()) {
+                const cp = ctx.renderer.camera.getPosition();
+                const e = view.cam.pos;
+                if (!ctx.session.cameraOverride || Math.hypot(cp.x - e[0], cp.y - e[1], cp.z - e[2]) > 0.01) {
+                    camTaken = { n: camTaken.n + 1, override: ctx.session.cameraOverride, crash: ctx.crash.active, t: Math.round(performance.now()) };
+                    view.setCam(view.cam);
+                }
+            }
+            if (st.change === 'to-fly') {
+                mode = 'fly';
+                (edHook as { flying?: boolean }).flying = true;
+                // review ED-2: devices/keyboard.ts gives the flying keys back to the flight (EDIT_MODE)
+                panel?.root.classList.add('ce-flying');
+                dragBase = null;
+                view?.suspend(true);
+                bar?.hide(true);
+                top?.flying(true);
+                if (panel) panel.root.style.display = 'none';
+                ctx.session.cameraOverride = false;
+                stage.paintEdit([]);
+                run?.reset();
+                shownNext = -2;
+            } else if (st.change === 'to-edit') {
+                mode = 'edit';
+                (edHook as { flying?: boolean }).flying = false;
+                panel?.root.classList.remove('ce-flying');
+                if (panel) panel.root.style.display = '';
+                bar?.hide(false);
+                top?.flying(false);
+                // the edit camera comes back where it was (its onCamera takes the renderer's camera again)
+                // G3: a crash of the test flight takes its chase camera and its stats window away (g2 pictures showed the
+                // stats window over the edit view): ctx.clearCrash is the page's own "back from a crash" (context.ts)
+                if (ctx.crash.active) { ctx.clearCrash(); crashCleared++; }
+                view?.suspend(false);
+                showEd();
+            }
+            if (mode === 'fly') frame(true);
+        };
+        /** lane editor3 E2: a handle drag; the gate follows live, the release is one undo step and asks the walls check */
+        const dragTo = (p: FlownPose, end: boolean): void => {
+            if (!ed) return;
+            // review EJ-2: the gate's drawn box when the drag began (E1 frames again only a gate that left the middle)
+            if (!dragBase) dragBox = view?.gateBox()?.box ?? null;
+            const base = dragBase ?? ed;
+            dragBase = base;
+            const old = base.course.gates[base.selected];
+            if (!old) return;
+            const g = placeGate(old, p, flownTransform());
+            if (!end) {
+                const gates = [...base.course.gates];
+                gates[base.selected] = g;
+                ed = { ...base, course: { ...base.course, gates } };
+                // one redraw per frame however fast the pointer moves
+                if (!dragFrame) dragFrame = requestAnimationFrame(() => { dragFrame = 0; if (ed && dragBase) showEd(); });
+                return;
+            }
+            cancelAnimationFrame(dragFrame);
+            dragFrame = 0;
+            dragBase = null;
+            const st = placeInState(base, base.selected, g, keepProblems);
+            ed = st ?? base;
+            askedFor = null;
+            if (st) {
+                edChanged = true;
+                checks?.ask(st.course, flownTransform(), edMargin);
+            }
+            showEd();
+            // J1 (E1): a drag that left the gate outside the middle 80 % of the view (a size change, a long move) frames it
+            // again; never during the drag (this is its end). Review EJ-2: only a drag that changed the gate and took its box
+            // out of the middle (a gate the pilot flew close to stays as he set the view)
+            const gb = view?.gateBox();
+            const before = dragBox;
+            dragBox = null;
+            const re = !!(st && gb && reframeOnDragEnd(before, gb.box, gb.w, gb.h));
+            // fixes3 pass 2 (left a): the boxes the decision saw, for the page probes
+            (edHook as { reframe?: unknown }).reframe = { before, after: gb?.box ?? null, w: gb?.w ?? 0, h: gb?.h ?? 0, changed: !!st, framed: re };
+            if (re) frameSel();
+            // H2-look: the top bar says what the drag did; after a Size drag the gate line carries the new opening in metres
+            const did = view?.tool === 'size' ? ACTION_KEYS.size : view?.tool === 'turn' ? ACTION_KEYS.turn : ACTION_KEYS.move;
+            if (st) say(t('course.edit.did', { what: t(did), gate: gateLine(st, scale()) }));
+        };
         const viewForward = (): [number, number] => {
+            // lane editor3 E2: the arrows follow the free edit camera
+            if (view) return view.floorForward();
             // stage K2: the arrows follow the camera that shows the gate, not the drone's heading
             if (camForward) return [camForward[0], camForward[1]];
             const s = ctx.session.runner.sim.s;
@@ -731,13 +1158,20 @@ export const course: Feature = {
             if (!k) return;
             if ('cmd' in k) return command(k.cmd);
             askedFor = null;
-            const out = edit(ed, k.edit, checkFn);
+            const count = ed.course.gates.length;
+            const out = edit(ed, k.edit, keepProblems);
             ed = out.state;
             if (out.ok) {
-                if (k.edit.kind !== 'select' && k.edit.kind !== 'select-step') edChanged = true;
+                if (k.edit.kind !== 'select' && k.edit.kind !== 'select-step') {
+                    edChanged = true;
+                    checks?.ask(ed.course, flownTransform(), edMargin);
+                }
                 edHook.refused = null;
                 showEd();
-                say(t('course.edit.did', { what: t(ACTION_KEYS[out.action]), gate: gateLine(ed, scale()) }));
+                // lane editor3 E2: a key that selects a gate takes the view to it; the mouse and the other keys leave the view
+                // review ED-1: a delete or a duplicate selects another gate too, so the view goes to it
+                if (k.edit.kind === 'select' || k.edit.kind === 'select-step' || ed.course.gates.length !== count) aim();
+                say(t('course.edit.did', { what: t(actionKey(k.edit)), gate: gateLine(ed, scale()) }));
             } else {
                 edHook.refused = out.reason.code;
                 showEd();
@@ -774,9 +1208,29 @@ export const course: Feature = {
             crypto.getRandomValues(a);
             return `${like.split('-')[0]}-${a[0]!.toString(16).padStart(8, '0')}`;
         };
+        /** a save waits for the worker's answer on the course as it stands (no press is lost: the save goes on after it) */
+        const checked = async (): Promise<void> => {
+            if (checks?.pending) {
+                saving = true;
+                try {
+                    await checks.settled();
+                } finally {
+                    saving = false;
+                }
+            }
+            // review ED-5: the worker failed or never answered this course: it is checked here, once, before the save
+            const col = ctx.session.collision;
+            if (ed && ed.course !== okCourse && col) {
+                ed = { ...ed, problems: checkOnPage(col, flownTransform(), edMargin, ed.course) };
+                okCourse = ed.course;
+                showEd();
+            }
+        };
         const saveMine = async (nameIn: string, titleIn: string): Promise<void> => {
             if (!ed || !edSource || saving) return;
-            if (!canSave(ed)) return say(t('course.edit.saveRefused', { why: problemsLine(ed) }), true);
+            await checked();
+            if (!ed || !edSource) return;
+            if (!canSave(ed)) return refusedSave();
             const name = nameIn.trim().normalize('NFC');
             const title = titleIn.trim().normalize('NFC');
             const edited = toTrackV1(ed.course);
@@ -823,7 +1277,9 @@ export const course: Feature = {
         /** stage F1-finish (R6/R8): the admin's edit of the gates as a new version of the served course, marked edited by the admin */
         const saveAdmin = async (titleIn: string): Promise<void> => {
             if (!ed || !edSource || saving || !adminLive) return;
-            if (!canSave(ed)) return say(t('course.edit.saveRefused', { why: problemsLine(ed) }), true);
+            await checked();
+            if (!ed || !edSource) return;
+            if (!canSave(ed)) return refusedSave();
             const serverId = hook.saved ?? (hook.source === 'server' ? edSource.id : null);
             if (serverId === null) return say(t('course.edit.adminFirst'), true);
             const title = titleIn.trim().normalize('NFC') || edSource.title;
@@ -882,7 +1338,15 @@ export const course: Feature = {
         // review TK-3: Tab walks the window's buttons when the focus is in it (gates when on the canvas), F6 enters the window,
         // Esc inside it gives the focus back first (course/editor/keys.ts keyRoute)
         addEventListener('keydown', (e: KeyboardEvent) => {
-            if (!ed || !panel) return;
+            // lane editor3 E3: while the drone flies the keys belong to the flight
+            if (!ed || !panel || mode === 'fly') return;
+            if (e.code === 'Escape' && view?.adding) {
+                e.preventDefault();
+                e.stopPropagation();
+                view.adding = false;
+                top?.adding(false);
+                return;
+            }
             const target = e.target;
             const inWindow = target instanceof Node && panel.root.contains(target);
             const route = keyRoute(e, { typing: panel.typing(target), inWindow, onButton: target instanceof HTMLButtonElement });

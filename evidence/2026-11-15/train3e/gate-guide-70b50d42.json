@@ -1,0 +1,202 @@
+{
+ "base": "http://localhost:5760/en",
+ "id": "70b50d42",
+ "shiftg": true,
+ "checks": [
+  {
+   "what": "gate 1 is START",
+   "pass": true,
+   "detail": {
+    "roles": [
+     "start",
+     null,
+     null,
+     null
+    ]
+   }
+  },
+  {
+   "what": "aria-hidden on the guide",
+   "pass": true,
+   "detail": "true"
+  },
+  {
+   "what": "start: guide shown for gate 1 (hook next 0)",
+   "pass": true,
+   "detail": {
+    "shown": true,
+    "box": {
+     "left": 690,
+     "top": 379,
+     "right": 808.828125,
+     "bottom": 407
+    },
+    "text": "START · 13 m"
+   }
+  },
+  {
+   "what": "start: side right matches the bearing from the camera pose (15.0 deg)",
+   "pass": true,
+   "detail": {
+    "side": "right",
+    "cx": 749.4140625,
+    "vw": 1280,
+    "behind": false,
+    "inFrame": true
+   }
+  },
+  {
+   "what": "start: metres within 1 m (13 shown, 12.96 measured)",
+   "pass": true,
+   "detail": "START · 13 m"
+  },
+  {
+   "what": "start: clear of the note, the lap block and the walls box",
+   "pass": true,
+   "detail": {
+    "guide": {
+     "left": 690,
+     "top": 379,
+     "right": 808.828125,
+     "bottom": 407
+    },
+    "note": {
+     "left": 430,
+     "top": 86,
+     "right": 850,
+     "bottom": 135.6875
+    },
+    "block": {
+     "left": 536.3203125,
+     "top": 142,
+     "right": 743.6796875,
+     "bottom": 158.5625
+    },
+    "walls": null
+   }
+  },
+  {
+   "what": "start: inside the screen",
+   "pass": true,
+   "detail": {
+    "box": {
+     "left": 690,
+     "top": 379,
+     "right": 808.828125,
+     "bottom": 407
+    },
+    "vw": 1280,
+    "vh": 800
+   }
+  }
+ ],
+ "reads": {
+  "start": {
+   "guide": {
+    "shown": true,
+    "gate": 0,
+    "metres": 13,
+    "side": "right",
+    "behind": false,
+    "inFrame": true,
+    "bearingDeg": 15,
+    "x": 749,
+    "y": 393
+   },
+   "text": "START · 13 m",
+   "guideBox": {
+    "left": 690,
+    "top": 379,
+    "right": 808.828125,
+    "bottom": 407
+   },
+   "ariaHidden": "true",
+   "cam": [
+    -11.900656700134277,
+    3.1238160133361816,
+    -16.831905364990234
+   ],
+   "right": [
+    -0.055018886217147456,
+    0,
+    0.9984853139427863
+   ],
+   "fwd": [
+    0.9984853139427863,
+    0,
+    0.055018886217147456
+   ],
+   "gate": [
+    0.4,
+    2.6,
+    -12.8
+   ],
+   "gates": 29,
+   "next": 0,
+   "note": {
+    "left": 430,
+    "top": 86,
+    "right": 850,
+    "bottom": 135.6875
+   },
+   "block": {
+    "left": 536.3203125,
+    "top": 142,
+    "right": 743.6796875,
+    "bottom": 158.5625
+   },
+   "menu": null,
+   "walls": null,
+   "wallsLine": "",
+   "vw": 1280,
+   "vh": 800,
+   "probeBearing": 15,
+   "probeDist": 12.96
+  }
+ },
+ "turns": [],
+ "genS": 26,
+ "camMode": {
+  "override": false,
+  "aim": {
+   "yawDeg": 93.15394252224232,
+   "pitchDeg": 0
+  },
+  "editorOpen": false
+ },
+ "roles": [
+  "start",
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  "finish"
+ ],
+ "gates": 29,
+ "shotStart": "U:\\Temp\\gsfpv-train3\\shots\\train3e-raw\\fix3a-gate1-train3e-guide-wro.png",
+ "seconds": 30,
+ "pass": true
+}

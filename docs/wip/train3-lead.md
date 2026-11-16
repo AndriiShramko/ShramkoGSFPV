@@ -23,7 +23,16 @@ Source: the owner's message 51 (2026-11-14) after he flew release 4e9148cd1005 (
 - [x] Lane fix3b ended about 14:15 UTC (branch fix3a at c83340a2 in C:/dev/gsfpv-rooms, ready for the integration): a generated course is never refused by the Save check untouched (fitCourse ends with the Save's own check; the Tunis refusal the editor lane saw came from an edited course); gate centres at eye level on true-scale scans (the lead looked at fix3b-wroclaw-pilot.png and -pilot-2.png: the rings stand in front of the eyes near the ground); no gate and no leg in the poorly scanned part (thresholds are estimates); review FY-1 to FY-6 fixed (a thinned course of 4 to 5 gates is not taken, the best-lap key follows the generator version, an unproven course loses the gates the check names). Left, given to lane course4 stage C0: no gate in leaves (one ring in a conifer), 1 to 3 gates of 24 at 3.1 to 4.8 m over the tile ground, the thresholds against pictures, the Lublin start pocket, the Opole page run, the page check on the head.
 - [~] Lane onecourse ended about 13:55 UTC (branch sonic4 at fefeeceb): one course in the scene and Shift+G in every mode built, 'wrong way' judged against the next gate, review OC-1 to OC-6 answered; proofs left. Lane onecourse2 (one stage, no review, from 14:05 UTC, run wf_ad653607-df5) closes it: the lead's decision on OC-3: the package pin of this release is the commit with the 'wrong way' rule alone (branch train4-d7only ab2d6ac; new working branch train5), the speed design commit 7678880 stays on train4 for lane sonic4.
 - [~] Lane course4 runs from 14:16 UTC (C:/dev/gsfpv-rooms, branch fix3a, run wf_065e9152-3dc), five stages: C0-places-left, C1-start-finish, C2-scaled-scans, C3-every-scan, C4-elements.
-- [ ] Integration C (fix3a at c83340a2 with lane fix3b; sonic4 at lane onecourse2's head with the package's train5; laptop4 at a2aaed8b; editor3 if lane editor3i ends ready), then the third release by the lead. The workflow script holds INTEGRATIONS.train3c (a copy of train3b; the sound package step is done).
+- [x] Integration C (fix3a with fix3b, onecourse, laptop4): main d245d9ec, package main 878f055; the CI's secret scan failed on it (67 false positives in the walls-store probe's evidence: 64-hex cache keys), the lead listed them in .gitleaksignore and changed the probe (f286dd49); live since 2026-11-15 16:25 UTC as release 5eadbf9e9d01 = main f286dd49 (302 smoke checks, neighbours equal). The live checks run at the time of this line; STATE.md gets the bullet with their numbers. Section 'Integration C' below.
+- [x] Lanes ended, not merged: editor3i (branch editor3 at e4b4b341: the edit view reads as a 3D editor; left for lane editor3j, which runs from 16:00 UTC: the y ring turns nothing, the gate leaves the frame after a size change, the size handles); quiet (branch sonic4 at fbaf59ad, package train5 at 293ebae: with the narrator off nothing is voiced and nothing waits; left for lane quiet2, which runs from 16:15 UTC: sounds for the warnings, the key, the hint, captions, the live region); course4 (branch fix3a at e78da76a: START / FINISH, the lap splash and the card built but never seen in a browser; scaled scans, the gate size ladder, elements; left for lane course5, which runs from 16:53 UTC, stages Z1-see, Z2-scans, Z3-elements).
+- [ ] The owner's message 58 (verbatim in the vault brief): the gates are always drawn behind the voxels; the voxel view shows only the near rows; Wroclaw on his RTX laptop does not load to full quality even with 16 M set by hand. Lanes in the workflow script, queued: voxview (C:/dev/gsfpv-site-sound, new branch voxview; V1 to V3) and loadq (C:/dev/gsfpv-loadq, branch loadq, made by the lead from f286dd49; G1 to G4). Then race and sonic4 while the weekly limit keeps 15 to 20 % free (54 % used at 16:10 UTC).
+- [~] RESUME AFTER A RESTART OF THE CLAUDE APP (it happened at about 13:00 and 18:15 UTC on 2026-11-15; the workflows live in the app's process and stop with it). First: python -X utf8 U:/documents/Obsidian/AndriiShramko/.claude/tools/gsfpv/gsfpv_lanes.py status (a lane shown as supervised with a running process is NOT resumed in the app: two agents in one worktree). Then Workflow({scriptPath: the train script, resumeFromRunId, args}) for each run still open: editor3j = wf_83b1ef28-548 with args {chains: [[editor3j]]}; course5 = wf_7f8ed0fb-93c with args {chains: [[course5]]}; integration D = wf_3d27c340-53a (args: integrate train3d and the brief, as printed in its task notification). The lane supervisor (gsfpv_lanes.py: a registry in C:/dev/.gsfpv-lanes, stage prompts dumped by dump_prompts.mjs, a model-free tick that starts a lane as its own claude.exe -p process when the lead's session process is gone, and queued lanes when a slot is free) is written and tested (self-test 5 of 5, a dry run, one real one-line launch) and RUNS as the Windows task ShramkoGsfpvLanes every 5 minutes and at logon (the owner allowed it at 18:33 UTC after the safety classifier had refused it; log U:/Temp/gsfpv-supervisor/tick.log). Registered: editor3j, course5 and integration-d as the lead's (in-app), loadq and voxview as queued: the supervisor starts a queued lane by itself when fewer than three run. When a lead-run lane ends, mark it: gsfpv_lanes.py done --name <lane>.
+- [x] Lane quiet3 ended 18:32 UTC (branch sonic4 at 1ad74390, package train5 293ebae): the narrator setting is built and proven in a browser, rows 1 to 10. Left: the hint's 'never on the second course' in a browser; probe observations (the d7 backing-up case with the narrator off; the Tunis lift-off of r11's switch-off check).
+- [x] Integration D (the narrator): main 4e6ef171, package main e334c6e; live since 2026-11-15 20:05 UTC as release 786a70d70908 (CI green, 302 smoke checks, neighbours equal). The live checks run at the time of this line; STATE.md gets the bullet with their numbers.
+- [x] Lanes ended in the app, not merged: editor3j (branch editor3 at 8ea44111: the lead looked at editor3-turn-1920.png: the selected gate framed at an angle with a yellow outline, three coloured turn rings, thin arrows; a click near the selected gate selects, the gate is framed again after a size change, a crash in the test flight comes back to the edit view; NOT proven: that all three open rings turn the gate) and course5 (branch fix3a at 26bb9bbe: the lead looked at course4-start-gate.png and course4-lap-splash.png: a checkered START ring with its banner and number plate, the lap's time large in the upper middle; elements with a keyboard pilot; the gate ladder sized by the flown craft; review CV-1 to CV-5 fixed, among them CV-2 by 'Fly by Sound takes no course with elements', which the lead reverses in lane mix).
+- [x] Lane mix ended (branch fix3a at 601a1151): Fly by Sound takes every course of the scene with its progress; a flat square and a cube count by a ball of their size plus 1.5 m only in the sound mode; the ear pilot flew a course with elements made in the ordinary flight to its end on Wroclaw; the run's time large at FINISH of an open course.
+- [~] RUNS OPEN NOW (resume them after a restart, see the RESUME line above): integration E = wf_c878ac4a-ac9 (args: integrate train3e and the brief, as printed in its task notification), from 21:26 UTC: fix3a at 601a1151, then editor3 at 8ea44111; if an open turn ring of the editor turns nothing after one repair, the editor is not released. Under the supervisor (its own processes; do not resume in the app): loadq (stage L2) and voxview (stage X2); queued there: uiaudit. Weekly limit 65 % at 21:26 UTC, recorded in the supervisor (it stops starting queued lanes at 75 %).
+- [ ] Integration E after lane mix: editor3 at 8ea44111 and fix3a at lane mix's head; prove the editor's three open turn rings by the gate's rotation and the seam of the editor with START / FINISH and the elements. Then the queue of the owner's message 61 (the vault plan note lists it): voxview, loadq, uiaudit, race, sonic4 (its lane text must be rewritten for the package's branches), menu, the leftovers of train 2, head tracking, the RC 2 window with the owner.
 - [x] Published walls of the nine catalogue scans are live since 2026-11-15: lighter re-bakes assembled by the lead in U:/Temp/gsfpv-train3/walls/release (148,581,855 bytes with the .gz copies; Wroclaw 17,615,280 raw and 9,670,306 gzip at 10 cm); deploy/release-walls.sh copies the .gz and checks the hub's free room first (7.1 GB free before the upload). Local pre-check and the live page probe: all nine pass (source published, no build, 20 passes at 25 m/s stop at the walls). The walls-published-probe of deploy/live-checks.sh passes from now on.
 - [ ] Lane menu (R29): moved to the next train; it touches the entry points that the sound and editor lanes change now. Parked branch menu in C:/dev/gsfpv-tracks.
 
@@ -369,3 +378,251 @@ Not verified
 
 Cost notes: the longest part was waiting for the probe runs (about 55 minutes in two background scripts); a server
 check before each probe in the first script would have saved the second script and four reruns.
+
+## Integration D (the narrator setting: lanes quiet, quiet2, quiet3)
+
+Merged
+- Sound package C:/dev/ShramkoSonicFPV: branch train5 (293ebae, the narrator setting and the free flight start) merged into
+  its main with --no-ff as e334c6e; npm test 71 files passed, 1 skipped (1358 tests passed, 4 skipped); tsc -p
+  tsconfig.core.json, tsconfig.json, tsconfig.node.json all exit 0; plain push of main 878f055..e334c6e (origin/main =
+  e334c6e). Branch train4 (7678880) not merged. README.md unchanged against 878f055 (diff empty), the added lines are ASCII,
+  no model name. The two modified evidence files left uncommitted; the work tree is back on train4.
+- Simulator: lane sonic4 at 1ad74390 merged with --no-ff as c7606bf9, no conflict (course.ts merged by git: the spoken lap
+  line, the one-course interface and the guide are kept; the lane's change adds a sound kind to the lines only). Package pin
+  packages/sonic-fpv stays 293ebae: it is on the pushed main (parent of e334c6e; git branch -r --contains 293ebae lists
+  origin/main), the tree of e334c6e is the same code, so no pin commit was needed.
+- Live check narrator-off added in deploy/live-checks.sh (5eee34e5).
+
+Held back (not merged, not read): editor3 (lane editor3j), fix3a (lane course5), voxview, loadq, race, the speed design
+of lane sonic4 (package branch train4, commit 7678880).
+
+Gates (gates.py on the merged tree)
+- First run (build running beside it): typecheck, api-unittest, architecture, i18n, catalog, b18 (B18 PASS), leaks PASS;
+  vitest FAIL 1 of 5047: tools/bench/test/app-dji-rc2.test.ts 'answers 60 ms late' (rc.late 5, expected 0; real timers under
+  the build's load; the merge touches no HID or RC 2 file). The file alone: 15 of 15 passed.
+- Second run with this section and the evidence staged: all PASS but leaks (21 lines in 7 files: the lesson keys
+  'lesson.scan-free.intro.1' and the like in quiet-probe ENTRY=scan outputs match the CI scan's generic-api-key rule).
+  Those 7 files (s-*.json, pic-set.json) are kept out of git in U:/Temp/gsfpv-train3/int-d/evidence-not-in-git; their
+  numbers are in evidence/2026-11-15/train3d/scan-entry-summary.json. Third run: exit 0, typecheck, vitest, api-unittest,
+  architecture, i18n, catalog, b18 (B18 PASS), leaks all PASS (U:/Temp/gsfpv-train3/int-d/gates3.log).
+
+Probes (release build of 9206d8ca exit 0 (= c7606bf9 plus a lead note line; release sha256 b76745f0c40b), nine published wall folders in dist/walls, serve-csp 5760; summary
+U:/Temp/gsfpv-train3/int-d/summary.txt, every probe exit 0 but r11 Tunis narrator on; evidence
+evidence/2026-11-15/train3d/)
+- Narrator off, quiet-probe Backslash on Wroclaw / Tunis: voice 0 / 0 lines and live regions 0 / 0 lines from the press to
+  10 s; the craft over 0.5 m/s 0.69 / 0.68 s after the press with W held from it; course by Shift+G ready +33.62 / +9.32 s
+  and the hum of g1 in the same sample (0 s apart); K and I spoken (17 / 17 lines in the flight, K's list and I's two
+  lines and "Narrator on." of the second Shift+V); Shift+V off then on; saved narrator false at the end; 0 page errors.
+- Ear pilot r11 narrator off at 5 m/s: Wroclaw 12 of 12 (24 gates, flown g1 to g24, laps 1, counted, 170 s; voice only
+  the engine's empty warm-up; sounds answer yes, checkpoint for the course ready, fanfare at the end), Tunis 12 of 12
+  (24 gates, 107 s, same sounds).
+- r12 narrator off speed-1: 5 of 5 (opened 1.3 s, passed at attempt 1 in 53 s, the lesson speaks, the narrator setting is
+  off again after it).
+- My screen reader speaks with the narrator on (quiet-probe READER=1, Wroclaw): voice 0, 385 writes to live regions in
+  the first 10 s, the craft moves 0.80 s after the press, course and hum +10.78 s.
+- Free flight of the sound page (ENTRY=scan) on Wroclaw / Tunis, narrator on, off and screen reader: the craft moves 0.47
+  to 0.60 s after the page is ready in all six; narrator off: voice 0 / 0, live regions only before ready (last at 0.90 /
+  0.99 s, "The scan is ready"; ready 1.68 / 1.77 s); course and hum in the same sample in all six.
+- Narrator on, as on main: r9 11 of 11; r12 9 of 9; r11 Wroclaw Shift+G 10 of 10; r11 Tunis Shift+G 9 of 10 (see Not
+  verified); onecourse-probe (render off) exit 0, one set of gates after Backslash and after Shift+G; d7-probe exit 0;
+  pause-over-course-probe pass (1920 and 844); course-path-probe Wroclaw: 24 of 24 gates in the 1.2 to 2 m band, longest
+  silence 2.6 s; accept-fly B6 B7 B9 B10 B11 B12 B13 B14 B15 B16 all true against http://localhost:5760;
+  a6-reference 1 passed.
+- Captions (quiet-probe RENDER=on RECTS=1, Wroclaw, course by Shift+G): one caption of 1 row at 1920x1080, 1280x720,
+  844x390, no overlap with the course's clock block.
+
+Deploy order for the lead (git diff --stat f286dd49..HEAD -- deploy/nginx.conf deploy/compose.yml apps/api apps/rooms
+packages/i18n/locales)
+- nginx: no. API: no file (release-api.sh not needed, no --locales: only packages/i18n/locales/fly/sonic and
+  fly/sonickeys changed, they ship in the static bundle). Rooms: no.
+- Ship the static release of main only.
+
+Live checks: one new check narrator-off (quiet-probe NARRATOR=off on Wroclaw: no line with words to the voice and none to
+a live region from Backslash to 10 s, the craft moves within the 2 s that W is held from the press). Read in its source:
+it presses only flight keys (Backslash, W, Shift+G), the narrator is set in the probe browser's localStorage, nothing is
+sent or saved on the server. The same check passed on the local copy (voice 0, live 0, moved at 0.69 s). Not run against
+the live site (by rule).
+
+Pictures for the lead (looked at)
+- U:/Temp/gsfpv-train3/shots/train3d-narrator-setting.png: the Settings of the sound start page, "Narrator" ticked between
+  "My screen reader speaks" and "Motor sound", its help text "Off: sounds only. In a flight nothing is spoken and nothing
+  waits for a line; the lessons keep their words." right after the label.
+- U:/Temp/gsfpv-train3/shots/train3d-captions.png: Wroclaw with a course of 24 gates; the clock block "0:00.00, Lap 1 of 1,
+  Gate 1 of 24" at the top centre and one caption row "Recording is off." under it, both readable.
+
+What the owner should try
+- On the sound page open Settings and untick "Narrator" (or in a flight press Shift+V: two notes down).
+- Open Wroclaw, press Backslash: two notes up, the craft flies at once, nothing is spoken.
+- Press Shift+G: a short chime when the course is ready and the hum of gate 1 starts with it; fly to the hum.
+- At the end of the course you hear the finish notes.
+- Press K for the keys and I for the status: they are spoken even with the narrator off.
+- Press Shift+V: "Narrator on."; press it again: two notes down, quiet again.
+- Open a lesson from the lesson list (Speed 1): it speaks; after it the narrator is off again.
+
+Not verified
+- r11 Tunis narrator on (Shift+G): 9 of 10; the switch-off check after the course failed because the craft was not
+  moving (0.36 m/s before and after, a crash life just before); the lane saw the same probe precondition fail on Tunis
+  with the narrator off (0.08 m/s). Not chased. My r11 Tunis narrator off passed 12 of 12.
+- d7-probe narrator on: after case (a) the next gate went back to gate 1 and cases (b), (c), (d) and the lap ran at
+  gate 1 (as in integration C, the probe's scripted moves). Narrator off: (lap) next 3 to 0, laps 1; the lane's
+  observation (next 3 to 0 after the backing-up case) did not repeat in this run.
+- The hint "never on the second course" was not run in a browser (r11 flies one course).
+- On Tunis the lane's lift-off before the switch-off speed check did not take the craft up (lane's run; see above).
+- No caption long enough to need the two-row clamp was shown (all captions here were one row).
+- The Narrator help text starts right after its label, not in the column of the other help texts (cosmetic).
+- No real screen reader, no human ear, no native check of the es, pl, ru words. deploy/live-checks.sh not run (by rule).
+- mouse-free-probe, tracks-page, walls-published-probe, walls-store-probe, the editor chain, centre-throttle-probe,
+  rooms-two-page, wizard-auto-check, hid-source-probe, governor-start-probe, lod-view: not run in this integration (the
+  brief's probe list for D did not name them; editor3, fix3a and laptop4 were not merged).
+
+Cost notes: most turns went to waiting for the probe script (about 75 minutes); running the gates first and the probes
+after them kept one script and no reruns, but the gates' vitest still met the build's load.
+
+## Integration E (the edit mode; START / FINISH and the lap's time; scans and elements)
+
+Status (integration E, workers 1 and 2; finished):
+- [x] Merged fix3a 601a1151 with --no-ff: 44d76fce (no conflict).
+- [x] Merged editor3 8ea44111 with --no-ff: 8b4d7eb3. Conflicts in apps/fly/src/app/builtin/course.ts (frame(): the
+      editing flag of editor3 and run.byEar of lane mix kept; the guide keeps fix3a's gate role) and
+      apps/fly/src/course/view.ts (fix3a's START / FINISH paints kept, the selected gate takes the editor's yellow).
+      The fly/course locales merged by themselves (all four).
+- [x] Seam a in the same commit: the editor's test flight shows the lap clock, its splash and the guide to the next gate
+      again (apps/fly/src/course/editor/fly-mode.ts flyShows(true).lapClock true); the best lap is still not written there
+      (course.ts 'end.best && shows.writeBest'); the edit view hides the clock, the splash and the guide (showEd calls
+      hud.update(null), which clears both). Test tools/bench/test/editor3-flying.test.ts 13 of 13; negative control with
+      fly-mode.ts of 8ea44111: NEG OK.
+- [x] Seam b: git diff 4e6ef171..HEAD -- apps/fly/src/session lists no file. Seam d: docs/decisions.md has no change
+      since 4e6ef171 (no new numbers).
+- [x] Gates on 8b4d7eb3 (log U:/Temp/gsfpv-train3/e/gates1.log): typecheck, vitest, api-unittest, architecture, i18n,
+      b18 ('B18 PASS'), leaks PASS; catalog FAIL (stale features.json, docs/settings.md, README.md, llms.txt, site llms.txt).
+      Regenerated with gen-catalog in the commit of this line; catalog gate then PASS. The dist that run.sh built is of
+      8b4d7eb3, before this regeneration: its site catalog pages are stale (the fly page is not affected); rebuild before
+      the pictures of the site or the release.
+- [x] Seam d tooling (16d044b6, worker 2): one hook field course.editor.pose (apps/fly/src/course/hook.ts, written in
+      showEd of apps/fly/src/app/builtin/course.ts from gateFlownPose of the course state, not the view's stand-in);
+      editor3-prove.ts drags each ring 60, 100 and 140 px and records gateDeg (the gate's own rotation before and after)
+      and gate100ok (at least 20 degrees at 100 px). Typecheck of apps/fly and tools/bench clean. [ ] The run on a build
+      that has the field (the dist of run.sh does not: its Tunis run gives gateDeg null).
+- [x] Live checks (worker 2): deploy/live-checks.sh gets edit-mode-wroclaw (editor3-smoke.ts, read-only by its header and
+      by its code: no click on data-top save, no /api call) and sonic-eye-course-wroclaw (r11 with Z5_COURSE_FIRST=1);
+      gate-guide-probe.mjs now also checks 'gate 1 is START' (hook course.look().roles), so the existing gate-guide-wroclaw
+      line covers the START role. bash -n passes; not run.
+- [x] Release build and probes (worker 2): four detached runners in U:/Temp/gsfpv-train3/e (run.sh on the dist of
+      8b4d7eb3, port 5760; run2.sh on the dist of e38ce9c9 with the catalog and the pose field, port 5770; run3.sh one rerun
+      each of two failures, port 5775; run4.sh and run5.sh the repaired editor chain and smoke on the e38ce9c9 dist, ports
+      5777 and 5778). The nine published wall folders were copied into dist/walls each time (dist-walls.txt). Summaries
+      summary.txt to summary5.txt, one line per probe with its exit code. Evidence JSON: evidence/2026-11-15/train3e/.
+- [x] Seam d measured: see Probes. All three turn rings turn the gate itself on both scans; the editor is released.
+- [x] Full gates with leaks on the staged tree (after the evidence was staged): exit 0; typecheck, vitest, api-unittest,
+      architecture, i18n, catalog, 'B18 PASS', leaks all PASS (U:/Temp/gsfpv-train3/e/gates-final.log).
+
+### Merged
+- fix3a 601a1151 with --no-ff: 44d76fce (no conflict). START / FINISH gate with banner, number plates, lit next gate, lap
+  time large and the results card ('Lap time on screen'), run time at FINISH of an open course, generator ladder of gate
+  sizes, the Scene size line, elements by shares, Fly by Sound over every course of the scene.
+- editor3 8ea44111 with --no-ff: 8b4d7eb3. Conflicts in apps/fly/src/app/builtin/course.ts and apps/fly/src/course/view.ts
+  resolved keeping both sides (see Status); the fly/course locales merged by themselves in all four languages.
+- Integration commits after the merges: 2201dd8c (gen-catalog), 16d044b6 (seam d: hook field course.editor.pose and the
+  probe reading it), e9082ec8 (live checks; gate-guide-probe checks the START role), e38ce9c9 and 4e31e5b2 (editor3-prove:
+  ring pictures, the ring a first pass misses found again after Undo), a04f262a (editor3-smoke backs the view off), and
+  the commit of this section. apps/fly/src/session: no change since 4e6ef171 (seam b). docs/decisions.md: no new number.
+  The sound package and the pin of packages/sonic-fpv: not touched.
+
+### Held back
+- voxview, loadq, uiaudit, race, sonic4: held back by the brief, not merged and not read.
+
+### Gates
+- On the final tree: exit 0, all eight PASS including 'B18 PASS' and leaks.
+
+### Probes (local release, the published walls in dist/walls; first line of accept-fly: 'accept-fly target:
+### http://localhost:5760')
+- accept-fly B6 B7 B9 B10 B11 B12 B13 B14 B15 B16: all PASS (346 s).
+- The editor chain (editor3-prove.ts FULL=1) on the e38ce9c9 dist with the ring repair, Wroclaw 254 s and Tunis 423 s,
+  exit 0 each (evidence editor3-prove-70b50d42.json, editor3-prove-887f27aa.json). Turn rings by the gate's own rotation
+  (hook course.editor.pose) for a 100 px drag: Wroclaw x 45, z 45, y 30 degrees; Tunis x 45, z 45, y 30 degrees (the y
+  ring found in the second pass after 6 Undo presses on both). The first pass alone (run2) reached x and z only.
+  Untouched generated course: Save went through on both. Gate pushed into a wall: Save refused, gate 2 selected and
+  framed (Wroclaw side 35 deg 2.04 m; Tunis side -60 deg 2.04 m). Click on another gate selects it (Wroclaw gate 4, Tunis
+  gate 22). Move by the X arrow 0.3 m. Kinds square, dive (flat square), cube, ring all taken. Test flight: next gate 0 to
+  1 (START counted). Crash goes back to the edit view. Esc closes.
+- editor3-smoke Wroclaw (the live check's probe): open with gate 1 selected, arrow move 2.1 m, Esc closed; no other gate
+  on screen to click after 4 back-offs (click not proven by this probe).
+- course-path-probe: Wroclaw 48 of 48 in the band (flat 3), Tunis 37 of 37 (flat 2), runs failing 0.
+- gate-guide-probe Wroclaw --shiftg: 7 of 7, including the new 'gate 1 is START'.
+- course-finish-probe Wroclaw, 1920x1080, 1280x720, 844x390: the card's time equals the clock's at each size (0:20.33,
+  0:22.62, 0:20.73), the middle third free during and after the splash; exit 0.
+- course-keys-probe Wroclaw seed 289710480: 37 of 37 gates counted (ring 10, flat 2, cube 6, tunnel 4, square 4).
+- save-check-probe with --push: Wroclaw and Tunis exit 0 (gate 1 pushed into the wall: problems 3).
+- pause-over-course-probe: 8 of 8.
+- onecourse-probe, d7-probe (gate 1 counted), quiet-probe narrator off: exit 0.
+- walls-published-probe, nine scans: exit 0.
+- sonic-int-review r9 11 of 11; r12 9 of 9; r11 Wroclaw Shift+G 10 of 10; r11 Tunis Shift+G 10 of 10; r11 Wroclaw
+  Z5_COURSE_FIRST narrator off 13 of 13 (40 gates, flown to the end); r11 Wroclaw Z5_COURSE_FIRST narrator on: first run
+  10 of 11 (37 of 42 gates counted in 363 s, g10 missing, not flown to the end), rerun 11 of 11 (15 gates, 50 s).
+- tracks-page: 24 of 26, exit 1; 'E camera after Tab' PASS. The two FAIL are the same as lane editor3's own run (24 of
+  26): '.gate-msg' holds the take-off text while editor.css hides it (the probe reads text, not display), and the old
+  window's 'Save for everyone' click times out.
+- mouse-free-probe: exit 1, the timeout at the rooms entry (pause.rooms not visible), as in integration A (no rooms service
+  on the local copy).
+- walls-store-probe Tunis: exit 1 twice (page not 'ready' within 300 s in its persistent profile); lane fix3a and
+  integration C had exit 0 (209 s, 153 s). Not chased.
+- centre-throttle-probe all, governor-start-probe (lock), hid-source-probe, wizard-auto-check, rooms-two-page (17 of 17):
+  exit 0. lod-view Lublin 2f1ddf5f on: active, failed none, missing 0, calls 101; off (viewlod=0): inactive, penalty 5,
+  angle 90, multiplier 3. a6-reference: PASS (dist of 8b4d7eb3; nothing in flight, input or collision changed after it).
+
+### Deploy order for the lead
+From git diff --stat 4e6ef171..HEAD -- deploy/nginx.conf deploy/compose.yml apps/api apps/rooms packages/i18n/locales:
+only packages/i18n/locales/fly/course/{en,es,pl,ru}.json, which ship in the static site bundle.
+1. nginx: no.
+2. API: no file for release-api.sh, no --locales.
+3. rooms: no.
+4. Ship the static release of main (it includes the published walls step of deploy/release-walls.sh as before).
+
+### Live checks
+deploy/live-checks.sh, not run: edit-mode-wroclaw (editor3-smoke.ts: Shift+G, Shift+B, arrow drag, Esc; no Save), the
+existing gate-guide-wroclaw line now also checks 'gate 1 is START', sonic-eye-course-wroclaw (r11 with Z5_COURSE_FIRST=1:
+Fly by Sound takes the course made by eye and the hum has a target). bash -n passes.
+
+### Pictures for the lead (each looked at)
+- U:/Temp/gsfpv-train3/shots/train3e-editor.png: Wroclaw, a selected gate (yellow) with its three turn rings and the bar.
+- U:/Temp/gsfpv-train3/shots/train3e-editor-element.png: Tunis, a flat square (dive gate) selected with size handles.
+- U:/Temp/gsfpv-train3/shots/train3e-start-gate.png: Wroclaw, the checkered START gate with plate 1, the next gate beside.
+- U:/Temp/gsfpv-train3/shots/train3e-lap-splash.png: Wroclaw, 'Course done 0:20.33' large in the upper middle.
+- U:/Temp/gsfpv-train3/shots/train3e-elements.png: Wroclaw, a tunnel from the pilot's eye (the flat square shows in it
+  only as its marker; no picture with both).
+
+### What the owner should try
+- Shift+G: a course; the first gate is checkered with START over it, the next gate is lit.
+- Fly the course to FINISH: the time shows large at the top middle, then the results card.
+- Shift+B: the edit mode in the scene. Click a gate: yellow outline, arrows, rings and the bar under it.
+- Drag an arrow to move the gate, a ring to turn it, the centre box to size it.
+- On the bar: ring, square, dive gate, cube; copy; delete; next and previous.
+- Click Add gate, then a place on the floor.
+- W A S D fly the view, E and Q up and down, F shows the selected gate again.
+- Space or arm the controller: test flight that counts the gates; crash: back to editing.
+- Save: a gate in a wall is refused and shown.
+- Esc leaves the edit mode.
+- Backslash after Shift+G: Fly by Sound takes that course.
+
+### Not verified
+- Known from the brief: on Lublin 2f1ddf5f the course stays in the spawn's pocket; Housefly d10c5638 can take up to 113 s
+  to give a course; on b11e45d1 gates stand 14.5 to 15.1 m over the wall under them; a gate in leaves is not refused (one
+  ring in a conifer on Wroclaw); a large craft in a small room may get no course and has no one-press line yet; every
+  course on Wroclaw and Tunis is open, so the lap splash shows there only as the run's time at FINISH; the Size tool shows
+  one line for a ring; the arrows' tint is close to the selected yellow; with a fake pad the mode line reads ARMED after a
+  crash; no human flew or heard anything.
+- The keyboard pilot flew 37 of 37 gates on Wroclaw in this run (the brief had 21 of 37); one seed only.
+- The lap clock and the results card hidden in the edit view and back in the test flight: proved by the unit test
+  tools/bench/test/editor3-flying.test.ts (13 of 13, NEG OK), not measured in a browser in this integration.
+- r11 narrator on, course made by eye: one of two runs did not reach the end (37 of 42 gates in 363 s).
+- tracks-page 24 of 26, mouse-free exit 1, walls-store Tunis exit 1 twice: see Probes.
+- The click selection in the live check's probe (editor3-smoke) on Wroclaw: no other gate on screen.
+- Housefly d10c5638 ear-pilot run and Tunis course-made-by-eye run: not run. Live checks: not run (no live access here).
+- Pictures train3e-editor-move.png, train3e-editor-flying.png, train3e-gate1-guide.png, train3e-sound-lessons.png of the
+  general task: not made (the brief's five were made instead).
+
+### Cost notes
+Worker 1 used most turns on finding the probe recipes in the lanes' long status files and temp folders; a per-lane 'how
+to rerun' block would save about 6 turns. Worker 2: waiting for the shared GPU lock and the long runner took about 15
+replies of polling; the ring measurement needed a second runner because the first pass left the y ring edge-on. A probe
+that undoes each ring before the next would have saved one 11-minute run.

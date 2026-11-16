@@ -58,7 +58,14 @@ export function bestKey(
     // review FY-2: generator 3 lays another course for the same seed (gates at eye level, none over a poor scan): its best
     // laps get '.g<major>'; the keys of versions 1 and 2 stay as they were
     const major = typeof gv === 'string' ? Number(/^(\d+)/.exec(gv)?.[1] ?? 0) : 0;
-    const gen = major >= 3 ? `.g${major}` : '';
+    // course4 review CU-3: a course composed of competition elements ('<v>.e<n>') is another course than the single gates of
+    // the same seed: its best laps get '.e<n>' after '.g<major>'
+    const elements = typeof gv === 'string' ? /\.(e\d+)(?:\.|$)/.exec(gv)?.[1] : undefined;
+    // course train 3 decision A4: a course laid at another size step (generator.params.scale, smaller gates in a small
+    // room) is another course for its best laps: '.k<scale>' from generator 4 on; versions up to 3 keep their keys
+    const scale = tr.generator?.params?.['scale'];
+    const step = major >= 4 && typeof scale === 'number' && Number.isFinite(scale) && scale !== 1 ? `.k${scale}` : '';
+    const gen = (major >= 3 ? `.g${major}` : '') + (elements ? `.${elements}` : '') + step;
     return `${tr.id}.v${tr.version}.${tr.scene.id}.${tr.scene.version ?? 0}.${typeof digest === 'string' ? digest.slice(0, 16) : '-'}.${placed}${turned ? `.${turned}` : ''}${gen}.${drone}`;
 }
 
