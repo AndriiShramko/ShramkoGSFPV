@@ -373,8 +373,15 @@ into dist/walls, 9 scans). Logs and JSON under U:/Temp/gsfpv-train2/voxview2/, p
   selected ring in yellow with the move handles (red, green, blue arrows) over voxel walls, the edit bar below and
   the top bar, no legend under the editor window. voxview2-lublin.png (release c2de1b6c, R7; the plan change of R7b
   does not touch an eye inside the grid): the land from 140 m to the edge of the view, one black band without voxels.
+- [~] R9 Release 80435898 in dist, port 5745. accept-fly (SITE=http://localhost:5745, without /en: the harness adds
+  the language itself; two runs with SITE=.../en failed at "page did not become ready" on /en/en/fly/, cause read and
+  checked with a 9-link load diagnostic, all ready in 10 s) B6 B7 B9 B10 B11 B12 B13 B14 B15 B16: 10 PASS
+  (U:/Temp/gsfpv-train2/voxview2/accept-r9c.log; evidence files under evidence/2026-11-16 left untracked).
+  gates.py --only vitest,architecture,i18n,b18,leaks (U:/Temp/gsfpv-gates-20261116-032309): all 5 PASS (vitest 148 s;
+  b18 after commit 7bc3d843). a6-reference 1 passed. Typecheck apps/fly, packages/render-pc, packages/collision 0
+  errors each.
 LEFT (voxview2, exact, in this order):
-- [ ] R9 On the release 80435898 in dist (stand-in walls already in dist/walls; serve with node
+- [ ] R9 rest: On the release 80435898 in dist (stand-in walls already in dist/walls; serve with node
   tools/bench/scripts/serve-csp.mjs dist 5745): accept-fly B6 B7 B9-B16 (SITE=http://localhost:5745/en, npx tsx
   tools/bench/src/accept-fly.ts, takes the GPU lock itself), tools/bench/scripts/pause-over-course-probe.mjs,
   mouse-free-probe.mjs (rooms entry fails locally: known), tools/bench/src/editor3-smoke.ts,
