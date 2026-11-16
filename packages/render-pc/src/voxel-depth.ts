@@ -31,3 +31,16 @@ export function diffDepthCopies<K>(have: Iterable<K>, want: Iterable<K>): { add:
     for (const k of h) if (!w.has(k)) drop.push(k);
     return { add, drop };
 }
+
+/**
+ * Lane voxview2 V6: the updates between two syncs of the depth copies. The copies share the node of their source, so a
+ * moved gate keeps its depth anyway; but a plate made for a new next gate, chevrons made anew, gates rebuilt by the
+ * course view or the edit mode, and a drone that joins are new render items that had no copy for up to 9 frames when
+ * the sync ran every 10th update. Now every update while the voxels show.
+ */
+export const DEPTH_SYNC_EVERY = 1;
+
+/** Is the sync due in this update (`sinceSync`: updates since the last sync, this one counted)? */
+export function depthSyncDue(sinceSync: number): boolean {
+    return sinceSync >= DEPTH_SYNC_EVERY;
+}

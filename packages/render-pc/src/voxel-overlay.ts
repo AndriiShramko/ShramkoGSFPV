@@ -27,7 +27,7 @@ import {
     BUFFER_STATIC, INDEXFORMAT_UINT16, INDEXFORMAT_UINT32, CULLFACE_NONE
 } from 'playcanvas';
 import type { SplatRenderer } from './renderer';
-import { diffDepthCopies, joinsVoxelDepth } from './voxel-depth';
+import { depthSyncDue, diffDepthCopies, joinsVoxelDepth } from './voxel-depth';
 import { VOXEL_STYLES, writeColors } from './voxel-colors';
 import type { VoxelStyle, VoxelLayout, PackedChunk } from './voxel-colors';
 
@@ -413,7 +413,10 @@ export class VoxelOverlay {
 
     /** Per frame: upload queued chunks and recolour stale ones within the per-frame budgets. Returns keys uploaded. */
     update(): string[] {
-        if (this.layer.enabled && ++this.depthTick % 10 === 0) this.syncDepth();
+        if (this.layer.enabled && depthSyncDue(++this.depthTick)) {
+            this.depthTick = 0;
+            this.syncDepth();
+        }
         const done: string[] = [];
         let quads = 0;
         for (const [key, c] of this.queue) {

@@ -322,9 +322,17 @@ into dist/walls, 9 scans). Logs and JSON under U:/Temp/gsfpv-train2/voxview2/, p
 - [x] R3 Probes (commits 51c4be9f, b14f5070): tools/bench/scripts/voxview2-probe.mjs (per frame, the visible World render
   items without a visible depth copy; Esc with the panel open in a flight, a pause and the edit mode; pictures) and
   tools/bench/scripts/voxview-depth-probe.mjs --far takes FAR_UP_M (the height of the 'up' phase) and reads the JS heap.
-- [x] R4 VR-1 / V7 fix (commit 15f881d8), see Findings.
-- [~] R5 Browser review run on Wroclaw 70b50d42 (voxview2-probe): waits for the GPU lock (held by other lanes).
-- [ ] R6 V6 build if R5 shows frames without depth copies.
+- [x] R4 VR-1 / V7: a change made before the measurement (15f881d8) was reverted after R5 showed no fault (see Findings).
+- [x] R5 Browser review run on Wroclaw 70b50d42 (release e47427ca, port 5745, 1280x800, BENCH_UNCAPPED=1, GPU lock
+  02:05:13-02:05:54; U:/Temp/gsfpv-train2/voxview2/review-wroclaw.json and .log). Numbers in Findings VR-1, VR-2.
+- [x] R6 V6 build (this commit): the depth copies are synced in every update while the voxels show.
+  packages/render-pc/src/voxel-depth.ts (DEPTH_SYNC_EVERY 1, depthSyncDue), voxel-overlay.ts update();
+  test packages/render-pc/test/voxview2-depth-sync.test.ts (1 test, 24 cases); control with the voxel-depth.ts of
+  a884e8ff: "expected 'undefined' to be 'function'". voxel-depth.test.ts 2 passed. Typecheck packages/render-pc,
+  apps/fly 0 errors. Browser after: not yet run (Left).
+LEFT (voxview2, exact, in this order; the run ended at its reply budget):
+- [ ] R6b Release build of the head; voxview2-probe on Wroclaw again (expect missFrames 0 after the arrow moves and
+  Tab), and the frame time with the voxels alone against R5's run (the sync now walks the render components every frame).
 - [ ] R7 Lublin 2f1ddf5f voxels alone at the spawn and 140 m up (far probe, FAR_PHASES=spawn,up FAR_UP_M=140);
   Housefly d10c5638 (its walls are in the stand-in set).
 - [ ] R8 Depth probe on Wroclaw and Tunis 887f27aa; panel probe at the four sizes; pictures voxview2-start.png,
@@ -335,16 +343,21 @@ into dist/walls, 9 scans). Logs and JSON under U:/Temp/gsfpv-train2/voxview2/, p
 
 ### Findings (voxview2)
 
-- VR-1 (V7, real by the DOM rule, fixed in 15f881d8): apps/fly/src/walls.ts:184-190 closed the panel on Esc with
+- VR-1 (V7, NO fault, measured; the change was a guess and is reverted): apps/fly/src/walls.ts:184-190 closed the panel on Esc with
   stopPropagation in a window capture listener. The edit mode listens on the window in the capture phase too
   (apps/fly/src/course/editor/view-mouse.ts:182, top-bar.ts:61); stopPropagation does not stop other listeners of the
   same target, so one Esc closed the panel AND left the edit mode. Now apps/fly/src/ui/voxel-panel.ts panelEsc uses
-  stopImmediatePropagation. Test tools/bench/test/voxview2-esc.test.ts (2 tests); control with the voxel-panel.ts of
-  b14f5070: "expected 'undefined' to be 'function'" twice. The browser count before the fix: R5.
-- VR-2 (V6, to be measured in R5): packages/render-pc/src/voxel-overlay.ts:416 syncs the depth copies every 10th
+  stopImmediatePropagation. Measured on the release e47427ca (R5): Esc with the panel open closed only the panel in a
+  flight (no pause opened), in a pause (the pause menu stayed) and in the edit mode (edit mode stayed open); Esc
+  without the panel opened the pause, a second Esc closed it. So V7 holds on the code as it was (the edit mode does not
+  act on that Esc; why was not read). 15f881d8 reverted; nothing changed for Esc.
+- VR-2 (V6, real, measured, fixed in R6): packages/render-pc/src/voxel-overlay.ts:416 syncs the depth copies every 10th
   update. A copy shares the node of its source, so a gate whose node moves keeps its depth in the same frame; but
   apps/fly/src/course/view.ts:346-372 destroys and makes anew the number plate and the chevrons at every change of the
-  next gate, and show() makes all gates anew: such items are drawn without depth for up to 9 frames.
+  next gate, and show() makes all gates anew: such items are drawn without depth for up to 9 frames. Measured (R5, Wroclaw, 32 gates, voxels alone): in a flight
+  0 of 1858 frames lacked a copy (157 items); in the edit mode each arrow press rebuilt all gates and 10, 9, 7 and 3
+  frames (of 104-190 counted after each press) had ALL 156 items without a depth copy; Tab to the next gate 5 frames
+  with 146 of 146 missing. A pilot sees the voxels paint over every gate for those frames (a flicker after each edit).
 - VR-3 (no fault, code read): the gates, banners, plates and chevrons are opaque unlit materials (course/view.ts
   214-250: no blend, no alpha test), so a full depth copy of them hides exactly what they cover.
 - VR-4 (no fault by code read; frame time not yet measured, R10): with the voxel view off the overlay is not made
