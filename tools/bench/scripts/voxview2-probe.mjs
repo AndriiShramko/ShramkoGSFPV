@@ -1,7 +1,8 @@
 // Lane voxview2 (review of lane voxview): with the voxels alone on, does every render item of the World layer have its
 // depth-only copy in the frame it is drawn (V6: a gate moved in the edit mode, the next gate's number plate and the
 // chevrons when the next gate changes), and does Esc close only the voxel panel when it is open (V7: in a flight, in a
-// pause, in the edit mode)? Pictures <tag>-start.png (the pilot's eye after Shift+G) and <tag>-edit.png (the edit mode).
+// pause, in the edit mode)? Pictures <tag>-spawn.png (the pilot's eye after Shift+G), <tag>-start.png (that eye turned to
+// the START gate) and <tag>-edit.png (the edit mode).
 // Usage: node voxview2-probe.mjs <base with /en> <scene> <out.json> <shots dir> <tag>. Takes no GPU lock itself.
 import { createRequire } from 'node:module';
 import { writeFileSync } from 'node:fs';
@@ -88,8 +89,34 @@ try {
     const s = await until(page, () => window.__gsfpv.voxels.settled(), (v) => v, 120000);
     await sleep(1500);
     r.start = { settledMs: s.ms, miss: await missNow(page), stats: await page.evaluate(() => { const v = window.__gsfpv.voxels.stats(); return { depthItems: v.depthItems, chunks: v.chunks, share: v.share }; }) };
-    await page.screenshot({ path: join(shots, `${tag}-start.png`) });
+    await page.screenshot({ path: join(shots, `${tag}-spawn.png`) });
     step({ start: r.start });
+    // the pilot's eye at the spawn turned to the START gate (on Wroclaw it is 19 m to the left of the spawn's heading):
+    // the craft held at the spawn with a yaw about +y, the camera aim follows the held yaw (as voxview-depth-probe)
+    await page.evaluate(() => {
+        const ss = window.__gsfpv.session;
+        const orig = ss.cameraAim;
+        window.__hold = null;
+        if (orig) ss.cameraAim = () => { const a = orig.call(ss); return a && window.__hold ? { ...a, yawDeg: (-window.__hold.yaw * 180) / Math.PI, pitchDeg: window.__hold.pitch } : a; };
+        const tick = () => { const h = window.__hold; if (h) { const s = ss.sim.s; s[0] = h.pos[0]; s[1] = h.pos[1]; s[2] = h.pos[2]; for (let i = 3; i < 6; i++) s[i] = 0; s[6] = Math.cos(h.yaw / 2); s[7] = 0; s[8] = Math.sin(h.yaw / 2); s[9] = 0; for (let i = 10; i < 13; i++) s[i] = 0; } requestAnimationFrame(tick); };
+        tick();
+    });
+    const face = await page.evaluate(() => { const g = window.__gsfpv, s = g.session.sim.s; return { e: [s[0], s[1] + 0.3, s[2]], gp: g.course.gatePoses()[Math.max(0, g.course.next)].pos }; });
+    const dx = face.gp[0] - face.e[0], dz = face.gp[2] - face.e[2];
+    let best = null;
+    for (const yaw of [Math.atan2(-dx, -dz), Math.atan2(dx, dz), Math.atan2(-dx, dz), Math.atan2(dx, -dz)]) {
+        await page.evaluate(({ e, yaw }) => { window.__hold = { pos: e, yaw, pitch: 0 }; }, { e: face.e, yaw });
+        await sleep(1200);
+        const gd = await page.evaluate(() => window.__gsfpv.course.guide?.() ?? null);
+        const off = gd && Number.isFinite(gd.bearingDeg) ? Math.abs(gd.bearingDeg) : 1e9;
+        if (!best || off < best.off) best = { yaw, off: Math.round(off) };
+    }
+    await page.evaluate(({ e, yaw }) => { window.__hold = { pos: e, yaw, pitch: -5 }; }, { e: face.e, yaw: best.yaw });
+    await sleep(1500);
+    r.startFacing = { eye: face.e, gate: face.gp, bearingDeg: best.off, guide: await page.evaluate(() => window.__gsfpv.course.guide?.() ?? null) };
+    await page.screenshot({ path: join(shots, `${tag}-start.png`) });
+    step({ startFacing: r.startFacing });
+    await page.evaluate(() => { window.__hold = null; });
     r.esc = [];
     r.esc.push(await escCase(page, 'flight'));
     // the pause: Esc without the panel pauses; then the panel and Esc; then Esc closes the pause

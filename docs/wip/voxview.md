@@ -356,10 +356,24 @@ into dist/walls, 9 scans). Logs and JSON under U:/Temp/gsfpv-train2/voxview2/, p
   whole grid. Test packages/collision/test/voxview2-whole-far.test.ts (2 passed; with voxview-whole.test.ts 14 passed);
   control with overlay.ts of 1fbb3413: "expected { eye: [ 1, 64, 1 ], n: +0 } to deeply equal { ..., n: 144 }".
   Typecheck packages/collision 0 errors. Browser after (Housefly 140 m): in R8.
+- [x] R8 (this commit) Release 80435898 (node scripts/build-release.mjs, sha256 069e84565fc0..., stand-in walls copied
+  into dist/walls), port 5745, BENCH_UNCAPPED=1, GPU lock 02:36:10-02:40:11, 02:40:29-02:41:13, 02:44:01-02:45:07.
+  VR-9 after: Housefly d10c5638 140 m up 203 of 203 chunks planned and drawn (before 0), 1.27 M triangles, frame
+  3.6 ms, heap 152 MB (far2-housefly.json); picture voxview2-housefly-far.png: the small scene as a teal patch at the
+  bottom middle of the view. Depth probe, voxels alone, gate points counted (front shown / front, behind shown /
+  behind): Wroclaw 70b50d42 eye 1 38/40, 0/13; eye 2 12/12, 3/53 (depth-r8-wroclaw.json); Tunis 887f27aa (first run
+  there) eye 1 16/17, 0/19; eye 2 17/17, 0/12 (depth-r8-tunis.json). Over the scan on Wroclaw behind shown 6/11
+  (V5, stays); on Tunis the over-scan pictures gave 0 sample points (gate not told apart from the scan: not measured).
+  Review probe (review4-wroclaw.json): start 0 missing depth frames, 4 edit moves and Tab 0, Esc flight/pause/edit 3
+  of 3 close only the panel. The probe now also turns the spawn eye to START (picture <tag>-start.png; the spawn
+  heading picture is <tag>-spawn.png). Panel probe (--panel, rendering off, panel-r8.json): 1366x768, 1280x720,
+  390x844 the cross in view, on top, closes; in the edit view the same; 844x390 edit view: VR-7 as before.
+  Pictures looked at: voxview2-start.png: the checkered START gate 10 m ahead with its START banner and plate 1 in
+  front of the voxel walls, the lit gate's orange chevrons nearer, the next rings in teal. voxview2-edit.png: the
+  selected ring in yellow with the move handles (red, green, blue arrows) over voxel walls, the edit bar below and
+  the top bar, no legend under the editor window. voxview2-lublin.png (release c2de1b6c, R7; the plan change of R7b
+  does not touch an eye inside the grid): the land from 140 m to the edge of the view, one black band without voxels.
 LEFT (voxview2, exact, in this order):
-- [ ] R8 Release build of the head first (fly.css VR-6, overlay.ts VR-9). Far probe on Housefly FAR_UP_M=140; depth
-  probe on Wroclaw and Tunis 887f27aa; panel probe at the four sizes; pictures voxview2-start.png,
-  voxview2-edit.png, voxview2-lublin.png looked at.
 - [ ] R9 accept-fly B6 B7 B9-B16, pause-over-course-probe, mouse-free-probe, editor3-smoke, walls-published-probe,
   typecheck, gates.py --only vitest,architecture,i18n,b18,leaks, a6-reference.
 - [ ] R10 Frame time on Wroclaw with the view off, branch against main (BENCH_UNCAPPED=1).
