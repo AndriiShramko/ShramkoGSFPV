@@ -78,6 +78,18 @@ function watchSocket(page: Page): Frames {
     return f;
 }
 
+/** 9 pressed until the page is in the scan's room (a big scan answers keys only once it is in; 9 again while joining would leave). */
+async function join9(p: Page, members: number): Promise<boolean> {
+    const t0 = Date.now();
+    while (Date.now() - t0 < LOAD_MS) {
+        const st = await ev<string>(p, 'return r ? r.state : "none";').catch(() => 'none');
+        if (st === 'joined' && await ev<boolean>(p, `return r.members.length >= ${members};`)) return true;
+        if (st !== 'joined' && st !== 'joining') await p.keyboard.press('Digit9');
+        await p.waitForTimeout(3000);
+    }
+    return false;
+}
+
 async function open(L: Launched, url: string): Promise<Page> {
     await L.page.goto(url);
     await waitReady(L.page, LOAD_MS);
@@ -125,6 +137,7 @@ async function main(): Promise<void> {
         const control = [...(a0.board?.rows ?? []), ...(b0.board?.rows ?? [])].every((x: Any) => !(x.laps > 0));
 
         // ---- each page flies two rounds through its gates
+        if (!sameGates) throw new Error('no shared course: ' + JSON.stringify(out.follow));
         const sentBefore = fa.sent.length + fb.sent.length;
         const [aFly, bFly] = await Promise.all([fly(A, 2), fly(B, 2)]);
         const tFlown = Date.now();
