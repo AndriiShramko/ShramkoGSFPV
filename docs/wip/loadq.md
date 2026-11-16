@@ -632,14 +632,43 @@ Stage R1-keeper
   'loadq2 R4' in tools/bench/test/loadq-detail.test.ts (20 pass); negative control with the detail-rule.ts of 115feaa6:
   "expected 4 to be +0". Typecheck apps/fly exit 0. Probe switch PAUSEAT (P pauses; at MOVEAT P goes on, the first
   second measured from that press). Side effect, wanted: with no hover rise the keeper judges a hover again (LR-4).
+- [x] 3c. After R4, release 8d078948 (sha256 cf96246f..., U:/Temp/gsfpv-train3/loadq2/build-8d07.log; copy with the
+  Wroclaw walls stand-in in U:/Temp/gsfpv-train3/loadq2/dist-after-8d078948, batch pause.sh on port 5833, table
+  U:/Temp/gsfpv-train3/loadq2/pause-table.txt; PAUSEAT=15: P at 15 s, P again at 45 s, the first second from that press):
+  | run | frames | median | p90 | worst | within 10 % | flight |
+  | lub weak c4, hover, rise on (no pause) | 91 | 9.5 | 17.8 | 31.1 | 0 | 0.94 M |
+  | lub weak c4, pause, off | 85 | 9.3 | 17.3 | 119.0 | 0 | 0.94 M |
+  | lub weak c4, pause, on (rose to 3.75 M) | 18 | 46.8 | 85.4 | 158.5 | not in 3 s | 0.94 M |
+  | wro weak c4, pause, off | 96 | 7.8 | 12.9 | 115.5 | 0 | 0.94 M |
+  | wro weak c4, pause, on (3.75 M) | 16 | 64.3 | 113.8 | 134.5 | 316 ms | 0.94 M |
+  | lub phone c4, pause, off | 90 | 8.6 | 17.5 | 115.1 | 0 | 0.75 M |
+  | lub phone c4, pause, on (1.5 M) | 21 | 32.8 | 117.7 | 197.3 | 2262 ms | 0.75 M |
+  | lub weak c1, pause, on (6.25 M) | 119 | 3.9 | 21.3 | 41.5 | 1554 ms | 1.56 M |
+  - R4 now HOLDS for a hover (the hover does not rise: 9.5 against 9.3 ms at CPU x4). Going on after a pause does NOT
+    meet R4's numbers at CPU x4 (3.8 to 8.2 times the median); the lead's fallback accepts the rise in a pause, so it
+    is left as is. A way that would meet it, not built (not this lane's files: apps/fly/src/app/flight.ts, pause.ts):
+    on Continue put the flight's budget back first and start the flight when the splats drawn are within 10 % of it
+    (316 ms to 2.3 s measured above), with the stage shown if longer than 2 s.
+  - lub weak c1 pause off: no first-second numbers (the move log began after the press, the probe indexed log[-1]);
+    fixed in the probe in this commit, the run is left (delete its json and run it again).
+  - NEW FAULT, measured, not built: in a pause the keeper stepped the flight down at CPU 1 (r-pause-lub-desktop-weak-c1-on:
+    P at 15.5 s, step 0->1 at 16.5 s, 1->2 at 18.6 s, 2.5 -> 1.56 M) while 140 to 222 pictures a second were drawn
+    (medians 1.6 to 3.7 ms). Before R4 the pause rose the detail and the keeper rested, so this was hidden. The cause is
+    a guess, not measured: frames the renderer holds for the GPU queue behind the pause menu (packages/render-pc
+    governor.ts, the R1 rule counts only judged frames not held). Next: a run with GOVLOG=1 PAUSEAT=15 STILLOFF=1 at CPU
+    1 shows which frames the keeper counted; then apps/fly/src/app/quality.ts frame(): the keeper rests while paused
+    (governor.rest, as at a still picture), a unit test and a negative control.
 - [ ] LEFT for the next run, in this order:
+  0. The new fault above (keeper steps down in a pause): GOVLOG run, fix in quality.ts, test, negative control, release
+     build, the lub weak c1 pause on/off pair again.
   1. (done in 3b) R4 by its order for the CPU x4 case. Shedding in the move frame: not possible from the page (engine source: a node
      keeps its fine file until the coarse one is resident again; see item 3 above). Next: STILL_FRAME_MS 66 -> 33 in
      apps/fly/src/app/detail-rule.ts (the rise stops while the median frame at rest is 33 ms or more) and the c4 pair
      again (r-after2-lub-desktop-weak-c4-on/off, a new release); if it still fails: the rise only while the flight is
      paused (StillRise: not paused -> no rise) and set.display.stillDetail.help in en, es, pl, ru says so; unit test and
      negative control for whichever is built; then the table again.
-  2. The runs not done (run.sh skips done labels; serve dist-after-930a93d7 on 5830 and dist-after-17e5304a on 5831):
+  2. Replaced by 3c (the code changed): the after runs are the r-pause-* runs on 8d078948. Still to run: lub weak c1
+     pause off (again), wro phone c4 pause on/off. The old list was: (run.sh skips done labels; serve dist-after-930a93d7 on 5830 and dist-after-17e5304a on 5831):
      before: wro desktop-weak c4 on/off, wro phone c1/c4 on/off, lub phone c4 on/off; after: lub phone c1/c4, wro
      desktop-weak c4, wro phone c1/c4 (the tail of U:/Temp/gsfpv-train3/loadq2/rest-after.sh after PRIODONE). If item 1
      changes the code, run the after runs on the new release instead.

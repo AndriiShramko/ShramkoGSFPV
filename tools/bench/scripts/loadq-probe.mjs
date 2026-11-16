@@ -342,7 +342,7 @@ try {
             if (moved >= 0) {
                 const t0m = log[moved][0];
                 const base = st.still ? st.still.baseM : null;
-                const rows = log.slice(moved).map((x, i, a) => [r2(x[0] - t0m), r2(i === 0 ? x[0] - log[moved - 1][0] : x[0] - a[i - 1][0]), x[7], x[6]]);
+                const rows = log.slice(moved).map((x, i, a) => [r2(x[0] - t0m), r2(i === 0 ? (moved > 0 ? x[0] - log[moved - 1][0] : 0) : x[0] - a[i - 1][0]), x[7], x[6]]);
                 const first = rows.filter((x) => x[0] <= 1000).map((x) => x[1]);
                 const backAt = base === null ? null : rows.find((x) => x[2] <= 1.1 * base * 1e6);
                 res.move.base = base; res.move.boostM = st.still ? st.still.boostM : null;
