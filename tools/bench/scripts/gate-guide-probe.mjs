@@ -67,7 +67,13 @@ try {
         const gp = poses[idx]?.pos ?? null;
         const box = (el) => { if (!el || el.hidden || el.offsetParent === null) return null; const b = el.getBoundingClientRect(); return b.width > 0 && b.height > 0 ? { left: b.left, top: b.top, right: b.right, bottom: b.bottom } : null; };
         const guideEl = document.querySelector('[data-testid=course-guide]');
+        // the camera's half field of view, as the page takes it for the guide (builtin/course.ts guideCamera)
+        const cc = cam.camera;
+        const aspect = Math.max(1, innerWidth) / Math.max(1, innerHeight);
+        const half = Math.tan((((cc && cc.fov) || 115) * Math.PI) / 360);
+        const tanH = cc && cc.horizontalFov ? half : half * aspect;
         return {
+            tanH, tanV: tanH / aspect,
             guide: gd, text: guideEl?.textContent ?? '', guideBox: box(guideEl), ariaHidden: guideEl?.getAttribute('aria-hidden') ?? null,
             cam: [p.x, p.y, p.z], right: [R.x, R.y, R.z], fwd: [F.x, F.y, F.z], gate: gp, gates: poses.length, next: c.next,
             note: box(document.querySelector('#ui > .hud-note')), block: box(document.querySelector('[data-testid=course-hud]')),
@@ -155,9 +161,24 @@ try {
     const up0 = [v0.right[1] * v0.fwd[2] - v0.right[2] * v0.fwd[1], v0.right[2] * v0.fwd[0] - v0.right[0] * v0.fwd[2], v0.right[0] * v0.fwd[1] - v0.right[1] * v0.fwd[0]];
     const d0 = [v0.gate[0] - v0.cam[0], v0.gate[1] - v0.cam[1], v0.gate[2] - v0.cam[2]];
     const elev0 = (Math.atan2(Math.abs(d0[0] * up0[0] + d0[1] * up0[1] + d0[2] * up0[2]), d0[0] * v0.fwd[0] + d0[1] * v0.fwd[1] + d0[2] * v0.fwd[2]) * 180) / Math.PI;
-    if (!v0.guide.shown && !v0.guideBox && b0.dist < 12 && Math.abs(b0.deg) < 20 && elev0 < 20) {
-        r.reads.start = { ...v0, probeBearing: +b0.deg.toFixed(1), probeDist: +b0.dist.toFixed(2), probeElev: +elev0.toFixed(1) };
-        check(`start: gate 1 in view (${b0.dist.toFixed(1)} m, ${b0.deg.toFixed(1)} deg, ${elev0.toFixed(1)} deg up/down): the guide hides`, true, { shown: v0.guide.shown, inFrame: v0.guide.inFrame });
+    // Release b2e7a73b, live (2026-11-16): gate 1 stood 11.4 m away, 26.5 deg to the right. By the page's rule
+    // (course/guide.ts: the centre within GUIDE_FRAME_SHARE 0.85 of each half of the view, at most GUIDE_NEAR_M 12 whole
+    // metres) the guide hid, and the 20 deg this probe had here called that a fault. The probe now measures the same rule
+    // from the camera's own field of view: the gate's share of the half view, across and up/down.
+    const z0 = d0[0] * v0.fwd[0] + d0[1] * v0.fwd[1] + d0[2] * v0.fwd[2];
+    const x0 = d0[0] * v0.right[0] + d0[1] * v0.right[1] + d0[2] * v0.right[2];
+    const y0 = d0[0] * up0[0] + d0[1] * up0[1] + d0[2] * up0[2];
+    const share0 = z0 > 0 ? Math.max(Math.abs(x0 / z0) / v0.tanH, Math.abs(y0 / z0) / v0.tanV) : Infinity;
+    const m0 = Math.round(b0.dist);
+    const startRead = { ...v0, probeBearing: +b0.deg.toFixed(1), probeDist: +b0.dist.toFixed(2), probeElev: +elev0.toFixed(1), probeShare: Number.isFinite(share0) ? +share0.toFixed(3) : null };
+    // on the rule's edge (the share within 0.03 of 0.85, the distance within 0.2 m of 12.5) either state is right
+    const edge0 = Math.abs(share0 - 0.85) <= 0.03 || (share0 <= 0.88 && Math.abs(b0.dist - 12.5) <= 0.2);
+    if (share0 <= 0.85 && m0 <= 12 && !edge0) {
+        r.reads.start = startRead;
+        check(`start: gate 1 in the frame and near (${b0.dist.toFixed(1)} m, ${b0.deg.toFixed(1)} deg, share of the half view ${share0.toFixed(2)}): the guide hides`, !v0.guide.shown && !v0.guideBox, { shown: v0.guide.shown, inFrame: v0.guide.inFrame, metres: v0.guide.metres });
+    } else if (edge0 && !v0.guide.shown && !v0.guideBox) {
+        r.reads.start = startRead;
+        check(`start: gate 1 on the edge of the rule (${b0.dist.toFixed(1)} m, share ${share0.toFixed(2)}): the guide hides`, true, { shown: v0.guide.shown, inFrame: v0.guide.inFrame });
     } else judge('start', v0);
     r.shotStart = await shot(name);
     if (above) {
