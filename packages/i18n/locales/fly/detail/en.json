@@ -11,6 +11,6 @@
   "detail.retry": "Try again",
   "detail.still": "Detail: sharper while paused ({drawn} M)",
   "set.display.stillDetail": "More detail at rest",
-  "set.display.stillDetail.help": "While the flight is paused, the scan loads more detail step by step, as long as the picture stays smooth enough to look at. Back in flight, the flight's detail returns at once, so the drone flies as smoothly as without it.",
+  "set.display.stillDetail.help": "While the flight is paused, the scan loads more detail step by step, as long as the picture stays smooth enough to look at. Back in flight, the flight's detail returns within a second or two; on a slow computer those first moments can be less smooth. Switch it off if that gets in your way.",
   "detail.stilloff": "Detail: back to the flight's detail. The graphics card ran short of memory, so \"More detail at rest\" is now off on this device"
 }

@@ -11,6 +11,6 @@
   "detail.retry": "Spróbuj ponownie",
   "detail.still": "Szczegóły: ostrzej podczas pauzy ({drawn} M)",
   "set.display.stillDetail": "Więcej szczegółów w spoczynku",
-  "set.display.stillDetail.help": "Gdy lot jest wstrzymany, skan krok po kroku dociąga więcej szczegółów, dopóki obraz jest dość płynny, by go oglądać. Po powrocie do lotu szczegóły lotu wracają od razu, więc dron lata tak płynnie jak bez tej opcji.",
+  "set.display.stillDetail.help": "Gdy lot jest wstrzymany, skan krok po kroku dociąga więcej szczegółów, dopóki obraz jest dość płynny, by go oglądać. Po powrocie do lotu szczegóły lotu wracają w sekundę lub dwie; na wolnym komputerze te pierwsze chwile mogą być mniej płynne. Wyłącz tę opcję, jeśli przeszkadza.",
   "detail.stilloff": "Szczegóły: wróciły szczegóły do lotu. Karcie graficznej zabrakło pamięci, więc „Więcej szczegółów w spoczynku” jest teraz wyłączone na tym urządzeniu"
 }
