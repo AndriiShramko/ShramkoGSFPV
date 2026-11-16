@@ -440,7 +440,14 @@ Stage R1-keeper
 - [ ] 3e. LEFT for the next run, in this order (dists and scripts in U:/Temp/gsfpv-train3/loadq2: serve
   dist-after-05b0c7ad on a port of 5820-5839, run.sh <label> <port> takes one GPU lock per run; delete a run's json
   before running it again):
-  1. STILLOFF=1 FLY=5 FLYSECS=40 SECS=50 GOVLOG=1 run.sh k-after-govlog2: res.govlog says which judged frames the keeper
+  1. [x] Done in run 3. k-after-govlog2 (STILLOFF, flight from 5 s): no step change; 195 of 6765 judged frames
+     missed, all held. k-after-govlog3 (SECS=180 FLY=120 FLYSECS=60 GOVLOG=1, the AFTER build 05b0c7ad): down 0->1 at
+     126.5 s, 1->2 127.5, 2->3 128.5, 3->4 129.7, up again 147 to 163 s; 204 of 9155 judged frames missed, every one a
+     held frame of 16.8 to 18.3 ms after a short one (the two 21 to 26 ms, over 1.25 x 16.7), while the down window held
+     130 to 140 frames (about 95 pictures a second). The period floor alone is not R1. Fix: governor.ts MIN_SMOOTH_FPS 60,
+     tooSlow(): no step down while the down window drew 60 or more pictures a second (judged frames not held); calm()
+     uses the same rule. Test 'the measured Wroclaw flight' in governor-loadq2.test.ts (the measured sequence; the code of
+     05b0c7ad: "expected [ ...(4) ] to deeply equal []"); render-pc tests 373 pass. Was: res.govlog says which judged frames the keeper
      counted as missed at each step down (held or not, their intervals). Fix R1 in packages/render-pc/src/governor.ts
      by what it shows, a unit test built from the measured frame sequence in
      packages/render-pc/test/governor-loadq2.test.ts with a negative control, typecheck, release build.

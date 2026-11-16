@@ -29,6 +29,15 @@ describe('R1: frames at 60 a second or faster never lower the detail', () => {
         const r = run(g, 0, 20000, (i) => ({ dt: 6.94, held: i > 200 && i % 2 === 1 }));
         expect(r.changes).toEqual([]);
     });
+    it('the measured Wroclaw flight (held 17.5 ms frames after short ones, about 70 pictures a second) keeps the top step', () => {
+        // the frames before the step down 1 -> 2 at 127.5 s in k-after-govlog3 (docs/wip/loadq.md, loadq2 3e.1)
+        const seq: Frame[] = [8.5, 4.3, 17.6, 9, 2.8, 17.6, 13.9, 8.7, 3.7, 17.4, 6.1, 3.8, 17.3].map((dt) => ({ dt, held: dt > 17 }));
+        const g = new FrameGovernor();
+        const a = run(g, 0, 4000, () => ({ dt: 2.5 }));
+        const r = run(g, a.t, 20000, (i) => seq[i % seq.length]);
+        expect(r.changes).toEqual([]);
+        expect(g.calm(r.t)).toBe(true);
+    });
     it('still lowers the detail when frames come slower than 60 a second (40 ms on a 144 Hz screen)', () => {
         const g = new FrameGovernor();
         const a = run(g, 0, 4000, () => ({ dt: 6.94 }));

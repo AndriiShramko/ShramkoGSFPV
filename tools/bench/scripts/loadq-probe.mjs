@@ -92,6 +92,15 @@ const GOVSUM = `(() => {
     }
     return out;
 })()`;
+// loadq2 LR-8: the boxes of the detail line and its neighbours at the UIAT picture, and which pairs overlap
+const UIRECTS = `(() => {
+    const q = { credit: '[data-testid="attribution"]', walls: '[data-testid="walls-more"]', detail: '[data-testid="detail-line"]', telemetry: '.osd.bl', clock: '[data-testid="course-clock"], .course-clock', hint: '.touch-hint' };
+    const r = {};
+    for (const k in q) { const e = document.querySelector(q[k]); if (e && !e.hidden && e.getClientRects().length) { const b = e.getBoundingClientRect(); r[k] = [Math.round(b.left), Math.round(b.top), Math.round(b.right), Math.round(b.bottom)]; } }
+    const hit = (a, b) => a[0] < b[2] && b[0] < a[2] && a[1] < b[3] && b[1] < a[3];
+    const d = r.detail; const over = d ? Object.keys(r).filter((k) => k !== 'detail' && k !== 'credit' && hit(d, r[k])) : null;
+    return { rects: r, detailOver: over };
+})()`;
 const MOVELOG = `(() => {
     const h = window.__gsfpv; const s = h.session; const a = s.renderer.app; window.__mv = [];
     const tick = () => { const sim = s.runner.sim; const v = sim.s; if (window.__mv.length === 10) v[3] += 2; window.__mv.push([performance.now(), sim.ch[0], sim.ch[1], sim.ch[2], sim.ch[3], Math.hypot(v[3], v[4], v[5]), Math.round(a.scene.gsplat.splatBudget / 1e4) / 100, a.stats.frame.gsplats]); if (window.__mv.length < 600) requestAnimationFrame(tick); };
@@ -308,7 +317,10 @@ try {
         if (since !== null && (since >= res.notes.length * 5 || (UIAT !== null && !res.uiShot && since >= UIAT))) {
             const text = await page.evaluate("(() => { const u = document.getElementById('ui'); return u ? u.innerText.replace(/\\s+/g, ' ').trim().slice(0, 600) : ''; })()").catch(() => '');
             if (since >= res.notes.length * 5) res.notes.push([r2(since), text]);
-            if (UIAT !== null && !res.uiShot && since >= UIAT) { await page.screenshot({ path: `U:/Temp/gsfpv-train3/shots/${label}-ui.png` }); res.uiShot = { at: r2(since), text }; }
+            if (UIAT !== null && !res.uiShot && since >= UIAT) {
+                await page.screenshot({ path: `U:/Temp/gsfpv-train3/shots/${label}-ui.png` });
+                res.uiShot = { at: r2(since), text, rects: await page.evaluate(UIRECTS).catch((e) => String(e.message)) };
+            }
         }
         for (const at of SHOTS) if (since !== null && since >= at && !tookShots.has(at)) {
             tookShots.add(at);

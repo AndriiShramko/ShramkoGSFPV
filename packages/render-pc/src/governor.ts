@@ -18,6 +18,15 @@ export const MISSED_PERIODS = 1.25;
 export const MIN_JUDGED_PERIOD_MS = 1000 / 60;
 
 /**
+ * R1 measured (loadq2, keeper log k-after-govlog3 on Wroclaw, frame rate free): every frame the keeper counted as missed
+ * was a held frame of about 17.5 ms after a short one (the two together 21 to 26 ms, over 1.25 x 16.7) while the down
+ * window held 130 to 140 frames a second, and the detail went down four steps. So the keeper also counts the pictures
+ * drawn in the down window (judged frames that were not held): at MIN_SMOOTH_FPS or more a second it never steps down,
+ * whatever share of the frames came late (60: the lead's estimate, as above).
+ */
+export const MIN_SMOOTH_FPS = 60;
+
+/**
  * R2, the keeper does not alternate (estimates of the lead): a step up followed by a step down within FLAP_MS doubles the
  * calm wait before the next step up (upWindowMs at the start), up to MAX_UP_WAIT_MS; a step up that held for UP_HELD_MS
  * puts the wait back to its start.
@@ -106,7 +115,7 @@ export class FrameGovernor {
     private last = -1;
     private period: DisplayPeriod;
     /** each judged frame: missed or not */
-    private log: { t: number; missed: boolean }[] = [];
+    private log: { t: number; missed: boolean; held: boolean }[] = [];
     private lastChange = -Infinity;
     changes = 0;
     /**
@@ -213,12 +222,24 @@ export class FrameGovernor {
     calm(t: number): boolean {
         if (!this.enabled || this.step >= this.steps.length - 1) return true;
         if (!this.judging || t - Math.max(this.lastChange, this.windowFrom) < this.opts.downWindowMs) return false;
-        let n = 0, m = 0;
+        return this.downWindow(t).n > 0 && !this.tooSlow(t);
+    }
+
+    /** The judged frames of the last down window: all, missed, and pictures drawn (not held). */
+    private downWindow(t: number): { n: number; m: number; drawn: number } {
+        let n = 0, m = 0, drawn = 0;
         for (let i = this.log.length - 1; i >= 0 && t - this.log[i].t <= this.opts.downWindowMs; i--) {
             n++;
             if (this.log[i].missed) m++;
+            if (!this.log[i].held) drawn++;
         }
-        return n > 0 && m / n <= this.opts.downMissRatio;
+        return { n, m, drawn };
+    }
+
+    /** The down window has more missed frames than allowed and fewer than MIN_SMOOTH_FPS pictures a second (R1). */
+    private tooSlow(t: number): boolean {
+        const w = this.downWindow(t);
+        return w.n > 0 && w.m / w.n > this.opts.downMissRatio && w.drawn * 1000 < MIN_SMOOTH_FPS * this.opts.downWindowMs;
     }
 
     /**
@@ -268,7 +289,7 @@ export class FrameGovernor {
         const missed = held ? this.prevDt + dt > MISSED_PERIODS * period : dt > MISSED_PERIODS * period;
         this.prevDt = dt;
         if (missed && streaming) this.streamHitches++;
-        this.log.push({ t, missed });
+        this.log.push({ t, missed, held });
         while (this.log.length && t - this.log[0].t > this.opts.upWindowMs) this.log.shift();
         if (!this.enabled) return null;
         const since = t - this.lastChange;
@@ -283,7 +304,7 @@ export class FrameGovernor {
             }
             return n ? m / n : 0;
         };
-        if (since >= this.opts.downWindowMs && t - this.windowFrom >= this.opts.downWindowMs && this.step < this.steps.length - 1 && ratio(this.opts.downWindowMs) > this.opts.downMissRatio) {
+        if (since >= this.opts.downWindowMs && t - this.windowFrom >= this.opts.downWindowMs && this.step < this.steps.length - 1 && this.tooSlow(t)) {
             // R2: down again soon after a step up: the next step up waits twice as long
             if (t - this.lastUpAt < FLAP_MS) this.upWaitMs = Math.min(MAX_UP_WAIT_MS, this.upWaitMs * 2);
             this.lastUpAt = -Infinity;
