@@ -47,12 +47,72 @@ His laptop: Windows, RTX, 144 Hz, Chrome, keyboard and mouse, layouts ru/pl/en.
   (after the whole path and Exit): hud armed true, throttle 22 %, altitude -0.002 m. game.ts 450 'resting' needs Shift
   held (keys.lift < 0). The comment in fly-mode.ts that said otherwise is corrected. Not fixed (see Left after E2).
 
+- [x] E3 verify (independent, not finished): release of 5c545efa, own walk script, runs lap1536, lap1097ru, touch1536;
+  all 8 gates PASS. Findings 1 (keyboard test flight after Shift+B in the air) and 3 (second Exit tap on touch) PROVEN,
+  NOT repaired (reply budget); finding 2 pre-existing. Left: repair 1 and 3 with tests, NEG, a new browser pass.
+
 ## Left after E2
 
 - After Shift+B in the air the drone waits at the start with motors on (ARMED in the corner). The mode stays 'edit'
   (hold), so editing works; to fly again a keyboard pilot needs Space twice (disarm, arm) by the hold rule. Smallest
   fix, not made (flight code, needs a6-reference): in course.ts openEdit, when os.respawn, also stop the arm (game-pilot
   arm.stop) so one Space flies again. Guess, not measured: whether Space while armed disarms for the keyboard pilot.
+
+## Verify (E3, independent check of 5c545efa)
+
+Own script U:/Temp/gsfpv-train3/editfix/verify/walk.mjs (not the lane's probe; not committed), release build of 5c545efa
+(exit 0, sha256 1414b42c...), walls stand-ins in dist/walls, serve-csp 5821, Wroclaw 70b50d42. Results per run in
+verify/<name>.json, pictures U:/Temp/gsfpv-train3/shots/verify-<name>-NN-<step>.png.
+
+Run lap1536 (1536x730 x1.25, en, mouse, pointer lock taken by a click, take-off to 8.0 m, Shift+G 23 gates, Shift+B):
+- open: mode edit, lock null, the whole top bar shown; picture 02-open looked at: bar, ARMED in the corner, the start
+  gate's handles at the bottom left edge, no gate in the middle of the view (framing: DOUBT, not judged a fault).
+- view: W 3.96 m, right drag from the middle 0.43 and no change made; add: 23 -> 24, the new gate in view.
+- select: no other gate on screen at the open; the script did not walk back (fixed in walk.mjs for the later runs).
+- Shift+G in the view: 'The changes are not saved. Do it again to drop them' (words). Esc order: Esc 1 the unsaved line,
+  Esc 2 leaves. Exit by a click: one press leaves, override false, not paused. After Exit: a click takes the lock back
+  (CANVAS#view), Space + W fly (altitude -0.002 -> 6.5 m). Backslash (Fly by Sound here) after the view: the sound hook
+  is on, not paused.
+- Controls clicked once: drawer, Add, Undo, Redo, Save, Keys show an effect or words; Courses showed no change in the
+  script's signature (no '.ce-shown' counted at 900 ms): DOUBT (the lane's probe counted it 17 of 17; the next runs count
+  the '.course-editor' roots to rule out a stale root).
+- Pages errors: none.
+
+Findings
+1. PROVEN (fix's path, keyboard pilot): after Shift+B in the air the drone stays armed at the start with the hold set
+   (fly-mode.ts openStep, course.ts openEdit 909-912), and in the game scheme Space never disarms in the edit view
+   (devices/keyboard.ts onDownGame: Space only requests the arm; the tap that disarms, onUp 228-232, needs
+   editModeFlying()). Measured, run lap1536 step testfly: 3 Space taps of 90 ms, mode stays 'edit', armed true; then
+   Space held 1 s and W 0.4 s fly the drone UNSEEN under the edit view (altitude 0.55 -> 5.6 m, speed 2.3 m/s, mode edit).
+   Picture 06-testfly looked at: the edit view, ARMED, the line 'Arm your controller to fly the course at once' (names no
+   key for the keyboard). So a keyboard pilot cannot test-fly inside the mode after opening it in the air, and the open
+   line's promise 'Space ... flies the course' is a key that does nothing. Not repaired (no reply budget left for a
+   fix in flight/input code, a6-reference, a test with negative control and a new browser pass). Smallest fix proposed:
+   in openEdit, when the drone is armed, stop the arm of the keyboard's game pilot (game-pilot arm.stop, the same call as
+   keyboard.ts 232) so the hold clears on the next frame and one Space flies; a pad keeps the hold (switch off and on).
+   Also pre-existing for the crash hold (ED-3 says 'Space twice' for a keyboard pilot: measured here, Space does not
+   disarm at all in the game scheme).
+2. PROVEN, pre-existing (not from this fix): P (pause) and Shift+T in the edit view do nothing and say nothing (P: paused
+   false, no window, line unchanged; Shift+T: course on, mode edit, line unchanged). course.ts openEdit ctx.keys.block
+   blocks the app's keys while the view is open. Owner's rule 'no key that does nothing'. Not repaired.
+3. PROVEN by measurement, cause a guess (touch, fix's path): run touch1536 (hasTouch, every press a touchscreen tap):
+   Exit tap 1 'The changes are not saved. Esc again leaves without saving'; Exit tap 2: the view stays open (open true,
+   override true), the line back to 'Click a gate to change it...'. Run lap1097ru with the mouse: the second press leaves.
+   The lane's touch case used mouse clicks, not touch events, so it could not see this. Guess, not measured: top-bar.ts 64
+   now clears the held line on pointerup; for a tap Chrome hit-tests the click after pointerup, the line's new width has
+   moved the centred buttons, the click lands beside Exit (E1 cause 2 again, for touch only). Not repaired.
+
+Run lap1097ru (1097x497 x1.75, Cyrillic event.key, event.code KeyW...): flight 7.9 m, 34 gates, open mode edit, lock
+null, W 4.15 m, right drag 0.43 no change, a click selects gate 24 at 240,460, add 34 -> 35 in view, Exit 2 clicks (the
+unsaved line, then it leaves), after Exit a click takes the lock, Space + W fly. All pass.
+Run touch1536: open edit, W 4.15 m, right drag 0.38, select no other gate on screen after 5 S presses, add 21 -> 22 in
+view (taps), Exit see finding 3.
+Negative control of tools/bench/test/editfix-e2.test.ts: neg_control.py with origin/main for course.ts, fly-mode.ts,
+editor.css, top-bar.ts, panel.ts, view-mouse.ts: NEG OK (exit 1). flash.ts has no old version (new file).
+gates.py without --only on 5c545efa code (only this status file changed after): all 8 PASS (typecheck 35 s, vitest 123 s,
+api-unittest 228 s, architecture, i18n, catalog, b18, leaks), logs U:\Temp\gsfpv-gates-20261116-132518.
+Not verified: the pause shown over the edit view (P is blocked there, so it could not be opened), a test flight inside
+the mode with a pad, a real touch screen, the owner's laptop. Pictures looked at: lap1536 02-open and 06-testfly only.
 
 ## What the owner does
 
@@ -213,6 +273,9 @@ Pass 2 closed every item of the list below except the two lines marked 'still le
 - Not verified: a real touch screen, a real 144 Hz panel, a real Windows display scale (all emulated in headless Chrome).
 
 ## Cost notes
+
+- E3 verify (30 replies): the most went to finding the hooks and keys for my own walk script and to waits on runs;
+  cheaper: give the verifier a short hook sheet (editor state, hud, pause, sonic) and let it fix findings in a second stage.
 
 - E2 pass 2 (about 25 replies): the 17-case probe and the heavy checks (smoke, accept-fly) ran in the background
   while the gates ran, which saved most of the waiting; the most turns went to waits on those runs; cheaper: one script
