@@ -621,8 +621,19 @@ Stage R1-keeper
     city, softer; the square's cobbles and the far right buildings smear. loadq2-line.png (Wroclaw, 1366x768, touch
     sticks): the credit, 'Walls 5 cm' and 'Detail: 4.8 of 16 M, files to go: 118, about 22 s' stacked under the course
     clock 'School 1/4', nothing overlaps.
+- [x] 3b. R4 by its order (run 3 of this stage). (1) Shedding in the move frame: not possible from the page (item 3).
+  (2) A frame bound of 33 ms at rest would not act: the measured medians at rest at 3.75 M with the CPU x4 were 8.6 to
+  13.7 ms (r-after-lub-desktop-weak-c4-on.json, 23 to 49 s after the reveal). A smaller cap: a release with
+  STILL_TIMES_BASE 2 (U:/Temp/gsfpv-train3/loadq2/dist-cap2, build-cap2.log), Lublin desktop-weak CPU x4: on (rose to
+  1.875 M, 2 times 0.94 M) median 53.0, p90 111.3, worst 137.2 ms against off median 12.0, p90 19.8, worst 27.7 ms (4.42
+  times, worst +109.5 ms): FAILS (rest/r-cap2-*.json). (3) So the rise happens only while the flight is paused:
+  apps/fly/src/app/detail-rule.ts StillRise.hover (false on the page; true keeps the hover rule for a later engine fix),
+  cap back to 4 times; the line 'Detail: sharper while paused' and the setting's help in en, es, pl, ru say so. Test
+  'loadq2 R4' in tools/bench/test/loadq-detail.test.ts (20 pass); negative control with the detail-rule.ts of 115feaa6:
+  "expected 4 to be +0". Typecheck apps/fly exit 0. Probe switch PAUSEAT (P pauses; at MOVEAT P goes on, the first
+  second measured from that press). Side effect, wanted: with no hover rise the keeper judges a hover again (LR-4).
 - [ ] LEFT for the next run, in this order:
-  1. R4 by its order for the CPU x4 case. Shedding in the move frame: not possible from the page (engine source: a node
+  1. (done in 3b) R4 by its order for the CPU x4 case. Shedding in the move frame: not possible from the page (engine source: a node
      keeps its fine file until the coarse one is resident again; see item 3 above). Next: STILL_FRAME_MS 66 -> 33 in
      apps/fly/src/app/detail-rule.ts (the rise stops while the median frame at rest is 33 ms or more) and the c4 pair
      again (r-after2-lub-desktop-weak-c4-on/off, a new release); if it still fails: the rise only while the flight is

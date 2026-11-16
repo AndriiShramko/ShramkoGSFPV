@@ -68,6 +68,9 @@ const MOVEAT = env.MOVEAT !== undefined ? Number(env.MOVEAT) : null;
 const MOVELOGMS = Number(env.MOVELOGMS || 1700);
 const CPU = Number(env.CPU || 1);
 const FAULTAT = env.FAULTAT !== undefined ? Number(env.FAULTAT) : null;
+// loadq2 R4 switch PAUSEAT (s after the reveal): the P key pauses the flight; at MOVEAT the P key goes on with it and the
+// first second is measured from that press (the move log starts just before it)
+const PAUSEAT = env.PAUSEAT !== undefined ? Number(env.PAUSEAT) : null;
 // loadq2 switch: FLY (s after the reveal) moves the held camera along its start heading at FLYV (5) m/s for FLYSECS (60) s
 // and keeps the craft's sim speed at 2 m/s meanwhile, so the still rule sees a flight (a hook flight, not the keyboard)
 const FLY = env.FLY !== undefined ? Number(env.FLY) : null;
@@ -313,14 +316,23 @@ try {
             res.fault = { at: r2((Date.now() - revealAt) / 1000), sent, before, after: { still: after.still, engineBudgetM: after.engineBudgetM, detail: after.detail && { state: after.detail.state, shown: after.detail.shown, text: after.detail.text } }, setting, stored };
             await page.screenshot({ path: `U:/Temp/gsfpv-train3/shots/${label}-fault.png` });
         }
+        if (revealAt !== null && PAUSEAT !== null && !res.pausedAt && (Date.now() - revealAt) / 1000 >= PAUSEAT) {
+            await page.keyboard.press('KeyP');
+            res.pausedAt = r2((Date.now() - revealAt) / 1000);
+        }
         if (revealAt !== null && MOVEAT !== null && !res.move && (Date.now() - revealAt) / 1000 >= MOVEAT) {
             res.move = { at: r2((Date.now() - revealAt) / 1000), still: st.still };
             await page.evaluate(MOVELOG);
+            if (PAUSEAT !== null) {
+                await page.evaluate('window.__unp = performance.now()');
+                await page.keyboard.press('KeyP');
+            }
             await sleep(200);
             // the craft pushed to 2 m/s in the 11th logged frame (MOVELOG): a move as the still rule sees it
             await sleep(MOVELOGMS);
             const log = await page.evaluate('window.__mv').catch(() => []);
-            const moved = log.findIndex((x) => Math.abs(x[1]) >= 0.05 || Math.abs(x[2]) >= 0.05 || Math.abs(x[4]) >= 0.05 || x[5] >= 0.3);
+            const unp = PAUSEAT !== null ? await page.evaluate('window.__unp').catch(() => null) : null;
+            const moved = unp !== null ? log.findIndex((x) => x[0] >= unp) : log.findIndex((x) => Math.abs(x[1]) >= 0.05 || Math.abs(x[2]) >= 0.05 || Math.abs(x[4]) >= 0.05 || x[5] >= 0.3);
             const back = moved < 0 ? -1 : log.findIndex((x, i) => i >= moved && x[6] <= (st.still ? st.still.baseM : 0) + 0.01);
             res.move.frames = log.length; res.move.movedFrame = moved; res.move.baseBackFrame = back;
             res.move.framesToBase = moved >= 0 && back >= 0 ? back - moved : null;

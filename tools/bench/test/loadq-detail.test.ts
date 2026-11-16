@@ -70,6 +70,13 @@ describe('G3: a file that stalled and is asked again', () => {
     });
 });
 
+/** The rule with the hover rise switched on (StillRise.hover): the tests of the rise's own mechanics. */
+function hovering(): StillRise {
+    const r = new StillRise();
+    r.hover = true;
+    return r;
+}
+
 describe('G6: more detail while the craft is still', () => {
     const rest: StillSample = { now: 0, paused: false, speed: 0.05, turnDegS: 2, roll: 0, pitch: 0, yaw: 0, throttle: -0.1, frameMs: 10 };
     /** frames of `ms` each for `secs` seconds at 100 frames a second; the budgets after each frame */
@@ -83,46 +90,46 @@ describe('G6: more detail while the craft is still', () => {
         return out;
     }
     it('at rest the budget rises x1.5 a second after 1 s still, up to the memory cap', () => {
-        const r = new StillRise();
+        const r = hovering();
         const o = run(r, 0, 12);
         expect(o.find((x) => x.t === 1000)?.boostM).toBe(0);
         expect(o.find((x) => x.t === 1010)?.boostM).toBeCloseTo(0.75, 6);
         expect(o.find((x) => x.t === 2010)?.boostM).toBeCloseTo(1.125, 6);
         expect(r.boostM).toBe(2); // loadq2 R3: at most 4 times the flight budget 0.5
-        const capped = new StillRise();
+        const capped = hovering();
         run(capped, 0, 20, {}, 2, 4);
         expect(capped.boostM).toBe(4);
     });
     it('a stick move sets the base back in the same frame', () => {
-        const r = new StillRise();
+        const r = hovering();
         run(r, 0, 5);
         expect(r.boostM).toBeGreaterThan(0.5);
         expect(r.frame({ ...rest, now: 5010, roll: 0.2 }, 0.5, 16, true)).toBe(true);
         expect(r.boostM).toBe(0);
-        const t = new StillRise();
+        const t = hovering();
         run(t, 0, 5);
         expect(t.frame({ ...rest, now: 5010, throttle: 0.0 }, 0.5, 16, true)).toBe(true);
         expect(t.boostM).toBe(0);
     });
     it('speed or a turn over the bounds is a move; a paused flight rises, its end falls back', () => {
-        const r = new StillRise();
+        const r = hovering();
         run(r, 0, 5, { speed: 0.5 });
         expect(r.boostM).toBe(0);
         run(r, 5000, 5, { turnDegS: 30 });
         expect(r.boostM).toBe(0);
-        const p = new StillRise();
+        const p = hovering();
         run(p, 0, 5, { paused: true, speed: 3, roll: 0.5 });
         expect(p.boostM).toBeGreaterThan(0.5);
         expect(p.frame({ ...rest, now: 5010 }, 0.5, 16, true)).toBe(true);
         expect(p.boostM).toBe(0);
     });
     it('frames at the still bound stop the rise and step it back; the switch off keeps the base', () => {
-        const r = new StillRise();
+        const r = hovering();
         run(r, 0, 4);
         const top = r.boostM;
         run(r, 4000, 3, { frameMs: STILL_FRAME_MS + 4 });
         expect(r.boostM).toBeLessThan(top);
-        const off = new StillRise();
+        const off = hovering();
         for (let k = 1; k <= 500; k++) off.frame({ ...rest, now: k * 10 }, 0.5, 16, false);
         expect(off.boostM).toBe(0);
     });
@@ -144,7 +151,7 @@ describe('loadq2 review', () => {
         expect(detailState({ ...base, handSet: false })).toBe('still');
     });
     it('LR-4: the detail does not rise before the frame rate keeper has chosen the step of the flight', () => {
-        const r = new StillRise();
+        const r = hovering();
         const s = (now: number): StillSample => ({ now, paused: false, speed: 0, turnDegS: 0, roll: 0, pitch: 0, yaw: 0, throttle: -1, frameMs: 16 });
         for (let now = 16; now < 5000; now += 16) r.frame(s(now), 1, 8, true, false);
         expect(r.boostM).toBe(0);
@@ -159,13 +166,13 @@ describe('loadq2 R2-rest', () => {
         for (let now = from + 16; now < from + ms; now += 16) r.frame(s(now, o), baseM, capM, true, true, touch);
     };
     it('R3: the still budget stops at 4 times the flight budget, 2 on a touch device, and at the memory cap', () => {
-        const d = new StillRise();
+        const d = hovering();
         rise(d, 2.5, 16, false);
         expect(d.boostM).toBe(10);
-        const t = new StillRise();
+        const t = hovering();
         rise(t, 2, 16, true);
         expect(t.boostM).toBe(4);
-        const m = new StillRise();
+        const m = hovering();
         rise(m, 2.5, 4, false);
         expect(m.boostM).toBe(4);
         expect([stillTopM(2.5, 16, false), stillTopM(2, 16, true), stillTopM(2.5, 4, false), stillTopM(8, 4, false)]).toEqual([10, 4, 4, 8]);
@@ -177,7 +184,7 @@ describe('loadq2 R2-rest', () => {
         expect(detailState({ ...i, stillOff: false })).toBe('hidden');
     });
     it('R5: the view turning or moving is a move, in a pause too', () => {
-        const p = new StillRise();
+        const p = hovering();
         rise(p, 1, 16, false, { paused: true });
         expect(p.boostM).toBeGreaterThan(1);
         expect(p.frame(s(20100, { paused: true, viewTurnDegS: 40 }), 1, 16, true, true)).toBe(true);
@@ -186,8 +193,21 @@ describe('loadq2 R2-rest', () => {
         expect(p.boostM).toBe(0);
         rise(p, 1, 16, false, { paused: true, viewSpeed: 1 }, 25100, 5000);
         expect(p.boostM).toBe(0);
-        const h = new StillRise();
+        const h = hovering();
         rise(h, 1, 16, false, { viewTurnDegS: 3, viewSpeed: 0.05 });
         expect(h.boostM).toBeGreaterThan(1);
+    });
+});
+
+describe('loadq2 R4', () => {
+    const s = (now: number, o: Partial<StillSample> = {}): StillSample => ({ now, paused: false, speed: 0, turnDegS: 0, roll: 0, pitch: 0, yaw: 0, throttle: -1, frameMs: 16, ...o });
+    it('the page rises only in a pause: a still hover keeps the flight budget, a pause rises, the end of the pause falls back', () => {
+        const r = new StillRise();
+        for (let now = 16; now < 20000; now += 16) r.frame(s(now), 1, 16, true, true);
+        expect(r.boostM).toBe(0);
+        for (let now = 20000; now < 30000; now += 16) r.frame(s(now, { paused: true }), 1, 16, true, true);
+        expect(r.boostM).toBe(4);
+        expect(r.frame(s(30000), 1, 16, true, true)).toBe(true);
+        expect(r.boostM).toBe(0);
     });
 });

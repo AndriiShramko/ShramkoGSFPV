@@ -143,8 +143,8 @@ export function detailVisible(s: DetailState, since: number, now: number): boole
     return true;
 }
 
-// G6 (docs/wip/loadq.md, L1 (d)): more detail while the craft is still. While the craft's speed, turn rate and sticks
-// are near rest (or the page is paused), the budget rises step by step as long as the last second's median frame stays
+// G6 (docs/wip/loadq.md, L1 (d)): more detail at rest. While the flight is paused (loadq2 R4: no longer at a hover, see
+// StillRise.hover) and the view does not turn or move, the budget rises step by step as long as the last second's median frame stays
 // under STILL_FRAME_MS and under a cap by the device's memory; any move (or the end of a pause) sets the base back in
 // the same frame. Measured in L1 on Lublin from above at a base of 0.5 M: +4.9 dB after 5 s, +8.2 dB after 10 s.
 
@@ -206,6 +206,14 @@ export function stillTopM(baseM: number, capM: number, touch: boolean): number {
 /** The rule of G6: frame() once per frame; boostM is the budget a still picture draws (0: none, the base applies). */
 export class StillRise {
     boostM = 0;
+    /**
+     * loadq2 R4: false (the page): the detail rises only while the flight is paused. Measured with
+     * tools/bench/scripts/loadq-probe.mjs (docs/wip/loadq.md, R2-rest 3a and 3b), Lublin 140 m up, desktop-weak, the CPU
+     * slowed 4 times: after a rise at a hover the first second after the stick push had a median frame of 36.6 ms
+     * against 8.3 ms without the rise (53 against 12 ms with the rise held to 2 times the flight's budget), so a hover
+     * rise costs the flight. True: the rise at a hover too (it held at CPU 1: 1.13 and 1.25 times).
+     */
+    hover = false;
     private since = 0;
     private lastStep = 0;
     private throttle0 = 0;
@@ -219,7 +227,7 @@ export class StillRise {
         const off = (v: number): number => (v < 0 ? -v : v);
         // R5: the view turning or moving is a move, paused or not
         const viewMoving = (s.viewTurnDegS ?? 0) >= STILL_TURN_DEG_S || (s.viewSpeed ?? 0) >= STILL_SPEED_MS;
-        const moving = unpaused || viewMoving || (!s.paused && (s.speed >= STILL_SPEED_MS || s.turnDegS >= STILL_TURN_DEG_S
+        const moving = unpaused || viewMoving || (!s.paused && (!this.hover || s.speed >= STILL_SPEED_MS || s.turnDegS >= STILL_TURN_DEG_S
             || off(s.roll) >= STILL_STICK || off(s.pitch) >= STILL_STICK || off(s.yaw) >= STILL_STICK
             || (this.since > 0 && off(s.throttle - this.throttle0) >= STILL_STICK)));
         // the frame rate keeper chooses the flight's step before the detail rises (review LR-4); once risen, it is at rest

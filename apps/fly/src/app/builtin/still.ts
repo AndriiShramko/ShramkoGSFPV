@@ -7,6 +7,8 @@
 // graphics device or an out-of-memory error while the still budget stands puts the flight's budget back, switches the
 // setting off on this device and the detail line says so once (R3); the view turning or moving is a move, also in a
 // pause (R5: the camera is read, whatever turns it).
+// loadq2 R4: the rise happens only while the flight is paused (detail-rule.ts StillRise.hover: a hover rise cost the
+// flight 4.4 times its median frame in the first second after the move with the CPU slowed 4 times).
 import { S } from '@gsfpv/sim-core';
 import type { Feature } from '../context';
 import { StillRise, stillCapM, STILL_OFF_SHOW_MS } from '../detail-rule';
