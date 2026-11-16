@@ -27,6 +27,8 @@ const SCENE = process.env.SCENE ?? '70b50d42';
 const RUN_MS = 570000;
 /** a scan load in a headless page on this PC (an estimate with margin) */
 const LOAD_MS = 200000;
+/** how long join9 presses 9 on one page (a setting; JOIN_MS overrides it) */
+const JOIN_MS = Number(process.env.JOIN_MS ?? 200000);
 /** a course built in the page's worker (an estimate: course.ts says 15-31 s for one) */
 const BUILD_MS = 120000;
 
@@ -78,13 +80,19 @@ function watchSocket(page: Page): Frames {
     return f;
 }
 
-/** 9 pressed until the page is in the scan's room (a big scan answers keys only once it is in; 9 again while joining would leave). */
-async function join9(p: Page, members: number): Promise<boolean> {
+/** what join9 saw each 3 s on each page (R1.3 item 0: why 9 did not join on the big scan) */
+const joinTrace: Any[] = [];
+/** 9 pressed until the page is in the scan's room (a big scan answers keys only once it is in; 9 again while connecting
+ *  would start a second join). The hook's states are off, connecting, joined, lost (apps/fly/src/rooms/hook.ts). */
+async function join9(p: Page, members: number, name: string): Promise<boolean> {
     const t0 = Date.now();
-    while (Date.now() - t0 < LOAD_MS) {
-        const st = await ev<string>(p, 'return r ? r.state : "none";').catch(() => 'none');
-        if (st === 'joined' && await ev<boolean>(p, `return r.members.length >= ${members};`)) return true;
-        if (st !== 'joined' && st !== 'joining') await p.keyboard.press('Digit9');
+    while (Date.now() - t0 < JOIN_MS) {
+        const s = await ev<Any>(p, `return { st: r ? r.state : 'none', problem: r ? r.problem : null, said: r ? r.said.slice(-3) : [], members: r ? r.members.length : 0,
+            status: h.status ?? null, dialog: !!document.querySelector('#ui .screen, #ui .panel, dialog[open]'), panel: (document.querySelector('#ui .panel') || {}).className || null };`).catch((e) => ({ st: 'none', err: String(e).slice(0, 120) }));
+        let pressed = false;
+        if (s.st === 'joined' && s.members >= members) { joinTrace.push({ name, t: Date.now() - t0, ...s }); return true; }
+        if (s.st !== 'joined' && s.st !== 'connecting') { await p.keyboard.press('Digit9'); pressed = true; }
+        joinTrace.push({ name, t: Date.now() - t0, pressed, ...s });
         await p.waitForTimeout(3000);
     }
     return false;
@@ -118,10 +126,12 @@ async function main(): Promise<void> {
         const fa = watchSocket(LA.page); const fb = watchSocket(LB.page);
         const [A, B] = await Promise.all([open(LA, url), open(LB, url)]);
         out.loadMs = Date.now() - t00;
-        const aIn = await join9(A, 1);
-        const bIn = await join9(B, 2);
+        const aIn = await join9(A, 1, 'A');
+        const bIn = await join9(B, 2, 'B');
         out.joinMs = Date.now() - t00;
         out.meet = { aIn, bIn, sameRoom: (await look(A)).room === (await look(B)).room };
+        out.joinTrace = joinTrace;
+        if (process.env.JOIN_ONLY) { pass = aIn && bIn && out.meet.sameRoom; out.pass = pass; return; }
 
         // ---- R1.3 / R1.4: A makes a course, B follows
         await A.keyboard.press('Shift+KeyG');
@@ -157,7 +167,7 @@ async function main(): Promise<void> {
         browsers.push(LC);
         const fc = watchSocket(LC.page);
         const C = await open(LC, url);
-        const cIn = await join9(C, 3);
+        const cIn = await join9(C, 3, 'C');
         const cCourse = await until(C, `return !!c && c.on && c.gates > 0 && !!b && b.course === ${JSON.stringify(roomCourse)} && b.adopting === null;`, BUILD_MS);
         const c1 = await look(C);
         const lateGotBoard = (c1.board?.rows ?? []).filter((x: Any) => x.laps > 0).length === 2;
@@ -206,6 +216,8 @@ async function main(): Promise<void> {
     out.runMs = Date.now() - t00;
     const file = writeEvidence('rooms-board', out);
     console.log(JSON.stringify({ pass, checks: out.checks, follow: out.follow, lapLagMs: out.lapLagMs, flight: out.flight && { a: { ...out.flight.a, nexts: undefined }, b: { ...out.flight.b, nexts: undefined } }, runMs: out.runMs, error: out.error }));
+    if (out.joinTrace) console.log(out.joinTrace.map((x: Any) => `${x.name} ${x.t} ${x.st} p=${x.pressed ? 1 : 0} m=${x.members} dlg=${x.dialog ? 1 : 0} ${x.panel ?? ''} prob=${x.problem ?? ''} said=${(x.said ?? []).join('|')} ${x.err ?? ''}`).join('
+'));
     console.log(`evidence ${file}`);
     process.exitCode = pass ? 0 : 1;
 }
