@@ -146,7 +146,8 @@
         bottom: calc(max(14px, env(safe-area-inset-bottom)) + 26px);
         transform: none;
         text-align: right;
-        font-size: 0.7rem;
+        /* lane uiaudit U3: 12 px at the least (0.7rem measured 10.5 px at 844x390, ui-audit-probe.mjs) */
+        font-size: 12px;
         line-height: 1.25;
     }
     .course-time {
@@ -163,3 +164,7 @@
    the block itself lets the pointer through, the cross alone takes it */
 .course-hud .course-hud-x { position: absolute; top: 0; left: 100%; margin-left: 8px; pointer-events: auto; text-shadow: none; }
 .course-hud .course-hud-x::before { content: '\00d7'; }
+/* a short view: the block sits at the right edge, so its cross goes to the block's left, inside the view */
+@media (max-height: 500px) {
+    .course-hud .course-hud-x { left: auto; right: 100%; margin: 0 8px 0 0; }
+}
