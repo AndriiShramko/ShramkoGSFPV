@@ -19,6 +19,7 @@ import { writeEvidence } from './evidence';
 import { LOCK, lock, unlock } from './gpu-lock';
 import { REPO } from './sonicrec-serve';
 import { startRoomsRig } from './rooms-serve';
+import { panelByMenu } from './rooms-two-page';
 import type { RoomsRig } from './rooms-serve';
 
 const DIST = join(REPO, 'dist');
@@ -105,6 +106,28 @@ async function open(L: Launched, url: string): Promise<Page> {
     return L.page;
 }
 
+/** R1.3 item (1): on the rig 9 opens the rooms panel (joinOpen, builtin/rooms.ts) instead of joining, so A makes the room by
+ *  the panel's create button (opened by 9, or by the pause menu as in rooms-two-page.ts) and B and C open A's link. */
+async function createRoom(p: Page): Promise<{ created: boolean; link: string | null; how: string }> {
+    const btn = p.locator('[data-action=rooms-create]');
+    await p.keyboard.press('Digit9');
+    let how = 'key9';
+    if (!(await btn.waitFor({ timeout: 8000 }).then(() => true, () => false))) { how = 'menu'; await panelByMenu(p); await btn.waitFor({ timeout: 10000 }); }
+    await btn.click();
+    const created = await until(p, "return r.state === 'joined' && !!r.link;", 20000);
+    const link = await ev<string | null>(p, 'return r.link ?? null;');
+    await p.keyboard.press('Escape');
+    return { created, link, how };
+}
+
+async function byLink(L: Launched, link: string, members: number): Promise<{ page: Page; joined: boolean }> {
+    await L.page.goto(`${link}&simradio=open&nowarn=1`);
+    await waitReady(L.page, LOAD_MS);
+    const joined = await until(L.page, `return r.state === 'joined' && r.members.length >= ${members};`, 30000);
+    await L.page.waitForTimeout(1000);
+    return { page: L.page, joined };
+}
+
 async function main(): Promise<void> {
     // R1.3: two runs ended with exit 0 and no line after the lock was taken: say where the process left
     process.on('beforeExit', () => console.log('beforeExit: the event loop emptied', Date.now()));
@@ -130,14 +153,17 @@ async function main(): Promise<void> {
         browsers.push(LA, LB);
         out.browser = LA.which;
         const fa = watchSocket(LA.page); const fb = watchSocket(LB.page);
-        const [A, B] = await Promise.all([open(LA, url), open(LB, url)]);
+        const A = await open(LA, url);
         out.loadMs = Date.now() - t00;
         step('loaded');
-        const aIn = await join9(A, 1, 'A');
-        const bIn = await join9(B, 2, 'B');
+        const made = await createRoom(A);
+        if (!made.created || !made.link) throw new Error('A did not create a room: ' + JSON.stringify(made));
+        const link = made.link;
+        const { page: B, joined: bJoined } = await byLink(LB, link, 2);
+        const aIn = made.created; const bIn = bJoined;
         out.joinMs = Date.now() - t00;
-        out.meet = { aIn, bIn, sameRoom: (await look(A)).room === (await look(B)).room };
-        out.joinTrace = joinTrace;
+        out.meet = { aIn, bIn, how: made.how, sameRoom: (await look(A)).room === (await look(B)).room, aMembers: (await look(A)).members, bMembers: (await look(B)).members };
+        step('met ' + JSON.stringify(out.meet));
         if (process.env.JOIN_ONLY) { pass = aIn && bIn && out.meet.sameRoom; out.pass = pass; return; }
 
         // ---- R1.3 / R1.4: A makes a course, B follows
@@ -173,8 +199,7 @@ async function main(): Promise<void> {
         const LC = await launch();
         browsers.push(LC);
         const fc = watchSocket(LC.page);
-        const C = await open(LC, url);
-        const cIn = await join9(C, 3, 'C');
+        const { page: C, joined: cIn } = await byLink(LC, link, 3);
         const cCourse = await until(C, `return !!c && c.on && c.gates > 0 && !!b && b.course === ${JSON.stringify(roomCourse)} && b.adopting === null;`, BUILD_MS);
         const c1 = await look(C);
         const lateGotBoard = (c1.board?.rows ?? []).filter((x: Any) => x.laps > 0).length === 2;
