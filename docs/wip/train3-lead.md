@@ -172,6 +172,9 @@ script that prints a short result table at its end would have saved about 5 turn
 
 ## Integration B (sonic3)
 
+### Gates
+- S1 (after the merges and the catalogue, 85f8f92b): all 8 gates pass.
+
 ### Merged
 - sonic3 head 2cea7293 as eccb1f34 (--no-ff, no conflicts; git merged fly/sonic locales and sonic-int-lazy.test.ts by
   itself). It can not make the live site worse: Fly by Sound is opt-in (Backslash or the pause item); the parts that
@@ -518,6 +521,9 @@ Status (integration E, workers 1 and 2; finished):
 - [x] Full gates with leaks on the staged tree (after the evidence was staged): exit 0; typecheck, vitest, api-unittest,
       architecture, i18n, catalog, 'B18 PASS', leaks all PASS (U:/Temp/gsfpv-train3/e/gates-final.log).
 
+### Gates
+- S1 (after the merges and the catalogue, 85f8f92b): all 8 gates pass.
+
 ### Merged
 - fix3a 601a1151 with --no-ff: 44d76fce (no conflict). START / FINISH gate with banner, number plates, lit next gate, lap
   time large and the results card ('Lap time on screen'), run time at FINISH of an open course, generator ladder of gate
@@ -634,11 +640,14 @@ that undoes each ring before the next would have saved one 11-minute run.
 ### Progress
 - [x] S1 merges: uiaudit d8808c4c as 6fb07c4a, voxview bd69a86c as 48ff85f3, loadq 1b12f179 as d101e23d (all --no-ff, no conflicts). The loadq merge was refused at first by 31 untracked files of the lead copy under evidence/2026-11-15/ that loadq commits (30 of them differ from loadq's); they were moved, not deleted, to U:/Temp/gsfpv-train3/train3f/untracked-backup/ (list in U:/Temp/gsfpv-train3/train3f/collide.txt).
 - [x] S1 seam a (catalogue): scripts/gen-catalog.ts after the merges, 77 settings in 11 groups (this commit).
-- [ ] S1 seam f (a6-reference hash, locales in four languages, docs/decisions.md numbers)
-- [ ] S1 gates once
+- [x] S1 seam f on 85f8f92b: tools/bench/test/a6-reference.test.ts passes (hash held; the merges touch packages/collision/src/mesh.ts and overlay.ts, not the step); every locale folder has en, es, pl, ru with the same keys (key-parity script: 0 differences); no lane touched docs/decisions.md, numbers unchanged.
+- [x] S1 gates once on 85f8f92b: all 8 pass (typecheck, vitest 399 files 5277 tests, api-unittest, architecture, i18n, catalog, B18 PASS, leaks); logs U:/Temp/gsfpv-gates-20261116-063123. Note for the queue: the API run's shell has no python on PATH; the gates need PATH=/c/Users/andri/AppData/Local/Programs/Python/Python311:$PATH (without it vitest's rooms tests, api-unittest and leaks fail with 'no python').
 - [ ] S2 seams b, c, d, e and VR-7, VR-8
 - [ ] S3 release build with the published walls, probes, pictures, evidence
 - [ ] S4 live checks, the other parts of this section, gates on the final head
+
+### Gates
+- S1 (after the merges and the catalogue, 85f8f92b): all 8 gates pass.
 
 ### Merged
 - uiaudit d8808c4c, voxview bd69a86c (with voxview2), loadq 1b12f179 (with loadq2). None held back.
