@@ -1,0 +1,1653 @@
+{
+ "address": "http://localhost:5820/en",
+ "scan": "70b50d42",
+ "size": [
+  1280,
+  595
+ ],
+ "dsf": 1.5,
+ "touch": false,
+ "layout": "en",
+ "name": "weak-1280",
+ "lockAsked": true,
+ "early": "",
+ "fly": false,
+ "query": "&set.display.deviceClass=desktop-weak&set.display.scale=0.7",
+ "live": false,
+ "date": "2026-11-16T11:42:47.672Z",
+ "steps": {
+  "open": {
+   "ok": true,
+   "mode": "edit",
+   "lock": null
+  },
+  "a.view": {
+   "ok": true,
+   "moves": [
+    {
+     "by": "KeyW",
+     "moved": 4.53
+    },
+    {
+     "by": "KeyS",
+     "moved": 3.96
+    },
+    {
+     "by": "KeyD",
+     "moved": 3.96
+    },
+    {
+     "by": "KeyA",
+     "moved": 3.96
+    },
+    {
+     "by": "KeyE",
+     "moved": 3.96
+    },
+    {
+     "by": "KeyQ",
+     "moved": 3.96
+    },
+    {
+     "by": "rightDrag",
+     "moved": 0.4,
+     "changedBefore": false,
+     "changedAfter": false,
+     "said": "Editor open. W A S D move the view, E up, Q down, hold the right mouse button to look around, the wheel sets the speed. Click a gate: it carries one set of hand"
+    },
+    {
+     "by": "rightDragEmpty",
+     "moved": 0.38,
+     "changedBefore": false,
+     "changedAfter": false,
+     "said": "Editor open. W A S D move the view, E up, Q down, hold the right mouse button to look around, the wheel sets the speed. Click a gate: it carries one set of hand"
+    },
+    {
+     "by": "leftDragEmpty",
+     "moved": 0.29,
+     "changedBefore": false,
+     "changedAfter": false,
+     "said": "Editor open. W A S D move the view, E up, Q down, hold the right mouse button to look around, the wheel sets the speed. Click a gate: it carries one set of hand"
+    },
+    {
+     "by": "wheel",
+     "speed": [
+      4,
+      5.4
+     ],
+     "moved": 1
+    }
+   ]
+  },
+  "b.select": {
+   "ok": true,
+   "candidates": 7,
+   "from": 0,
+   "picked": 18,
+   "gatesOnScreen": 8
+  },
+  "c.add": {
+   "ok": true,
+   "gates": [
+    36,
+    37
+   ],
+   "newGate": [
+    658,
+    327,
+    2.15
+   ],
+   "inView": true,
+   "line": "The new gate is red. Gate 20 faces away from the way in. Press Turn on its bar and pull a ring until it faces the way you come from.",
+   "said": "The new gate is red. Gate 20 faces away from the way in. Press Turn on its bar and pull a ring until it faces the way you come from."
+  },
+  "d.controls": {
+   "ok": false,
+   "top": [
+    {
+     "id": "undo",
+     "ok": true,
+     "effect": true,
+     "disabled": false,
+     "title": "",
+     "line": "undo. Gate 19 of 36: ring, 1.2 m",
+     "panel": [
+      892,
+      86,
+      380,
+      43
+     ]
+    },
+    {
+     "id": "redo",
+     "ok": true,
+     "effect": true,
+     "disabled": false,
+     "title": "",
+     "line": "redo. Gate 20 of 37: ring, 1.2 m",
+     "panel": [
+      892,
+      86,
+      380,
+      43
+     ]
+    },
+    {
+     "id": "save",
+     "ok": true,
+     "effect": true,
+     "disabled": false,
+     "title": "",
+     "line": "Click a gate to change it. Arm your controller to fly the course at once, disarm to edit again",
+     "panel": [
+      892,
+      86,
+      380,
+      501
+     ]
+    },
+    {
+     "id": "courses",
+     "ok": false,
+     "effect": false,
+     "disabled": false,
+     "title": "",
+     "line": "Click a gate to change it. Arm your controller to fly the course at once, disarm to edit again",
+     "panel": [
+      892,
+      86,
+      380,
+      501
+     ]
+    },
+    {
+     "id": "keys",
+     "ok": false,
+     "effect": false,
+     "disabled": false,
+     "title": "",
+     "line": "Click a gate to change it. Arm your controller to fly the course at once, disarm to edit again",
+     "panel": [
+      892,
+      86,
+      380,
+      501
+     ]
+    }
+   ],
+   "window": [
+    {
+     "n": 0,
+     "text": "Course editor",
+     "act": "",
+     "effect": false,
+     "disabled": false,
+     "title": "",
+     "under": null
+    },
+    {
+     "n": 1,
+     "text": "Tabnext gate",
+     "act": "",
+     "effect": false,
+     "disabled": false,
+     "title": "",
+     "under": null
+    },
+    {
+     "n": 2,
+     "text": "Shift+Tabprevious gate",
+     "act": "",
+     "effect": false,
+     "disabled": false,
+     "title": "",
+     "under": null
+    },
+    {
+     "n": 3,
+     "text": "Upmove forward",
+     "act": "",
+     "effect": false,
+     "disabled": false,
+     "title": "",
+     "under": null
+    },
+    {
+     "n": 4,
+     "text": "Downmove back",
+     "act": "",
+     "effect": false,
+     "disabled": false,
+     "title": "",
+     "under": null
+    },
+    {
+     "n": 5,
+     "text": "Leftmove left",
+     "act": "",
+     "effect": false,
+     "disabled": false,
+     "title": "",
+     "under": "DIV.ce-topbar.interactive"
+    },
+    {
+     "n": 6,
+     "text": "Rightmove right",
+     "act": "",
+     "effect": false,
+     "disabled": false,
+     "title": "",
+     "under": "CANVAS#view"
+    },
+    {
+     "n": 7,
+     "text": "PgUpmove up",
+     "act": "",
+     "effect": false,
+     "disabled": false,
+     "title": "",
+     "under": "DIV.ce-topbar.interactive"
+    },
+    {
+     "n": 8,
+     "text": "PgDnmove down",
+     "act": "",
+     "effect": true,
+     "disabled": false,
+     "title": "",
+     "under": "BUTTON.btn"
+    },
+    {
+     "n": 9,
+     "text": "[turn left",
+     "act": "",
+     "effect": false,
+     "disabled": false,
+     "title": "",
+     "under": "DIV.radio-body"
+    },
+    {
+     "n": 10,
+     "text": "]turn right",
+     "act": "",
+     "effect": false,
+     "disabled": false,
+     "title": "",
+     "under": "DIV.radio-body"
+    },
+    {
+     "n": 11,
+     "text": "1ring",
+     "act": "",
+     "effect": true,
+     "disabled": false,
+     "title": "",
+     "under": "BUTTON.ce-key"
+    },
+    {
+     "n": 12,
+     "text": "2square",
+     "act": "",
+     "effect": true,
+     "disabled": false,
+     "title": "",
+     "under": "SPAN"
+    },
+    {
+     "n": 13,
+     "text": "3dive gate",
+     "act": "",
+     "effect": true,
+     "disabled": false,
+     "title": "",
+     "under": "SPAN"
+    },
+    {
+     "n": 14,
+     "text": "4cube",
+     "act": "",
+     "effect": true,
+     "disabled": false,
+     "title": "",
+     "under": "BUTTON.ce-key"
+    },
+    {
+     "n": 15,
+     "text": "+bigger",
+     "act": "",
+     "effect": true,
+     "disabled": false,
+     "title": "",
+     "under": "SPAN"
+    },
+    {
+     "n": 16,
+     "text": "-smaller",
+     "act": "",
+     "effect": true,
+     "disabled": false,
+     "title": "",
+     "under": "SPAN"
+    },
+    {
+     "n": 17,
+     "text": "Ins / Iadd a gate",
+     "act": "",
+     "effect": true,
+     "disabled": false,
+     "title": "",
+     "under": "SPAN"
+    },
+    {
+     "n": 18,
+     "text": "Deldelete the gate",
+     "act": "",
+     "effect": true,
+     "disabled": false,
+     "title": "",
+     "under": "SPAN"
+    },
+    {
+     "n": 19,
+     "text": ", .earlier or later in the order",
+     "act": "",
+     "effect": true,
+     "disabled": false,
+     "title": "",
+     "under": "SPAN"
+    },
+    {
+     "n": 20,
+     "text": "Ctrl+Zundo",
+     "act": "",
+     "effect": true,
+     "disabled": false,
+     "title": "",
+     "under": "SPAN"
+    },
+    {
+     "n": 21,
+     "text": "Ctrl+Yredo",
+     "act": "",
+     "effect": true,
+     "disabled": false,
+     "title": "",
+     "under": "BUTTON.ce-key"
+    },
+    {
+     "n": 22,
+     "text": "Ga new random course",
+     "act": "",
+     "effect": true,
+     "disabled": false,
+     "title": "",
+     "under": "SPAN"
+    },
+    {
+     "n": 23,
+     "text": "F6to the window: name, buttons, courses ",
+     "act": "",
+     "effect": true,
+     "disabled": false,
+     "title": "",
+     "under": "SPAN"
+    },
+    {
+     "n": 24,
+     "text": "Escleave the editor",
+     "act": "",
+     "effect": true,
+     "disabled": false,
+     "title": "",
+     "under": "SPAN"
+    },
+    {
+     "n": 25,
+     "text": "Your name",
+     "act": "",
+     "effect": true,
+     "disabled": false,
+     "title": "",
+     "under": "INPUT.ce-name"
+    },
+    {
+     "n": 26,
+     "text": "Course gk6h2y",
+     "act": "",
+     "effect": true,
+     "disabled": false,
+     "title": "",
+     "under": "INPUT.ce-course-title"
+    },
+    {
+     "n": 27,
+     "text": "Save as my course",
+     "act": "",
+     "effect": true,
+     "disabled": false,
+     "title": "",
+     "under": "BUTTON.ce-save-mine"
+    },
+    {
+     "n": 28,
+     "text": "Save for everyone",
+     "act": "",
+     "skipped": "saves or sends"
+    }
+   ]
+  },
+  "e.exit": {
+   "ok": true,
+   "presses": [
+    {
+     "n": 0,
+     "open": false,
+     "line": null
+    }
+   ],
+   "override": false,
+   "paused": true,
+   "windows": [
+    "DIV.screen.radio.interactive"
+   ]
+  }
+ },
+ "clicks": [
+  {
+   "label": "controls.keyboard",
+   "at": [
+    370,
+    421
+   ],
+   "lockBefore": null,
+   "under": "BUTTON.btn",
+   "peChain": [
+    [
+     "BUTTON.btn",
+     "auto"
+    ],
+    [
+     "DIV#ui",
+     "none"
+    ]
+   ],
+   "windowSaw": [
+    "pointerdown>BUTTON.btn",
+    "click>BUTTON.btn"
+   ],
+   "clickBubbled": [
+    "BUTTON.btn"
+   ]
+  },
+  {
+   "label": "scene.toFly",
+   "at": [
+    640,
+    298
+   ],
+   "lockBefore": null,
+   "under": "CANVAS#view",
+   "peChain": [
+    [
+     "CANVAS#view",
+     "auto"
+    ]
+   ],
+   "windowSaw": [
+    "pointerdown>CANVAS#view",
+    "click>CANVAS#view"
+   ],
+   "clickBubbled": [
+    "CANVAS#view"
+   ]
+  },
+  {
+   "label": "view.rightDrag",
+   "at": [
+    640,
+    298
+   ],
+   "lockBefore": null,
+   "under": "CANVAS#view",
+   "peChain": [
+    [
+     "CANVAS#view",
+     "auto"
+    ]
+   ]
+  },
+  {
+   "label": "view.rightDragEmpty",
+   "at": [
+    256,
+    369
+   ],
+   "lockBefore": null,
+   "under": "CANVAS#view",
+   "peChain": [
+    [
+     "CANVAS#view",
+     "auto"
+    ]
+   ]
+  },
+  {
+   "label": "view.leftDragEmpty",
+   "at": [
+    256,
+    369
+   ],
+   "lockBefore": null,
+   "under": "CANVAS#view",
+   "peChain": [
+    [
+     "CANVAS#view",
+     "auto"
+    ]
+   ]
+  },
+  {
+   "label": "gate.18",
+   "at": [
+    351,
+    238
+   ],
+   "lockBefore": null,
+   "under": "CANVAS#view",
+   "peChain": [
+    [
+     "CANVAS#view",
+     "auto"
+    ]
+   ],
+   "windowSaw": [
+    "pointerdown>CANVAS#view",
+    "click>CANVAS#view"
+   ],
+   "clickBubbled": [
+    "CANVAS#view"
+   ],
+   "effect": {
+    "selected": 18,
+    "want": 18
+   }
+  },
+  {
+   "label": "top.add",
+   "at": [
+    354,
+    28
+   ],
+   "lockBefore": null,
+   "under": "BUTTON.ce-tb[top=add]",
+   "peChain": [
+    [
+     "BUTTON.ce-tb[top=add]",
+     "auto"
+    ],
+    [
+     "DIV#ui",
+     "none"
+    ]
+   ],
+   "windowSaw": [
+    "pointerdown>BUTTON.ce-tb[top=add]",
+    "click>BUTTON.ce-tb[top=add]"
+   ],
+   "clickBubbled": [
+    "BUTTON.ce-tb[top=add]"
+   ],
+   "effect": {
+    "topLine": "Click the place for the new gate (Esc: no new gate)",
+    "pressed": "true"
+   }
+  },
+  {
+   "label": "scene.place",
+   "at": [
+    640,
+    428
+   ],
+   "lockBefore": null,
+   "under": "CANVAS#view",
+   "peChain": [
+    [
+     "CANVAS#view",
+     "auto"
+    ]
+   ],
+   "windowSaw": [
+    "pointerdown>CANVAS#view",
+    "click>CANVAS#view"
+   ],
+   "clickBubbled": [
+    "CANVAS#view"
+   ]
+  },
+  {
+   "label": "top.undo",
+   "at": [
+    316,
+    28
+   ],
+   "lockBefore": null,
+   "under": "BUTTON.ce-tb[top=undo]",
+   "peChain": [
+    [
+     "BUTTON.ce-tb[top=undo]",
+     "auto"
+    ],
+    [
+     "DIV#ui",
+     "none"
+    ]
+   ],
+   "windowSaw": [
+    "pointerdown>BUTTON.ce-tb[top=undo]",
+    "click>BUTTON.ce-tb[top=undo]"
+   ],
+   "clickBubbled": [
+    "BUTTON.ce-tb[top=undo]"
+   ],
+   "effect": true
+  },
+  {
+   "label": "top.redo",
+   "at": [
+    493,
+    28
+   ],
+   "lockBefore": null,
+   "under": "BUTTON.ce-tb[top=redo]",
+   "peChain": [
+    [
+     "BUTTON.ce-tb[top=redo]",
+     "auto"
+    ],
+    [
+     "DIV#ui",
+     "none"
+    ]
+   ],
+   "windowSaw": [
+    "pointerdown>BUTTON.ce-tb[top=redo]",
+    "click>BUTTON.ce-tb[top=redo]"
+   ],
+   "clickBubbled": [
+    "BUTTON.ce-tb[top=redo]"
+   ],
+   "effect": true
+  },
+  {
+   "label": "top.save",
+   "at": [
+    554,
+    28
+   ],
+   "lockBefore": null,
+   "under": "BUTTON.ce-tb[top=save]",
+   "peChain": [
+    [
+     "BUTTON.ce-tb[top=save]",
+     "auto"
+    ],
+    [
+     "DIV#ui",
+     "none"
+    ]
+   ],
+   "windowSaw": [
+    "pointerdown>BUTTON.ce-tb[top=save]",
+    "click>BUTTON.ce-tb[top=save]"
+   ],
+   "clickBubbled": [
+    "BUTTON.ce-tb[top=save]"
+   ],
+   "effect": true
+  },
+  {
+   "label": "top.courses",
+   "at": [
+    503,
+    28
+   ],
+   "lockBefore": null,
+   "under": "BUTTON.ce-tb[top=courses]",
+   "peChain": [
+    [
+     "BUTTON.ce-tb[top=courses]",
+     "auto"
+    ],
+    [
+     "DIV#ui",
+     "none"
+    ]
+   ],
+   "windowSaw": [
+    "pointerdown>BUTTON.ce-tb[top=courses]",
+    "click>BUTTON.ce-tb[top=courses]"
+   ],
+   "clickBubbled": [
+    "BUTTON.ce-tb[top=courses]"
+   ],
+   "effect": false
+  },
+  {
+   "label": "top.keys",
+   "at": [
+    570,
+    28
+   ],
+   "lockBefore": null,
+   "under": "BUTTON.ce-tb[top=keys]",
+   "peChain": [
+    [
+     "BUTTON.ce-tb[top=keys]",
+     "auto"
+    ],
+    [
+     "DIV#ui",
+     "none"
+    ]
+   ],
+   "windowSaw": [
+    "pointerdown>BUTTON.ce-tb[top=keys]",
+    "click>BUTTON.ce-tb[top=keys]"
+   ],
+   "clickBubbled": [
+    "BUTTON.ce-tb[top=keys]"
+   ],
+   "effect": false
+  },
+  {
+   "label": "win.0",
+   "at": [
+    964,
+    -159
+   ],
+   "lockBefore": null,
+   "under": null,
+   "peChain": [],
+   "windowSaw": [
+    "pointerdown>HTML",
+    "click>HTML"
+   ],
+   "clickBubbled": [
+    "HTML"
+   ],
+   "effect": false
+  },
+  {
+   "label": "win.1",
+   "at": [
+    993,
+    -49
+   ],
+   "lockBefore": null,
+   "under": null,
+   "peChain": [],
+   "windowSaw": [
+    "pointerdown>HTML",
+    "click>HTML"
+   ],
+   "clickBubbled": [
+    "HTML"
+   ],
+   "effect": false
+  },
+  {
+   "label": "win.2",
+   "at": [
+    1171,
+    -49
+   ],
+   "lockBefore": null,
+   "under": null,
+   "peChain": [],
+   "windowSaw": [
+    "pointerdown>HTML",
+    "click>HTML"
+   ],
+   "clickBubbled": [
+    "HTML"
+   ],
+   "effect": false
+  },
+  {
+   "label": "win.3",
+   "at": [
+    993,
+    -20
+   ],
+   "lockBefore": null,
+   "under": null,
+   "peChain": [],
+   "windowSaw": [
+    "pointerdown>HTML",
+    "click>HTML"
+   ],
+   "clickBubbled": [
+    "HTML"
+   ],
+   "effect": false
+  },
+  {
+   "label": "win.4",
+   "at": [
+    1171,
+    -20
+   ],
+   "lockBefore": null,
+   "under": null,
+   "peChain": [],
+   "windowSaw": [
+    "pointerdown>HTML",
+    "click>HTML"
+   ],
+   "clickBubbled": [
+    "HTML"
+   ],
+   "effect": false
+  },
+  {
+   "label": "win.5",
+   "at": [
+    993,
+    9
+   ],
+   "lockBefore": null,
+   "under": "DIV.ce-topbar.interactive",
+   "peChain": [
+    [
+     "DIV.ce-topbar.interactive",
+     "auto"
+    ],
+    [
+     "DIV#ui",
+     "none"
+    ]
+   ],
+   "windowSaw": [
+    "pointerdown>DIV.ce-topbar.interactive",
+    "click>DIV.ce-topbar.interactive"
+   ],
+   "clickBubbled": [
+    "DIV.ce-topbar.interactive"
+   ],
+   "effect": false
+  },
+  {
+   "label": "win.6",
+   "at": [
+    1171,
+    9
+   ],
+   "lockBefore": null,
+   "under": "CANVAS#view",
+   "peChain": [
+    [
+     "CANVAS#view",
+     "auto"
+    ]
+   ],
+   "windowSaw": [
+    "pointerdown>CANVAS#view",
+    "click>CANVAS#view"
+   ],
+   "clickBubbled": [
+    "CANVAS#view"
+   ],
+   "effect": false
+  },
+  {
+   "label": "win.7",
+   "at": [
+    993,
+    38
+   ],
+   "lockBefore": null,
+   "under": "DIV.ce-topbar.interactive",
+   "peChain": [
+    [
+     "DIV.ce-topbar.interactive",
+     "auto"
+    ],
+    [
+     "DIV#ui",
+     "none"
+    ]
+   ],
+   "windowSaw": [
+    "pointerdown>DIV.ce-topbar.interactive",
+    "click>DIV.ce-topbar.interactive"
+   ],
+   "clickBubbled": [
+    "DIV.ce-topbar.interactive"
+   ],
+   "effect": false
+  },
+  {
+   "label": "win.8",
+   "at": [
+    1171,
+    38
+   ],
+   "lockBefore": null,
+   "under": "BUTTON.btn",
+   "peChain": [
+    [
+     "BUTTON.btn",
+     "auto"
+    ],
+    [
+     "DIV.top-actions",
+     "none"
+    ],
+    [
+     "DIV#ui",
+     "none"
+    ]
+   ],
+   "windowSaw": [
+    "pointerdown>BUTTON.btn",
+    "click>BUTTON.btn"
+   ],
+   "clickBubbled": [
+    "BUTTON.btn"
+   ],
+   "effect": true
+  },
+  {
+   "label": "win.9",
+   "at": [
+    993,
+    67
+   ],
+   "lockBefore": null,
+   "under": "DIV.radio-body",
+   "peChain": [
+    [
+     "DIV.radio-body",
+     "auto"
+    ],
+    [
+     "DIV#ui",
+     "none"
+    ]
+   ],
+   "windowSaw": [
+    "pointerdown>DIV.radio-body",
+    "click>DIV.radio-body"
+   ],
+   "clickBubbled": [
+    "DIV.radio-body"
+   ],
+   "effect": false
+  },
+  {
+   "label": "win.10",
+   "at": [
+    1171,
+    67
+   ],
+   "lockBefore": null,
+   "under": "DIV.radio-body",
+   "peChain": [
+    [
+     "DIV.radio-body",
+     "auto"
+    ],
+    [
+     "DIV#ui",
+     "none"
+    ]
+   ],
+   "windowSaw": [
+    "pointerdown>DIV.radio-body",
+    "click>DIV.radio-body"
+   ],
+   "clickBubbled": [
+    "DIV.radio-body"
+   ],
+   "effect": false
+  },
+  {
+   "label": "win.11",
+   "at": [
+    993,
+    96
+   ],
+   "lockBefore": null,
+   "under": "BUTTON.ce-key",
+   "peChain": [
+    [
+     "BUTTON.ce-key",
+     "auto"
+    ],
+    [
+     "DIV#ui",
+     "none"
+    ]
+   ],
+   "windowSaw": [
+    "pointerdown>BUTTON.ce-key",
+    "click>BUTTON.ce-key"
+   ],
+   "clickBubbled": [
+    "BUTTON.ce-key"
+   ],
+   "effect": true
+  },
+  {
+   "label": "win.12",
+   "at": [
+    1171,
+    96
+   ],
+   "lockBefore": null,
+   "under": "SPAN",
+   "peChain": [
+    [
+     "SPAN",
+     "auto"
+    ],
+    [
+     "DIV#ui",
+     "none"
+    ]
+   ],
+   "windowSaw": [
+    "pointerdown>SPAN",
+    "click>SPAN"
+   ],
+   "clickBubbled": [
+    "SPAN"
+   ],
+   "effect": true
+  },
+  {
+   "label": "win.13",
+   "at": [
+    993,
+    125
+   ],
+   "lockBefore": null,
+   "under": "SPAN",
+   "peChain": [
+    [
+     "SPAN",
+     "auto"
+    ],
+    [
+     "DIV#ui",
+     "none"
+    ]
+   ],
+   "windowSaw": [
+    "pointerdown>SPAN",
+    "click>SPAN"
+   ],
+   "clickBubbled": [
+    "SPAN"
+   ],
+   "effect": true
+  },
+  {
+   "label": "win.14",
+   "at": [
+    1171,
+    125
+   ],
+   "lockBefore": null,
+   "under": "BUTTON.ce-key",
+   "peChain": [
+    [
+     "BUTTON.ce-key",
+     "auto"
+    ],
+    [
+     "DIV#ui",
+     "none"
+    ]
+   ],
+   "windowSaw": [
+    "pointerdown>BUTTON.ce-key",
+    "click>BUTTON.ce-key"
+   ],
+   "clickBubbled": [
+    "BUTTON.ce-key"
+   ],
+   "effect": true
+  },
+  {
+   "label": "win.15",
+   "at": [
+    993,
+    154
+   ],
+   "lockBefore": null,
+   "under": "SPAN",
+   "peChain": [
+    [
+     "SPAN",
+     "auto"
+    ],
+    [
+     "DIV#ui",
+     "none"
+    ]
+   ],
+   "windowSaw": [
+    "pointerdown>SPAN",
+    "click>SPAN"
+   ],
+   "clickBubbled": [
+    "SPAN"
+   ],
+   "effect": true
+  },
+  {
+   "label": "win.16",
+   "at": [
+    1171,
+    154
+   ],
+   "lockBefore": null,
+   "under": "SPAN",
+   "peChain": [
+    [
+     "SPAN",
+     "auto"
+    ],
+    [
+     "DIV#ui",
+     "none"
+    ]
+   ],
+   "windowSaw": [
+    "pointerdown>SPAN",
+    "click>SPAN"
+   ],
+   "clickBubbled": [
+    "SPAN"
+   ],
+   "effect": true
+  },
+  {
+   "label": "win.17",
+   "at": [
+    993,
+    183
+   ],
+   "lockBefore": null,
+   "under": "SPAN",
+   "peChain": [
+    [
+     "SPAN",
+     "auto"
+    ],
+    [
+     "DIV#ui",
+     "none"
+    ]
+   ],
+   "windowSaw": [
+    "pointerdown>SPAN",
+    "click>SPAN"
+   ],
+   "clickBubbled": [
+    "SPAN"
+   ],
+   "effect": true
+  },
+  {
+   "label": "win.18",
+   "at": [
+    1171,
+    183
+   ],
+   "lockBefore": null,
+   "under": "SPAN",
+   "peChain": [
+    [
+     "SPAN",
+     "auto"
+    ],
+    [
+     "DIV#ui",
+     "none"
+    ]
+   ],
+   "windowSaw": [
+    "pointerdown>SPAN",
+    "click>SPAN"
+   ],
+   "clickBubbled": [
+    "SPAN"
+   ],
+   "effect": true
+  },
+  {
+   "label": "win.19",
+   "at": [
+    993,
+    219
+   ],
+   "lockBefore": null,
+   "under": "SPAN",
+   "peChain": [
+    [
+     "SPAN",
+     "auto"
+    ],
+    [
+     "DIV#ui",
+     "none"
+    ]
+   ],
+   "windowSaw": [
+    "pointerdown>SPAN",
+    "click>SPAN"
+   ],
+   "clickBubbled": [
+    "SPAN"
+   ],
+   "effect": true
+  },
+  {
+   "label": "win.20",
+   "at": [
+    1171,
+    219
+   ],
+   "lockBefore": null,
+   "under": "SPAN",
+   "peChain": [
+    [
+     "SPAN",
+     "auto"
+    ],
+    [
+     "DIV#ui",
+     "none"
+    ]
+   ],
+   "windowSaw": [
+    "pointerdown>SPAN",
+    "click>SPAN"
+   ],
+   "clickBubbled": [
+    "SPAN"
+   ],
+   "effect": true
+  },
+  {
+   "label": "win.21",
+   "at": [
+    993,
+    263
+   ],
+   "lockBefore": null,
+   "under": "BUTTON.ce-key",
+   "peChain": [
+    [
+     "BUTTON.ce-key",
+     "auto"
+    ],
+    [
+     "DIV#ui",
+     "none"
+    ]
+   ],
+   "windowSaw": [
+    "pointerdown>BUTTON.ce-key",
+    "click>BUTTON.ce-key"
+   ],
+   "clickBubbled": [
+    "BUTTON.ce-key"
+   ],
+   "effect": true
+  },
+  {
+   "label": "win.22",
+   "at": [
+    1171,
+    263
+   ],
+   "lockBefore": null,
+   "under": "SPAN",
+   "peChain": [
+    [
+     "SPAN",
+     "auto"
+    ],
+    [
+     "DIV#ui",
+     "none"
+    ]
+   ],
+   "windowSaw": [
+    "pointerdown>SPAN",
+    "click>SPAN"
+   ],
+   "clickBubbled": [
+    "SPAN"
+   ],
+   "effect": true
+  },
+  {
+   "label": "win.23",
+   "at": [
+    993,
+    323
+   ],
+   "lockBefore": null,
+   "under": "SPAN",
+   "peChain": [
+    [
+     "SPAN",
+     "auto"
+    ],
+    [
+     "DIV#ui",
+     "none"
+    ]
+   ],
+   "windowSaw": [
+    "pointerdown>SPAN",
+    "click>SPAN"
+   ],
+   "clickBubbled": [
+    "SPAN"
+   ],
+   "effect": true
+  },
+  {
+   "label": "win.24",
+   "at": [
+    1171,
+    323
+   ],
+   "lockBefore": null,
+   "under": "SPAN",
+   "peChain": [
+    [
+     "SPAN",
+     "auto"
+    ],
+    [
+     "DIV#ui",
+     "none"
+    ]
+   ],
+   "windowSaw": [
+    "pointerdown>SPAN",
+    "click>SPAN"
+   ],
+   "clickBubbled": [
+    "SPAN"
+   ],
+   "effect": true
+  },
+  {
+   "label": "win.25",
+   "at": [
+    993,
+    529
+   ],
+   "lockBefore": null,
+   "under": "INPUT.ce-name",
+   "peChain": [
+    [
+     "INPUT.ce-name",
+     "auto"
+    ],
+    [
+     "DIV#ui",
+     "none"
+    ]
+   ],
+   "windowSaw": [
+    "pointerdown>INPUT.ce-name",
+    "click>INPUT.ce-name"
+   ],
+   "clickBubbled": [
+    "INPUT.ce-name"
+   ],
+   "effect": true
+  },
+  {
+   "label": "win.26",
+   "at": [
+    1172,
+    529
+   ],
+   "lockBefore": null,
+   "under": "INPUT.ce-course-title",
+   "peChain": [
+    [
+     "INPUT.ce-course-title",
+     "auto"
+    ],
+    [
+     "DIV#ui",
+     "none"
+    ]
+   ],
+   "windowSaw": [
+    "pointerdown>INPUT.ce-course-title",
+    "click>INPUT.ce-course-title"
+   ],
+   "clickBubbled": [
+    "INPUT.ce-course-title"
+   ],
+   "effect": true
+  },
+  {
+   "label": "win.27",
+   "at": [
+    993,
+    559
+   ],
+   "lockBefore": null,
+   "under": "BUTTON.ce-save-mine",
+   "peChain": [
+    [
+     "BUTTON.ce-save-mine",
+     "auto"
+    ],
+    [
+     "DIV#ui",
+     "none"
+    ]
+   ],
+   "windowSaw": [
+    "pointerdown>BUTTON.ce-save-mine",
+    "click>BUTTON.ce-save-mine"
+   ],
+   "clickBubbled": [
+    "BUTTON.ce-save-mine"
+   ],
+   "effect": true
+  },
+  {
+   "label": "top.exit",
+   "at": [
+    624,
+    28
+   ],
+   "lockBefore": null,
+   "under": "BUTTON.ce-tb[top=exit]",
+   "peChain": [
+    [
+     "BUTTON.ce-tb[top=exit]",
+     "auto"
+    ],
+    [
+     "DIV#ui",
+     "none"
+    ]
+   ],
+   "windowSaw": [
+    "pointerdown>BUTTON.ce-tb[top=exit]",
+    "click>BUTTON.ce-tb[top=exit]"
+   ],
+   "clickBubbled": [
+    "BUTTON.ce-tb[top=exit]"
+   ],
+   "effect": {
+    "open": false,
+    "line": null
+   }
+  }
+ ],
+ "ready": {
+  "status": "ready",
+  "ms": 4086
+ },
+ "controlsBelowFold": {
+  "y": 687,
+  "viewH": 595,
+  "afterWheel": 421
+ },
+ "afterControls": {
+  "open": false,
+  "selected": 0,
+  "changed": false,
+  "said": "",
+  "flying": false,
+  "refused": null,
+  "mode": null,
+  "gatesN": null,
+  "courseGates": 0,
+  "courseOn": false,
+  "problem": null,
+  "cam": null,
+  "view": null,
+  "handles": null,
+  "stand": null,
+  "gates": null,
+  "override": false,
+  "lock": null,
+  "topLine": null,
+  "topClass": null,
+  "panelClass": null,
+  "panelBox": null,
+  "panelScroll": null,
+  "canvas": [
+   1632,
+   759,
+   1280,
+   595
+  ],
+  "dpr": 1.5,
+  "maxTouch": 0,
+  "status": "ready",
+  "paused": false,
+  "windows": [],
+  "hud": {
+   "armed": false,
+   "crashed": false,
+   "throttlePct": 0,
+   "speed": 0,
+   "altitude": 0,
+   "crashes": 0
+  },
+  "active": "BODY.flying"
+ },
+ "lockAfterClick": "CANVAS#view",
+ "course": {
+  "ok": true,
+  "ms": 11091,
+  "gates": 36,
+  "problem": null
+ },
+ "open": {
+  "ok": true,
+  "ms": 6,
+  "mode": "edit",
+  "flying": false,
+  "lock": null,
+  "handles": true,
+  "topClass": "ce-topbar interactive",
+  "topLine": "Editor open. W A S D move the view, E up, Q down, hold the right mouse button to look around, the wheel sets the speed. Click a gate: it carries one set of handles at a time, chosen by Move, Turn or Size on the bar under it (or M, R, T); pull them with the mouse. Space or your controller's arm switch flies the course (hold Space to climb); a short Space or the switch again goes back to editing. Esc leaves",
+  "canvas": [
+   1632,
+   759,
+   1280,
+   595
+  ],
+  "dpr": 1.5,
+  "maxTouch": 0,
+  "hud": {
+   "armed": false,
+   "crashed": false,
+   "throttlePct": 0,
+   "speed": 0,
+   "altitude": 0,
+   "crashes": 0
+  },
+  "windows": [],
+  "gatesN": 36,
+  "selected": 0,
+  "override": true
+ },
+ "final": {
+  "open": false,
+  "selected": 19,
+  "changed": true,
+  "said": "Not saved. Gate 20 faces away from the way in. Press Turn on its bar and pull a ring until it faces the way you come from.",
+  "flying": false,
+  "refused": null,
+  "mode": null,
+  "gatesN": null,
+  "courseGates": 36,
+  "courseOn": true,
+  "problem": null,
+  "cam": null,
+  "view": null,
+  "handles": null,
+  "stand": null,
+  "override": false,
+  "lock": null,
+  "topLine": null,
+  "topClass": null,
+  "panelClass": null,
+  "panelBox": null,
+  "panelScroll": null,
+  "canvas": [
+   1632,
+   759,
+   1280,
+   595
+  ],
+  "dpr": 1.5,
+  "maxTouch": 0,
+  "status": "ready",
+  "paused": true,
+  "windows": [
+   "DIV.screen.radio.interactive"
+  ],
+  "hud": {
+   "armed": false,
+   "crashed": false,
+   "throttlePct": 0,
+   "speed": 0,
+   "altitude": 0,
+   "crashes": 0
+  },
+  "active": "BODY.flying"
+ },
+ "fails": [
+  "d.controls"
+ ],
+ "log": [
+  "console: Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "console: Failed to load resource: the server responded with a status of 403 ()",
+  "console: Failed to load resource: the server responded with a status of 403 ()",
+  "console: Failed to load resource: the server responded with a status of 403 ()",
+  "console: Failed to load resource: the server responded with a status of 403 ()",
+  "console: Failed to load resource: the server responded with a status of 403 ()",
+  "console: Failed to load resource: the server responded with a status of 403 ()"
+ ]
+}

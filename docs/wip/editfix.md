@@ -26,8 +26,31 @@ His laptop: Windows, RTX, 144 Hz, Chrome, keyboard and mouse, layouts ru/pl/en.
   (en es pl ru); 2 top-bar.ts clears a held line on pointerup, not pointerdown; 3 view-mouse.ts gizmos take the left
   button only (HANDLE_BUTTONS, in place: PlayCanvas 2.23.2 has a getter only). Test tools/bench/test/editfix-e2.test.ts
   6 tests, NEG OK (all 6 fail on origin/main files); editor3-*.test.ts + it: 122 passed; tsc apps/fly exit 0.
-- [ ] E2.2 release build; probe over all cases of E1 (fly cases must now open in mode edit); pictures editfix-after-*.
-- [ ] E2.3 editor3-smoke Wroclaw and Tunis; accept-fly B6 B7 B9-B16; a6-reference; all gates; live check edit-mouse-wroclaw.
+- [x] E2.2 release build of ad2d4e2e (exit 0, sha256 2f0ade65...), walls stand-ins copied into dist/walls, serve-csp 5820;
+  probe over all 17 cases of E1 (runner U:/Temp/gsfpv-train3/editfix/run-after.sh, list cases-after.txt, log
+  runs-after.log, evidence evidence/2026-11-16/editfix-after/, summary sum-after.cjs): table 'After E2' below.
+- [x] E2.3 a6-reference: 1 passed. Live check edit-mouse-wroclaw added to deploy/live-checks.sh (ef2fa18a), NOT run.
+- [ ] E2.4 Courses and Keys of the top bar have no visible effect when the window is already open and the part already on
+  screen (17 of 17 cases, d.controls). Fix planned, not made: panel.ts reveal() flashes the part (class ce-shown for about
+  1.2 s, estimate) and editor.css draws it; the probe's signature (edit-mouse-probe.mjs line 77) reads the count of
+  '.ce-shown'; a test with a negative control; then run cases base-1920 and lap-1536 again.
+- [ ] E2.5 editor3-smoke.ts on Wroclaw 70b50d42 and Tunis 887f27aa; accept-fly B6 B7 B9 B10 B11 B12 B13 B14 B15 B16 (SITE
+  local, first line names it); typecheck of all touched packages; gates.py without --only (exit 0); status 'What the
+  owner does' and 'For the lead' final.
+
+## After E2 (Wroclaw 70b50d42, local release of ad2d4e2e, 17 cases)
+
+Every case: open in mode 'edit' (pointer lock null at open), a keys W..Q 3.96-4.34 m each, right drag in the middle
+0.40-0.43 (was 0 where the handles stood there), right drag on an empty place 0.38-0.42, wheel 4 -> 5.4; b a click
+selects a gate; c Add gate then a click puts a gate in view; e Exit leaves (second press after 'not saved' now lands).
+d fails in 17 of 17 only by Courses and Keys (E2.4). The flown cases base-1920, fly-1536, fly-ru-1536, fly-tap-1536,
+which failed every step before, now pass a, b, c, e.
+- Picture U:/Temp/gsfpv-train3/shots/editfix-after-fly-1536.png, looked at: after a flight and Shift+B a person sees the
+  whole top bar (Add gate, Undo, Redo, Save, Courses, Keys, Exit and the line 'Editor open. W A S D move the view...'),
+  the gate's tool bar and the start gate with its handles; the corner still says ARMED (the drone was put back on the
+  start, its motors are still on). Pictures of the other 16 cases are in the same folder, not looked at.
+- Not measured: whether a keyboard pilot's motors stop by themselves at the start after the open (game-pilot.ts landed)
+  so that one Space press flies again; the probe's fly-tap case tapped Space before the open, not after.
 
 ## The cause (measured)
 
