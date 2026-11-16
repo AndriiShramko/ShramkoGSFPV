@@ -63,6 +63,11 @@ const UIAT = env.UIAT !== undefined ? Number(env.UIAT) : null;
 const STILLOFF = env.STILLOFF === '1';
 const PRESSAT = env.PRESSAT !== undefined ? Number(env.PRESSAT) : null;
 const MOVEAT = env.MOVEAT !== undefined ? Number(env.MOVEAT) : null;
+// loadq2 switch: FLY (s after the reveal) moves the held camera along its start heading at FLYV (5) m/s for FLYSECS (60) s
+// and keeps the craft's sim speed at 2 m/s meanwhile, so the still rule sees a flight (a hook flight, not the keyboard)
+const FLY = env.FLY !== undefined ? Number(env.FLY) : null;
+const FLYV = Number(env.FLYV || 5);
+const FLYSECS = Number(env.FLYSECS || 60);
 const UISTATES = (env.UISTATES || '').split(',').filter(Boolean).map((x) => x.split(':'));
 const MOVELOG = `(() => {
     const h = window.__gsfpv; const s = h.session; const a = s.renderer.app; window.__mv = [];
@@ -71,7 +76,7 @@ const MOVELOG = `(() => {
 })()`;
 const vw = Number(env.VW || 1920);
 const vh = Number(env.VH || 1080);
-const OUT = 'U:/Temp/gsfpv-train3/loadq';
+const OUT = env.OUT || 'U:/Temp/gsfpv-train3/loadq';
 const PNG = join(REPO, '.cache', 'lod-view');
 mkdirSync(OUT, { recursive: true });
 mkdirSync(PNG, { recursive: true });
@@ -153,7 +158,8 @@ const HOLD = (up, pitch) => `(() => {
     const c = { pos: [p.x, p.y + ${up ?? 0}, p.z], yaw: Math.atan2(f.x, f.z), pitch: ${up === null ? 'Math.asin(Math.max(-1, Math.min(1, f.y)))' : `${pitch} * Math.PI / 180`} };
     window.__gsHold = c;
     s.cameraOverride = true;
-    a.on('update', () => { const k = window.__gsHold; r.setCameraLookAt(k.pos[0], k.pos[1], k.pos[2], k.pos[0] + Math.sin(k.yaw) * Math.cos(k.pitch) * 10, k.pos[1] + Math.sin(k.pitch) * 10, k.pos[2] + Math.cos(k.yaw) * Math.cos(k.pitch) * 10); });
+    a.on('update', (dt) => { const k = window.__gsHold; const fl = window.__gsFly;
+        if (fl && performance.now() < fl.until) { k.pos[0] += Math.sin(k.yaw) * fl.v * dt; k.pos[2] += Math.cos(k.yaw) * fl.v * dt; const v = s.runner.sim.s; v[3] = 2; v[4] = 0; v[5] = 0; } r.setCameraLookAt(k.pos[0], k.pos[1], k.pos[2], k.pos[0] + Math.sin(k.yaw) * Math.cos(k.pitch) * 10, k.pos[1] + Math.sin(k.pitch) * 10, k.pos[2] + Math.cos(k.yaw) * Math.cos(k.pitch) * 10); });
     return { pos: c.pos.map((x) => Math.round(x * 10) / 10), yawDeg: Math.round(c.yaw * 1800 / Math.PI) / 10, pitchDeg: Math.round(c.pitch * 1800 / Math.PI) / 10 };
 })()`;
 
@@ -228,6 +234,10 @@ try {
             res.hold = await page.evaluate(HOLD(UP, PITCH)).catch((e) => ({ error: String(e.message) }));
             if (DELAY) await page.evaluate(`window.__gsfpv.setFrameDelay(${DELAY})`).catch(() => {});
             if (STILLOFF) res.stillOff = await page.evaluate("JSON.stringify(window.__gsfpv.prefs.set('display.stillDetail', false))").catch((e) => String(e.message));
+        }
+        if (revealAt !== null && FLY !== null && !res.fly && (Date.now() - revealAt) / 1000 >= FLY) {
+            res.fly = { at: r2((Date.now() - revealAt) / 1000), v: FLYV, secs: FLYSECS };
+            await page.evaluate(`window.__gsFly = { v: ${FLYV}, until: performance.now() + ${FLYSECS * 1000} }`).catch((e) => { res.fly.error = String(e.message); });
         }
         const ds = st.detail;
         for (const [want, name] of UISTATES) if (ds && ds.shown && ds.state === want && !(res.uiStates ||= {})[want]) {

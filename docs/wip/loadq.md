@@ -386,9 +386,29 @@ Stage R1-keeper
   pin 293ebaea (without it apps/fly did not typecheck); typecheck of apps/fly and render-pc exit 0.
 - [x] 1. Review findings (below, LR-1 to LR-7) and the rules today (R1, R2 below).
 - [x] 2. R1, R2 and the real findings built with unit tests and negative controls (this commit).
-- [ ] 3. Browser, Wroclaw 70b50d42, before and after: spawn 120 s and street flight, uncapped and +30 ms; retry counts;
-  hand-set 16 M proof; the line at 1366x768 and 844x390.
-- [ ] 4. governor-start-probe, gates.py --only vitest,architecture,i18n,b18,leaks, a6-reference.
+- [x] 2b. Typecheck apps/fly and render-pc on 05b0c7ad exit 0 (U:/Temp/gsfpv-train3/loadq2/tc3.log); tests
+  packages/render-pc/test (all), loadq-detail, app-lod, drawing-ask, fly-parity: 422 pass. Probe switch FLY / FLYV /
+  FLYSECS and OUT in tools/bench/scripts/loadq-probe.mjs (the held camera moves along its start heading, the craft's sim
+  speed is kept at 2 m/s so the still rule sees a flight; a hook flight, not the keyboard) (this commit).
+- [~] 3. Browser runs. Done: the release build of 05b0c7ad (the AFTER code; sha256 in
+  U:/Temp/gsfpv-train3/loadq2/build-before.log, a copy with the Wroclaw walls stand-in in
+  U:/Temp/gsfpv-train3/loadq2/dist-after-05b0c7ad). Left, in this order:
+  a. BEFORE build: put the files of 3fea63e2 in place (git show 3fea63e2:<f> > <f> for packages/render-pc/src/governor.ts,
+     apps/fly/src/app/quality.ts, apps/fly/src/app/detail-rule.ts, apps/fly/src/app/builtin/still.ts), run
+     node scripts/build-release.mjs detached with a log (about 7 min; edit nothing meanwhile), copy dist to
+     U:/Temp/gsfpv-train3/loadq2/dist-before-3fea63e2 with dist/walls/70b50d42 from U:/Temp/gsfpv-train2/walls/release,
+     then git checkout HEAD -- those four files. Serve before on 5820 and after on 5821 (serve-csp.mjs <dir> <port>).
+  b. One GPU lock per run, OUT=U:/Temp/gsfpv-train3/loadq2, BENCH_UNCAPPED=1, untouched desktop-strong, SECS=180 FLY=120
+     FLYSECS=60 (120 s at the spawn, then 60 s along the street): before and after, as is and with DELAY=30. Table: the
+     governor step per second (govStep), asked against distinct files, drawn at the end; after: no step down while the
+     frame median is under 16.7 ms; with DELAY=30 one step down, no alternation.
+  c. After only: DROP=10 DROPTRIES=999 SECS=120 and DROP=1 DROPTRIES=999 SECS=120: requests against files (the bound
+     from the code is 6 a failing file).
+  d. After only: PILOT=16 DELAY=50 PRESSAT=25 UISTATES=kept:loadq2-kept,lowered:loadq2-lowered SECS=60 (the L2 lq2-slow50
+     proof again); VW=1366 VH=768 and VW=844 VH=390 with PILOT=16 UIAT=6 SECS=15 for the line's size and overlap (look at
+     each picture; course clock block not on this scene: say so).
+- [ ] 4. governor-start-probe (it loads with set.display.stillDetail=0), gates.py --only
+  vitest,architecture,i18n,b18,leaks, tools/bench/test/a6-reference.test.ts; status, changed files, commit.
 
 ## The rules the code had (state before loadq2)
 
