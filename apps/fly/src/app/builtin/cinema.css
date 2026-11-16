@@ -5,7 +5,7 @@
 .rec-bar[hidden] { display: none; }
 .rec-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
 .rec-bar .btn { min-height: 40px; padding: 6px 12px; background: rgba(12,14,18,.82); }
-.rec-bar .btn kbd { margin-left: 2px; padding: 1px 6px; border: 1px solid #3a4452; border-bottom-width: 2px; border-radius: 6px; background: #0b0e12; color: var(--muted); font: 600 11px/16px ui-monospace, Consolas, monospace; }
+.rec-bar .btn kbd { margin-left: 2px; padding: 1px 6px; border: 1px solid #3a4452; border-bottom-width: 2px; border-radius: 6px; background: #0b0e12; color: var(--muted); font: 600 12px/16px ui-monospace, Consolas, monospace; }
 body.touch-on .rec-bar .btn kbd { display: none; } /* no keyboard to press */
 .btn.rec-auto::before { content: ""; width: 10px; height: 10px; border-radius: 50%; border: 2px solid currentColor; flex: none; }
 .btn.rec-auto[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }

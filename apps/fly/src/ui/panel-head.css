@@ -1,0 +1,11 @@
+/* The one header of U1 (ui/panel-head.ts) and the visible shape of every panel's cross (.panel-x):
+   a 44 px target with a border and a background, so it reads as a button and not as a caption. */
+button.panel-x { box-sizing: border-box; min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; flex: none; border: 1px solid var(--line, #3a4654); border-radius: 10px; background: rgba(255, 255, 255, .08); color: var(--fg, #e5e7eb); font-size: 24px; line-height: 1; cursor: pointer; }
+button.panel-x:hover { background: rgba(255, 255, 255, .16); }
+.panel-x:focus-visible, .ph-fold:focus-visible { outline: 2px solid var(--accent, #facc15); outline-offset: 2px; }
+.ph-head { display: flex; align-items: center; gap: 8px; }
+.ph-head .ph-title { margin: 0 auto 0 0; font-size: 16px; }
+.ph-fold { box-sizing: border-box; min-width: 44px; min-height: 44px; flex: none; border: 1px solid var(--line, #3a4654); border-radius: 10px; background: rgba(255, 255, 255, .08); color: var(--fg, #e5e7eb); font-size: 18px; line-height: 1; cursor: pointer; }
+/* the F3 frame line's cross: the line is a HUD text, the cross alone takes the pointer */
+.osd.frame { position: relative; padding-right: 52px; }
+.osd.frame > .osd-x { position: absolute; top: 0; right: 0; pointer-events: auto; }

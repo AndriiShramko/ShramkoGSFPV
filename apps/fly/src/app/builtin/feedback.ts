@@ -333,7 +333,13 @@ export const feedback: Feature = {
     install(ctx) {
         ctx.menu.add({ id: 'pause.feedback', action: 'feedback.open', labelKey: 'fb.menu', order: 110, section: 'tools', run: () => openFeedback(ctx) });
         // B over the flight; with the pause menu up the menu's item takes it (app/menu.ts)
-        ctx.keys.on('feedback.open', () => { if (!dialogOpen()) openFeedback(ctx); });
+        ctx.keys.on('feedback.open', (e) => {
+            if (e.repeat) return;
+            // a second B closes the form it opened (U1); inside a text field B is a letter (the key router)
+            const x = ctx.ui.querySelector<HTMLButtonElement>('.panel.feedback .panel-x');
+            if (x) x.click();
+            else if (!dialogOpen()) openFeedback(ctx);
+        });
         // the landing's "Help tune it" (/{lang}/fly/?drone=<id>&open=tune): the Drone physics form, once
         if (q.get('open') === 'tune') openFeedback(ctx, 'drone', { drone: q.get('drone') ?? undefined, onClose: forgetTuneLink });
     }

@@ -225,6 +225,7 @@
   "hud.armed": "ARMED",
   "hud.disarmed": "DISARMED",
   "hud.crash": "CRASH",
+  "hud.frameHide": "Hide the frame line",
   "hud.acro": "ACRO",
   "hud.angle": "ANGLE",
   "hud.crashes": "crashes {n}",

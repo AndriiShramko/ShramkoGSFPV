@@ -126,7 +126,7 @@ const measure = (scope) => page.evaluate((scope) => {
         if (!n.textContent.trim() || !n.parentElement || !vis(n.parentElement)) continue;
         const pe = n.parentElement; if (pe.closest('.visually-hidden, [aria-hidden=true] kbd')) continue;
         const f = parseFloat(getComputedStyle(pe).fontSize);
-        if (f < 12) { small++; if (!smallText) smallText = n.textContent.trim().slice(0, 40); }
+        if (f < 12) { small++; if (!smallText) smallText = `${pe.tagName.toLowerCase()}.${(pe.className || '').toString().split(' ')[0]} ${f}px: ${n.textContent.trim().slice(0, 40)}`; }
         if (f < minFont) minFont = f;
     }
     // controls: no accessible name, or a symbol as the only visible word
@@ -135,7 +135,7 @@ const measure = (scope) => page.evaluate((scope) => {
         if (!vis(e)) continue;
         const nm = accName(e); const text = (e.textContent ?? '').trim();
         const id = `${e.tagName.toLowerCase()}${e.getAttribute('data-action') ? '[' + e.getAttribute('data-action') + ']' : ''}`;
-        if (!nm) noName.push(id);
+        if (!nm) noName.push(`${id}${e.id ? '#' + e.id : ''}${e.getAttribute('type') ? '(' + e.getAttribute('type') + ')' : ''}.${(e.className || '').toString().split(' ')[0]}`);
         else if (e.tagName !== 'INPUT' && e.tagName !== 'SELECT' && e.tagName !== 'TEXTAREA' && text && !/[\p{L}\p{N}]{2}/u.test(text)) symbolOnly.push(`${id}"${text.slice(0, 6)}"`);
         const r = e.getBoundingClientRect();
         if (r.height < 24 || r.width < 24) tinyTargets.push(`${id}${Math.round(r.width)}x${Math.round(r.height)}`);
