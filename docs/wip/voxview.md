@@ -132,6 +132,10 @@ Owner's messages 58 and 60 (2026-11-15); lead's decisions V1-V4. Stages: X1-dept
 - [x] X2.9 Browser after (release 854214b2 and 3be318ba, port 5742, Facts X2 after). Pictures looked at:
   voxview-far.png, voxview-street.png, voxview-far-weak.png (Wroclaw), voxview-tunis.png.
 
+- [x] X2.10 Time left from the meshes' pace of the last 2 s (commits 41d67990, 8febc1b2, 80a27f9a; Left 1).
+- [x] X2.11 accept-fly B6-B16 (10 PASS), walls-published-probe (3 pass), typecheck, a6-reference, gates (Left 2).
+- [x] X2 closed (this commit). Every stage of the lane is finished.
+
 ## Facts X2 after (release 854214b2 / 3be318ba, voxels alone, BENCH_UNCAPPED=1, 1280x800, port 5742)
 
 Results U:/Temp/gsfpv-train2/voxview/far-x2c.json, far-x2c-weak.json, far-x2d-tunis.json, far-x2d.json (logs beside).
@@ -223,7 +227,7 @@ closes it at all four sizes; the chip closed it only at 844x390 in the probe's c
 
 ## Left
 
-Stage X2-whole-scene, in this order (built and measured: Facts X2 after):
+Stage X2-whole-scene: closed (this commit); nothing left in this lane. Done items kept for the record:
 1. [x] Time left from the pace of the last 2 s (this commit): apps/fly/src/voxel-keeper.ts fillLeftS(samples, now,
    share) and trimFillSamples, FILL_PACE_MS 2000 (estimate); apps/fly/src/voxels.ts keeps the readings; falls back to
    the pace since the start when the last 2 s brought nothing. tools/bench/test/voxview-keeper.test.ts 9 passed;
@@ -237,16 +241,23 @@ Stage X2-whole-scene, in this order (built and measured: Facts X2 after):
    the mesh count gives about 11 s at 1 % and 4 s at 5 % (worked by hand, an estimate).
 1c. [x] The pace is read from the share of meshes on screen (this commit): drawnShare returns meshShare
    (apps/fly/src/voxel-keeper.ts), apps/fly/src/voxels.ts feeds it to fillLeftS; the walls line's percent stays the
-   chunk share. Test +1 (10 passed); control with the HEAD voxel-keeper.ts: "expected undefined to be 50".
+   chunk share. Test +1 (10 passed); control with the HEAD voxel-keeper.ts: `expected undefined to be 50`.
    Typecheck apps/fly 0 errors.
 1d. [x] Rerun on release 8febc1b2 (sha256 88f50793dd63..., port 5742, FAR_PHASES=spawn, BENCH_UNCAPPED=1,
    U:/Temp/gsfpv-train2/voxview/far-x2f.json): full at 12.2 s after the switch (27236 of 27236 chunks to 231 m,
    1854 meshes), frame 9.5 ms mean (p95 34). Time left by the mesh pace: none shown at 1 % (7.1 s, first reading),
    3 s at 12 % (8.2 s, real 4.0), 1 s at 24 % (real 3.0), 1 s at 61 % (real 2.0), 1 s at 97 %. So it now runs
    slightly short instead of 27 times too long.
-2. accept-fly B6 B7 B9 B10 B11 B12 B13 B14 B15 B16 (SITE=http://localhost:5742/en; it takes the GPU lock itself),
-   walls-published-probe on the local copy (wrap in the lock), gates.py --only vitest (alone, no probe beside it).
-3. Status: What the owner does, Not verified (no weak device), For the lead (list below is current).
+2. [x] accept-fly B6 B7 B9 B10 B11 B12 B13 B14 B15 B16 on the release 8febc1b2 (SITE=http://localhost:5742, its first
+   line "accept-fly target: http://localhost:5742", it took the GPU lock itself): all 10 PASS
+   (U:/Temp/gsfpv-train2/voxview/accept-fly-x2.log; its evidence files under evidence/2026-11-15, the UTC date, b-fly-*.json, are left untracked).
+   walls-published-probe on the local copy (GPU lock, U:/Temp/gsfpv-train2/voxview/walls-published-x2.json):
+   70b50d42, ab5efa0e, d10c5638 pass, published walls 200, no build, 20 tunnel passes and 0 penetrations each (the
+   other 6 stand-in ids not flown). Typecheck apps/fly, packages/collision, packages/render-pc: 0 errors each.
+   a6-reference: 1 passed. gates.py --only vitest,architecture,i18n,b18,leaks (U:/Temp/gsfpv-gates-20261116-010127):
+   vitest 189 s, architecture, i18n, leaks PASS; b18 failed on the word for a missing value in this file's record of
+   a test message; quoted as code, b18 alone PASS (U:/Temp/gsfpv-gates-20261116-010542).
+3. [x] Status: What the owner does, Not verified, For the lead (this commit).
 - Seen, not in this list: packages/sonic-fpv was checked out at b05aeda (not the pin 293ebae) in this worktree; X1 put
   it back on the pin with git submodule update (clean working tree, nothing lost).
 
@@ -274,6 +285,24 @@ Stage X2-whole-scene, in this order (built and measured: Facts X2 after):
   hide gate pixels behind voxel faces in the over-the-scan view (voxel faces depth-only, then full-colour copies of the
   gates after them, with the World gates hidden in that mode: needs a change in course/view.ts beyond depth settings).
 
+## What the owner does
+
+1. Open a scan (Wroclaw 70b50d42 or Tunis 887f27aa) and press Shift+G for a course, or just fly.
+2. Press V twice (off -> over the scan -> voxels only), or press the walls chip on the credit line at the bottom left
+   and choose "Voxels only". The whole scan appears in voxels: the near streets per voxel at once, the far part in
+   larger cubes within seconds; the walls line in the panel says how much is drawn ("the whole scene: 61% drawn,
+   to 231 m") and about how many seconds are left, then 100 %.
+3. Fly. A gate in front of a wall hides the wall; a gate behind a wall is hidden by it. The guide chip at the top
+   still points to the next gate.
+4. The panel: the minus folds it, the cross at its top right closes it, Esc closes it, the chip closes it too. On a
+   small screen it stays inside the view and scrolls inside itself.
+5. On a weak laptop nothing to do: if frames get slow, the near detail is lowered by itself; the far part stays.
+
 ## Not verified
 
-- No weak device and no touch device were used. The depth was proven on Wroclaw only (Tunis 887f27aa not run in X1).
+- No weak device and no touch device were used: the weak case was forced (voxels.setDetail(0.125)) on this PC
+  (i9-7980XE, frames 4 to 10 ms), so the keeper's thresholds (40 ms, 20 ms, floor 1/8) are estimates that never
+  acted on a real slow frame.
+- The depth (V1) was proven on Wroclaw only (Tunis 887f27aa not run for depth). Over the scan a gate behind a scan
+  wall shows (For the lead, item on the splats).
+- The time left was measured on Wroclaw from the street only; at 1 % no number is shown yet (one reading).
