@@ -8,7 +8,7 @@
 //   node tools/bench/scripts/edit-mouse-probe.mjs <address with /en> <scan> <WxH> <device scale> <touch 0|1> <layout en|ru|pl> <name> <out.json>
 // env: LOCK=0 (never click into the scene: no pointer lock; the take-off by keys), EARLY=building|controls (Shift+B while the
 // course is made / in the first second after the Controls screen closes), QUERY (more query, e.g. &set.display.deviceClass=
-// desktop-weak), FLY=0 (no take-off), SHOTS (U:/Temp/gsfpv-train3/shots). Never presses a save, send, vote or create control
+// desktop-weak), FLY=0 (no take-off), COURSE_MS (wait for the course, default 480000), SHOTS (U:/Temp/gsfpv-train3/shots). Never presses a save, send, vote or create control
 // on an address that is not localhost. Headless (tools/bench/src/chrome.mjs pickBrowser); takes no GPU lock itself (wrap it).
 // Exit 1 when a step has no effect.
 import { createRequire } from 'node:module';
@@ -153,7 +153,15 @@ try {
     res.ready = { status: ready.v, ms: ready.ms };
     if (ready.v !== 'ready') throw new Error(`page status ${ready.v}`);
     // the Controls screen: a click on Keyboard, as a person does
-    const kb = await page.waitForSelector('.screen.radio [data-action="radio-keyboard"]', { timeout: 20000 }).then(() => boxOf('.screen.radio [data-action="radio-keyboard"]')).catch(() => null);
+    const KB = '.screen.radio [data-action="radio-keyboard"]';
+    let kb = await page.waitForSelector(KB, { timeout: 20000 }).then(() => boxOf(KB)).catch(() => null);
+    // a short view: the button may stand below the visible part; a person scrolls the screen (the wheel over it) first
+    if (kb && kb.y > H) {
+        res.controlsBelowFold = { y: Math.round(kb.y), viewH: H };
+        await page.mouse.move(W / 2, H / 2);
+        for (let i = 0; i < 6 && kb && kb.y > H - 10; i++) { await page.mouse.wheel(0, 300); await sleep(300); kb = await boxOf(KB); }
+        res.controlsBelowFold.afterWheel = kb ? Math.round(kb.y) : null;
+    }
     if (kb) await click('controls.keyboard', kb.x, kb.y, { after: EARLY === 'controls' ? 300 : 1500 });
     res.afterControls = await snap();
     if (EARLY === 'controls') {
@@ -179,7 +187,7 @@ try {
             res.buildingAtB = await snap();
             await key('KeyB', { shift: true });
         } else {
-            const gen = await until(snap, (s) => (s.courseGates ?? 0) > 0 && s.courseOn, 480000, 1000);
+            const gen = await until(snap, (s) => (s.courseGates ?? 0) > 0 && s.courseOn, Number(env.COURSE_MS || 480000), 1000);
             res.course = { ok: gen.ok, ms: gen.ms, gates: gen.v.courseGates, problem: gen.v.problem };
             if (!gen.ok) throw new Error('no course');
             await sleep(1500);
@@ -209,11 +217,14 @@ try {
         const b = camOf(await snap());
         moves.push({ by: k, moved: r2(dist(a, b)) });
     }
-    for (const [lab, x, y, dx, dy, btn] of [['rightDrag', W * 0.5, H * 0.5, 120, 30, 'right'], ['leftDragEmpty', W * 0.2, H * 0.62, 100, 0, 'left']]) {
-        const a = camOf(await snap());
+    // rightDrag starts at the middle, where the selected gate's handles stand after the view opens; rightDragEmpty away from them
+    for (const [lab, x, y, dx, dy, btn] of [['rightDrag', W * 0.5, H * 0.5, 120, 30, 'right'], ['rightDragEmpty', W * 0.2, H * 0.62, 120, 30, 'right'], ['leftDragEmpty', W * 0.2, H * 0.62, 100, 0, 'left']]) {
+        const sa = await snap();
+        const a = camOf(sa);
         await drag(`view.${lab}`, x, y, dx, dy, btn);
-        const b = camOf(await snap());
-        moves.push({ by: lab, moved: r2(dist(a, b)) });
+        const sb = await snap();
+        const b = camOf(sb);
+        moves.push({ by: lab, moved: r2(dist(a, b)), changedBefore: sa.changed, changedAfter: sb.changed, said: sb.said });
     }
     {
         const a = (await snap()).cam?.speed ?? null;

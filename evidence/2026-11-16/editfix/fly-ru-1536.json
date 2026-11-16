@@ -1,0 +1,477 @@
+{
+ "address": "http://localhost:5820/en",
+ "scan": "70b50d42",
+ "size": [
+  1536,
+  730
+ ],
+ "dsf": 1.25,
+ "touch": false,
+ "layout": "ru",
+ "name": "fly-ru-1536",
+ "lockAsked": true,
+ "early": "",
+ "fly": true,
+ "query": "",
+ "live": false,
+ "date": "2026-11-16T10:45:45.037Z",
+ "steps": {
+  "open": {
+   "ok": true,
+   "mode": "fly",
+   "lock": null
+  },
+  "a.view": {
+   "ok": false,
+   "moves": [
+    {
+     "by": "KeyW",
+     "moved": 0
+    },
+    {
+     "by": "KeyS",
+     "moved": 0
+    },
+    {
+     "by": "KeyD",
+     "moved": 0
+    },
+    {
+     "by": "KeyA",
+     "moved": 0
+    },
+    {
+     "by": "KeyE",
+     "moved": 0
+    },
+    {
+     "by": "KeyQ",
+     "moved": 0
+    },
+    {
+     "by": "rightDrag",
+     "moved": 0
+    },
+    {
+     "by": "leftDragEmpty",
+     "moved": 0
+    },
+    {
+     "by": "wheel",
+     "speed": [
+      4,
+      4
+     ],
+     "moved": 0
+    }
+   ]
+  },
+  "b.select": {
+   "ok": false,
+   "candidates": 26,
+   "from": 0,
+   "picked": null,
+   "gatesOnScreen": 26
+  },
+  "c.add": {
+   "ok": false,
+   "why": "no Add button on screen"
+  },
+  "d.controls": {
+   "ok": false,
+   "top": [
+    {
+     "id": "undo",
+     "ok": false,
+     "why": "not on screen"
+    },
+    {
+     "id": "redo",
+     "ok": false,
+     "why": "not on screen"
+    },
+    {
+     "id": "save",
+     "ok": false,
+     "why": "not on screen"
+    },
+    {
+     "id": "courses",
+     "ok": false,
+     "why": "not on screen"
+    },
+    {
+     "id": "keys",
+     "ok": false,
+     "why": "not on screen"
+    }
+   ],
+   "window": []
+  },
+  "e.exit": {
+   "ok": false,
+   "presses": [
+    {
+     "n": 0,
+     "why": "no Exit on screen"
+    }
+   ],
+   "override": false,
+   "paused": false,
+   "windows": []
+  }
+ },
+ "clicks": [
+  {
+   "label": "controls.keyboard",
+   "at": [
+    498,
+    687
+   ],
+   "lockBefore": null,
+   "under": "BUTTON.btn",
+   "peChain": [
+    [
+     "BUTTON.btn",
+     "auto"
+    ],
+    [
+     "DIV#ui",
+     "none"
+    ]
+   ],
+   "windowSaw": [
+    "pointerdown>BUTTON.btn",
+    "click>BUTTON.btn"
+   ],
+   "clickBubbled": [
+    "BUTTON.btn"
+   ]
+  },
+  {
+   "label": "scene.toFly",
+   "at": [
+    768,
+    365
+   ],
+   "lockBefore": null,
+   "under": "CANVAS#view",
+   "peChain": [
+    [
+     "CANVAS#view",
+     "auto"
+    ]
+   ],
+   "windowSaw": [
+    "pointerdown>CANVAS#view",
+    "click>CANVAS#view"
+   ],
+   "clickBubbled": [
+    "CANVAS#view"
+   ]
+  },
+  {
+   "label": "view.rightDrag",
+   "at": [
+    768,
+    365
+   ],
+   "lockBefore": null,
+   "under": "CANVAS#view",
+   "peChain": [
+    [
+     "CANVAS#view",
+     "auto"
+    ]
+   ]
+  },
+  {
+   "label": "view.leftDragEmpty",
+   "at": [
+    307,
+    453
+   ],
+   "lockBefore": null,
+   "under": "CANVAS#view",
+   "peChain": [
+    [
+     "CANVAS#view",
+     "auto"
+    ]
+   ]
+  },
+  {
+   "label": "gate.23",
+   "at": [
+    1143,
+    614
+   ],
+   "lockBefore": null,
+   "under": "CANVAS#view",
+   "peChain": [
+    [
+     "CANVAS#view",
+     "auto"
+    ]
+   ],
+   "windowSaw": [
+    "pointerdown>CANVAS#view",
+    "click>CANVAS#view"
+   ],
+   "clickBubbled": [
+    "CANVAS#view"
+   ],
+   "effect": {
+    "selected": 0,
+    "want": 23
+   }
+  },
+  {
+   "label": "gate.24",
+   "at": [
+    1148,
+    521
+   ],
+   "lockBefore": null,
+   "under": "CANVAS#view",
+   "peChain": [
+    [
+     "CANVAS#view",
+     "auto"
+    ]
+   ],
+   "windowSaw": [
+    "pointerdown>CANVAS#view",
+    "click>CANVAS#view"
+   ],
+   "clickBubbled": [
+    "CANVAS#view"
+   ],
+   "effect": {
+    "selected": 0,
+    "want": 24
+   }
+  },
+  {
+   "label": "gate.25",
+   "at": [
+    1238,
+    580
+   ],
+   "lockBefore": null,
+   "under": "CANVAS#view",
+   "peChain": [
+    [
+     "CANVAS#view",
+     "auto"
+    ]
+   ],
+   "windowSaw": [
+    "pointerdown>CANVAS#view",
+    "click>CANVAS#view"
+   ],
+   "clickBubbled": [
+    "CANVAS#view"
+   ],
+   "effect": {
+    "selected": 0,
+    "want": 25
+   }
+  }
+ ],
+ "ready": {
+  "status": "ready",
+  "ms": 3228
+ },
+ "afterControls": {
+  "open": false,
+  "selected": 0,
+  "changed": false,
+  "said": "",
+  "flying": false,
+  "refused": null,
+  "mode": null,
+  "gatesN": null,
+  "courseGates": 0,
+  "courseOn": false,
+  "problem": null,
+  "cam": null,
+  "view": null,
+  "handles": null,
+  "stand": null,
+  "gates": null,
+  "override": false,
+  "lock": null,
+  "topLine": null,
+  "topClass": null,
+  "panelClass": null,
+  "panelBox": null,
+  "panelScroll": null,
+  "canvas": [
+   1920,
+   913,
+   1536,
+   730
+  ],
+  "dpr": 1.25,
+  "maxTouch": 0,
+  "status": "ready",
+  "paused": false,
+  "windows": [],
+  "hud": {
+   "armed": false,
+   "crashed": false,
+   "throttlePct": 0,
+   "speed": 0,
+   "altitude": 0,
+   "crashes": 0
+  },
+  "active": "BODY.flying"
+ },
+ "lockAfterClick": "CANVAS#view",
+ "takeoff": {
+  "hudBefore": {
+   "armed": false,
+   "crashed": false,
+   "throttlePct": 0,
+   "speed": 0,
+   "altitude": 0,
+   "crashes": 0
+  },
+  "hudAfter": {
+   "armed": true,
+   "crashed": false,
+   "throttlePct": 29,
+   "speed": 0.12572130290482394,
+   "altitude": 7.761275537726998,
+   "crashes": 0
+  },
+  "lock": "CANVAS#view"
+ },
+ "course": {
+  "ok": true,
+  "ms": 21220,
+  "gates": 41,
+  "problem": null
+ },
+ "open": {
+  "ok": true,
+  "ms": 9,
+  "mode": "fly",
+  "flying": true,
+  "lock": null,
+  "handles": false,
+  "topClass": "ce-topbar interactive flying",
+  "topLine": "Flying your course with the changes. Disarm to edit again",
+  "canvas": [
+   1920,
+   913,
+   1536,
+   730
+  ],
+  "dpr": 1.25,
+  "maxTouch": 0,
+  "hud": {
+   "armed": true,
+   "crashed": false,
+   "throttlePct": 28,
+   "speed": 0.1054115895591656,
+   "altitude": 6.8529910665813745,
+   "crashes": 0
+  },
+  "windows": [],
+  "gatesN": 41,
+  "selected": 0,
+  "override": false
+ },
+ "final": {
+  "open": true,
+  "selected": 0,
+  "changed": false,
+  "said": "Editor open. W A S D move the view, E up, Q down, hold the right mouse button to look around, the wheel sets the speed. Click a gate: it carries one set of hand",
+  "flying": true,
+  "refused": null,
+  "mode": "fly",
+  "gatesN": 41,
+  "courseGates": 41,
+  "courseOn": true,
+  "problem": null,
+  "cam": {
+   "pos": [
+    -10.538900375366211,
+    10.616632461547852,
+    -16.762348175048828
+   ],
+   "speed": 4
+  },
+  "view": {
+   "eye": [
+    -10.538900375366211,
+    10.616632461547852,
+    -16.762348175048828
+   ],
+   "at": [
+    -9.53900939797395,
+    10.616632461547852,
+    -16.777114126746934
+   ]
+  },
+  "handles": false,
+  "stand": [
+   -1269,
+   1158,
+   4.58
+  ],
+  "override": false,
+  "lock": null,
+  "topLine": "Flying your course with the changes. Disarm to edit again",
+  "topClass": "ce-topbar interactive flying",
+  "panelClass": "course-editor interactive ce-flying",
+  "panelBox": [
+   0,
+   0,
+   0,
+   0
+  ],
+  "panelScroll": [
+   0
+  ],
+  "canvas": [
+   1920,
+   913,
+   1536,
+   730
+  ],
+  "dpr": 1.25,
+  "maxTouch": 0,
+  "status": "ready",
+  "paused": false,
+  "windows": [],
+  "hud": {
+   "armed": true,
+   "crashed": false,
+   "throttlePct": 29,
+   "speed": 3.322836578926458e-7,
+   "altitude": 6.930175715773393,
+   "crashes": 0
+  },
+  "active": "BODY.flying"
+ },
+ "fails": [
+  "a.view",
+  "b.select",
+  "c.add",
+  "d.controls",
+  "e.exit"
+ ],
+ "log": [
+  "console: Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "console: Failed to load resource: the server responded with a status of 403 ()",
+  "console: Failed to load resource: the server responded with a status of 403 ()",
+  "console: Failed to load resource: the server responded with a status of 403 ()",
+  "console: Failed to load resource: the server responded with a status of 403 ()",
+  "console: Failed to load resource: the server responded with a status of 403 ()",
+  "console: Failed to load resource: the server responded with a status of 403 ()",
+  "console: Failed to load resource: the server responded with a status of 404 (Not Found)"
+ ]
+}
