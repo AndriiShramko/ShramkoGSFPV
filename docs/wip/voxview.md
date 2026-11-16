@@ -341,10 +341,20 @@ into dist/walls, 9 scans). Logs and JSON under U:/Temp/gsfpv-train2/voxview2/, p
   test tools/bench/test/voxview2-legend.test.ts (2 passed); control with fly.css of origin/main: "expected undefined
   to be defined". Panel probe (--panel) has an edit-mode pass (Shift+G, Shift+B, panel open: the editor window, top
   bar and gate bar against the panel, its cross and the legend). Browser after: R8.
+- [x] R7 Release c2de1b6c, port 5745, BENCH_UNCAPPED=1, GPU lock 02:23:20-02:26:17 (two holds); voxview-depth-probe --far
+  FAR_PHASES=spawn,up FAR_UP_M=140 (U:/Temp/gsfpv-train2/voxview2/far-lublin.json, far-housefly.json). Lublin 2f1ddf5f
+  (20 cm walls): spawn full in 13.3 s, 33210 of 33210 chunks drawn to 848 m, 3263 meshes, 1.91 M triangles, frame
+  8.4 ms mean / 34.5 ms p95 (scan alone 6.1 / 18.0), JS heap 276 MB; 140 m up full at once (kept from the spawn),
+  3459 meshes, 1.92 M triangles, 10.1 / 34.5 ms, heap 399 MB. The counts stay bounded by the plan (meshes per
+  level 861/1019/996/584). Picture voxview2-lublin.png (copy of voxview2-lublin-far.png): the city from 140 m in
+  wireframe teal, the whole land drawn to the edge of the view; a black band through the middle where no voxel is
+  drawn (all chunks are drawn, so it is a part without walls, a river or open ground: guess, not compared with the
+  scan). Housefly d10c5638 (5 cm): spawn full in 1.0 s, 203 of 203 chunks, 1.25 M triangles, 4.0 ms, heap 165 MB;
+  140 m up: 0 chunks planned and drawn, the screen shows no voxel (VR-9).
 LEFT (voxview2, exact, in this order):
-- [ ] R7 Lublin 2f1ddf5f voxels alone at the spawn and 140 m up (far probe, FAR_PHASES=spawn,up FAR_UP_M=140);
-  Housefly d10c5638 (its walls are in the stand-in set).
-- [ ] R8 Depth probe on Wroclaw and Tunis 887f27aa; panel probe at the four sizes; pictures voxview2-start.png,
+- [ ] R7b VR-9: read the whole-scene plan in apps/fly/src/voxels.ts for an eye far outside a small scene; fix and test
+  with a negative control; far probe on Housefly again (FAR_UP_M=140).
+- [ ] R8 Release build of the head first (fly.css VR-6). Depth probe on Wroclaw and Tunis 887f27aa; panel probe at the four sizes; pictures voxview2-start.png,
   voxview2-edit.png, voxview2-lublin.png looked at.
 - [ ] R9 accept-fly B6 B7 B9-B16, pause-over-course-probe, mouse-free-probe, editor3-smoke, walls-published-probe,
   typecheck, gates.py --only vitest,architecture,i18n,b18,leaks, a6-reference.
@@ -385,5 +395,10 @@ LEFT (voxview2, exact, in this order):
 - VR-8 (no fault of the panel; for the lead): at 390x844 in the edit view the gate bar (.ce-gatebar, l 8 r 550) is
   wider than the 390 px view, and the open panel (z 40) lies over its left part; the panel's cross is on top and
   closes it (closeOnTop true). At 1366x768, 1280x720 no edit-mode control touches the panel.
+- VR-9 (real, measured; cause not read, not fixed): Housefly d10c5638, voxels alone, eye 140 m above the spawn,
+  pitch -40: stats plannedChunks 0, drawnChunks 0, radiusM 0, share 100 (far-housefly.json). The scene is about 31 m
+  across, so from 140 m the whole-scene plan (apps/fly/src/voxels.ts, the plan radius) keeps nothing and a pilot who
+  climbs sees the voxels vanish while the line says 100 %. Guess: the plan takes the chunks within a radius around
+  the eye, not the scene's box. Read the plan in voxels.ts and fix with a test (Left R7b).
 - Doubt D-1 (not shown): a gate hidden behind voxel walls has the guide chip at the top pointing to it (a DOM element,
   always on top); nothing else leads to it. Not measured whether the chip is visible in the edit mode.
