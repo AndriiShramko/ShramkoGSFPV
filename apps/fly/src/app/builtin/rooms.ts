@@ -326,10 +326,12 @@ export const rooms: Feature = {
                         const ref = parseCourse(want);
                         if (ref) look.adopt(ref.kind === 'seed' ? { seed: ref.seed } : { id: ref.id, version: ref.version });
                     }
+                    const wanted = board.adopting;
                     const step = board.look(look);
                     if (step?.kind === 'course') sock.course(step.course);
                     else if (step?.kind === 'lap') sock.blap(step.course, step.n, step.ms);
-                    if (step) showBoard();
+                    // the room's course showing here clears adopting without a step: the hook must see that too
+                    if (step || board.adopting !== wanted) showBoard();
                 }
                 stage.show(draw);
                 others = named;

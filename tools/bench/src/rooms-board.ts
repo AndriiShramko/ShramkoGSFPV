@@ -69,14 +69,16 @@ function fly(p: Page, rounds: number): Promise<Any> {
     })`.replace('rounds', String(rounds))) as Promise<Any>;
 }
 
-interface Frames { sent: { type: string; bytes: number; t: number }[]; got: { type: string; bytes: number; t: number }[] }
+interface Frame { type: string; bytes: number; t: number; slot?: number; n?: number }
+interface Frames { sent: Frame[]; got: Frame[] }
 function watchSocket(page: Page): Frames {
     const f: Frames = { sent: [], got: [] };
     const kind = (s: string): string => { try { return String(JSON.parse(s).type ?? '?'); } catch { return 'bin'; } };
+    const who = (s: string): { slot?: number; n?: number } => { try { const m = JSON.parse(s); return { slot: m.slot, n: m.n }; } catch { return {}; } };
     const keep = (t: string): boolean => /^(course|blap|board|welcome)$/.test(t);
     page.on('websocket', (ws) => {
-        ws.on('framesent', (x) => { const s = typeof x.payload === 'string' ? x.payload : ''; const t = kind(s); if (keep(t)) f.sent.push({ type: t, bytes: Buffer.byteLength(s), t: Date.now() }); });
-        ws.on('framereceived', (x) => { const s = typeof x.payload === 'string' ? x.payload : ''; const t = kind(s); if (keep(t)) f.got.push({ type: t, bytes: Buffer.byteLength(s), t: Date.now() }); });
+        ws.on('framesent', (x) => { const s = typeof x.payload === 'string' ? x.payload : ''; const t = kind(s); if (keep(t)) f.sent.push({ type: t, bytes: Buffer.byteLength(s), t: Date.now(), ...who(s) }); });
+        ws.on('framereceived', (x) => { const s = typeof x.payload === 'string' ? x.payload : ''; const t = kind(s); if (keep(t)) f.got.push({ type: t, bytes: Buffer.byteLength(s), t: Date.now(), ...who(s) }); });
     });
     return f;
 }
@@ -191,7 +193,9 @@ async function main(): Promise<void> {
         out.after = { a: a1.board, b: b1.board, aLaps: a1.course.laps, bLaps: b1.course.laps };
         out.lapFrames = { aSent: fa.sent.slice(sentBefore ? 0 : 0).filter((x) => x.type === 'blap'), bGot: fb.got.filter((x) => x.type === 'blap') };
         // laps reach the other page within 1 s of being sent: matched by order
-        const lag = fa.sent.filter((x) => x.type === 'blap').map((x, i) => (fb.got.filter((y) => y.type === 'blap')[i]?.t ?? Infinity) - x.t);
+        // each lap sent by one page, matched on the other page by its slot and number (the service sends it to everyone)
+        const lagOf = (from: Frames, slot: number, to: Frames): number[] => from.sent.filter((x) => x.type === 'blap').map((x) => (to.got.find((y) => y.type === 'blap' && y.slot === slot && y.n === x.n)?.t ?? Infinity) - x.t);
+        const lag = [...lagOf(fa, a1.slot, fb), ...lagOf(fb, b1.slot, fa)];
         out.lapLagMs = lag;
         const sameBoard = JSON.stringify(a1.board?.rows) === JSON.stringify(b1.board?.rows);
 
@@ -224,7 +228,7 @@ async function main(): Promise<void> {
             aCourseIsTheRooms: aCourse && !!roomCourse,
             bSameGates: bCourse && sameGates,
             controlNoLapBeforeFlight: control,
-            bothFlewLaps: (a1.course.laps ?? 0) > 0 && (b1.course.laps ?? 0) > 0,
+            bothFlewLaps: (a1.board?.sent ?? 0) > 0 && (b1.board?.sent ?? 0) > 0,
             eachPageHoldsBothLaps: aBoth && bBoth && sameBoard,
             lapsWithin1s: lag.length > 0 && lag.every((x) => x <= 1000),
             lateJoinerGetsCourse: cIn && cCourse && lateSameGates,
