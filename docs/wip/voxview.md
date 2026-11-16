@@ -328,7 +328,7 @@ into dist/walls, 9 scans). Logs and JSON under U:/Temp/gsfpv-train2/voxview2/, p
 - [x] R6 V6 build (this commit): the depth copies are synced in every update while the voxels show.
   packages/render-pc/src/voxel-depth.ts (DEPTH_SYNC_EVERY 1, depthSyncDue), voxel-overlay.ts update();
   test packages/render-pc/test/voxview2-depth-sync.test.ts (1 test, 24 cases); control with the voxel-depth.ts of
-  a884e8ff: "expected 'undefined' to be 'function'". voxel-depth.test.ts 2 passed. Typecheck packages/render-pc,
+  a884e8ff: `expected 'undefined' to be 'function'`. voxel-depth.test.ts 2 passed. Typecheck packages/render-pc,
   apps/fly 0 errors. Browser after: not yet run (Left).
 - [x] R6b Release c2de1b6c (sha256 5169e65da53f..., stand-in walls in dist/walls), port 5745, BENCH_UNCAPPED=1, GPU lock
   02:12:43-02:14:04. voxview2-probe on Wroclaw (U:/Temp/gsfpv-train2/voxview2/review2-wroclaw.json): start 0 of 1807
@@ -338,8 +338,8 @@ into dist/walls, 9 scans). Logs and JSON under U:/Temp/gsfpv-train2/voxview2/, p
   scan alone in the same run 7.3 / 18.3 ms (lane X2's run before the every-frame sync: 6.2 ms); full in 11.2 s,
   27236 of 27236 chunks, JS heap 439 MB.
 - [x] R6c VR-6 (this commit): fly.css hides the voxel legend in the edit view (body:has(.course-editor:not(.ce-flying)));
-  test tools/bench/test/voxview2-legend.test.ts (2 passed); control with fly.css of origin/main: "expected undefined
-  to be defined". Panel probe (--panel) has an edit-mode pass (Shift+G, Shift+B, panel open: the editor window, top
+  test tools/bench/test/voxview2-legend.test.ts (2 passed); control with fly.css of origin/main:
+  `expected undefined to be defined`. Panel probe (--panel) has an edit-mode pass (Shift+G, Shift+B, panel open: the editor window, top
   bar and gate bar against the panel, its cross and the legend). Browser after: R8.
 - [x] R7 Release c2de1b6c, port 5745, BENCH_UNCAPPED=1, GPU lock 02:23:20-02:26:17 (two holds); voxview-depth-probe --far
   FAR_PHASES=spawn,up FAR_UP_M=140 (U:/Temp/gsfpv-train2/voxview2/far-lublin.json, far-housefly.json). Lublin 2f1ddf5f
