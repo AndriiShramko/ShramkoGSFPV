@@ -217,6 +217,69 @@ run edit-mode-wroclaw locked editlive
 # The check: the sound mode takes that course (one set of gates) and the hum has a target.
 sonicfirst() { Z5_COURSE_FIRST=1 soniccheck "$@"; }
 run sonic-eye-course-wroclaw sonicfirst eye-wroclaw 70b50d42 0 60 Shift+KeyG 'takes the course made by eye' 'makes a course'
+# Train 3 integration F (lanes uiaudit, voxview with voxview2, loadq with loadq2). Seam b: the setting display.stillDetail
+# raises the detail only while the flight is paused; no check above pauses and then reads a count, a frame time or a
+# picture, so none of them needs set.display.stillDetail=0.
+# Voxels alone on Wroclaw. voxview2-probe.mjs (header: Shift+G, V, Shift+B, Esc, P; the course lives in the page, the edit
+# mode is left by Esc, nothing is saved or sent; no Save, Send or Create control in its source) and voxview-depth-probe.mjs
+# --panel (rendering off: opens the walls and voxels panel by its caption at four sizes, closes it by its cross and by Esc).
+# The check: the voxel walls reach the whole scene (share of chunks drawn 100), no frame misses a depth copy, Esc with the
+# panel open closes only the panel in a flight, a pause and the edit mode; at every size the cross and Esc close the panel.
+voxalone() {
+  node scripts/voxview2-probe.mjs "$SITE/en" 70b50d42 "$OUT/voxels-alone-wroclaw.json" "$OUT/voxels-alone" live-vox || return 1
+  node -e '
+const j = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
+const st = (j.start && j.start.stats) || {};
+const miss = (j.start && j.start.miss) || {};
+const esc = (j.esc || []).map((e) => [e.label, e.ok]);
+console.log("chunks", st.chunks, "share", st.share, "miss frames", miss.missFrames, "esc", JSON.stringify(esc));
+process.exit(st.share === 100 && miss.missFrames === 0 && esc.length === 3 && esc.every((e) => e[1] === true) ? 0 : 1);' "$OUT/voxels-alone-wroclaw.json"
+}
+voxpanel() {
+  node scripts/voxview-depth-probe.mjs "$SITE/en" 70b50d42 "$OUT/voxel-panel.json" "$OUT/voxel-panel" live-panel --panel || return 1
+  node -e '
+const j = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
+let ok = true;
+for (const [size, p] of Object.entries(j.panel || {})) {
+  const a = p.after || {};
+  console.log(size, "in view", p.menuInView, "cross on top", p.closeOnTop, "closed by cross", a.closeBtn, "closed by Esc", a.esc);
+  ok = ok && p.menuInView === true && p.closeOnTop === true && a.closeBtn === true && a.esc === true;
+}
+process.exit(ok && Object.keys(j.panel || {}).length === 4 ? 0 : 1);' "$OUT/voxel-panel.json"
+}
+run voxels-alone-wroclaw locked voxalone
+run voxel-panel-wroclaw voxpanel
+# The Detail line and the pause's rise: loadq-probe.mjs (header: one page load, nothing pressed but the pause key P and,
+# for the move, the stick of the probe's own flight; PILOT writes the Splat budget setting into the probe browser's own
+# prefs, nothing on the server). Detail: on Wroclaw with the budget set by hand to 16 M the page shows a line
+# 'Detail: ...'. Pause: on Lublin from 140 m up on the weak class the count of splats drawn in a pause rises above the
+# flight's (more than 1.5 times the highest of the last three samples before the pause); after Continue the budget in force is the flight's within
+# 2 s and the count drawn falls (it reaches the budget later: 4.0 M of 2.5 M at 1.8 s on the local copy).
+detailline() {
+  env OUT="$OUT/loadq" SCENE=70b50d42 VW=1366 VH=768 PILOT=16 SECS=30 node scripts/loadq-probe.mjs "$SITE/en" live-detail-wroclaw || return 1
+  node -e '
+const j = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
+const lines = (j.samples || []).map((s) => s.detail || {}).filter((d) => d.shown && /^Detail: /.test(d.text || ""));
+console.log("samples with the Detail line", lines.length, "last", lines.length ? lines[lines.length - 1].text : "-");
+process.exit(lines.length > 0 ? 0 : 1);' "$OUT/loadq/live-detail-wroclaw.json"
+}
+pauserise() {
+  env OUT="$OUT/loadq" SCENE=2f1ddf5f CLASS=desktop-weak UP=140 PAUSEAT=25 MOVEAT=45 SECS=55 node scripts/loadq-probe.mjs "$SITE/en" live-pause-lublin || return 1
+  node -e '
+const j = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
+const s = j.samples || [];
+const p = j.pausedAt, m = j.move || {};
+const flight = Math.max(0, ...s.filter((x) => x.s < p && x.drawn).slice(-3).map((x) => x.drawn));
+const paused = Math.max(0, ...s.filter((x) => x.s > p && x.s < m.at && x.drawn).map((x) => x.drawn));
+const pf = m.perFrame || [];
+const back = pf.find((f) => f[3] <= m.base + 1e-6);
+const da = (m.drawnAfter || []).filter((v) => v !== null);
+const falls = da.length > 1 && da[da.length - 1] < da[0];
+console.log("flight drawn", flight, "pause drawn", paused, "budget back at ms", back ? back[0] : null, "drawn after", JSON.stringify(da));
+process.exit(flight > 0 && paused > 1.5 * flight && back && back[0] <= 2000 && falls ? 0 : 1);' "$OUT/loadq/live-pause-lublin.json"
+}
+run detail-line-wroclaw locked detailline
+run pause-rise-lublin locked pauserise
 
 if [ "$FAILED" = 0 ]; then echo "LIVE CHECKS: PASS"; exit 0; fi
 echo "LIVE CHECKS: FAIL"
