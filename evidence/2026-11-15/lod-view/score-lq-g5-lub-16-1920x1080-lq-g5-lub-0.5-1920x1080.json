@@ -1,0 +1,145 @@
+{
+ "name": "lod-view/score-lq-g5-lub-16-1920x1080",
+ "date": "2026-11-15T20:30:47.064Z",
+ "reference": "lq-g5-lub-16-1920x1080",
+ "labels": [
+  "lq-g5-lub-0.5-1920x1080",
+  "lq-g5-lub-1-1920x1080"
+ ],
+ "band": null,
+ "measure": "PSNR on luma in dB against the reference run's picture of the same place (a turn's pictures against the reference at the end of that turn): psnr over the whole picture, psnrLit over the reference's lit pixels (the scan, not the black sky), psnrQuarter with 4x4 pixels averaged",
+ "rows": [
+  {
+   "label": "lq-g5-lub-0.5-1920x1080",
+   "picture": "end",
+   "against": "lq-g5-lub-16-1920x1080-end",
+   "width": 1920,
+   "height": 1080,
+   "psnr": 20.9,
+   "psnrQuarter": 23.81,
+   "litShare": 0.508,
+   "psnrLit": 17.96
+  },
+  {
+   "label": "lq-g5-lub-0.5-1920x1080",
+   "picture": "move0",
+   "against": "lq-g5-lub-16-1920x1080-move0",
+   "width": 1920,
+   "height": 1080,
+   "psnr": 20.9,
+   "psnrQuarter": 23.81,
+   "litShare": 0.508,
+   "psnrLit": 17.96
+  },
+  {
+   "label": "lq-g5-lub-0.5-1920x1080",
+   "picture": "move1",
+   "against": "lq-g5-lub-16-1920x1080-move1",
+   "width": 1920,
+   "height": 1080,
+   "psnr": 20.9,
+   "psnrQuarter": 23.81,
+   "litShare": 0.508,
+   "psnrLit": 17.96
+  },
+  {
+   "label": "lq-g5-lub-0.5-1920x1080",
+   "picture": "rest10",
+   "against": "lq-g5-lub-16-1920x1080-rest10",
+   "width": 1920,
+   "height": 1080,
+   "psnr": 20.9,
+   "psnrQuarter": 23.81,
+   "litShare": 0.508,
+   "psnrLit": 17.96
+  },
+  {
+   "label": "lq-g5-lub-0.5-1920x1080",
+   "picture": "rest20",
+   "against": "lq-g5-lub-16-1920x1080-rest20",
+   "width": 1920,
+   "height": 1080,
+   "psnr": 20.9,
+   "psnrQuarter": 23.81,
+   "litShare": 0.508,
+   "psnrLit": 17.96
+  },
+  {
+   "label": "lq-g5-lub-0.5-1920x1080",
+   "picture": "rest5",
+   "against": "lq-g5-lub-16-1920x1080-rest5",
+   "width": 1920,
+   "height": 1080,
+   "psnr": 20.9,
+   "psnrQuarter": 23.81,
+   "litShare": 0.508,
+   "psnrLit": 17.96
+  },
+  {
+   "label": "lq-g5-lub-1-1920x1080",
+   "picture": "end",
+   "against": "lq-g5-lub-16-1920x1080-end",
+   "width": 1920,
+   "height": 1080,
+   "psnr": 22.28,
+   "psnrQuarter": 25.86,
+   "litShare": 0.508,
+   "psnrLit": 19.34
+  },
+  {
+   "label": "lq-g5-lub-1-1920x1080",
+   "picture": "move0",
+   "against": "lq-g5-lub-16-1920x1080-move0",
+   "width": 1920,
+   "height": 1080,
+   "psnr": 22.28,
+   "psnrQuarter": 25.86,
+   "litShare": 0.508,
+   "psnrLit": 19.34
+  },
+  {
+   "label": "lq-g5-lub-1-1920x1080",
+   "picture": "move1",
+   "against": "lq-g5-lub-16-1920x1080-move1",
+   "width": 1920,
+   "height": 1080,
+   "psnr": 22.28,
+   "psnrQuarter": 25.86,
+   "litShare": 0.508,
+   "psnrLit": 19.34
+  },
+  {
+   "label": "lq-g5-lub-1-1920x1080",
+   "picture": "rest10",
+   "against": "lq-g5-lub-16-1920x1080-rest10",
+   "width": 1920,
+   "height": 1080,
+   "psnr": 22.28,
+   "psnrQuarter": 25.86,
+   "litShare": 0.508,
+   "psnrLit": 19.34
+  },
+  {
+   "label": "lq-g5-lub-1-1920x1080",
+   "picture": "rest20",
+   "against": "lq-g5-lub-16-1920x1080-rest20",
+   "width": 1920,
+   "height": 1080,
+   "psnr": 22.28,
+   "psnrQuarter": 25.86,
+   "litShare": 0.508,
+   "psnrLit": 19.34
+  },
+  {
+   "label": "lq-g5-lub-1-1920x1080",
+   "picture": "rest5",
+   "against": "lq-g5-lub-16-1920x1080-rest5",
+   "width": 1920,
+   "height": 1080,
+   "psnr": 22.28,
+   "psnrQuarter": 25.86,
+   "litShare": 0.508,
+   "psnrLit": 19.34
+  }
+ ]
+}

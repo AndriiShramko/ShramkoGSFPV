@@ -28,7 +28,9 @@ const result = { site: SITE, scene: SCENE, browser: describeBrowser(pick, contex
 
 async function load(name, cls, overload) {
     const page = context.pages()[0] ?? (await context.newPage());
-    const url = `${SITE}/en/fly/?scene=${SCENE}&nowarn=1&input=touch&set.display.deviceClass=${cls}`;
+    // display.stillDetail off: the craft sits still here, and "More detail at rest" (G6, lane loadq) stops the governor
+    // counting frames at rest by design; this probe checks the governor of a flight.
+    const url = `${SITE}/en/fly/?scene=${SCENE}&nowarn=1&input=touch&set.display.deviceClass=${cls}&set.display.stillDetail=0`;
     const before = await page.evaluate(`localStorage.getItem('${KEY}')`).catch(() => null);
     await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 90000 });
     const seen = [];

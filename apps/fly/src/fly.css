@@ -226,6 +226,10 @@ body.touch-on .attribution { top: calc(max(10px, env(safe-area-inset-top)) + 128
 @media (max-height: 500px) {
     /* ...and ends 16 px before the row of buttons, however wide the row is (ui/top-row.ts --top-row-left) */
     .attribution, body.touch-on .attribution { top: calc(max(10px, env(safe-area-inset-top)) + 34px + var(--banner-h, 0px)); bottom: auto; left: 16px; max-width: calc(var(--top-row-left, calc(100vw - 244px)) - 32px); }
+    /* the Detail line (app/builtin/detail.ts) rides on the walls line's row, so the credit stays two rows high and
+       does not reach the telemetry over the left pad (loadq2 LR-8) */
+    .attribution > [data-testid="walls-more"]:not([open]) { display: inline-block; vertical-align: top; }
+    .attribution > [data-testid="detail-line"]:not([hidden]) { display: inline-block; vertical-align: top; margin: 0 0 0 12px !important; max-width: calc(100% - 120px); }
 }
 body.clean .top-actions, body.clean .attribution, body.clean .osd.br, body.clean .crash-overlay, body.clean .gate-msg, body.clean .banner { display: none; }
 /* cinema mode: clean picture, only the record control and its note */
