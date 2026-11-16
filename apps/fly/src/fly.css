@@ -291,6 +291,9 @@ body.cinema .osd, body.cinema .attribution, body.cinema .badge-nowalls, body.cin
 .vl-sub { font-size: 11px; line-height: 1.35; color: #9fb4c3; }
 body.cinema .voxel-legend, body.clean .voxel-legend, #ui.hud-off .voxel-legend { display: none; }
 #ui:has(> .screen.radio) > .voxel-legend { visibility: hidden; }
+/* voxview2 VR-6: the edit mode's window (course/editor/editor.css .course-editor, top right) lies over the chip; the chip goes
+   with the rest of the flight's HUD while the edit view is open (editor.css D5) and comes back in the test flight and after Exit */
+body:has(.course-editor:not(.ce-flying)) .voxel-legend { display: none; }
 @media (prefers-reduced-motion: reduce) { .wv-knob, .wv-knob::after { transition: none; } }
 
 /* "Clean floating voxels" (ui/floaters.ts): beside the flight view, so the scan and its red pieces stay in sight */

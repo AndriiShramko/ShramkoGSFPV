@@ -40,6 +40,39 @@ async function open(w, hgt, extra) {
     return { ctx, page };
 }
 
+// voxview2: Shift+G (a course), Shift+B (the edit mode), the panel open: does any control of the edit mode lie over the
+// panel or its cross, and does a visible voxel legend share pixels with the editor's window?
+async function editPass(page, read) {
+    await page.keyboard.press('Shift+KeyG');
+    const s0 = Date.now();
+    while (Date.now() - s0 < 30000 && !(await page.evaluate(() => (window.__gsfpv?.course?.gates?.length ?? window.__gsfpv?.course?.state?.()?.gates ?? 0) > 0 || !!document.querySelector('.course-hud, [class*=course-]')))) await sleep(500);
+    await page.keyboard.press('Shift+KeyB');
+    const s1 = Date.now();
+    while (Date.now() - s1 < 30000 && !(await page.evaluate(() => !!window.__gsfpv?.course?.editor?.open))) await sleep(500);
+    const editOpen = await page.evaluate(() => !!window.__gsfpv?.course?.editor?.open);
+    if (!editOpen) return { editOpen };
+    await sleep(800);
+    await page.evaluate(() => { const d = document.querySelector('[data-testid=walls-more]'); if (d) d.open = true; });
+    await sleep(500);
+    const v = await read();
+    const o = await page.evaluate(() => {
+        const box = (el) => { if (!el || el.getClientRects().length === 0 || getComputedStyle(el).visibility === 'hidden') return null; const b = el.getBoundingClientRect(); return { l: b.left, t: b.top, r: b.right, b: b.bottom }; };
+        const cut = (a, b) => !!a && !!b && a.l < b.r && b.l < a.r && a.t < b.b && b.t < a.b;
+        const menu = box(document.querySelector('.walls-menu'));
+        const legend = box(document.querySelector('[data-testid=voxel-legend]'));
+        const parts = {};
+        for (const [k, sel] of [['window', '.course-editor'], ['topBar', '.ce-topbar'], ['gateBar', '.ce-gatebar']]) {
+            const b = box(document.querySelector(sel));
+            const el = document.querySelector(sel);
+            let onTop = null;
+            if (cut(b, menu)) { const x = (Math.max(b.l, menu.l) + Math.min(b.r, menu.r)) / 2, y = (Math.max(b.t, menu.t) + Math.min(b.b, menu.b)) / 2; const hit = document.elementFromPoint(x, y); onTop = hit && el.contains(hit) ? 'bar' : hit && document.querySelector('.walls-menu')?.contains(hit) ? 'panel' : String(hit?.className ?? null); }
+            parts[k] = { box: b, overPanel: cut(b, menu), onTop, overLegend: cut(b, legend) };
+        }
+        return { parts, legendShown: !!legend };
+    });
+    return { editOpen, closeOnTop: v.closeOnTop, closeInView: v.closeInView, menuInView: v.menuInView, open: v.open, menu: v.menu, chip: v.chip, close: v.close, ...o };
+}
+
 async function panel() {
     r.panel = {};
     for (const [w, hgt] of [[1366, 768], [1280, 720], [844, 390], [390, 844]]) {
@@ -71,6 +104,8 @@ async function panel() {
         after.chipOpened = await page.evaluate(() => !!document.querySelector('[data-testid=walls-more]')?.open);
         await page.click('[data-testid=walls-summary]').catch(() => {}); await sleep(300);
         after.chip = await page.evaluate(() => !document.querySelector('[data-testid=walls-more]')?.open);
+        // voxview2: the edit mode's window, top bar and gate bar (new on main) against the panel, its cross and the legend
+        after.edit = await editPass(page, read);
         r.panel[`${w}x${hgt}`] = { ...v, after };
         step(`panel ${w}x${hgt}: ${JSON.stringify({ menu: v.menu, inView: v.menuInView, close: v.close, closeInView: v.closeInView, closeOnTop: v.closeOnTop, scroll: [v.scrollH, v.clientH, v.overflowY], after })}`);
         await ctx.close();

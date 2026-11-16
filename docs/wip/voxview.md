@@ -330,9 +330,18 @@ into dist/walls, 9 scans). Logs and JSON under U:/Temp/gsfpv-train2/voxview2/, p
   test packages/render-pc/test/voxview2-depth-sync.test.ts (1 test, 24 cases); control with the voxel-depth.ts of
   a884e8ff: "expected 'undefined' to be 'function'". voxel-depth.test.ts 2 passed. Typecheck packages/render-pc,
   apps/fly 0 errors. Browser after: not yet run (Left).
-LEFT (voxview2, exact, in this order; the run ended at its reply budget):
-- [ ] R6b Release build of the head; voxview2-probe on Wroclaw again (expect missFrames 0 after the arrow moves and
-  Tab), and the frame time with the voxels alone against R5's run (the sync now walks the render components every frame).
+- [x] R6b Release c2de1b6c (sha256 5169e65da53f..., stand-in walls in dist/walls), port 5745, BENCH_UNCAPPED=1, GPU lock
+  02:12:43-02:14:04. voxview2-probe on Wroclaw (U:/Temp/gsfpv-train2/voxview2/review2-wroclaw.json): start 0 of 1807
+  frames without a depth copy (189 items); edit mode, 4 arrow presses 0 of 115/148/183/153 frames, Tab 0 of 267; Esc
+  in a flight, a pause and the edit mode closes only the panel (3 of 3). Frame with the voxels alone, whole scene at
+  the street (voxview-depth-probe --far, FAR_PHASES=spawn, far2-wroclaw.json): mean 7.2 ms, p95 18.3 ms, against the
+  scan alone in the same run 7.3 / 18.3 ms (lane X2's run before the every-frame sync: 6.2 ms); full in 11.2 s,
+  27236 of 27236 chunks, JS heap 439 MB.
+- [x] R6c VR-6 (this commit): fly.css hides the voxel legend in the edit view (body:has(.course-editor:not(.ce-flying)));
+  test tools/bench/test/voxview2-legend.test.ts (2 passed); control with fly.css of origin/main: "expected undefined
+  to be defined". Panel probe (--panel) has an edit-mode pass (Shift+G, Shift+B, panel open: the editor window, top
+  bar and gate bar against the panel, its cross and the legend). Browser after: R8.
+LEFT (voxview2, exact, in this order):
 - [ ] R7 Lublin 2f1ddf5f voxels alone at the spawn and 140 m up (far probe, FAR_PHASES=spawn,up FAR_UP_M=140);
   Housefly d10c5638 (its walls are in the stand-in set).
 - [ ] R8 Depth probe on Wroclaw and Tunis 887f27aa; panel probe at the four sizes; pictures voxview2-start.png,
@@ -365,5 +374,16 @@ LEFT (voxview2, exact, in this order; the run ended at its reply budget):
   dropped (voxel-overlay.ts:253-258); update() syncs only while the voxel layer is on.
 - VR-5 (to be seen in voxview2-edit.png): the edit mode's handles are PlayCanvas gizmos in their own layer
   (view-mouse.ts:109, Gizmo.createLayer), not in World, so they get no depth copy and stay on top of the voxels.
+- VR-6 (real, picture, fixed in R6c): voxview2-edit.png (release c2de1b6c, 1280x800, Wroclaw): in the edit view the
+  course editor's window (course/editor/editor.css:3-21, top right, z 30) lies over the voxel legend
+  (fly.css:284, top right): the legend's last two lines peek out under the window's header. Now the legend is hidden
+  while the edit view is open, as the flight's HUD is (editor.css:223-228, D5); back in the test flight and after Exit.
+- VR-7 (by the lead's decision D7, not this lane's file; for the lead): at 844x390 in the edit view a click on the
+  'Walls 5 cm' chip opens nothing (course/editor/editor.css:232-234 hides the panel below 500 px height; panel probe
+  panel2-before.json: the details is open, the menu has no box). Rule of the owner (an action leads on): the chip
+  could say why or leave in the edit view there. Not changed here.
+- VR-8 (no fault of the panel; for the lead): at 390x844 in the edit view the gate bar (.ce-gatebar, l 8 r 550) is
+  wider than the 390 px view, and the open panel (z 40) lies over its left part; the panel's cross is on top and
+  closes it (closeOnTop true). At 1366x768, 1280x720 no edit-mode control touches the panel.
 - Doubt D-1 (not shown): a gate hidden behind voxel walls has the guide chip at the top pointing to it (a DOM element,
   always on top); nothing else leads to it. Not measured whether the chip is visible in the edit mode.
