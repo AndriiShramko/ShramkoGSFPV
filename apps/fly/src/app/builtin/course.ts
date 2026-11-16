@@ -95,6 +95,7 @@ export const course: Feature = {
         hook.clockText = () => document.querySelector('[data-testid=course-hud]')?.textContent?.trim() ?? null;
         const stage = new CourseStage(ctx.renderer);
         const hud = new CourseHud(ctx.ui);
+        hud.setCloseLabel(t('course.hide'));
         const store = new CourseStore();
         let rows: CourseRow[] = [];
         let run: CourseRun | null = null;
@@ -703,6 +704,8 @@ export const course: Feature = {
 
         // lane review TR-7: the sound mode cannot fly a visual course yet (train 2), and Shift is its keyboard's 'down', so the
         // keys do nothing while the mode is on (ctx.sonic is set only then); the routing itself is the lead's (keymap.test.ts:160)
+        // lane uiaudit fault 4: the clock block's cross hides the course as Shift+T does
+        hud.onClose = () => { if (run && hook.on) toggle(); };
         ctx.keys.on('course.toggle', (e) => {
             if (e.repeat || ctx.sonic) return;
             toggle();

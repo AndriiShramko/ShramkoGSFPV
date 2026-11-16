@@ -11,6 +11,8 @@
 .d3-pin { position: absolute; left: 0; top: 0; width: 24px; height: 24px; margin: -12px 0 0 -12px; padding: 0; border-radius: 50%; border: 2px solid rgba(255,255,255,.9); background: rgba(14,17,22,.82); color: #fff; font: 600 12px/20px system-ui, sans-serif; text-align: center; cursor: pointer; pointer-events: auto; transition: opacity .18s, transform .18s, background .18s; box-shadow: 0 1px 6px rgba(0,0,0,.6); }
 .d3-pin:hover, .d3-pin.on { background: var(--accent); color: var(--accent-ink); border-color: #fff; transform: scale(1.18); }
 .d3-pin.back { opacity: .28; }
+/* lane uiaudit U3: the pin looks 24 px; its target is 44 px (an invisible ring of 10 px around it) */
+.d3-pin::before { content: ""; position: absolute; inset: -12px; border-radius: 50%; }
 .d3-pin[hidden] { display: none; }
 .d3-over { position: absolute; left: 10px; right: 10px; bottom: 8px; display: flex; justify-content: space-between; align-items: center; gap: 8px; pointer-events: none; font-size: 12px; color: #c4ccd6; }
 .d3-over > span { padding: 3px 9px; border-radius: 999px; background: rgba(14,17,22,.72); }

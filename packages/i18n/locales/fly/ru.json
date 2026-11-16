@@ -225,6 +225,7 @@
   "hud.armed": "ARMED",
   "hud.disarmed": "DISARMED",
   "hud.crash": "КРАШ",
+  "hud.frameHide": "Скрыть строку кадров",
   "hud.acro": "ACRO",
   "hud.angle": "ANGLE",
   "hud.crashes": "крашей: {n}",

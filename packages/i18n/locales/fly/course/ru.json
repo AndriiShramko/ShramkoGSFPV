@@ -21,6 +21,7 @@
   "course.lapDone": "Круг {time}",
   "course.best": "Лучший круг! {time}",
   "course.off": "Трасса скрыта. Shift+T снова показывает её",
+  "course.hide": "Скрыть трассу",
   "course.menu.save": "Трасса: сохранить для всех",
   "course.menu.load": "Трасса: лететь трассу, сохранённую для этой сцены",
   "course.server.offer": "В этой сцене есть трасса, сохранённая пилотами: Shift+T запускает её",

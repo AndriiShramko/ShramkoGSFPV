@@ -225,6 +225,7 @@
   "hud.armed": "ARMED",
   "hud.disarmed": "DISARMED",
   "hud.crash": "KRAKSA",
+  "hud.frameHide": "Ukryj linię klatek",
   "hud.acro": "ACRO",
   "hud.angle": "ANGLE",
   "hud.crashes": "kraksy: {n}",

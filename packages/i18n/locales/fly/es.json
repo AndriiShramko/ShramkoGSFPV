@@ -225,6 +225,7 @@
   "hud.armed": "ARMED",
   "hud.disarmed": "DISARMED",
   "hud.crash": "CHOQUE",
+  "hud.frameHide": "Ocultar la línea de fotogramas",
   "hud.acro": "ACRO",
   "hud.angle": "ANGLE",
   "hud.crashes": "choques: {n}",

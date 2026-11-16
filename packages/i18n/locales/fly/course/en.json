@@ -21,6 +21,7 @@
   "course.lapDone": "Lap {time}",
   "course.best": "Best lap! {time}",
   "course.off": "Course hidden. Shift+T shows it again",
+  "course.hide": "Hide the course",
   "course.menu.save": "Course: save for everyone",
   "course.menu.load": "Course: fly the course saved for this scene",
   "course.server.offer": "This scene has a course saved by pilots: Shift+T flies it",

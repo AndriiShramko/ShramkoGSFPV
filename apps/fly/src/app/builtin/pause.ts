@@ -3,6 +3,7 @@
 import { V02_PAUSE_ITEMS } from '@gsfpv/prefs';
 import { dialogOpen } from '../../devices/keyboard';
 import { q } from '../env';
+import { closeTop } from '../../ui/panel-head';
 import type { Feature } from '../context';
 
 export const pause: Feature = {
@@ -14,7 +15,7 @@ export const pause: Feature = {
             if (!dialogOpen()) ctx.menu.open();
             // Esc over a screen opened from the menu (settings, replays...) closes it; a screen that
             // is not a panel (the drone picker) takes Esc over while it is up
-            else if (e.code === 'Escape') Array.from(ctx.ui.querySelectorAll<HTMLButtonElement>('.panel .panel-x')).pop()?.click();
+            else if (e.code === 'Escape') closeTop(ctx.ui);
         });
         document.addEventListener('visibilitychange', () => {
             // already paused (Controls, settings, a picker): a pause menu on top would resume the flight under it

@@ -21,6 +21,7 @@
   "course.lapDone": "Okrążenie {time}",
   "course.best": "Najlepsze okrążenie! {time}",
   "course.off": "Trasa ukryta. Shift+T pokazuje ją znowu",
+  "course.hide": "Ukryj trasę",
   "course.menu.save": "Trasa: zapisz dla wszystkich",
   "course.menu.load": "Trasa: leć trasą zapisaną dla tej sceny",
   "course.server.offer": "Ta scena ma trasę zapisaną przez pilotów: Shift+T ją uruchamia",

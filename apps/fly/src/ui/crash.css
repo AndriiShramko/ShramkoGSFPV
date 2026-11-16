@@ -21,7 +21,7 @@ body.clean .crash-toast, body.clean .rewind-label, #ui.hud-off .rewind-label { d
 #ui:has(> .panel) > .crash-toast { visibility: hidden; }
 
 .ck-keys { display: inline-flex; gap: 4px; margin-left: 8px; }
-.crash-toast kbd, .crash-overlay kbd { font: 600 11px/1 ui-monospace, Consolas, monospace; padding: 3px 6px; border-radius: 5px; border: 1px solid #3a4654; color: #d1d5db; background: rgba(255,255,255,.06); }
+.crash-toast kbd, .crash-overlay kbd { font: 600 12px/1 ui-monospace, Consolas, monospace; padding: 3px 6px; border-radius: 5px; border: 1px solid #3a4654; color: #d1d5db; background: rgba(255,255,255,.06); }
 .crash-overlay .btn.primary kbd { color: var(--accent-ink); border-color: rgba(5,46,22,.45); background: rgba(5,46,22,.12); }
 
 /* "-5 s": top centre, under the top line of the OSD; it fades out, it never flashes */
