@@ -374,8 +374,12 @@ into dist/walls, 9 scans). Logs and JSON under U:/Temp/gsfpv-train2/voxview2/, p
   the top bar, no legend under the editor window. voxview2-lublin.png (release c2de1b6c, R7; the plan change of R7b
   does not touch an eye inside the grid): the land from 140 m to the edge of the view, one black band without voxels.
 LEFT (voxview2, exact, in this order):
-- [ ] R9 accept-fly B6 B7 B9-B16, pause-over-course-probe, mouse-free-probe, editor3-smoke, walls-published-probe,
-  typecheck, gates.py --only vitest,architecture,i18n,b18,leaks, a6-reference.
+- [ ] R9 On the release 80435898 in dist (stand-in walls already in dist/walls; serve with node
+  tools/bench/scripts/serve-csp.mjs dist 5745): accept-fly B6 B7 B9-B16 (SITE=http://localhost:5745/en, npx tsx
+  tools/bench/src/accept-fly.ts, takes the GPU lock itself), tools/bench/scripts/pause-over-course-probe.mjs,
+  mouse-free-probe.mjs (rooms entry fails locally: known), tools/bench/src/editor3-smoke.ts,
+  walls-published-probe.mjs (read each one's head for its lock), typecheck apps/fly, packages/render-pc,
+  packages/collision, gates.py --only vitest,architecture,i18n,b18,leaks, tools/bench/test/a6-reference.test.ts.
 - [ ] R10 Frame time on Wroclaw with the view off, branch against main (BENCH_UNCAPPED=1).
 
 ### Findings (voxview2)
