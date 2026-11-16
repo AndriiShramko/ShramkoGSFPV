@@ -578,7 +578,9 @@ Stage R1-keeper
     325 MB; vramMB null (the engine's count is not readable). First second after the push: 127 frames, median 2.5 ms,
     90th percentile 19.8 ms, worst 31.9 ms; drawn 15.8 M at the push, 12.5 M after 10 frames, 9.1 M after 80 frames
     (0.63 s), 3.6 M after 2.35 s; within 10 % of 2.5 M after 3088 ms.
-  - rise OFF: see runs/r-before-lub-desktop-weak-c1-off.json (move.first1s), and the table below when the rest is run.
+  - rise OFF: first second after the push 144 frames, median 1.7 ms, 90th percentile 19.3 ms, worst 21.0 ms; 2.45 M
+    drawn; JS heap 96 MB. On against off: median 2.5 / 1.7 = 1.47 (R4 allows 1.25: FAILS for this case, before R3);
+    worst 31.9 against 21.0 + 50 (holds). The after runs show whether the R3 cap (10 M here) is enough.
   - Cause of the slow shedding, from the engine source (playcanvas 2.23.2 build/playcanvas.mjs applyLodChanges, read,
     not measured): a node keeps its fine file until its coarser file is resident; files unused for cooldownTicks (100)
     update ticks are unloaded, so at rest the flight's coarse files are dropped and after the move are loaded again, 2
