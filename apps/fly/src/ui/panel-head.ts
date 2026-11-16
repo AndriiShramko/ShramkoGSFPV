@@ -77,7 +77,7 @@ export function panelHead(title: string, words: HeadWords, onClose: () => void, 
     close.setAttribute('aria-label', words.close);
     close.title = words.key ? `${words.close} (${words.key})` : words.close;
     close.dataset.action = 'panel-close';
-    close.textContent = '×';
+    close.textContent = '\u00d7';
     close.addEventListener('click', () => onClose());
     let fold: HTMLButtonElement | null = null;
     let folded = false;
@@ -88,7 +88,7 @@ export function panelHead(title: string, words: HeadWords, onClose: () => void, 
         fold.setAttribute('aria-expanded', String(!f));
         fold.setAttribute('aria-label', word);
         fold.title = word;
-        fold.textContent = f ? '▸' : '▾';
+        fold.textContent = f ? '\u25b8' : '\u25be';
     };
     if (onFold && words.collapse && words.expand) {
         fold = el('button', 'ph-fold');

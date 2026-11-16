@@ -265,7 +265,7 @@ export class Hud {
     private statsInput = h('div', { 'data-testid': 'input-line', class: 'detail', hidden: true });
     private statsLink = h('div', { 'data-testid': 'link-hint', class: 'detail', hidden: true });
     /** U1: the F3 line has a cross too (the key stays) */
-    private statsX = h('button', { type: 'button', class: 'panel-x osd-x interactive', 'data-action': 'frame-stats-close', 'aria-label': t('hud.frameHide'), title: `${t('hud.frameHide')} (F3)`, 'aria-keyshortcuts': 'F3', onclick: () => this.toggleFrameStats() }, '×');
+    private statsX = h('button', { type: 'button', class: 'panel-x osd-x interactive', 'data-action': 'frame-stats-close', 'aria-label': t('hud.frameHide'), title: `${t('hud.frameHide')} (F3)`, 'aria-keyshortcuts': 'F3', onclick: () => this.toggleFrameStats() }, '\u00d7');
     private frameStats = h('div', { class: 'osd frame hidden' }, this.statsX, this.statsMain, this.statsInput, this.statsLink, this.statsDetail, this.statsDrawing, this.statsHint);
     private inputAt = -1e9;
     private card = new ArmCard(() => this.onArm?.(), () => this.throttle?.centred());
