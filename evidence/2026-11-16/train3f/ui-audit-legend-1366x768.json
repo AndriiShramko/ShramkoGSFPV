@@ -1,0 +1,360 @@
+{
+ "what": "panel inventory (ui-audit-probe.mjs)",
+ "base": "http://localhost:5883/en",
+ "size": "1366x768",
+ "scene": "70b50d42",
+ "render": false,
+ "phone": false,
+ "panels": {
+  "controls-first": {
+   "open": "first visit",
+   "m": {
+    "rect": {
+     "x": 0,
+     "y": 0,
+     "w": 1366,
+     "h": 768
+    },
+    "inView": true,
+    "panelH": 768,
+    "vh": 768,
+    "scrolls": true,
+    "scrollEl": "div.screen",
+    "clipped": false,
+    "text": "ControlsThe scan is ready. How will you fly?×Connect my controllerPlug the controller in with a data cable and switch it on, press the butto",
+    "title": "Controls",
+    "closers": [
+     {
+      "text": "×",
+      "name": "Close",
+      "action": "radio-close",
+      "tag": "button",
+      "rect": {
+       "x": 1197,
+       "y": 10,
+       "w": 44,
+       "h": 44
+      },
+      "inView": true,
+      "big": true,
+      "shape": true,
+      "font": 24,
+      "covered": false,
+      "coveredBy": null
+     },
+     {
+      "text": "My controller is not in the list",
+      "name": "My controller is not in the list",
+      "action": null,
+      "tag": "summary",
+      "rect": {
+       "x": 133,
+       "y": 821,
+       "w": 1100,
+       "h": 40
+      },
+      "inView": false,
+      "big": false,
+      "shape": false,
+      "font": 15,
+      "covered": "off-view",
+      "coveredBy": null
+     }
+    ],
+    "minFont": 13,
+    "smallTexts": 0,
+    "smallText": "",
+    "noName": [],
+    "symbolOnly": [
+     "button[radio-close]\"×\""
+    ],
+    "tinyTargets": [],
+    "coversOthersClose": []
+   },
+   "ways": {}
+  },
+  "walls-menu": {
+   "open": "click the walls line (bottom left credit)",
+   "ways": {
+    "esc": true,
+    "again": true,
+    "outside": false,
+    "control:Walls 10 cm ▾": false
+   },
+   "found": {
+    "root": "div.walls-menu#walls-panel",
+    "fresh": []
+   },
+   "m": {
+    "rect": {
+     "x": 16,
+     "y": 164,
+     "w": 280,
+     "h": 516
+    },
+    "inView": true,
+    "panelH": 516,
+    "vh": 768,
+    "scrolls": false,
+    "scrollEl": null,
+    "clipped": false,
+    "text": "Walls and voxels▾×Walls (collisions)onCVoxel gridVOffOver the scanVoxels onlyStyleSolid cubesWireframeHeight coloursFloaters in redOpacity55",
+    "title": "Walls and voxels",
+    "closers": [
+     {
+      "text": "Walls 10 cm ▾",
+      "name": "Walls 10 cm ▾",
+      "action": null,
+      "tag": "summary",
+      "rect": {
+       "x": 16,
+       "y": 684,
+       "w": 378,
+       "h": 44
+      },
+      "inView": true,
+      "big": true,
+      "shape": true,
+      "font": 12,
+      "covered": false,
+      "coveredBy": null
+     },
+     {
+      "text": "×",
+      "name": "Close",
+      "action": "voxpanel-close",
+      "tag": "button",
+      "rect": {
+       "x": 245,
+       "y": 171,
+       "w": 44,
+       "h": 44
+      },
+      "inView": true,
+      "big": true,
+      "shape": true,
+      "font": 24,
+      "covered": false,
+      "coveredBy": null
+     }
+    ],
+    "minFont": 12,
+    "smallTexts": 0,
+    "smallText": "",
+    "noName": [],
+    "symbolOnly": [
+     "button[voxpanel-fold]\"▾\"",
+     "button[voxpanel-close]\"×\""
+    ],
+    "tinyTargets": [
+     "input[voxels-opacity]96x16"
+    ],
+    "coversOthersClose": []
+   }
+  },
+  "voxel-legend": {
+   "open": "V",
+   "ways": {
+    "esc": false,
+    "again": false,
+    "outside": false,
+    "control:Hide the voxel grid": false
+   },
+   "found": {
+    "root": "div.voxel-legend#voxel-legend",
+    "fresh": []
+   },
+   "m": {
+    "rect": {
+     "x": 990,
+     "y": 94,
+     "w": 360,
+     "h": 81
+    },
+    "inView": true,
+    "panelH": 81,
+    "vh": 768,
+    "scrolls": false,
+    "scrollEl": null,
+    "clipped": false,
+    "text": "Voxels · Wireframe · 55 % · V10 cm voxels within 20 m · 5k faces · 855 floating pieces highlighted · Settings → Walls and voxel grid can dro",
+    "title": "",
+    "closers": [
+     {
+      "text": "×",
+      "name": "Hide the voxel grid",
+      "action": "voxel-legend-off",
+      "tag": "button",
+      "rect": {
+       "x": 1299,
+       "y": 99,
+       "w": 44,
+       "h": 44
+      },
+      "inView": true,
+      "big": true,
+      "shape": true,
+      "font": 24,
+      "covered": false,
+      "coveredBy": null
+     }
+    ],
+    "minFont": 12,
+    "smallTexts": 0,
+    "smallText": "",
+    "noName": [],
+    "symbolOnly": [
+     "button[voxel-legend-off]\"×\""
+    ],
+    "tinyTargets": [],
+    "coversOthersClose": []
+   }
+  }
+ },
+ "errors": [],
+ "clicks": [
+  {
+   "sel": "[data-testid=walls-summary]",
+   "top": true,
+   "at": "summary.",
+   "rect": [
+    16,
+    684,
+    378,
+    44
+   ]
+  },
+  {
+   "sel": "[data-testid=walls-summary]",
+   "top": true,
+   "at": "summary.",
+   "rect": [
+    16,
+    684,
+    378,
+    44
+   ]
+  },
+  {
+   "sel": "[data-testid=walls-summary]",
+   "top": true,
+   "at": "summary.",
+   "rect": [
+    16,
+    684,
+    378,
+    44
+   ]
+  },
+  {
+   "sel": "[data-testid=walls-summary]",
+   "top": true,
+   "at": "summary.",
+   "rect": [
+    16,
+    684,
+    378,
+    44
+   ]
+  }
+ ],
+ "pauseItems": [
+  {
+   "action": "pause.continue",
+   "label": "Continue"
+  },
+  {
+   "action": "pause.restart",
+   "label": "Restart"
+  },
+  {
+   "action": "pause.rewind",
+   "label": "Rewind along the path"
+  },
+  {
+   "action": "pause.scene",
+   "label": "Change scan"
+  },
+  {
+   "action": "pause.scene.next",
+   "label": "Next scene"
+  },
+  {
+   "action": "pause.scene.random",
+   "label": "Random scene"
+  },
+  {
+   "action": "pause.scene.favourite",
+   "label": "Next favourite scene"
+  },
+  {
+   "action": "pause.share",
+   "label": "Share this scene"
+  },
+  {
+   "action": "pause.drone",
+   "label": "Drone"
+  },
+  {
+   "action": "pause.radio",
+   "label": "Controls"
+  },
+  {
+   "action": "pause.howtofly",
+   "label": "How to fly"
+  },
+  {
+   "action": "pause.settings",
+   "label": "Settings"
+  },
+  {
+   "action": "pause.replays",
+   "label": "Replays"
+  },
+  {
+   "action": "pause.rooms",
+   "label": "Fly with others"
+  },
+  {
+   "action": "pause.course",
+   "label": "Course: a new random course"
+  },
+  {
+   "action": "pause.measure",
+   "label": "Measurements"
+  },
+  {
+   "action": "pause.import",
+   "label": "Import rates from Betaflight"
+  },
+  {
+   "action": "pause.cinema",
+   "label": "Cinema mode (on / off)"
+  },
+  {
+   "action": "pause.record",
+   "label": "Start recording"
+  },
+  {
+   "action": "pause.sound",
+   "label": "Motor sound: on — turn off"
+  },
+  {
+   "action": "pause.feedback",
+   "label": "Report a bug or an idea"
+  },
+  {
+   "action": "pause.flyBySound",
+   "label": "Fly by Sound here"
+  }
+ ],
+ "skipped": [
+  "pause.continue",
+  "pause.restart",
+  "pause.rewind",
+  "pause.scene.next",
+  "pause.scene.random",
+  "pause.scene.favourite",
+  "pause.record"
+ ]
+}
