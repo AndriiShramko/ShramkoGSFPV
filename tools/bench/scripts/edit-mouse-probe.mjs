@@ -74,6 +74,7 @@ const SNAP = `(() => {
         handles: v ? v.handles : null, stand: v && v.stand ? v.stand.screen : null, gates: v ? v.gates : null, override: h.session ? !!h.session.cameraOverride : null,
         lock: tagOf(document.pointerLockElement), topLine: tb ? (tb.querySelector('.ce-tb-line') || {}).textContent : null, topClass: tb ? tb.className : null,
         panelClass: pn ? pn.className : null, panelBox: pn ? (() => { const b = pn.getBoundingClientRect(); return [Math.round(b.left), Math.round(b.top), Math.round(b.width), Math.round(b.height)]; })() : null,
+        panelScroll: pn ? [...pn.querySelectorAll('*')].filter((x) => x.scrollTop > 0).map((x) => x.scrollTop).concat([...pn.querySelectorAll('details[open]')].length) : null,
         canvas: cv ? [cv.width, cv.height, cv.clientWidth, cv.clientHeight] : null, dpr: devicePixelRatio, maxTouch: navigator.maxTouchPoints,
         status: h.status ?? null, paused: h.session ? !!h.session.paused : null, windows: vis('.panel, .screen, [aria-modal="true"]:not([hidden])'), hud, active: tagOf(document.activeElement) };
 })()`;
@@ -140,8 +141,9 @@ async function drag(label, x, y, dx, dy, button = 'left') {
     res.clicks.push({ label, at: [Math.round(x), Math.round(y)], lockBefore: d.lock, under: d.under, peChain: d.chain });
 }
 const boxOf = (sel) => page.evaluate((s) => { const e = document.querySelector(s); if (!e || !e.getClientRects().length) return null; const b = e.getBoundingClientRect(); return { x: b.left + b.width / 2, y: b.top + b.height / 2, w: b.width, h: b.height, disabled: !!(e.disabled || e.getAttribute('aria-disabled') === 'true'), title: e.title || '', text: (e.textContent || '').trim().slice(0, 40) }; }, sel);
-const camOf = (s) => (s.cam ? [...s.cam.pos, s.cam.yaw ?? 0, s.cam.pitch ?? 0] : s.view ? [...s.view.eye, ...s.view.at] : null);
-const SIG = (s) => JSON.stringify([s.open, s.selected, s.gatesN, s.changed, s.said, s.topLine, s.panelClass, s.panelBox, s.refused, s.windows]);
+// the eye and the point looked at (a turn moves `at`, a fly key both)
+const camOf = (s) => (s.view ? [...s.view.eye, ...s.view.at] : s.cam ? [...s.cam.pos] : null);
+const SIG = (s) => JSON.stringify([s.open, s.selected, s.gatesN, s.changed, s.said, s.topLine, s.panelClass, s.panelBox, s.refused, s.windows, s.panelScroll]);
 
 let shot = null;
 try {
@@ -191,6 +193,12 @@ try {
     shot = await page.screenshot();
     judge('open', op.ok, { mode: s0.mode, lock: s0.lock });
     if (!op.ok) throw new Error('edit view did not open');
+    // TAP=1: the way back the bar's line names for a keyboard pilot (a short Space while flying in the mode, devices/keyboard.ts)
+    if (env.TAP === '1' && s0.mode === 'fly') {
+        await key('Space', { hold: 90 });
+        const back = await until(snap, (s) => s.mode === 'edit', 4000, 250);
+        res.tap = { back: back.ok, ms: back.ms, mode: back.v.mode, hud: back.v.hud, topLine: back.v.topLine };
+    }
 
     // (a) the view: keys, right drag, left drag on the scene, wheel
     const moves = [];
@@ -241,7 +249,9 @@ try {
             const r1 = await click('top.add', ab.x, ab.y, { after: 500 });
             const mid = await snap();
             r1.effect = { topLine: mid.topLine, pressed: await page.evaluate(() => document.querySelector('.ce-topbar [data-top="add"]')?.getAttribute('aria-pressed')) };
-            await click('scene.place', W * 0.5, H * 0.72, { after: 300 });
+            // the place: the first point low in the view where the scene itself (the canvas) is under the mouse
+            const spot = await page.evaluate(([w, h]) => { for (const fy of [0.72, 0.66, 0.78, 0.6]) for (const fx of [0.5, 0.4, 0.6, 0.3]) { const e = document.elementFromPoint(w * fx, h * fy); if (e && e.tagName === 'CANVAS') return [w * fx, h * fy]; } return [w * 0.5, h * 0.72]; }, [W, H]);
+            await click('scene.place', spot[0], spot[1], { after: 300 });
             const b = (await until(snap, (s) => (s.gatesN ?? 0) > (a.gatesN ?? 0), 6000, 300)).v;
             const ng = b.gates && b.selected !== null ? b.gates[b.selected] : null;
             const inView = !!ng && ng[2] > 0 && ng[0] >= 0 && ng[0] < W && ng[1] >= 0 && ng[1] < H;

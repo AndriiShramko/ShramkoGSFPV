@@ -1,0 +1,179 @@
+{
+ "address": "http://localhost:5820/en",
+ "scan": "70b50d42",
+ "size": [
+  1280,
+  595
+ ],
+ "dsf": 1.5,
+ "touch": false,
+ "layout": "en",
+ "name": "lap-1280",
+ "lockAsked": true,
+ "early": "",
+ "fly": false,
+ "query": "",
+ "live": false,
+ "date": "2026-11-16T10:22:59.000Z",
+ "steps": {},
+ "clicks": [
+  {
+   "label": "controls.keyboard",
+   "at": [
+    370,
+    687
+   ],
+   "lockBefore": null,
+   "under": null,
+   "peChain": [],
+   "windowSaw": [
+    "pointerdown>HTML",
+    "click>HTML"
+   ],
+   "clickBubbled": [
+    "HTML"
+   ]
+  },
+  {
+   "label": "scene.toFly",
+   "at": [
+    640,
+    298
+   ],
+   "lockBefore": null,
+   "under": "BUTTON.btn",
+   "peChain": [
+    [
+     "BUTTON.btn",
+     "auto"
+    ],
+    [
+     "DIV#ui",
+     "none"
+    ]
+   ],
+   "windowSaw": [
+    "pointerdown>BUTTON.btn",
+    "click>BUTTON.btn"
+   ],
+   "clickBubbled": [
+    "BUTTON.btn"
+   ]
+  }
+ ],
+ "ready": {
+  "status": "ready",
+  "ms": 6163
+ },
+ "afterControls": {
+  "open": false,
+  "selected": 0,
+  "changed": false,
+  "said": "",
+  "flying": false,
+  "refused": null,
+  "mode": null,
+  "gatesN": null,
+  "courseGates": 0,
+  "courseOn": false,
+  "problem": null,
+  "cam": null,
+  "view": null,
+  "handles": null,
+  "stand": null,
+  "gates": null,
+  "override": false,
+  "lock": null,
+  "topLine": null,
+  "topClass": null,
+  "panelClass": null,
+  "panelBox": null,
+  "canvas": [
+   1920,
+   893,
+   1280,
+   595
+  ],
+  "dpr": 1.5,
+  "maxTouch": 0,
+  "status": "ready",
+  "paused": true,
+  "windows": [
+   "DIV.screen.radio.interactive"
+  ],
+  "hud": {
+   "armed": false,
+   "crashed": false,
+   "throttlePct": 0,
+   "speed": 0,
+   "altitude": 0,
+   "crashes": 0
+  },
+  "active": "BODY.flying"
+ },
+ "lockAfterClick": null,
+ "course": {
+  "ok": false,
+  "ms": 480273,
+  "gates": 0,
+  "problem": null
+ },
+ "error": "Error: no course",
+ "final": {
+  "open": false,
+  "selected": 0,
+  "changed": false,
+  "said": "",
+  "flying": false,
+  "refused": null,
+  "mode": null,
+  "gatesN": null,
+  "courseGates": 0,
+  "courseOn": false,
+  "problem": null,
+  "cam": null,
+  "view": null,
+  "handles": null,
+  "stand": null,
+  "override": false,
+  "lock": null,
+  "topLine": null,
+  "topClass": null,
+  "panelClass": null,
+  "panelBox": null,
+  "canvas": [
+   1920,
+   893,
+   1280,
+   595
+  ],
+  "dpr": 1.5,
+  "maxTouch": 0,
+  "status": "ready",
+  "paused": true,
+  "windows": [
+   "DIV.screen.radio.interactive"
+  ],
+  "hud": {
+   "armed": false,
+   "crashed": false,
+   "throttlePct": 0,
+   "speed": 0,
+   "altitude": 0,
+   "crashes": 0
+  },
+  "active": "BUTTON.btn"
+ },
+ "fails": [
+  "error"
+ ],
+ "log": [
+  "console: Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "console: Failed to load resource: the server responded with a status of 403 ()",
+  "console: Failed to load resource: the server responded with a status of 403 ()",
+  "console: Failed to load resource: the server responded with a status of 403 ()",
+  "console: Failed to load resource: the server responded with a status of 403 ()",
+  "console: Failed to load resource: the server responded with a status of 403 ()",
+  "console: Failed to load resource: the server responded with a status of 403 ()"
+ ]
+}
