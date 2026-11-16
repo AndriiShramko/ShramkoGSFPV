@@ -5,18 +5,18 @@ Branch uiaudit in C:/dev/gsfpv-ui, ports 5840-5859. Owner's message 60 (2026-11-
 ## Status
 
 - [x] A1-inventory (commit: the one that adds this table; probe first committed in b12909a9). Branch fast-forwarded to origin/main d503b1cb, release build exit 0, Wroclaw walls stand-in copied to dist/walls/70b50d42/v1, serve-csp on 5840. Probe tools/bench/scripts/ui-audit-probe.mjs at five sizes on 39e63ce9 with ?render=off (no GPU lock), two sizes on Wroclaw 70b50d42 with ?render=off, and drawn under the GPU lock: Wroclaw 1366x768 and 844x390, Tunis 887f27aa 1280x720. Table tool tools/bench/scripts/ui-audit-table.mjs. Raw JSON and pictures: U:/Temp/gsfpv-train3/uiaudit/ (a-*, w-*, r-*), fault pictures U:/Temp/gsfpv-train3/shots/uiaudit-*.png.
-- [~] A2-repair, run 1 (2026-11-16):
+- [x] A2-repair, run 1 (2026-11-16):
   - [x] Merged origin/main c1893e12 with --no-ff as d079e5ca (no conflicts). Lead note: voxview NOT merged and the lane is running (registry C:/dev/.gsfpv-lanes: supervised), so apps/fly/src/walls.ts, ui/voxels.ts, ui/voxel-panel.ts and the .wv / .walls-menu / .voxel-legend rules of fly.css are not touched (see For the lead). course5, editor3, mix, sonic4 are merged and ended.
   - [x] Release build of the merged tree: exit 0 (U:/Temp/gsfpv-train3/uiaudit/build-a2.log).
   - [x] Shared header and rules: apps/fly/src/ui/panel-head.ts (panelHead: name, collapse button, cross; topLayer: Esc picks the highest z-index, the later on a tie; fitInView: the U2 size rule; closeTop) and panel-head.css (every button.panel-x is a 44 px target with a border and a background). Test tools/bench/test/uiaudit-panel-head.test.ts 7 of 7; negative control (topLayer as the old 'last in the page', fitInView without the clamp): 5 of 7 fail by assertion. Typecheck apps/fly: 0.
   - [x] Repairs in this commit: ui/dom.ts panel(): the cross says common.close in the page's language, title 'Close (Esc)', aria-keyshortcuts Escape (it said English 'Close' everywhere). app/builtin/pause.ts: Esc uses closeTop. Fault 8: a second B closes the report form (when the focus is not in its text field, where B is a letter) and a second L closes Share (feedback.ts, share.ts). Fault 5 (part): the F3 frame line has a 44 px cross 'Hide the frame line (F3)' (ui/hud.ts, key hud.frameHide in en, es, pl, ru). Fault 7 (part): 11 px to 12 px in settings.css (kbd, .set-cap), crash.css (kbd), cinema.css (.rec-bar kbd), fly.css (.pill, .spec-row .src of the Drone screen). Probe ui-audit-probe.mjs now names the unnamed control (#id, type, class) and the element of the smallest text.
-- [~] A2-repair, run 2 (2026-11-16): origin/main had not moved (still c1893e12).
+- [x] A2-repair, run 2 (2026-11-16): origin/main had not moved (still c1893e12).
   - [x] Fault 6 (pause at a short view): ui/summary.css, max-height 500px puts the menu first (panel-body as a column, sum-grid before sum-rows, grid areas "menu stats" / "keys stats"). Measured by ui-audit-probe.mjs on 39e63ce9 ?render=off at 844x390: Continue 345x41 at 33,151, in view (A1: below the view). Commit 29aa4856.
   - [x] Fault 4 (course clock block): course/hud.ts a 44 px cross (class panel-x course-hud-x, the cross drawn by CSS ::before so hook.clockText keeps the clock's text alone), aria-label and title course.hide "Hide the course (Shift+T)" in en, es, pl, ru (locales/fly/course), app/builtin/course.ts onClose runs the same toggle as Shift+T when the course is on. The course key is Shift+T (packages/prefs/src/keymap.ts:115), not Shift+G as A1's table says. Typecheck apps/fly 0. Commit 29aa4856. Not yet measured in a browser (the probe opens the course with Shift+G).
   - [x] Item (6) REC dot: no change needed; cinema.ts:209 already sets aria-label and title "Recording, <time>. Stop recording (F9)".
   - [x] Release build of 29aa4856 exit 0 (U:/Temp/gsfpv-train3/uiaudit/build-a2r2b.log); Wroclaw walls stand-in copied to dist/walls/70b50d42/v1; probe at five sizes, raw U:/Temp/gsfpv-train3/uiaudit/b-<size>.json and .log, pictures rawb/.
   - Probe run 2 findings (39e63ce9, ?render=off): (a) the frame line's cross (F3) is covered by the top row of buttons at 844x390 (span.share-top-label) and 390x844 (button.btn); (b) pause at 390x844: Continue at y 1043, below the view (one column: stats first); (c) the course editor at 390x844: the gate bar is 542 px wide at x 8 (off the right edge) and the 'Course editor' window's title lies over the top bar's buttons (picture rawb/raw-course-editor-390x844.png, looked at); (d) Settings 'no name' inputs are input.sr-range (ui/settings/screen.ts:333), aria-hidden with tabindex -1, the twin of a labelled number field: not a fault, a probe flaw; (e) Share's 'X 43x44' is the link to the X network, not a close control: probe flaw; (f) Drone screen 'Show the Frame on the model' is a 24x24 checkbox (rank 3); (g) credit 11 px is .wv kbd (fly.css:253, voxview).
-  - [~] A2-repair, run 3 (2026-11-16, started by the lane supervisor): origin/main had not moved (still c1893e12); voxview still not merged.
+  - [x] A2-repair, run 3 (2026-11-16, started by the lane supervisor; ends the stage): origin/main had not moved (still c1893e12); voxview still not merged.
     - [x] (1) Fault (a): the F3 cross at the line's left (ui/panel-head.css: padding-left 52px, min-height 44px, .osd-x left 0, z-index 1). Probe: 44x44 at 44,44, not covered at all five sizes (run 2: covered by the top row at 844x390 and 390x844). Commit 1ff700d3 (with (2), (3), (5) and the probe change).
     - [x] (2) Fault (b): ui/summary.css: the menu-first order also for max-width 760px, one column "menu" "stats" "keys". Probe 390x844: Continue 324x41 in view (run 2: y 1043, below the view); 844x390 unchanged (Continue 345x41 in view). Picture uiaudit-pause-390x844-after.png looked at: the menu starts with Continue right under the header, the stats come after it.
     - [x] (3) Fault (c): course/editor/editor.css at max-width 520px: .ce-gatebar max-width calc(100vw - 16px), flex-wrap wrap (wrap instead of overflow-x: barPlace in gate-bar.ts reads offsetWidth and keeps the bar in); .course-editor top = --top-row-bottom + 60px. Probe 390x844: gate bar 374x102 at 8,632, in view (run 2: 542x54 off the right edge). Picture uiaudit-course-editor-390x844-after.png looked at: the 'Course editor' title sits under Add gate ... Exit, all seven buttons free; the gate bar is two rows inside the screen.
@@ -29,6 +29,40 @@ Branch uiaudit in C:/dev/gsfpv-ui, ports 5840-5859. Owner's message 60 (2026-11-
   - Run 2's list as it was: (1) fault (a): move the F3 cross to the line's left (ui/panel-head.css .osd.frame padding-left 52px, .osd-x left 0) and re-probe 844x390 and 390x844; (2) fault (b): the same menu-first rule for max-width 760px in ui/summary.css; (3) fault (c): course/editor/editor.css at max-width 520px: .ce-gatebar max-width calc(100vw - 16px) with overflow-x auto, and the editor window below the top bar (lane editor3 is merged and ended); (4) probe: open the course with Shift+T and measure the new cross (course-hud-close) at five sizes; skip aria-hidden inputs and links in the closer list; (5) item (4) of run 1: titles for Drone 1 2 3 and the 24 px checkbox as a 44 px label; (6) pictures before and after for faults 1, 2, 6 (1 and 2 only 'before': voxview); (7) mouse-free-probe, accept-fly B6 B7 B9-B16 with SITE, pause-over-course-probe, a6-reference, gates.py --only vitest,architecture,i18n,b18,leaks with PATH including C:/Users/andri/AppData/Local/Programs/Python/Python312; (8) What the owner does, not repaired, not verified; the table again at five sizes (ui-audit-table.mjs U:/Temp/gsfpv-train3/uiaudit/b-).
   - [x] Run 1's left list items (1), (2), (3) and (6) are done above; (4) and (5) partly: see run 3's list.
   - Run 1's list as it was: (1) release build of this commit; (2) probe the five sizes on 39e63ce9 ?render=off (no lock) and redo the table rows of pause, keys, settings, feedback, share, frame-stats, drone; (3) fault 6: pause at 844x390, Continue below the view (ui/pause.ts: the sum-rows before the menu; a short-height rule that puts the menu first); (4) fault 9: the unnamed Settings input (read its id from the new probe line, give it aria-label in ui/settings/editors.ts) and titles for pause scale - and +, Drone 1 2 3; (5) fault 4: the course clock block gets a cross (course5 merged and ended; apps/fly/src/course/hud*); (6) REC dot and cinema note: title with F9 and the words; (7) pictures before and after for faults 1, 2, 6 (1 and 2 only 'before': voxview); (8) mouse-free-probe, accept-fly B6 B7 B9-B16 with SITE, pause-over-course-probe, a6-reference, gates.py --only vitest,architecture,i18n,b18,leaks with PATH including C:/Users/andri/AppData/Local/Programs/Python/Python312 (A1's vitest and leaks failed only for a missing python); (9) What the owner does, not repaired, not verified.
+
+## Checks at the end of A2 (run 3, release b64683a8, local serve-csp 5840)
+
+- accept-fly B6 B7 B9 B10 B11 B12 B13 B14 B15 B16 with SITE=http://localhost:5840 (first line "accept-fly target: http://localhost:5840"; it took the GPU lock itself): all PASS, exit 0 (U:/Temp/gsfpv-train3/uiaudit/accept-fly.log).
+- mouse-free-probe: every step to courseMenu passes; it stops at the rooms entry (no rooms service locally: known).
+- pause-over-course-probe on Tunis 887f27aa, drawn, under the GPU lock: pass true, 1920 and 844 (shownInFlight, hiddenUnderMenu, control, backAfterMenu).
+- a6-reference and uiaudit-panel-head: 8 of 8 pass. Typecheck apps/fly: 0.
+- gates.py --only vitest,architecture,i18n,b18,leaks (python 3.11 on PATH; Python312 has no python.exe): all PASS, exit 0 (gates-r3.log; vitest 108 s).
+- The owner's path, drawn, on Wroclaw 70b50d42 with the walls stand-in (ui-audit-probe.mjs --render, 1366x768 and 844x390, under the GPU lock, 0 errors): pause, frame line, course clock, walls menu. Pictures raww3/raw-*-1366x768.png and -844x390.png looked at: at 1366x768 the frame line shows its cross at its left, the course clock its cross at its right under the course note, the pause menu fits with Continue in view; at 844x390 the pause menu starts with Continue, the course clock's cross is in view at the clock's left, and the walls menu still runs off the bottom (voxview, unchanged).
+
+## What the owner does (how each panel closes now)
+
+- Pause menu, keys list (K), Settings (O), report form (B), Share (L), Change scan, Drone, Controls, How to fly, Replays, Fly with others, Measurements, Import rates: the square button with a cross at the top right of the window (44 px, with a border), or Esc, or the same key again (B and L too now; B only when the cursor is not in the text field). On a phone, held upright or on its side, the pause menu starts with Continue.
+- The frame line (F3): the square cross at its left, or F3 again.
+- The course's clock (built with Shift+G): the square cross next to it ("Hide the course (Shift+T)"), or Shift+T. On a phone on its side the cross is at the clock's left, at the bottom right of the screen.
+- The course editor on a phone held upright: the 'Course editor' window sits under the top bar (Add gate ... Exit stay free); the gate bar wraps to two rows inside the screen. The window's title opens and closes it; Exit leaves the editor.
+- Recording (F9): the red dot says "Recording, <time>. Stop recording (F9)" on hover and to a screen reader.
+- The numbered pins on the 3D drone model: a hover says "Show the <part> on the model"; each takes a press within 12 px around it.
+- Not changed yet (lane voxview): the walls and voxel menu still opens and closes only by its caption "Walls 5 cm" at the top left (bottom left on a desktop); the voxel legend (V) still goes only by V through its modes.
+
+## Not repaired, and why
+
+- Faults 1 and 2 (walls and voxel menu, voxel legend): files of lane voxview, which is not on main; the exact change is under 'For the lead'.
+- Fault 3 (Fly by Sound panels): drawn by the package packages/sonic-fpv (its own repository; never edited here); see 'For the lead'.
+- Fault 10 (a click outside closes only the pause menu): U1 does not ask for it; left as it is.
+- New, not repaired (seen in run 3 on Wroclaw 844x390, picture raww3/raw-course-844x390.png): the course clock block at the bottom right (course/hud.css Course5 Z1: "over the crashes line") lies over the REC row's 'Choose a folder' and the upper half of its new cross touches the 'Auto' button (the cross's centre is on top and a click hides the course). Suspected file apps/fly/src/course/hud.css, the max-height 500px rule; a fix moves the block above the REC row, which changes rectangles that course-finish-probe.mjs measures, so it is left for the lead or lane course.
+
+## Not verified
+
+- The Drone model pins' 48 px target and title in a browser (the model does not load with ?render=off; not probed drawn).
+- Fly by Sound's lesson list and sound panel, the cookie banner, the controller helper's messages (as in A1).
+- The course editor windows on Wroclaw drawn (the build of 17 gates was at step 2 of 2, 99 %, when the probe pressed Shift+B).
+- Tunis 887f27aa drawn through the whole ui-audit-probe (only pause-over-course-probe ran drawn on Tunis).
+- A real phone or touch screen: all phone sizes are a headless browser with isMobile and hasTouch.
 
 ## For the lead (changes in files this lane may not touch)
 
@@ -164,3 +198,49 @@ Drawn under the GPU lock (Wroclaw 1366x768 and 844x390):
 | course | Shift+G | 420x50@473,86 IN x:none | 78x97@383,142 IN x:none | n / n / n / - | 12.75 | - |
 | course-editor | Shift+B | 420x50@473,86 IN x:none | 420x50@212,86 IN x:none | n / n / n / - | 13 | - |
 | menu:pause.flyBySound | P, Fly by Sound here | 391x248@963,428 IN x:none | 776x47@34,100 IN x:none | n / - / n / - | 15 | - |
+
+## Table (A2, after the repairs)
+
+The same probe and columns as A1, release b64683a8, scene 39e63ce9, ?render=off (U:/Temp/gsfpv-train3/uiaudit/c-<size>.json; the course row at 844x390 from d-844x390.json after b64683a8). The probe marks the course block CLIP only because its cross lies outside the block's own box by design; removed here. "control n" for frame-stats and course is the probe's reopen flaw: ui-audit-click.mjs measured y at all five sizes. The rows of walls-menu, voxel-legend and the credit are unchanged (lane voxview).
+
+| panel | opens with | 1920x1080 | 1366x768 | 1280x720 | 844x390 | 390x844 | Esc / again / outside / control | min font | no name or symbol only |
+|---|---|---|---|---|---|---|---|---|---|
+| controls-first | first visit | 1920x1080@0,0 IN x:44x44 | 1366x768@0,0 IN S x:44x44 | 1280x720@0,0 IN S x:44x44 | 844x390@0,0 IN S x:44x44 | 390x844@0,0 IN S x:44x44 | - / - / - / - | 13 | button[radio-close]"(cross)" |
+| credit | always | 583x57@16,983 IN x:583x40 | 583x57@16,671 IN x:583x40 | 583x57@16,623 IN x:583x40 | 396x75@16,44 IN x:396x40 | 234x92@16,712 IN x:234x40 | - | 11 | - |
+| hud | always | 1920x1080@0,0 IN x:none | 1366x768@0,0 IN x:none | 1280x720@0,0 IN x:none | 844x390@0,0 IN x:none | 390x844@0,0 IN x:none | - | 12 | - |
+| mode-chip | always | 99x28@193,9 IN x:none | 99x28@193,9 IN x:none | 99x28@193,9 IN x:none | 103x36@193,5 IN x:none | 103x36@16,196 IN x:none | - | 14 | - |
+| howto | always | none | none | none | none | none | - | - | - |
+| walls-box | always | 259x60@830,44 IN x:none | 259x60@553,44 IN x:none | 259x60@510,86 IN x:none | 259x60@292,86 IN x:none | 195x82@98,110 IN x:none | - | 15 | - |
+| consent-now | always | none | none | none | none | none | - | - | - |
+| walls-menu | click the walls line (bottom left credit) | 250x463@16,569 IN x:583x40 | 250x463@16,257 IN x:583x40 | 250x463@16,209 IN x:583x40 | 250x463@16,123 OUT CLIP x:396x40 | 234x463@16,333 IN x:234x40 | n / y / n / n (Walls 5 cm (triangle)) | 11 | - |
+| voxel-legend | V | 360x77@1544,94 IN x:none | 360x77@990,94 IN x:none | 360x77@904,94 IN x:none | 360x77@468,94 IN x:none | 358x77@16,94 IN x:none | n / n / n / - | 11 | - |
+| pause | P or Esc | 1200x978@360,90 IN S x:44x44 | 1200x666@83,90 IN S x:44x44 | 1200x618@40,90 IN S x:44x44 | 812x288@16,90 IN S x:44x44 | 358x742@16,90 IN S x:44x44 | y / y / y / y (Close) | 12 | button"(cross)"; button[scale-down]"-"; button[scale-up]"+" |
+| keys | K | 720x512@600,284 IN x:44x44 | 720x512@323,128 IN x:44x44 | 720x512@280,104 IN x:44x44 | 720x366@62,12 IN S x:44x44 | 366x820@12,12 IN S x:44x44 | y / y / n / y (Close) | 12 | button[htf-close]"(cross)" |
+| settings | O | 940x780@490,150 IN x:44x44 | 940x736@213,16 IN x:44x44 | 940x688@170,16 IN S x:44x44 | 812x358@16,16 IN S x:44x44 | 390x844@0,0 IN S x:44x44 | y / y / n / y (Close) | 12 | button[settings-close]"(cross)"; button[help]"?" |
+| feedback | B | 600x879@660,100 IN x:44x44 | 600x736@383,16 IN S x:44x44 | 600x688@340,16 IN S x:44x44 | 600x358@122,16 IN S x:44x44 | 358x812@16,16 IN S x:44x44 | y / y / n / y (Close) | 13 | button"(cross)" |
+| share | L | 640x646@640,217 IN x:44x44 | 640x646@363,61 IN x:44x44 | 640x646@320,37 IN x:44x44 | 640x358@102,16 IN S x:44x44 | 358x643@16,101 IN x:44x44 | y / y / n / y (Close) | 13 | button"(cross)"; a"X" |
+| rooms | 9 | 70x18@44,14 IN x:none | 70x18@44,14 IN x:none | 70x18@44,14 IN x:none | 70x18@44,14 IN x:none | 70x18@44,14 IN x:none | y / n / n / - | 15 | - |
+| frame-stats | F3 | 474x64@44,44 IN x:44x44 | 474x64@44,44 IN x:44x44 | 474x64@44,44 IN x:44x44 | 474x64@44,44 IN x:44x44 | 346x94@44,44 IN x:44x44 | n / y / n / n (Hide the frame line) | 12 | button[frame-stats-close]"(cross)" |
+| recording | F9 | 77x40@1369,38 IN x:none | 77x40@815,38 IN x:none | 77x40@729,38 IN x:none | 77x40@343,38 IN x:none | 106x25@268,681 IN x:none | n / y / n / - | 13 | - |
+| course | Shift+G builds, Shift+T shows or hides | 207x17@856,168 IN x:44x44 | 207x17@579,168 IN x:44x44 | 207x17@536,210 IN x:44x44 | 195x15@633,335 IN x:44x44@581,335 (after b64683a8) | 195x33@98,120 IN x:44x44 | y / y / n / n (Hide the course) | 12 | - |
+| course-editor | Shift+B | 879x40@520,8 IN x:none | 879x40@243,8 IN x:none | 879x40@200,8 IN x:none | 542x54@151,328 IN x:none | 374x102@8,632 IN x:none | y / n / n / - | 12.75 | - |
+| menu:pause.scene | P, Change scan | 1920x1080@0,0 IN x:44x44 OVER(frame-stats-close,course-hud-close) | 1366x768@0,0 IN x:44x44 OVER(frame-stats-close,course-hud-close) | 1280x720@0,0 IN x:44x44 OVER(frame-stats-close,course-hud-close) | 844x390@0,0 IN S x:44x44 OVER(frame-stats-close) | 390x844@0,0 IN S x:44x44 OVER(frame-stats-close,course-hud-close) | y / - / n / y (Close) | 12 | button[scenes-close]"(cross)"; button"(star)" |
+| menu:pause.share | P, Share this scene | 640x646@640,217 IN x:44x44 | 640x646@363,61 IN x:44x44 | 640x646@320,37 IN x:44x44 | 640x358@102,16 IN S x:44x44 | 358x643@16,101 IN x:44x44 | y / - / n / y (Close) | 13 | button"(cross)"; a"X" |
+| menu:pause.drone | P, Drone | 1920x994@0,86 IN S x:44x44 | 1366x682@0,86 IN S x:44x44 | error | 844x304@0,86 IN S x:44x44 | 390x758@0,86 IN S x:44x44 | y / - / n / y (Close) | 11 | button[drone-close]"(cross)"; button"1"; button"2"; button"3" |
+| menu:pause.radio | P, Controls | 1920x1080@0,0 IN x:44x44 | 1366x768@0,0 IN S x:44x44 | error | 844x390@0,0 IN S x:44x44 | 390x844@0,0 IN S x:44x44 | y / - / n / y (Close) | 13 | button[radio-close]"(cross)" |
+| menu:pause.howtofly | P, How to fly | 720x512@600,284 IN x:44x44 | 720x512@323,128 IN x:44x44 | error | 720x366@62,12 IN S x:44x44 OVER(frame-stats-close) | 366x820@12,12 IN S x:44x44 OVER(frame-stats-close) | y / - / n / y (Close) | 12 | button[htf-close]"(cross)" |
+| menu:pause.settings | P, Settings | 940x780@490,150 IN x:44x44 | 940x736@213,16 IN x:44x44 | error | 812x358@16,16 IN S x:44x44 OVER(frame-stats-close) | 390x844@0,0 IN S x:44x44 OVER(frame-stats-close) | y / - / n / y (Close) | 12 | button[settings-close]"(cross)"; button[help]"?" |
+| menu:pause.replays | P, Replays | 560x130@680,475 IN x:44x44 | 560x130@403,319 IN x:44x44 | error | 560x130@142,130 IN x:44x44 | 358x130@16,357 IN x:44x44 | y / - / n / y (Close) | 15 | button"(cross)" |
+| menu:pause.rooms | P, Fly with others | 560x386@680,347 IN x:44x44 | 560x386@403,191 IN x:44x44 | error | 560x358@142,16 IN S x:44x44 | 358x408@16,218 IN x:44x44 | y / - / n / y (Close) | 13 | button"(cross)" |
+| menu:pause.course | P, Course: a new random course | 420x50@750,112 IN x:none | 420x50@473,112 IN x:none | error | 420x50@212,154 IN x:none | 195x69@98,44 IN x:none | n / - / n / - | 13 | - |
+| menu:pause.course.save | P, Course: save for everyone | 324x31@798,112 IN x:none | 324x31@521,112 IN x:none | error | 324x31@260,154 IN x:none | 195x50@98,44 IN x:none | n / - / n / - | 13 | - |
+| menu:pause.course.edit | P, Course: edit the obstacles | 879x40@520,8 IN x:none | 879x40@243,8 IN x:none | error | 542x54@151,328 IN x:none | 374x102@8,632 IN x:none | n / - / n / - | 12.75 | - |
+| menu:pause.measure | P, Measurements | 560x487@680,296 IN x:44x44 | 560x487@403,140 IN x:44x44 | error | 560x358@142,16 IN S x:44x44 | 358x723@16,60 IN x:44x44 | y / - / n / y (Close) | 13 | button"(cross)" |
+| menu:pause.import | P, Import rates from Betaflight | 560x427@680,327 IN x:44x44 | 560x427@403,171 IN x:44x44 | error | 560x358@142,16 IN S x:44x44 | 358x449@16,198 IN x:44x44 | y / - / n / y (Close) | 15 | button"(cross)" |
+| menu:pause.cinema | P, Cinema mode (on / off) | 527x25@697,1039 IN x:none | 527x25@420,727 IN x:none | error | 422x44@211,330 IN x:none | 195x81@98,747 IN x:none | n / - / n / - | 13 | - |
+| menu:pause.sound | P, Motor sound: on - turn off | 70x18@44,14 IN x:none | 70x18@44,14 IN x:none | error | 70x18@44,14 IN x:none | 70x18@44,14 IN x:none | y / - / - / - | 15 | - |
+| menu:pause.feedback | P, Report a bug or an idea | 600x879@660,100 IN x:44x44 | 600x736@383,16 IN S x:44x44 | error | 600x358@122,16 IN S x:44x44 | 358x812@16,16 IN S x:44x44 | y / - / n / y (Close) | 13 | button"(cross)" |
+| menu:pause.flyBySound | P, Fly by Sound here | 439x278@1469,710 IN x:none | 391x248@963,428 IN x:none | error | 776x47@34,100 IN x:none | 359x60@16,150 IN x:none | n / - / n / - | 15 | - |
+| helper | P, Controls, My controller is not in the list | error | error | error | error | error | - | - | - |
+| sonic-start | ?sonic=start | 1920x1080@0,0 IN S x:none | 1366x768@0,0 IN S x:none | 1280x720@0,0 IN S x:none | 844x390@0,0 IN S x:none | 390x844@0,0 IN S x:none | n / - / - / - | 13.6 | - |
+
