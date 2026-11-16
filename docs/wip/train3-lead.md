@@ -628,3 +628,17 @@ Worker 1 used most turns on finding the probe recipes in the lanes' long status 
 to rerun' block would save about 6 turns. Worker 2: waiting for the shared GPU lock and the long runner took about 15
 replies of polling; the ring measurement needed a second runner because the first pass left the y ring edge-on. A probe
 that undoes each ring before the next would have saved one 11-minute run.
+
+## Integration F (uiaudit, voxview with voxview2, loadq with loadq2)
+
+### Progress
+- [x] S1 merges: uiaudit d8808c4c as 6fb07c4a, voxview bd69a86c as 48ff85f3, loadq 1b12f179 as d101e23d (all --no-ff, no conflicts). The loadq merge was refused at first by 31 untracked files of the lead copy under evidence/2026-11-15/ that loadq commits (30 of them differ from loadq's); they were moved, not deleted, to U:/Temp/gsfpv-train3/train3f/untracked-backup/ (list in U:/Temp/gsfpv-train3/train3f/collide.txt).
+- [x] S1 seam a (catalogue): scripts/gen-catalog.ts after the merges, 77 settings in 11 groups (this commit).
+- [ ] S1 seam f (a6-reference hash, locales in four languages, docs/decisions.md numbers)
+- [ ] S1 gates once
+- [ ] S2 seams b, c, d, e and VR-7, VR-8
+- [ ] S3 release build with the published walls, probes, pictures, evidence
+- [ ] S4 live checks, the other parts of this section, gates on the final head
+
+### Merged
+- uiaudit d8808c4c, voxview bd69a86c (with voxview2), loadq 1b12f179 (with loadq2). None held back.
