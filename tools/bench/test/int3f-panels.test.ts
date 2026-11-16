@@ -45,4 +45,10 @@ describe('voxel legend (seam c, uiaudit fault 2)', () => {
     it('its small line is 12 px', () => {
         expect(rule('.vl-sub')).toMatch(/font-size:\s*12px/);
     });
+    it('on a narrow or short view it stands below the lone speaker button, so its cross is not covered', () => {
+        const m = css.match(/@media \(max-width: 640px\), \(max-height: 500px\) \{ \.voxel-legend \{ top: calc\(var\(--top-row-bottom, 78px\) \+ (\d+)px\); \} \}/);
+        expect(m).not.toBeNull();
+        // the speaker: top-row-bottom + 8 px, 40 px high; the legend must start below it
+        expect(Number(m![1])).toBeGreaterThanOrEqual(48);
+    });
 });
