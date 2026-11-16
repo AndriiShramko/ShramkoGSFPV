@@ -255,8 +255,11 @@ run voxel-panel-wroclaw voxpanel
 # 'Detail: ...'. Pause: on Lublin from 140 m up on the weak class the count of splats drawn in a pause rises above the
 # flight's (more than 1.5 times the highest of the last three samples before the pause); after Continue the budget in force is the flight's within
 # 2 s and the count drawn falls (it reaches the budget later: 4.0 M of 2.5 M at 1.8 s on the local copy).
+# SECS of these two runs counts from the reveal (REVEALMAX: up to 300 s of download before it): on the live site Lublin
+# revealed after 26 s and Wroclaw not within 30 s, so the first run on release 7af2aad5 ended before the pause's end and
+# before any sample (the checks' fault, not the page's).
 detailline() {
-  env OUT="$OUT/loadq" SCENE=70b50d42 VW=1366 VH=768 PILOT=16 SECS=30 node scripts/loadq-probe.mjs "$SITE/en" live-detail-wroclaw || return 1
+  env OUT="$OUT/loadq" SCENE=70b50d42 VW=1366 VH=768 PILOT=16 SECS=30 REVEALMAX=300 node scripts/loadq-probe.mjs "$SITE/en" live-detail-wroclaw || return 1
   node -e '
 const j = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
 const lines = (j.samples || []).map((s) => s.detail || {}).filter((d) => d.shown && /^Detail: /.test(d.text || ""));
@@ -264,19 +267,20 @@ console.log("samples with the Detail line", lines.length, "last", lines.length ?
 process.exit(lines.length > 0 ? 0 : 1);' "$OUT/loadq/live-detail-wroclaw.json"
 }
 pauserise() {
-  env OUT="$OUT/loadq" SCENE=2f1ddf5f CLASS=desktop-weak UP=140 PAUSEAT=25 MOVEAT=45 SECS=55 node scripts/loadq-probe.mjs "$SITE/en" live-pause-lublin || return 1
+  env OUT="$OUT/loadq" SCENE=2f1ddf5f CLASS=desktop-weak UP=140 PAUSEAT=25 MOVEAT=45 SECS=55 REVEALMAX=300 node scripts/loadq-probe.mjs "$SITE/en" live-pause-lublin || return 1
   node -e '
 const j = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
 const s = j.samples || [];
 const p = j.pausedAt, m = j.move || {};
-const flight = Math.max(0, ...s.filter((x) => x.s < p && x.drawn).slice(-3).map((x) => x.drawn));
-const paused = Math.max(0, ...s.filter((x) => x.s > p && x.s < m.at && x.drawn).map((x) => x.drawn));
+const r0 = j.revealS || 0, t = (x) => x.s - r0;   // samples count from the page start; the pause and the move from the reveal
+const flight = Math.max(0, ...s.filter((x) => t(x) > 0 && t(x) < p && x.drawn).slice(-3).map((x) => x.drawn));
+const paused = Math.max(0, ...s.filter((x) => t(x) > p && t(x) < m.at && x.drawn).map((x) => x.drawn));
 const pf = m.perFrame || [];
 const back = pf.find((f) => f[3] <= m.base + 1e-6);
 const da = (m.drawnAfter || []).filter((v) => v !== null);
 const falls = da.length > 1 && da[da.length - 1] < da[0];
-console.log("flight drawn", flight, "pause drawn", paused, "budget back at ms", back ? back[0] : null, "drawn after", JSON.stringify(da));
-process.exit(flight > 0 && paused > 1.5 * flight && back && back[0] <= 2000 && falls ? 0 : 1);' "$OUT/loadq/live-pause-lublin.json"
+console.log("reveal at s", r0, "paused at", p, "move at", m.at, "flight drawn", flight, "pause drawn", paused, "budget back at ms", back ? back[0] : null, "drawn after", JSON.stringify(da));
+process.exit(p > 0 && m.at > p && flight > 0 && paused > 1.5 * flight && back && back[0] <= 2000 && falls ? 0 : 1);' "$OUT/loadq/live-pause-lublin.json"
 }
 run detail-line-wroclaw locked detailline
 run pause-rise-lublin locked pauserise

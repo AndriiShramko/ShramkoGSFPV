@@ -71,6 +71,10 @@ const FAULTAT = env.FAULTAT !== undefined ? Number(env.FAULTAT) : null;
 // loadq2 R4 switch PAUSEAT (s after the reveal): the P key pauses the flight; at MOVEAT the P key goes on with it and the
 // first second is measured from that press (the move log starts just before it)
 const PAUSEAT = env.PAUSEAT !== undefined ? Number(env.PAUSEAT) : null;
+// lead switch REVEALMAX (s): when set, SECS counts from the reveal and the run waits up to REVEALMAX s for the reveal
+// (a live site reveals after its download: 26 s on Lublin; PAUSEAT and MOVEAT count from the reveal, so a total SECS
+// from the page's start cut the run before the move). Without a reveal in that time the run ends with no revealS.
+const REVEALMAX = env.REVEALMAX !== undefined ? Number(env.REVEALMAX) : null;
 // loadq2 switch: FLY (s after the reveal) moves the held camera along its start heading at FLYV (5) m/s for FLYSECS (60) s
 // and keeps the craft's sim speed at 2 m/s meanwhile, so the still rule sees a flight (a hook flight, not the keyboard)
 const FLY = env.FLY !== undefined ? Number(env.FLY) : null;
@@ -403,7 +407,8 @@ try {
             }
         }
         res.samples.push(row);
-        if (Date.now() - t0 >= SECONDS * 1000) break;
+        if (REVEALMAX === null) { if (Date.now() - t0 >= SECONDS * 1000) break; }
+        else if (revealAt !== null ? Date.now() - revealAt >= SECONDS * 1000 : Date.now() - t0 >= REVEALMAX * 1000) break;
     }
     await page.evaluate("document.getElementById('ui') && document.getElementById('ui').classList.add('loadq-hide')").catch(() => {});
     await shot('end');
