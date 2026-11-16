@@ -168,3 +168,9 @@
 @media (max-height: 500px) {
     .course-hud .course-hud-x { left: auto; right: 100%; margin: 0 8px 0 0; }
 }
+/* integration F seam d (lane uiaudit's finding): at 844x390 the block at the bottom right lay over the REC row's
+   'Choose a folder' and its cross touched 'Auto'. While the REC row shows, the block stands above it: --cinema-top is the
+   distance from the bottom edge to the top of the REC row (or of a low credit line), kept by app/builtin/cinema.ts. */
+@media (max-height: 500px) {
+    #ui:has(.rec-bar:not([hidden])) .course-hud { bottom: calc(var(--cinema-top, 96px) + 8px); }
+}
