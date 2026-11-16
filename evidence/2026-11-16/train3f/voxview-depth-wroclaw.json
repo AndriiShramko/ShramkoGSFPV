@@ -1,0 +1,247 @@
+{
+ "base": "http://localhost:5880/en",
+ "id": "70b50d42",
+ "tag": "int3f-depth",
+ "steps": [
+  "controls screen: Enter on \"keyboard\"",
+  "Shift+G",
+  "course after 9 s: {\"source\":\"generated\",\"problem\":null,\"gates\":40}",
+  "facts {\"order\":[\"0:World:O\",\"1:Depth:O\",\"2:Skybox:O\",\"3:World:T\",\"4:Immediate:O\",\"5:Immediate:T\",\"6:UI:T\"],\"gateMaterials\":[{\"name\":\"course-gate\",\"layers\":[0],\"depthTest\":true,\"depthWrite\":true,\"blend\":3},{\"name\":\"course-gate\",\"layers\":[0],\"depthTest\":true,\"depthWrite\":true,\"blend\":3}]}",
+  "voxels: only (the key V twice does the same: off -> over the scan -> voxels only)",
+  "voxels at spawn {\"style\":\"wire\",\"opacity\":1,\"depthItems\":174,\"chunks\":2352,\"quads\":1004683,\"fineRadiusM\":14.695710115057329,\"radiusM\":229.65136726961452,\"voxelCm\":10} settled in 16662 ms",
+  "voxview-depth-1: {\"name\":\"voxview-depth-1\",\"mode\":\"only\",\"eye\":{\"pos\":[-0.3,2.6,-37.13],\"dist\":5,\"yawDeg\":150,\"hidRays\":50,\"of\":95,\"wallBehindGateM\":21.8},\"points\":0,\"right\":0,\"front\":0,\"frontShown\":0,\"behind\":0,\"behindShown\":0,\"marked\":[]}",
+  "voxview-depth-2: {\"name\":\"voxview-depth-2\",\"mode\":\"only\",\"eye\":{\"pos\":[-6.94,2.6,-17.35],\"dist\":16,\"yawDeg\":345,\"hidRays\":45,\"of\":95,\"wallBehindGateM\":5.4},\"points\":23,\"right\":20,\"front\":16,\"frontShown\":13,\"behind\":7,\"behindShown\":0,\"marked\":[{\"x\":648,\"y\":414,\"hiddenByRay\":false,\"shown\":true,\"A\":[64,64,64],\"B\":[82,139,143],\"C\":[64,64,64]},{\"x\":657,\"y\":400,\"hiddenByRay\":true,\"shown\":false,\"A\":[72,122,126],\"B\":[72,122,126],\"C\":[64,64,64]},{\"x\":623,\"y\":398,\"hiddenByRay\":false,\"shown\":true,\"A\":[64,64,64],\"B\":[66,112,116],\"C\":[64,64,64]}]}",
+  "voxview-depth-scan: {\"name\":\"voxview-depth-scan\",\"mode\":\"overlay\",\"eye\":{\"pos\":[-0.3,2.6,-37.13],\"dist\":5,\"yawDeg\":150,\"hidRays\":50,\"of\":95,\"wallBehindGateM\":21.8},\"points\":0,\"right\":0,\"front\":0,\"frontShown\":0,\"behind\":0,\"behindShown\":0,\"marked\":[]}",
+  "voxview-depth-scanonly: {\"name\":\"voxview-depth-scanonly\",\"mode\":\"off\",\"eye\":{\"pos\":[-0.3,2.6,-37.13],\"dist\":5,\"yawDeg\":150,\"hidRays\":50,\"of\":95,\"wallBehindGateM\":21.8},\"points\":0,\"right\":0,\"front\":0,\"frontShown\":0,\"behind\":0,\"behindShown\":0,\"marked\":[]}",
+  "guide chip {\"hook\":{\"shown\":false,\"gate\":1,\"metres\":9,\"side\":\"right\",\"behind\":false,\"inFrame\":true,\"bearingDeg\":20,\"x\":78,\"y\":400},\"text\":\"Gate 2 · 9 m\",\"visible\":false}"
+ ],
+ "facts": {
+  "order": [
+   "0:World:O",
+   "1:Depth:O",
+   "2:Skybox:O",
+   "3:World:T",
+   "4:Immediate:O",
+   "5:Immediate:T",
+   "6:UI:T"
+  ],
+  "gateMaterials": [
+   {
+    "name": "course-gate",
+    "layers": [
+     0
+    ],
+    "depthTest": true,
+    "depthWrite": true,
+    "blend": 3
+   },
+   {
+    "name": "course-gate",
+    "layers": [
+     0
+    ],
+    "depthTest": true,
+    "depthWrite": true,
+    "blend": 3
+   }
+  ]
+ },
+ "settleOnlyMs": 16662,
+ "statsSpawn": {
+  "style": "wire",
+  "opacity": 1,
+  "depthItems": 174,
+  "chunks": 2352,
+  "quads": 1004683,
+  "fineRadiusM": 14.695710115057329,
+  "radiusM": 229.65136726961452,
+  "voxelCm": 10
+ },
+ "gate": {
+  "index": 0,
+  "pos": [
+   -2.8,
+   2.6,
+   -32.8
+  ],
+  "points": 95
+ },
+ "candidates": 179,
+ "pictures": [
+  {
+   "name": "voxview-depth-1",
+   "mode": "only",
+   "eye": {
+    "pos": [
+     -0.3,
+     2.6,
+     -37.13
+    ],
+    "dist": 5,
+    "yawDeg": 150,
+    "hidRays": 50,
+    "of": 95,
+    "wallBehindGateM": 21.8
+   },
+   "points": 0,
+   "right": 0,
+   "front": 0,
+   "frontShown": 0,
+   "behind": 0,
+   "behindShown": 0,
+   "marked": []
+  },
+  {
+   "name": "voxview-depth-2",
+   "mode": "only",
+   "eye": {
+    "pos": [
+     -6.94,
+     2.6,
+     -17.35
+    ],
+    "dist": 16,
+    "yawDeg": 345,
+    "hidRays": 45,
+    "of": 95,
+    "wallBehindGateM": 5.4
+   },
+   "points": 23,
+   "right": 20,
+   "front": 16,
+   "frontShown": 13,
+   "behind": 7,
+   "behindShown": 0,
+   "marked": [
+    {
+     "x": 648,
+     "y": 414,
+     "hiddenByRay": false,
+     "shown": true,
+     "ok": true,
+     "A": [
+      64,
+      64,
+      64
+     ],
+     "B": [
+      82,
+      139,
+      143
+     ],
+     "C": [
+      64,
+      64,
+      64
+     ]
+    },
+    {
+     "x": 657,
+     "y": 400,
+     "hiddenByRay": true,
+     "shown": false,
+     "ok": true,
+     "A": [
+      72,
+      122,
+      126
+     ],
+     "B": [
+      72,
+      122,
+      126
+     ],
+     "C": [
+      64,
+      64,
+      64
+     ]
+    },
+    {
+     "x": 623,
+     "y": 398,
+     "hiddenByRay": false,
+     "shown": true,
+     "ok": true,
+     "A": [
+      64,
+      64,
+      64
+     ],
+     "B": [
+      66,
+      112,
+      116
+     ],
+     "C": [
+      64,
+      64,
+      64
+     ]
+    }
+   ]
+  },
+  {
+   "name": "voxview-depth-scan",
+   "mode": "overlay",
+   "eye": {
+    "pos": [
+     -0.3,
+     2.6,
+     -37.13
+    ],
+    "dist": 5,
+    "yawDeg": 150,
+    "hidRays": 50,
+    "of": 95,
+    "wallBehindGateM": 21.8
+   },
+   "points": 0,
+   "right": 0,
+   "front": 0,
+   "frontShown": 0,
+   "behind": 0,
+   "behindShown": 0,
+   "marked": []
+  },
+  {
+   "name": "voxview-depth-scanonly",
+   "mode": "off",
+   "eye": {
+    "pos": [
+     -0.3,
+     2.6,
+     -37.13
+    ],
+    "dist": 5,
+    "yawDeg": 150,
+    "hidRays": 50,
+    "of": 95,
+    "wallBehindGateM": 21.8
+   },
+   "points": 0,
+   "right": 0,
+   "front": 0,
+   "frontShown": 0,
+   "behind": 0,
+   "behindShown": 0,
+   "marked": []
+  }
+ ],
+ "guide": {
+  "hook": {
+   "shown": false,
+   "gate": 1,
+   "metres": 9,
+   "side": "right",
+   "behind": false,
+   "inFrame": true,
+   "bearingDeg": 20,
+   "x": 78,
+   "y": 400
+  },
+  "text": "Gate 2 · 9 m",
+  "visible": false
+ },
+ "seconds": 63
+}

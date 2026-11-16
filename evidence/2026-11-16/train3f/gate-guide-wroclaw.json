@@ -1,0 +1,148 @@
+{
+ "base": "http://localhost:5880/en",
+ "id": "70b50d42",
+ "shiftg": true,
+ "checks": [
+  {
+   "what": "gate 1 is START",
+   "pass": true,
+   "detail": {
+    "roles": [
+     "start",
+     null,
+     null,
+     null
+    ]
+   }
+  },
+  {
+   "what": "aria-hidden on the guide",
+   "pass": true,
+   "detail": "true"
+  },
+  {
+   "what": "start: gate 1 in the frame and near (12.0 m, 12.5 deg, share of the half view 0.14): the guide hides",
+   "pass": true,
+   "detail": {
+    "shown": false,
+    "inFrame": true,
+    "metres": 12
+   }
+  }
+ ],
+ "reads": {
+  "start": {
+   "tanH": 1.5696855771174902,
+   "tanV": 0.9810534856984313,
+   "guide": {
+    "shown": false,
+    "gate": 0,
+    "metres": 12,
+    "side": "right",
+    "behind": false,
+    "inFrame": true,
+    "bearingDeg": 13,
+    "x": 0,
+    "y": 0
+   },
+   "text": "",
+   "guideBox": null,
+   "ariaHidden": "true",
+   "cam": [
+    -11.900656700134277,
+    3.1238160133361816,
+    -16.831905364990234
+   ],
+   "right": [
+    -0.055018886217147456,
+    0,
+    0.9984853139427863
+   ],
+   "fwd": [
+    0.9984853139427863,
+    0,
+    0.055018886217147456
+   ],
+   "gate": [
+    -0.4,
+    2.6,
+    -13.6
+   ],
+   "gates": 36,
+   "next": 0,
+   "note": {
+    "left": 430,
+    "top": 86,
+    "right": 850,
+    "bottom": 135.6875
+   },
+   "block": {
+    "left": 536.3203125,
+    "top": 142,
+    "right": 743.6796875,
+    "bottom": 158.5625
+   },
+   "menu": null,
+   "walls": null,
+   "wallsLine": "",
+   "vw": 1280,
+   "vh": 800,
+   "probeBearing": 12.5,
+   "probeDist": 11.96,
+   "probeElev": 2.6,
+   "probeShare": 0.142
+  }
+ },
+ "turns": [],
+ "genS": 15,
+ "camMode": {
+  "override": false,
+  "aim": {
+   "yawDeg": 93.15394252224232,
+   "pitchDeg": 0
+  },
+  "editorOpen": false
+ },
+ "roles": [
+  "start",
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  "finish"
+ ],
+ "gates": 36,
+ "shotStart": "U:\\Temp\\gsfpv-train3\\shots\\train3f-raw\\fix3a-gate1-wroclaw.png",
+ "seconds": 18,
+ "pass": true
+}

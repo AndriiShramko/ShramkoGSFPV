@@ -1,0 +1,404 @@
+{
+ "base": "http://localhost:5880/en",
+ "id": "70b50d42",
+ "tag": "int3f-vox",
+ "steps": [
+  "walls true after 4 s",
+  {
+   "course": true,
+   "ms": 11091,
+   "v": {
+    "gates": 38,
+    "on": true,
+    "problem": null
+   }
+  },
+  {
+   "start": {
+    "settledMs": 12320,
+    "miss": {
+     "frames": 400,
+     "missFrames": 0,
+     "maxMiss": 0,
+     "items": 137
+    },
+    "stats": {
+     "depthItems": 137,
+     "chunks": 1643,
+     "share": 100
+    }
+   }
+  },
+  {
+   "startFacing": {
+    "eye": [
+     -11.900656700134277,
+     3.4238160133361815,
+     -16.831905364990234
+    ],
+    "gate": [
+     -2.8,
+     2.6,
+     -10.4
+    ],
+    "bearingDeg": 0,
+    "guide": {
+     "shown": false,
+     "gate": 0,
+     "metres": 11,
+     "side": "right",
+     "behind": false,
+     "inFrame": true,
+     "bearingDeg": 0,
+     "x": 79,
+     "y": 400
+    }
+   }
+  },
+  {
+   "esc": "flight",
+   "ok": true,
+   "before": {
+    "panelOpen": false,
+    "editOpen": false,
+    "panels": []
+   },
+   "opened": {
+    "panelOpen": true,
+    "editOpen": false,
+    "panels": []
+   },
+   "after": {
+    "panelOpen": false,
+    "editOpen": false,
+    "panels": []
+   }
+  },
+  {
+   "pausedBy": "Escape",
+   "paused": {
+    "panelOpen": false,
+    "editOpen": false,
+    "panels": [
+     "panel interactive pause-menu summary has-stats"
+    ]
+   }
+  },
+  {
+   "esc": "pause",
+   "ok": true,
+   "before": {
+    "panelOpen": false,
+    "editOpen": false,
+    "panels": [
+     "panel interactive pause-menu summary has-stats"
+    ]
+   },
+   "opened": {
+    "panelOpen": true,
+    "editOpen": false,
+    "panels": [
+     "panel interactive pause-menu summary has-stats"
+    ]
+   },
+   "after": {
+    "panelOpen": false,
+    "editOpen": false,
+    "panels": [
+     "panel interactive pause-menu summary has-stats"
+    ]
+   }
+  },
+  {
+   "afterPauseEsc": {
+    "panelOpen": false,
+    "editOpen": false,
+    "panels": []
+   }
+  },
+  {
+   "edit": true,
+   "selected": 0
+  },
+  {
+   "move": "ArrowRight",
+   "from": [
+    -2.799999952316284,
+    2.5999999046325684,
+    -10.399999618530273
+   ],
+   "to": [
+    -2.9000000953674316,
+    2.5999999046325684,
+    -10.399999618530273
+   ],
+   "frames": 25,
+   "missFrames": 0,
+   "maxMiss": 0,
+   "items": 136
+  },
+  {
+   "move": "ArrowRight",
+   "from": [
+    -2.9000000953674316,
+    2.5999999046325684,
+    -10.399999618530273
+   ],
+   "to": [
+    -3,
+    2.5999999046325684,
+    -10.399999618530273
+   ],
+   "frames": 25,
+   "missFrames": 0,
+   "maxMiss": 0,
+   "items": 136
+  },
+  {
+   "move": "ArrowUp",
+   "from": [
+    -3,
+    2.5999999046325684,
+    -10.399999618530273
+   ],
+   "to": [
+    -3,
+    2.5999999046325684,
+    -10.300000190734863
+   ],
+   "frames": 25,
+   "missFrames": 0,
+   "maxMiss": 0,
+   "items": 136
+  },
+  {
+   "move": "ArrowLeft",
+   "from": [
+    -3,
+    2.5999999046325684,
+    -10.300000190734863
+   ],
+   "to": [
+    -2.9000000953674316,
+    2.5999999046325684,
+    -10.300000190734863
+   ],
+   "frames": 24,
+   "missFrames": 0,
+   "maxMiss": 0,
+   "items": 136
+  },
+  {
+   "tab": {
+    "frames": 46,
+    "missFrames": 0,
+    "maxMiss": 0,
+    "items": 136
+   }
+  },
+  {
+   "esc": "edit",
+   "ok": true,
+   "before": {
+    "panelOpen": false,
+    "editOpen": true,
+    "panels": []
+   },
+   "opened": {
+    "panelOpen": true,
+    "editOpen": true,
+    "panels": []
+   },
+   "after": {
+    "panelOpen": false,
+    "editOpen": true,
+    "panels": []
+   }
+  }
+ ],
+ "start": {
+  "settledMs": 12320,
+  "miss": {
+   "frames": 400,
+   "missFrames": 0,
+   "maxMiss": 0,
+   "items": 137
+  },
+  "stats": {
+   "depthItems": 137,
+   "chunks": 1643,
+   "share": 100
+  }
+ },
+ "startFacing": {
+  "eye": [
+   -11.900656700134277,
+   3.4238160133361815,
+   -16.831905364990234
+  ],
+  "gate": [
+   -2.8,
+   2.6,
+   -10.4
+  ],
+  "bearingDeg": 0,
+  "guide": {
+   "shown": false,
+   "gate": 0,
+   "metres": 11,
+   "side": "right",
+   "behind": false,
+   "inFrame": true,
+   "bearingDeg": 0,
+   "x": 79,
+   "y": 400
+  }
+ },
+ "esc": [
+  {
+   "label": "flight",
+   "ok": true,
+   "before": {
+    "panelOpen": false,
+    "editOpen": false,
+    "panels": []
+   },
+   "opened": {
+    "panelOpen": true,
+    "editOpen": false,
+    "panels": []
+   },
+   "after": {
+    "panelOpen": false,
+    "editOpen": false,
+    "panels": []
+   }
+  },
+  {
+   "label": "pause",
+   "ok": true,
+   "before": {
+    "panelOpen": false,
+    "editOpen": false,
+    "panels": [
+     "panel interactive pause-menu summary has-stats"
+    ]
+   },
+   "opened": {
+    "panelOpen": true,
+    "editOpen": false,
+    "panels": [
+     "panel interactive pause-menu summary has-stats"
+    ]
+   },
+   "after": {
+    "panelOpen": false,
+    "editOpen": false,
+    "panels": [
+     "panel interactive pause-menu summary has-stats"
+    ]
+   }
+  },
+  {
+   "label": "edit",
+   "ok": true,
+   "before": {
+    "panelOpen": false,
+    "editOpen": true,
+    "panels": []
+   },
+   "opened": {
+    "panelOpen": true,
+    "editOpen": true,
+    "panels": []
+   },
+   "after": {
+    "panelOpen": false,
+    "editOpen": true,
+    "panels": []
+   }
+  }
+ ],
+ "moves": [
+  {
+   "key": "ArrowRight",
+   "from": [
+    -2.799999952316284,
+    2.5999999046325684,
+    -10.399999618530273
+   ],
+   "to": [
+    -2.9000000953674316,
+    2.5999999046325684,
+    -10.399999618530273
+   ],
+   "frames": 25,
+   "missFrames": 0,
+   "maxMiss": 0,
+   "items": 136
+  },
+  {
+   "key": "ArrowRight",
+   "from": [
+    -2.9000000953674316,
+    2.5999999046325684,
+    -10.399999618530273
+   ],
+   "to": [
+    -3,
+    2.5999999046325684,
+    -10.399999618530273
+   ],
+   "frames": 25,
+   "missFrames": 0,
+   "maxMiss": 0,
+   "items": 136
+  },
+  {
+   "key": "ArrowUp",
+   "from": [
+    -3,
+    2.5999999046325684,
+    -10.399999618530273
+   ],
+   "to": [
+    -3,
+    2.5999999046325684,
+    -10.300000190734863
+   ],
+   "frames": 25,
+   "missFrames": 0,
+   "maxMiss": 0,
+   "items": 136
+  },
+  {
+   "key": "ArrowLeft",
+   "from": [
+    -3,
+    2.5999999046325684,
+    -10.300000190734863
+   ],
+   "to": [
+    -2.9000000953674316,
+    2.5999999046325684,
+    -10.300000190734863
+   ],
+   "frames": 24,
+   "missFrames": 0,
+   "maxMiss": 0,
+   "items": 136
+  }
+ ],
+ "tab": {
+  "frames": 46,
+  "missFrames": 0,
+  "maxMiss": 0,
+  "items": 136
+ },
+ "final": {
+  "panelOpen": false,
+  "editOpen": true,
+  "panels": []
+ },
+ "seconds": 47
+}
