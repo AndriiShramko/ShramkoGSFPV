@@ -34,7 +34,7 @@ export const still: Feature = {
         let viewTurnDegS = 0, viewSpeed = 0;
         let trouble: { kind: string; at: number; boostM: number } | null = null;
         const enabled = (): boolean => ctx.prefs.get<boolean>('display.stillDetail') !== false;
-        const offPause = ctx.events.on('pause', ({ on }) => { paused = on; });
+        const offPause = ctx.events.on('pause', ({ on }) => { paused = on; ctx.quality.setPaused(on); });
         // R3: the device lost or out of memory while the still budget stands: the flight's budget, the setting off, said once
         const offTrouble = ctx.renderer.onGpuTrouble((kind) => {
             const boostM = ctx.quality.stillBudgetMillions;
@@ -69,6 +69,6 @@ export const still: Feature = {
             }
         });
         ctx.hook.still = () => ({ boostM: rule.boostM, baseM: ctx.quality.baseBudgetMillions, capM, paused, enabled: enabled(), touch: ctx.quality.touchDevice, viewTurnDegS, viewSpeed, trouble });
-        return () => { offPause(); offFrame(); offTrouble(); ctx.quality.setStillBudget(0); };
+        return () => { offPause(); offFrame(); offTrouble(); ctx.quality.setPaused(false); ctx.quality.setStillBudget(0); };
     }
 };

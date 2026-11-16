@@ -658,9 +658,17 @@ Stage R1-keeper
     governor.ts, the R1 rule counts only judged frames not held). Next: a run with GOVLOG=1 PAUSEAT=15 STILLOFF=1 at CPU
     1 shows which frames the keeper counted; then apps/fly/src/app/quality.ts frame(): the keeper rests while paused
     (governor.rest, as at a still picture), a unit test and a negative control.
+- [x] 3d. The keeper stepped down in a pause (run 4 of this stage). Keeper log rest/r-govlog-pause-c1.json (release
+  8d078948, Lublin desktop-weak, CPU 1, STILLOFF, P at 15.6 s): down 0->1 at 20.3 s (window 157 frames, 16 missed, all
+  held), 1->2 at 21.5 s, up again at 26.5 and 31.5 s, all in the pause; 3230 of 7907 frames held for the GPU queue,
+  intervals about 18 and 2 ms in turn, so fewer than 60 pictures a second counted as drawn. Fix:
+  apps/fly/src/app/quality.ts setPaused (builtin/still.ts calls it on the 'pause' event): while paused the keeper rests
+  (governor.rest, as at a still picture) and keeperCalm is the calm of the moment the pause began, so the pause's rise
+  still starts. Test tools/bench/test/loadq2-pause.test.ts (3 pass); negative control with the quality.ts of 9d87ad81: 2
+  fail by assertion ("expected 4 to be +0"; calm "[ false, false, false, true, true ]"). Typecheck apps/fly exit 0;
+  loadq-detail, loadq2-pause, packages/render-pc/test: 396 pass.
 - [ ] LEFT for the next run, in this order:
-  0. The new fault above (keeper steps down in a pause): GOVLOG run, fix in quality.ts, test, negative control, release
-     build, the lub weak c1 pause on/off pair again.
+  0. (done in 3d, the code) Left of it: release build, the lub weak c1 pause on/off pair again.
   1. (done in 3b) R4 by its order for the CPU x4 case. Shedding in the move frame: not possible from the page (engine source: a node
      keeps its fine file until the coarse one is resident again; see item 3 above). Next: STILL_FRAME_MS 66 -> 33 in
      apps/fly/src/app/detail-rule.ts (the rise stops while the median frame at rest is 33 ms or more) and the c4 pair

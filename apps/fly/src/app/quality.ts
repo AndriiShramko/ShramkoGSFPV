@@ -211,7 +211,25 @@ export class Quality {
      * device that waits at the start still finds its flight's step first.
      */
     get keeperCalm(): boolean {
-        return this.cinemaOn || this.governor.calm(this.renderer.frameTime);
+        if (this.cinemaOn) return true;
+        return this.pausedNow ? this.calmAtPause : this.governor.calm(this.renderer.frameTime);
+    }
+
+    /** loadq2: the flight is paused (builtin/still.ts, the 'pause' event) */
+    private pausedNow = false;
+    /** loadq2: FrameGovernor.calm at the moment the pause began (keeperCalm while paused) */
+    private calmAtPause = false;
+
+    /**
+     * loadq2 (R2-rest): the flight is paused or goes on. While paused the keeper rests like at a still picture: the frames
+     * of a pause say nothing about the flight (measured, Lublin desktop-weak, CPU 1: behind the pause menu about 4 frames
+     * in 10 were held for the GPU queue, so fewer than 60 pictures a second counted as drawn and the keeper stepped the
+     * flight down twice while 132 to 214 pictures a second were drawn). The still rise of a pause starts from the
+     * keeper's calm as it was when the pause began.
+     */
+    setPaused(on: boolean): void {
+        if (on && !this.pausedNow) this.calmAtPause = this.stillM > 0 || this.governor.calm(this.renderer.frameTime);
+        this.pausedNow = on;
     }
 
     /** Once per frame, first: the simulated overload (tests), then the governor's step. */
@@ -229,7 +247,8 @@ export class Quality {
         // after a late callback (5.5 ms after a 120 ms one, measured on ba7aa29d) never teaches it a
         // display period of 9-13 ms, which made every on-time frame "missed" (docs/wip/v08-c.md)
         // G6: the slower frames of a still picture are chosen, not missed: the keeper does not count them
-        const still = this.stillM > 0;
+        // loadq2: a paused flight rests the keeper too (setPaused)
+        const still = this.stillM > 0 || this.pausedNow;
         // the governor is told of the rest, so the first frames after a move are judged as a whole window (review LR-3)
         if (still) this.governor.rest(this.renderer.frameTime);
         else if (!this.cinemaOn && this.governor.onFrame(this.renderer.frameTime, this.renderer.frameAfterSkip, held, streamed)) this.apply();
