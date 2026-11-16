@@ -667,8 +667,25 @@ Stage R1-keeper
   still starts. Test tools/bench/test/loadq2-pause.test.ts (3 pass); negative control with the quality.ts of 9d87ad81: 2
   fail by assertion ("expected 4 to be +0"; calm "[ false, false, false, true, true ]"). Typecheck apps/fly exit 0;
   loadq-detail, loadq2-pause, packages/render-pc/test: 396 pass.
+- [x] 3e. After the pause fix: release eb3f6a95 (sha256 38638541..., U:/Temp/gsfpv-train3/loadq2/build-eb3f.log; copy
+  with the Wroclaw walls stand-in in U:/Temp/gsfpv-train3/loadq2/dist-after-eb3f6a95; batch pause2.sh on port 5834; table
+  U:/Temp/gsfpv-train3/loadq2/pause2-table.txt; P at 15 s, P again at 45 s, the first second from that press):
+  | run | frames | median | p90 | worst | within 10 % | peak | flight |
+  | lub weak c1, pause, off | 148 | 1.7 | 19.2 | 20.3 | 0 | 2.5 M | 2.5 M |
+  | lub weak c1, pause, on | 134 | 2.6 | 19.5 | 30.9 | 1126 ms | 10 M | 2.5 M |
+  | wro phone c4, pause, off | 50 | 17.2 | 27.9 | 142.6 | 0 | 0.75 M | 0.75 M |
+  | wro phone c4, pause, on (rose to 1.5 M) | 16 | 50.6 | 121.3 | 181.1 | 203 ms | 1.5 M | 0.75 M |
+  - The keeper did not step in the pause in either Lublin run (GOVLOG: 0 changes; on 8d078948: 2 down, 2 up), so the
+    pause's rise now stands on the flight's 2.5 M and reaches 10 M (4 times; on 8d078948 it reached 6.25 M from 1.56 M).
+  - R4 after a pause, CPU 1: median 1.53 times, worst +10.6 ms (two 'off' runs of one setup differed by 35 % before,
+    1.7 and 2.3 ms: at this speed the median rule is near the noise between runs). CPU x4, phone class on Wroclaw: 2.94
+    times, worst +38.5 ms. Going on after a pause does not meet R4's median rule on a slow CPU; the lead's fallback (the
+    rise only in a pause) is what is built, and the setting's help now says the first moments after a pause can be less
+    smooth on a slow computer (2b60ef51; it said 'as smoothly as without it').
+  - The phone c4 'on' picture was taken at 0.75 M flight budget because the keeper had lowered a phone at CPU x4 before the
+    pause, as it should.
 - [ ] LEFT for the next run, in this order:
-  0. (done in 3d, the code) Left of it: release build, the lub weak c1 pause on/off pair again.
+  0. (done in 3d and 3e)
   1. (done in 3b) R4 by its order for the CPU x4 case. Shedding in the move frame: not possible from the page (engine source: a node
      keeps its fine file until the coarse one is resident again; see item 3 above). Next: STILL_FRAME_MS 66 -> 33 in
      apps/fly/src/app/detail-rule.ts (the rise stops while the median frame at rest is 33 ms or more) and the c4 pair
