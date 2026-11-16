@@ -24,7 +24,35 @@ Facts V1-a to V1-f, Design 1 to 7): the numbers there are the "before" of this l
 - [ ] W1.6 Design 6 (lessons speed-5 to speed-8 at 6, 8, 10, 12 m/s, texts en/es/pl/ru, caps lift by passing), unit tests with
   negative controls.
 - [ ] W1.7 offline audio proofs for the new rules (streams at 8 m/s, hum lead, peak rule).
-- [ ] W1.8 simulator typecheck, gates.py --only vitest,architecture,i18n,b18,leaks, a6-reference.
+- [~] W1.8 simulator typecheck, gates.py --only vitest,architecture,i18n,b18,leaks, a6-reference: all pass at pin da0ab7d
+  (run 1 of 2026-11-16: pnpm -r typecheck 0 errors; a6-reference 1 passed; gates architecture, i18n, b18 PASS; vitest 385
+  files passed and 4 failed with "spawn python ENOENT", leaks "no python program": this run's shell had no python on PATH;
+  rerun with the py launcher copied as U:/Temp/gsfpv-train2/sonic5/pybin/python.exe in front of PATH (bash form
+  /u/Temp/gsfpv-train2/sonic5/pybin): rooms-open-vote, rooms-race, rooms-socket, scene-default 4 files 26 passed, leaks
+  PASS). Run again at the end of the stage, after W1.4 to W1.7.
+
+### Left of W1-build (exact, in this order)
+1. W1.4 Design 4: a brake cue when the next gate's hum is more than 45 deg aside and nearer than the turn radius plus 1 s x v
+   (package: a cue event on the speed layer with a falling tone in src/cues and the theme; the ear pilot src/pilot/ear-pilot.ts
+   brakes on it), test with negative control, table again (keep only if counted at 8 m/s does not fall and 2 and 5 m/s
+   stay). A sound only adds no spoken line; if a line is added it needs its sound in apps/fly/src/sonic/quiet-cues.ts
+   QUIET_SOUNDS and its text in packages/i18n/locales (en, es, pl, ru) and the package's locales.
+2. W1.5 Design 5 rest, only if the line still fails near a gate (line on, --line on, same courses).
+3. W1.6 Design 6: lessons speed-5 to speed-8 at 6, 8, 10, 12 m/s (estimates), texts in en, es, pl, ru with the word 'key'
+   before a key's letter; each opens after a counted pass of the step before; scan-free and N courses take the highest
+   passed cap, at least 5 m/s; tests with negative controls.
+4. W1.7 offline audio proofs (streams at 8 m/s, hum lead, peak rule); evidence/audio-proofs.json and demo-check.json of the
+   package worktree are modified by an earlier hand: commit them only if these proofs rewrite them, and say so.
+5. W1.8 again; then the stage's commit of both repositories.
+- Design 2 targets are not met yet (W1-b at 8 m/s: streams median 3 against 2, worst second 6.76 against 3, onsets 24.8 a
+  second against under 15); counted at 5, 8 and 12 m/s is 0 of 6 (the goal needs 4 of 6 at 8 m/s). Noticed, not chased: at
+  5 m/s the brought commit has streams median 6 against 5 in V1-a (file suspected: packages/sonic-fpv src/cues/budget.ts, the
+  4.5 m/s tier edge; a guess, not measured).
+
+### For the lead (so far)
+- Package branch train6 (local only, not pushed): 5e04268 (7678880 cherry-picked), e28399f, da0ab7d. Simulator pin (local):
+  da0ab7d; origin/main's pin is 293ebae. Deploy order later: the package's main first, then the pin.
+- Files changed outside apps/fly/src/sonic so far: docs/wip/sonic5.md, packages/sonic-fpv (pin).
 
 ### Stage W2-prove
 - [ ] not started.
