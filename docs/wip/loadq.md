@@ -451,14 +451,50 @@ Stage R1-keeper
      counted as missed at each step down (held or not, their intervals). Fix R1 in packages/render-pc/src/governor.ts
      by what it shows, a unit test built from the measured frame sequence in
      packages/render-pc/test/governor-loadq2.test.ts with a negative control, typecheck, release build.
-  2. On the new build: k-after again (SECS=180 FLY=120 FLYSECS=60 GOVLOG=1): no step down while the second's median is
-     under 16.7 ms; k-after-d30 (DELAY=30, same, GOVLOG=1): one step down series, no alternation.
-  3. k-after-16slow50 and k-after-drop1 (the lines in batch.sh).
-  4. LR-8: the Detail line at 844x390 over the telemetry: fix (apps/fly/src/app/builtin/detail.ts, the line's place in
-     a short window), picture loadq2-line-844 again and look at it.
-  5. Item 4 below.
-- [~] 4. governor-start-probe (it loads with set.display.stillDetail=0): PASS on the after code (above); gates.py --only
-  vitest,architecture,i18n,b18,leaks, tools/bench/test/a6-reference.test.ts; status, changed files, commit.
+  2. [x] Release build of 930a93d7 (sha256 6d727bc6..., U:/Temp/gsfpv-train3/loadq2/build-930a.log; copy with the
+     Wroclaw walls stand-in in U:/Temp/gsfpv-train3/loadq2/dist-after-930a93d7, served on 5828). Runs (runs/k2-*.json,
+     same probe and settings as item 3):
+     - k2-after (120 s at the spawn, then the 60 s hook flight, GOVLOG=1): ONE step down, 0->1 at 125.8 s, at the first
+       move after the 120 s rest; its down window had 61 judged frames, 8 missed, fewer than 60 drawn (frames over a
+       second after the rest: the extra splats of 'More detail at rest' being shed, stage R2-rest's R4 measures it); up
+       again at 148.8 s; no alternation. Was (05b0c7ad): 4 steps down and 4 up with an alternation; (3fea63e2): 4 down.
+       End: step 0, 4 M at scale 1, 3.89 M drawn. Requests 3496 for 2272 distinct files, 0 failed.
+     - k2-after-d30 (+30 ms CPU a frame, applied from the start): 0->1->2->3->4 at 5.3, 6.3, 7.3, 8.3 s (1533 of 1680
+       judged frames missed, 19 to 23 frames a window), never up again: one series down, no alternation. End 1.5 M at
+       scale 0.5, 1.41 M drawn.
+  3. [x] k2-after-drop1 (every file always fails, 120 s): 558 requests for 84 distinct files (6.6 a file, 4.65 a second);
+     the line said 'Detail: files that did not arrive: 78. Trying again'. Bound: about 6 to 7 requests a failing file
+     (1 + 5 retries of stream-keeper.ts, the rest the engine asking a node again), no flood. k-after-drop10 (item 3):
+     858 for 571. k2-after-16slow50 (16 M by hand, +50 ms): kept at 16 M, the line 'Detail: kept at your setting. The
+     picture is slower than your screen' with 'Let the page choose' at 7.4 s; the press at 28 s gave the keeper's 6 M
+     (the line then 'Detail: sharper while you hold still (7.4 M)': the craft stood still). Pictures
+     U:/Temp/gsfpv-train3/shots/loadq2-kept2.png, loadq2-lowered2.png.
+  4. [x] LR-8 fixed in apps/fly/src/fly.css (a short window, max-height 500 px: the walls line and the Detail line on one
+     row). loadq2-line-844b (844x390, 16 M by hand, picture at 6 s, rects from the probe's UIRECTS): credit 44..101,
+     walls 61..101, Detail line x 98..340 y 61..79, telemetry y 111..130: nothing overlaps (detailOver []). Looked at
+     (U:/Temp/gsfpv-train3/shots/loadq2-line-844b-ui.png): 'Detail: 4.6 of 16 M, files to go: 122, about 20 s' right of
+     'Walls 5 cm', above 'THR 0% 0.0 m/s ALT 0'; the Detail text sits about 10 px higher than 'Walls 5 cm'.
+     loadq2-line-1366b (1366x768): credit 138..215, walls 155..195, Detail 197..215, telemetry 489..508: no overlap.
+     Font 12 px (inherited from .attribution). The course clock block of a course scene was not on screen: not checked.
+  5. Left, a new fault, not built (one line): requests repeat files with no failure and no keeper step: 256 re-asks in
+     the 40 s flight of k-after-govlog2 (no step change), 1224 in k2-after. Guess, not measured: the engine drops files
+     of nodes that leave the view or the budget and asks them again on return (packages/render-pc streaming, engine
+     octree cache); the next stage or the lead decides.
+- [x] 3e. Done in run 3 (items 1 to 4 above; 5 is a new fault left for the lead).
+- [x] 4. On 930a93d7: governor-start-probe PASS all=true (weakRemembered, weakStartsThere, strongRemembered,
+  strongStartsAtTop; evidence/2026-11-16/lod-view/loadq2-governor-start.json); typecheck render-pc and apps/fly exit 0;
+  tools/bench/test/a6-reference.test.ts pass (hash unchanged); gates.py --only vitest,architecture,i18n,b18,leaks:
+  architecture, i18n, b18, leaks PASS; vitest 384 files pass, 5 failed only because of this run's Python (no python
+  on PATH; C:/Python312 prints 'Could not find platform independent libraries' on stderr, which
+  superspl.test.ts and the rooms tests reject); the 5 (rooms-open-vote, rooms-race, rooms-socket, scene-default,
+  superspl) pass with Python 3.11 on PATH: 57 tests (U:/Temp/gsfpv-train3/loadq2/py5.log). Stage R1-keeper finished.
+- Files changed by loadq2 (R1-keeper): packages/render-pc/src/governor.ts, packages/render-pc/test/governor-loadq2.test.ts,
+  apps/fly/src/app/detail-rule.ts, apps/fly/src/app/builtin/still.ts, apps/fly/src/app/quality.ts, apps/fly/src/fly.css,
+  tools/bench/test/loadq-detail.test.ts, tools/bench/scripts/loadq-probe.mjs, packages/prefs/test/defs.test.ts (merge),
+  docs/wip/loadq.md, evidence/2026-11-16/lod-view/loadq2-governor-start.json.
+- Not verified in R1-keeper: the owner's laptop (144 Hz screen, RTX on a laptop) was not used; the flight was the probe's
+  hook flight, not the keyboard; Tunis 887f27aa was not flown; the course clock block next to the Detail line was not on
+  screen; the 10 px vertical offset of the Detail line beside 'Walls 5 cm' in a short window is left as is.
 
 ## The rules the code had (state before loadq2)
 

@@ -1,5 +1,5 @@
 {
- "site": "http://localhost:5822",
+ "site": "http://localhost:5829",
  "scene": "39e63ce9",
  "browser": {
   "kind": "system-chrome",
@@ -17,8 +17,8 @@
     0
    ],
    "stepAtReveal": 0,
-   "revealMs": 2318,
-   "msToLowest": 3704,
+   "revealMs": 2497,
+   "msToLowest": 3707,
    "stepAfterOverload": 4,
    "lod": {
     "kind": "lod-meta",
@@ -38,7 +38,7 @@
     4
    ],
    "stepAtReveal": 4,
-   "revealMs": 1584,
+   "revealMs": 1568,
    "lod": {
     "kind": "lod-meta",
     "governorStep": 4,
@@ -57,8 +57,8 @@
     0
    ],
    "stepAtReveal": 0,
-   "revealMs": 1659,
-   "msToLowest": 3706,
+   "revealMs": 1601,
+   "msToLowest": 3699,
    "stepAfterOverload": 4,
    "lod": {
     "kind": "lod-meta",
@@ -78,7 +78,7 @@
     0
    ],
    "stepAtReveal": 0,
-   "revealMs": 1495,
+   "revealMs": 1603,
    "lod": {
     "kind": "lod-meta",
     "governorStep": 0,
