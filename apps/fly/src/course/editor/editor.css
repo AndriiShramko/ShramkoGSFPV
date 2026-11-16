@@ -82,6 +82,10 @@
     font: inherit;
 }
 .ce-list { list-style: none; margin: 0; padding: 0; }
+/* editfix E2.4: Courses and Keys on the top bar light their part (flash.ts takes the class off after SHOWN_MS) */
+.course-editor .ce-shown { outline: 2px solid #a6ff1a; outline-offset: 2px; border-radius: 4px; animation: ce-shown 1.2s ease-out; }
+@keyframes ce-shown { from { background: rgba(166, 255, 26, 0.28); } to { background: transparent; } }
+@media (prefers-reduced-motion: reduce) { .course-editor .ce-shown { animation: none; } }
 .ce-row { padding: 5px 0; border-top: 1px solid #2a3442; }
 .ce-row.current b { color: #a6ff1a; }
 .ce-marks { display: flex; flex-wrap: wrap; gap: 0 8px; color: #b8c2cf; font-size: 0.8rem; }

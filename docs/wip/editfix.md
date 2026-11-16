@@ -30,10 +30,12 @@ His laptop: Windows, RTX, 144 Hz, Chrome, keyboard and mouse, layouts ru/pl/en.
   probe over all 17 cases of E1 (runner U:/Temp/gsfpv-train3/editfix/run-after.sh, list cases-after.txt, log
   runs-after.log, evidence evidence/2026-11-16/editfix-after/, summary sum-after.cjs): table 'After E2' below.
 - [x] E2.3 a6-reference: 1 passed. Live check edit-mouse-wroclaw added to deploy/live-checks.sh (ef2fa18a), NOT run.
-- [ ] E2.4 Courses and Keys of the top bar have no visible effect when the window is already open and the part already on
-  screen (17 of 17 cases, d.controls). Fix planned, not made: panel.ts reveal() flashes the part (class ce-shown for about
-  1.2 s, estimate) and editor.css draws it; the probe's signature (edit-mouse-probe.mjs line 77) reads the count of
-  '.ce-shown'; a test with a negative control; then run cases base-1920 and lap-1536 again.
+- [~] E2.4 Courses and Keys of the top bar had no visible effect when the window was already open and the part already on
+  screen (17 of 17 cases, d.controls). Made (commit of this line): new apps/fly/src/course/editor/flash.ts flashPart()
+  (class ce-shown, SHOWN_MS 1200 = an estimate, a second press starts it again), panel.ts reveal() lights the key table
+  or the course list, editor.css draws a green outline and a fading background (no animation under reduced motion); the
+  probe's SNAP has 'shown' and SIG counts it. editfix-e2.test.ts 8 passed, NEG OK (the 2 new tests fail on HEAD 47b9a030
+  files); tsc apps/fly exit 0. Left: release build and cases base-1920, lap-1536 again.
 - [ ] E2.5 editor3-smoke.ts on Wroclaw 70b50d42 and Tunis 887f27aa; accept-fly B6 B7 B9 B10 B11 B12 B13 B14 B15 B16 (SITE
   local, first line names it); typecheck of all touched packages; gates.py without --only (exit 0); status 'What the
   owner does' and 'For the lead' final.

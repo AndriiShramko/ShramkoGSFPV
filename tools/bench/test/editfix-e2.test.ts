@@ -59,6 +59,34 @@ describe('editfix cause 2: the top bar does not move under a press', () => {
     });
 });
 
+describe('editfix E2.4: Courses and Keys on the top bar always have a visible effect', () => {
+    const PANEL_TS = read('course/editor/panel.ts');
+
+    it('reveal() lights the part it shows (also when it was already on screen)', () => {
+        const rev = PANEL_TS.slice(PANEL_TS.indexOf('    reveal(part:'), PANEL_TS.indexOf('    names():'));
+        expect(rev).toContain("flashPart(part === 'courses' ? this.rows : at);");
+        expect(CSS).toMatch(/\.course-editor \.ce-shown \{[^}]*outline: 2px solid/);
+    });
+
+    it('the light goes on at once, a second press starts it again, and it goes off after SHOWN_MS', async () => {
+        const flash = (await import('../../../apps/fly/src/course/editor/flash')) as typeof import('../../../apps/fly/src/course/editor/flash');
+        const on = new Set<string>();
+        const log: string[] = [];
+        const part = { classList: { add: (c: string) => { on.add(c); log.push(`+${c}`); }, remove: (c: string) => { on.delete(c); log.push(`-${c}`); } }, offsetWidth: 10 };
+        const due: { fn: () => void; ms: number; stopped: boolean }[] = [];
+        const later = (fn: () => void, ms: number): number => { due.push({ fn, ms, stopped: false }); return due.length - 1; };
+        const stop = (id: unknown): void => { due[id as number].stopped = true; };
+        flash.flashPart(part, later, stop);
+        expect(on.has(flash.SHOWN_CLASS)).toBe(true);
+        expect(due[0].ms).toBe(flash.SHOWN_MS);
+        flash.flashPart(part, later, stop);
+        expect(due[0].stopped).toBe(true);
+        expect(log.slice(-2)).toEqual([`-${flash.SHOWN_CLASS}`, `+${flash.SHOWN_CLASS}`]);
+        due[1].fn();
+        expect(on.has(flash.SHOWN_CLASS)).toBe(false);
+    });
+});
+
 describe('editfix cause 3: a right drag on the handles turns the view', () => {
     it('the three gizmos take the left button only', () => {
         expect(VIEW_TS).toMatch(/export const HANDLE_BUTTONS: readonly \[boolean, boolean, boolean\] = \[true, false, false\];/);

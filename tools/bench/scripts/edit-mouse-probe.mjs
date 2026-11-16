@@ -75,6 +75,7 @@ const SNAP = `(() => {
         lock: tagOf(document.pointerLockElement), topLine: tb ? (tb.querySelector('.ce-tb-line') || {}).textContent : null, topClass: tb ? tb.className : null,
         panelClass: pn ? pn.className : null, panelBox: pn ? (() => { const b = pn.getBoundingClientRect(); return [Math.round(b.left), Math.round(b.top), Math.round(b.width), Math.round(b.height)]; })() : null,
         panelScroll: pn ? [...pn.querySelectorAll('*')].filter((x) => x.scrollTop > 0).map((x) => x.scrollTop).concat([...pn.querySelectorAll('details[open]')].length) : null,
+        shown: pn ? [...pn.querySelectorAll('.ce-shown')].map((x) => x.className) : null,
         canvas: cv ? [cv.width, cv.height, cv.clientWidth, cv.clientHeight] : null, dpr: devicePixelRatio, maxTouch: navigator.maxTouchPoints,
         status: h.status ?? null, paused: h.session ? !!h.session.paused : null, windows: vis('.panel, .screen, [aria-modal="true"]:not([hidden])'), hud, active: tagOf(document.activeElement) };
 })()`;
@@ -143,7 +144,7 @@ async function drag(label, x, y, dx, dy, button = 'left') {
 const boxOf = (sel) => page.evaluate((s) => { const e = document.querySelector(s); if (!e || !e.getClientRects().length) return null; const b = e.getBoundingClientRect(); return { x: b.left + b.width / 2, y: b.top + b.height / 2, w: b.width, h: b.height, disabled: !!(e.disabled || e.getAttribute('aria-disabled') === 'true'), title: e.title || '', text: (e.textContent || '').trim().slice(0, 40) }; }, sel);
 // the eye and the point looked at (a turn moves `at`, a fly key both)
 const camOf = (s) => (s.view ? [...s.view.eye, ...s.view.at] : s.cam ? [...s.cam.pos] : null);
-const SIG = (s) => JSON.stringify([s.open, s.selected, s.gatesN, s.changed, s.said, s.topLine, s.panelClass, s.panelBox, s.refused, s.windows, s.panelScroll]);
+const SIG = (s) => JSON.stringify([s.open, s.selected, s.gatesN, s.changed, s.said, s.topLine, s.panelClass, s.panelBox, s.refused, s.windows, s.panelScroll, s.shown]);
 
 let shot = null;
 try {
