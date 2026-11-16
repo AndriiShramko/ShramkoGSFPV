@@ -684,29 +684,79 @@ Stage R1-keeper
     smooth on a slow computer (2b60ef51; it said 'as smoothly as without it').
   - The phone c4 'on' picture was taken at 0.75 M flight budget because the keeper had lowered a phone at CPU x4 before the
     pause, as it should.
-- [ ] LEFT for the next run, in this order:
-  0. (done in 3d and 3e)
-  1. (done in 3b) R4 by its order for the CPU x4 case. Shedding in the move frame: not possible from the page (engine source: a node
-     keeps its fine file until the coarse one is resident again; see item 3 above). Next: STILL_FRAME_MS 66 -> 33 in
-     apps/fly/src/app/detail-rule.ts (the rise stops while the median frame at rest is 33 ms or more) and the c4 pair
-     again (r-after2-lub-desktop-weak-c4-on/off, a new release); if it still fails: the rise only while the flight is
-     paused (StillRise: not paused -> no rise) and set.display.stillDetail.help in en, es, pl, ru says so; unit test and
-     negative control for whichever is built; then the table again.
-  2. Replaced by 3c (the code changed): the after runs are the r-pause-* runs on 8d078948. Still to run: lub weak c1
-     pause off (again), wro phone c4 pause on/off. The old list was: (run.sh skips done labels; serve dist-after-930a93d7 on 5830 and dist-after-17e5304a on 5831):
-     before: wro desktop-weak c4 on/off, wro phone c1/c4 on/off, lub phone c4 on/off; after: lub phone c1/c4, wro
-     desktop-weak c4, wro phone c1/c4 (the tail of U:/Temp/gsfpv-train3/loadq2/rest-after.sh after PRIODONE). If item 1
-     changes the code, run the after runs on the new release instead.
-  3. R5 in the browser: check boostM > base in the r-after-*-on.json (the held camera is a still view and rose: yes,
-     10 M in lub c1 and wro c1); the app has no mouse look in a pause outside the course editor (not this lane's folder).
-  4. accept-fly B6 B7 B9 B10 B11 B12 B13 B14 B15 B16 (SITE=http://localhost:5831/en), governor-start-probe, lod-view on
-     and off with set.display.stillDetail=0, freeze-probe if present, pause-over-course-probe, typecheck, gates.py
-     --only vitest,architecture,i18n,b18,leaks, a6-reference, a1-api-check for renderer.ts onGpuTrouble.
-  5. In this part: the findings with what was done, 'What the owner does' (item 5: the rise stops at 4 times the flight's
-     detail, 2 on a phone; a graphics card that runs short of memory switches it off and the line says so), not
-     verified, changed files, 'For the lead': which benches load with set.display.stillDetail=0.
-- Files changed in R2-rest so far: apps/fly/src/app/detail-rule.ts, apps/fly/src/app/builtin/still.ts,
-  apps/fly/src/app/builtin/detail.ts, apps/fly/src/app/builtin/drawing.ts, apps/fly/src/app/quality.ts,
-  packages/render-pc/src/renderer.ts (onGpuTrouble), packages/i18n/locales/fly/detail/{en,es,pl,ru}.json,
-  tools/bench/test/loadq-detail.test.ts, tools/bench/scripts/loadq-probe.mjs, docs/wip/loadq.md.
-- Not checked yet: a1-api-check for renderer.ts onGpuTrouble (it reads device.wgpu, an engine field, through a cast).
+- [x] 3f. R5 in the browser: the held camera is a still view and rose (boostM 10 M in r-after-lub c1 and wro c1). A turning
+  view in a pause or a stick turn while still is covered by the unit tests of 17e5304a only: the app has no mouse look in
+  a pause outside the course editor (not this lane's folder) and the probe has no turning switch. Not verified in a
+  browser.
+- [x] 3g. a1-api-check on 2b60ef51: pass, 71 members checked, no problems (U:/Temp/gsfpv-train3/loadq2/a1.log; it reads
+  playcanvas.d.ts; renderer.ts reads device.wgpu through a cast, which this check does not see). a6-reference pass (1
+  test). Typecheck render-pc and apps/fly exit 0.
+- [~] 4. Browser checks on release eb3f6a95 (U:/Temp/gsfpv-train3/loadq2/checks.sh, port 5835; the help text commit
+  2b60ef51 is locales only and not in that build): accept-fly B6 B7 B9 B10 B11 B12 B13 B14 B15 B16, governor-start-probe,
+  lod-view on and off with set.display.stillDetail=0 (Lublin, 1 M), freeze-probe, pause-over-course-probe; then gates.py
+  --only vitest,architecture,i18n,b18,leaks.
+
+## loadq2: what was done about each finding
+
+- LR-1 wrong cause 'still' while files come: fixed (05b0c7ad).
+- LR-2 / R1 no step down at 60 or more pictures a second: fixed (05b0c7ad, by the measured log 930a93d7); Wroclaw
+  untouched strong class in flight: one step down at the first move after 120 s rest instead of four with alternation.
+- LR-3 one late frame after a gap or rest stepped down: fixed (05b0c7ad).
+- LR-4 the rise did not wait for the keeper: fixed (05b0c7ad); since R4 a hover does not rise at all, so the keeper
+  judges a hover again and a weak device that waits at the start learns its step.
+- LR-5 / R2 alternation: fixed (05b0c7ad), measured 11 s wait after an alternation in the browser.
+- LR-6 the 'still' line after each hover: gone with R4 (the line shows only in a pause).
+- LR-7 Quality slider under 1 with a hand-set budget: a doubt, not changed.
+- LR-8 the Detail line on the telemetry at 844x390: fixed (930a93d7, fly.css), no overlap measured at 844x390 and
+  1366x768.
+- R3 cap 4 times (2 on a phone or tablet), the memory cap above it; a lost device or out of memory with the still budget
+  standing: the flight's budget, the setting stored off, the line once (17e5304a; shown in the browser with a synthetic
+  GPUOutOfMemoryError; a real device loss was not caused).
+- R4 the first second after the move: the hover rise failed on a slow CPU even at a 2 times cap (53.0 against 12.0 ms),
+  so the detail rises only in a pause (8d078948); a hover now holds (9.5 against 9.3 ms at CPU x4). Going on after a pause
+  still costs on a slow CPU (2.9 to 8.2 times the median): accepted by the lead's fallback; the help says so (2b60ef51).
+- R5 a turning or moving view is a move, paused or not (17e5304a, unit tests; not walked in a browser, see 3f).
+- LR-9 (new, this stage) the keeper stepped the flight down in a pause (held frames behind the pause menu): fixed
+  (eb3f6a95), measured: no step in the pause.
+- LR-10 (new, this stage) the setting's help promised a flight as smooth as without it after a pause: corrected
+  (2b60ef51).
+- Left for the lead (one line each, not built): requests repeat files with no failure and no keeper step (1224 re-asks in
+  the k2-after flight; guess: the engine's cooldown unloads and asks again); going on after a pause could wait for the
+  flight's detail to be in place before the flight starts (apps/fly/src/app/flight.ts and pause.ts, not this lane's).
+
+## What the owner does (loadq2, replaces item 5 above)
+
+5. Press Pause (P) to look at the scan: the line says "Detail: sharper while paused" and the picture sharpens over a few
+   seconds, up to 4 times the flight's detail (2 times on a phone or tablet). Continue brings the flight's detail back
+   within a second or two; on a slow computer those first moments can be less smooth. Hovering no longer sharpens the
+   picture. If the graphics card runs short of memory while the picture is sharper, the page goes back to the flight's
+   detail, switches "More detail at rest" off on this device and the line says so once. Settings, Display, "More detail
+   at rest" switches it off.
+
+## Not verified (loadq2)
+
+- The owner's laptop (RTX laptop, 144 Hz screen) was not used; no weak device and no phone was used: the weak and phone
+  classes were forced on this PC's RTX 4090 with set.display.deviceClass, and slowness came from the browser's CPU
+  slowdown (CDP Emulation.setCPUThrottlingRate 4); the graphics card cannot be slowed here.
+- A real lost device and a real out-of-memory error were not caused (a synthetic GPUOutOfMemoryError event only).
+- R5 in a browser (3f). Tunis 887f27aa was not flown. The flights were the probe's hook flight and the P key, not a
+  pilot's keyboard flight.
+- The engine's own memory count (vramMB) was not readable; heap numbers are performance.memory.
+
+## Files changed by loadq2 (both stages)
+
+apps/fly/src/app/detail-rule.ts, apps/fly/src/app/quality.ts, apps/fly/src/app/builtin/still.ts,
+apps/fly/src/app/builtin/detail.ts, apps/fly/src/app/builtin/drawing.ts, apps/fly/src/fly.css,
+packages/render-pc/src/governor.ts, packages/render-pc/src/renderer.ts (onGpuTrouble),
+packages/i18n/locales/fly/detail/{en,es,pl,ru}.json, packages/render-pc/test/governor-loadq2.test.ts,
+tools/bench/test/loadq-detail.test.ts, tools/bench/test/loadq2-pause.test.ts, tools/bench/scripts/loadq-probe.mjs,
+packages/prefs/test/defs.test.ts (merge), docs/wip/loadq.md, evidence/2026-11-16/lod-view/loadq2-*.json.
+
+## For the lead (loadq2)
+
+- Benches that must load with set.display.stillDetail=0: any that pauses the flight and then measures the splats drawn,
+  the budget, the frame times or the governor, and any that compares pictures taken in a pause:
+  governor-start-probe (has it), lod-view-probe and its scores (pass it through --query, as here), freeze-probe,
+  pause-over-course-probe if its pictures are compared across builds, loadq-probe (STILLOFF=1). Since R4 a still craft
+  that is not paused does not rise, so a bench that only holds the camera still is no longer affected.
+- scripts/gen-catalog.ts (the catalogue outputs are stale for display.stillDetail and its help text).
