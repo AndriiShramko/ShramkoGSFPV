@@ -572,7 +572,7 @@ Stage R1-keeper
   engine's WebGPU device, then the still state, budget, setting, stored keys and the detail line 1.5 s later, picture
   <label>-fault.png in the shots dir). Release build of 17e5304a (sha256 3a8c22d1..., U:/Temp/gsfpv-train3/loadq2/build-r2.log),
   copy with the Wroclaw walls stand-in in U:/Temp/gsfpv-train3/loadq2/dist-after-17e5304a.
-- [~] 3. Measurement BEFORE (dist-after-930a93d7). Done 2 of 16 runs (the GPU lock was shared with other lanes: about 12
+- [x] 3. Measurement BEFORE (dist-after-930a93d7). Done 2 of 16 runs in run 1 (the GPU lock was shared with other lanes: about 12
   minutes a run). Lublin 2f1ddf5f 140 m up, desktop-weak (2.5 M, scale 0.85), CPU 1, push at 45 s:
   - rise ON: the rise reached 16 M (the memory cap; 6.4 times the flight's 2.5 M); 15.78 M drawn before the push; JS heap
     325 MB; vramMB null (the engine's count is not readable). First second after the push: 127 frames, median 2.5 ms,
@@ -588,28 +588,56 @@ Stage R1-keeper
     (updateCooldownTick counts down what was set), so raising app.scene.gsplat.cooldownTicks during rest would keep the
     files for good: not built. Whether R4 holds is decided by the table (worst frame 31.9 ms on is within off + 50 ms
     if off's worst is above -18 ms, i.e. always; the median rule needs the off run).
+- [x] 3a. Measured in run 2 of this stage (03:00 to 04:30; batch U:/Temp/gsfpv-train3/loadq2/rest-all.sh, table script
+  U:/Temp/gsfpv-train3/loadq2/rest-table.mjs, table U:/Temp/gsfpv-train3/loadq2/rest-table.txt; first second after the
+  push; BEFORE = 930a93d7 (no R3), AFTER = 17e5304a (R3 cap 4x); Lublin 2f1ddf5f 140 m up, pitch -35, desktop-weak):
+  | run | frames | median | p90 | worst | within 10 % | peak | flight | heap |
+  | lub c1 off, before | 144 | 1.7 | 19.3 | 21.0 | 0 | 2.5 M | 2.5 M | 96 MB |
+  | lub c1 off, after | 137 | 2.3 | 19.6 | 22.4 | 0 | 2.5 M | 2.5 M | 124 MB |
+  | lub c1 on, before | 127 | 2.5 | 19.8 | 31.9 | 3088 ms | 16 M | 2.5 M | 325 MB |
+  | lub c1 on, after | 124 | 2.6 | 19.5 | 48.5 | 2551 ms | 10 M | 2.5 M | 255 MB |
+  | lub c4 off, before | 99 | 8.3 | 23.1 | 27.9 | 0 | 0.94 M | 0.94 M | 76 MB |
+  | lub c4 on, before | 9 | 118.4 | 211.1 | 211.1 | not reached in 3 s | 16 M | 0.94 M | 417 MB |
+  | lub c4 on, after | 21 | 36.6 | 74.4 | 157.9 | not reached in 3 s | 3.75 M | 0.94 M | 182 MB |
+  | lub phone c1 off, before | 153 | 1.9 | 19.5 | 22.3 | 0 | 2 M | 2 M | 93 MB |
+  | lub phone c1 on, before | 120 | 2.6 | 20.7 | 34.4 | 2061 ms | 16 M | 2 M | 354 MB |
+  | wro c1 off, before | 142 | 2.0 | 19.5 | 21.1 | 0 | 2.5 M | 2.5 M | 251 MB |
+  | wro c1 on, before | 131 | 2.4 | 19.5 | 26.2 | 991 ms | 16 M | 2.5 M | 591 MB |
+  | wro c1 on, after | 146 | 2.5 | 19.9 | 28.4 | 38 ms | 10 M | 2.5 M | 454 MB |
+  (frame times in ms; c4 = CDP Emulation.setCPUThrottlingRate 4; the graphics card cannot be slowed here; vramMB is null:
+  the engine's own count is not readable through the hook; with CPU x4 the keeper had lowered the flight to 0.94 M.)
+  - R4 at CPU 1 holds after R3: Lublin 2.6 / 2.3 = 1.13 x, worst +26.1 ms (same build); Wroclaw 2.5 / 2.0 = 1.25 x,
+    worst +7.3 ms. The two 'off' runs of one setup differ by 35 % (median 1.7 and 2.3 ms): at CPU 1 on this RTX 4090 the
+    median rule is within the noise between runs.
+  - R4 at CPU x4 FAILS before and after R3: Lublin 36.6 against 8.3 ms (4.41 x; before R3 14.3 x), worst +130 ms (before
+    +183 ms). R3's cap (3.75 M here) cuts the cost to a third but does not meet the rule.
+  - Device fault in the browser (r-after-fault.json, FAULTAT=40, a synthetic GPUUncapturedErrorEvent with a
+    GPUOutOfMemoryError on the engine's WebGPU device, Lublin desktop-weak): before still 10 M, engine 10 M; 1.5 s after:
+    engine 2.5 M (the flight's budget), display.stillDetail false and stored in gsfpv.prefs.v1, the line 'Detail: back to
+    the flight's detail. The graphics card ran short of memory, so "More detail at rest" is now off on this device'
+    (picture U:/Temp/gsfpv-train3/shots/loadq2-stilloff.png). A real device loss was not caused.
+  - Pictures, looked at: loadq2-rest-weak.png (Lublin from above, desktop-weak at rest after the rise, 10 M): roofs,
+    the market square and the road markings are sharp. loadq2-flight-weak.png (the same eye, rise off, 2.5 M): the same
+    city, softer; the square's cobbles and the far right buildings smear. loadq2-line.png (Wroclaw, 1366x768, touch
+    sticks): the credit, 'Walls 5 cm' and 'Detail: 4.8 of 16 M, files to go: 118, about 22 s' stacked under the course
+    clock 'School 1/4', nothing overlaps.
 - [ ] LEFT for the next run, in this order:
-  1. Serve U:/Temp/gsfpv-train3/loadq2/dist-after-930a93d7 on 5830 and run U:/Temp/gsfpv-train3/loadq2/rest.sh before
-     5830 (RUNS=U:/Temp/gsfpv-train3/loadq2/rest is set by the script's caller: export it; run.sh skips labels with a
-     json). 14 runs left: lub desktop-weak c4 on/off, lub phone c1/c4 on/off, wro desktop-weak and phone c1/c4 on/off.
-     Run it detached with a log and wait with one blocking command per 9 minutes, or as the first thing of the run.
-  2. The table (median, 90th percentile, worst of the first second after the push, on against off; within10pctMs;
-     peakBudgetM; heapMB) from res.move of each json. R4 holds when on median <= 1.25 x off median and on worst <=
-     off worst + 50 ms. If it fails: the order of R4 (shed in the move frame: engine source says it needs the coarse files
-     resident, see above; else a smaller cap or a 33 ms frame bound at rest; else rise only in a pause and say so in
-     set.display.stillDetail.help in en, es, pl, ru).
-  3. Serve dist-after-17e5304a on 5831 and run U:/Temp/gsfpv-train3/loadq2/rest-after.sh (it waits for ALLDONE in
-     rest-before.out; remove that wait line when the before runs were run another way): the 8 rise-on runs after R3, a
-     flight picture with the rise off, the device fault (FAULTAT=40), the line at 1366x768. Pictures: copy
-     .cache/lod-view/r-after-lub-desktop-weak-c1-on-t40.png to U:/Temp/gsfpv-train3/shots/loadq2-rest-weak.png and
-     ...-c1-off-t40.png to loadq2-flight-weak.png; shots/r-after-line-ui.png to loadq2-line.png; look at each.
-  4. R5 measured in the browser: the app has no mouse look in a pause outside the course editor's camera (not this
-     lane's folder); the probe holds the camera (cameraOverride), so the rise in the after runs shows a still view
-     still rises; check boostM > base in r-after-*.json.
-  5. accept-fly B6 B7 B9 B10 B11 B12 B13 B14 B15 B16 (SITE=http://localhost:5831/en), governor-start-probe, lod-view on
+  1. R4 by its order for the CPU x4 case. Shedding in the move frame: not possible from the page (engine source: a node
+     keeps its fine file until the coarse one is resident again; see item 3 above). Next: STILL_FRAME_MS 66 -> 33 in
+     apps/fly/src/app/detail-rule.ts (the rise stops while the median frame at rest is 33 ms or more) and the c4 pair
+     again (r-after2-lub-desktop-weak-c4-on/off, a new release); if it still fails: the rise only while the flight is
+     paused (StillRise: not paused -> no rise) and set.display.stillDetail.help in en, es, pl, ru says so; unit test and
+     negative control for whichever is built; then the table again.
+  2. The runs not done (run.sh skips done labels; serve dist-after-930a93d7 on 5830 and dist-after-17e5304a on 5831):
+     before: wro desktop-weak c4 on/off, wro phone c1/c4 on/off, lub phone c4 on/off; after: lub phone c1/c4, wro
+     desktop-weak c4, wro phone c1/c4 (the tail of U:/Temp/gsfpv-train3/loadq2/rest-after.sh after PRIODONE). If item 1
+     changes the code, run the after runs on the new release instead.
+  3. R5 in the browser: check boostM > base in the r-after-*-on.json (the held camera is a still view and rose: yes,
+     10 M in lub c1 and wro c1); the app has no mouse look in a pause outside the course editor (not this lane's folder).
+  4. accept-fly B6 B7 B9 B10 B11 B12 B13 B14 B15 B16 (SITE=http://localhost:5831/en), governor-start-probe, lod-view on
      and off with set.display.stillDetail=0, freeze-probe if present, pause-over-course-probe, typecheck, gates.py
-     --only vitest,architecture,i18n,b18,leaks (Python 3.11 on PATH, see R1-keeper item 4), a6-reference.
-  6. In this part: the findings with what was done, 'What the owner does' (item 5: the rise stops at 4 times the flight's
+     --only vitest,architecture,i18n,b18,leaks, a6-reference, a1-api-check for renderer.ts onGpuTrouble.
+  5. In this part: the findings with what was done, 'What the owner does' (item 5: the rise stops at 4 times the flight's
      detail, 2 on a phone; a graphics card that runs short of memory switches it off and the line says so), not
      verified, changed files, 'For the lead': which benches load with set.display.stillDetail=0.
 - Files changed in R2-rest so far: apps/fly/src/app/detail-rule.ts, apps/fly/src/app/builtin/still.ts,
