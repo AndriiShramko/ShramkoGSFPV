@@ -211,8 +211,10 @@ export function planChunks(col: VoxelCollision, size: number, occupied: Readonly
     const reach = o.whole ? Math.max(dims[0], dims[1], dims[2]) : Math.ceil(o.radius / cm) + 1;
     const found: PlannedChunk[] = [];
     const dist1 = (p: number, lo: number): number => (p < lo ? lo - p : p > lo + cm ? p - lo - cm : 0);
-    const lo = [Math.max(0, c[0] - reach), Math.max(0, c[1] - reach), Math.max(0, c[2] - reach)];
-    const hi = [Math.min(dims[0] - 1, c[0] + reach), Math.min(dims[1] - 1, c[1] + reach), Math.min(dims[2] - 1, c[2] + reach)];
+    // the whole scene searches the whole grid: an eye far outside it (140 m over a 31 m scan, voxview2
+    // VR-9) would otherwise get an empty box around its own chunk and plan nothing
+    const lo = o.whole ? [0, 0, 0] : [Math.max(0, c[0] - reach), Math.max(0, c[1] - reach), Math.max(0, c[2] - reach)];
+    const hi = o.whole ? [dims[0] - 1, dims[1] - 1, dims[2] - 1] : [Math.min(dims[0] - 1, c[0] + reach), Math.min(dims[1] - 1, c[1] + reach), Math.min(dims[2] - 1, c[2] + reach)];
     const cube = Math.max(0, hi[0] - lo[0] + 1) * Math.max(0, hi[1] - lo[1] + 1) * Math.max(0, hi[2] - lo[2] + 1);
     if (cube > occupied.size) {
         // a wide radius over a sparse grid: fewer occupied chunks than cells in the box, so walk those

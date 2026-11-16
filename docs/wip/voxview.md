@@ -351,10 +351,14 @@ into dist/walls, 9 scans). Logs and JSON under U:/Temp/gsfpv-train2/voxview2/, p
   drawn (all chunks are drawn, so it is a part without walls, a river or open ground: guess, not compared with the
   scan). Housefly d10c5638 (5 cm): spawn full in 1.0 s, 203 of 203 chunks, 1.25 M triangles, 4.0 ms, heap 165 MB;
   140 m up: 0 chunks planned and drawn, the screen shows no voxel (VR-9).
+- [x] R7b VR-9 (this commit): packages/collision/src/overlay.ts planChunks searched, in the whole view too, only the
+  box of the eye's chunk plus the grid's size: an eye far outside got an empty box. Now the whole view searches the
+  whole grid. Test packages/collision/test/voxview2-whole-far.test.ts (2 passed; with voxview-whole.test.ts 14 passed);
+  control with overlay.ts of 1fbb3413: "expected { eye: [ 1, 64, 1 ], n: +0 } to deeply equal { ..., n: 144 }".
+  Typecheck packages/collision 0 errors. Browser after (Housefly 140 m): in R8.
 LEFT (voxview2, exact, in this order):
-- [ ] R7b VR-9: read the whole-scene plan in apps/fly/src/voxels.ts for an eye far outside a small scene; fix and test
-  with a negative control; far probe on Housefly again (FAR_UP_M=140).
-- [ ] R8 Release build of the head first (fly.css VR-6). Depth probe on Wroclaw and Tunis 887f27aa; panel probe at the four sizes; pictures voxview2-start.png,
+- [ ] R8 Release build of the head first (fly.css VR-6, overlay.ts VR-9). Far probe on Housefly FAR_UP_M=140; depth
+  probe on Wroclaw and Tunis 887f27aa; panel probe at the four sizes; pictures voxview2-start.png,
   voxview2-edit.png, voxview2-lublin.png looked at.
 - [ ] R9 accept-fly B6 B7 B9-B16, pause-over-course-probe, mouse-free-probe, editor3-smoke, walls-published-probe,
   typecheck, gates.py --only vitest,architecture,i18n,b18,leaks, a6-reference.
@@ -397,8 +401,9 @@ LEFT (voxview2, exact, in this order):
   closes it (closeOnTop true). At 1366x768, 1280x720 no edit-mode control touches the panel.
 - VR-9 (real, measured; cause not read, not fixed): Housefly d10c5638, voxels alone, eye 140 m above the spawn,
   pitch -40: stats plannedChunks 0, drawnChunks 0, radiusM 0, share 100 (far-housefly.json). The scene is about 31 m
-  across, so from 140 m the whole-scene plan (apps/fly/src/voxels.ts, the plan radius) keeps nothing and a pilot who
-  climbs sees the voxels vanish while the line says 100 %. Guess: the plan takes the chunks within a radius around
-  the eye, not the scene's box. Read the plan in voxels.ts and fix with a test (Left R7b).
+  across, so from 140 m the whole-scene plan keeps nothing and a pilot who climbs sees the voxels vanish while the
+  line says 100 %. Cause read: packages/collision/src/overlay.ts planChunks searched the box of the eye's chunk plus
+  the grid's size in chunks, clamped to the grid: empty when the eye is farther out than the grid is wide. Fixed
+  in R7b (the whole view searches the whole grid), unit test with negative control.
 - Doubt D-1 (not shown): a gate hidden behind voxel walls has the guide chip at the top pointing to it (a DOM element,
   always on top); nothing else leads to it. Not measured whether the chip is visible in the edit mode.
