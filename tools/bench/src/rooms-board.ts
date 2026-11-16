@@ -118,10 +118,9 @@ async function main(): Promise<void> {
         const fa = watchSocket(LA.page); const fb = watchSocket(LB.page);
         const [A, B] = await Promise.all([open(LA, url), open(LB, url)]);
         out.loadMs = Date.now() - t00;
-        await A.keyboard.press('Digit9');
-        const aIn = await until(A, `return r.state === 'joined' && r.roomScene === '${SCENE}';`, 30000);
-        await B.keyboard.press('Digit9');
-        const bIn = await until(B, 'return r.state === \'joined\' && r.members.length === 2;', 60000);
+        const aIn = await join9(A, 1);
+        const bIn = await join9(B, 2);
+        out.joinMs = Date.now() - t00;
         out.meet = { aIn, bIn, sameRoom: (await look(A)).room === (await look(B)).room };
 
         // ---- R1.3 / R1.4: A makes a course, B follows
@@ -158,8 +157,7 @@ async function main(): Promise<void> {
         browsers.push(LC);
         const fc = watchSocket(LC.page);
         const C = await open(LC, url);
-        await C.keyboard.press('Digit9');
-        const cIn = await until(C, 'return r.state === \'joined\' && r.members.length === 3;', 60000);
+        const cIn = await join9(C, 3);
         const cCourse = await until(C, `return !!c && c.on && c.gates > 0 && !!b && b.course === ${JSON.stringify(roomCourse)} && b.adopting === null;`, BUILD_MS);
         const c1 = await look(C);
         const lateGotBoard = (c1.board?.rows ?? []).filter((x: Any) => x.laps > 0).length === 2;
