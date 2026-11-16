@@ -472,6 +472,8 @@
   "voxels.legendOnly": "Same woksele · {style} · {pct} % · V",
   "voxels.preparing": "Przygotowuję siatkę…",
   "voxels.status": "woksele {cm} cm w promieniu {m} m · {k} tys. ścianek",
+  "voxels.statusWhole": "woksele {cm} cm · cała scena: narysowano {share}%, do {m} m · {k} tys. ścianek",
+  "voxels.fillLeft": "jeszcze ok. {s} s",
   "voxels.floaters": "wyróżnione pływające kawałki: {n}",
   "voxels.noWalls": "Jeszcze nie ma ścian: V je zbuduje i pokaże siatkę.",
   "voxels.failed": "Nie udało się zbudować siatki wokseli: {msg}",
