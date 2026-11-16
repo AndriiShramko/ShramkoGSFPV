@@ -20,6 +20,7 @@
   "course.lapDone": "Vuelta {time}",
   "course.best": "¡Mejor vuelta! {time}",
   "course.off": "Circuito oculto. Shift+T lo vuelve a mostrar",
+  "course.hide": "Ocultar el circuito",
   "course.menu.save": "Circuito: guardar para todos",
   "course.menu.load": "Circuito: volar el circuito guardado de esta escena",
   "course.server.offer": "Esta escena tiene un circuito guardado por pilotos: Shift+T lo vuela",

@@ -159,3 +159,7 @@
         max-height: 32vh;
     }
 }
+/* lane uiaudit fault 4 (U1): the clock block's cross, a 44 px target at the block's right (ui/panel-head.css gives the shape);
+   the block itself lets the pointer through, the cross alone takes it */
+.course-hud .course-hud-x { position: absolute; top: 0; left: 100%; margin-left: 8px; pointer-events: auto; text-shadow: none; }
+.course-hud .course-hud-x::before { content: '\00d7'; }
