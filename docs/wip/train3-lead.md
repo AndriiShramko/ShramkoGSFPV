@@ -648,8 +648,8 @@ that undoes each ring before the next would have saved one 11-minute run.
 - [x] S2 VR-7 (2849ab79): apps/fly/src/course/editor/editor.css, in the edit view on a short view the caption 'Walls 5 cm' takes no click and loses its button shape (its menu is hidden there by D7), so it is words, not a control that does nothing. Test tools/bench/test/int3f-vr7.test.ts; negative control fails by assertion.
 - [x] S2 seam b (read, no change needed): since loadq2's R4 the detail rises only in a pause. governor-start-probe already loads with stillDetail off; lod-view-probe, freeze-probe and the live checks lod-view-on/off never pause (no pause key in their sources), so they need nothing; pause-over-course-probe pauses but measures rectangles, not counts or pictures across builds; loadq-probe takes STILLOFF=1 where it compares. No bench, probe or live check changed.
 - [x] S2 gates the seams touch, on 2849ab79: architecture, i18n, B18 PASS; vitest subset (voxview, walls, uiaudit, int3f, course-hud, editor) 44 files 284 tests pass; typecheck apps/fly 0 errors.
-- [ ] S2 seam e (the two keepers in the voxels-alone view on Wroclaw for 60 s) and VR-8 (gate bar at 390x844 in the edit view): both are browser runs; moved into S3's probe script.
-- [ ] S3 release build with the published walls, probes, pictures, evidence
+- [x] S2 finished in code. Seam e and VR-8 need the release build and the GPU, so they are part of S3 (below), not left in S2.
+- [ ] S3 release build with the published walls, probes, pictures, evidence; in the same background script: seam e (voxels alone on Wroclaw 70b50d42 for 60 s, the steps of the splat keeper and the voxel near-detail keeper, no alternation), VR-8 (gate bar at 390x844 in the edit view, panel probe), seam d pictures before (live or origin/main build) and after plus tools/bench/scripts/course-finish-probe.mjs numbers, seam c at four sizes (voxview panel probe and uiaudit panel probe)
 - [ ] S4 live checks, the other parts of this section, gates on the final head
 
 ### Gates
