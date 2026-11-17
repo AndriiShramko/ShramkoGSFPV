@@ -202,6 +202,29 @@ the mode with a pad, a real touch screen, the owner's laptop. Pictures looked at
   line for P etc. is not seen there.
 - Not verified: the owner's laptop, a real touch screen, a real pad in the edit view; the live check was not run.
 
+## Review (release check 1, 2026-11-17, on b43c2a48 then 2bfd9914)
+
+- origin/main had no commit the branch lacked: no merge. Diff read: course.ts, app/keys.ts, keyboard.ts, editor.css, the
+  four locales, live-checks.sh (ONESPACE=1 adds only Space presses; nothing saved or sent).
+- Own walk (U:/Temp/gsfpv-train3/reviews/editfix/walk.mjs, release build, Wroclaw 70b50d42, local walls, port 5831,
+  1536x730 x1.25, lock by a click first, Shift+B in the air at about 7.8 m): lap1536 and touch1536 exit 0, page errors 0.
+  Held W 1 s, Up 0.8 s, Left 0.5 s in the edit view: mode edit, armed false, the drone at the same place each time (the
+  arrows moved the selected gate). P: line 'P works in flight ...', no pause. One Space: test flight (1 press), a short
+  Space back. Esc twice with changes leaves; touch: Exit tap 2 leaves. Courses and Keys light their part (ce-shown for
+  about 1.2 s, sampled every 100 ms, render off). Pictures looked at: lap1536 keyP, testfly; touch1536 holds.
+- Finding (PROVEN, repaired in 2bfd9914): Shift+B in the edit view said 'Shift+B works in flight, not in the editor: press
+  Esc to leave the editor, then Shift+B.', which sends the pilot out and back into the same editor. Now Shift+B repeats
+  the editor's own line (course/editor/keys.ts keyOffLine, course.ts block refusal). Test editfix-e4 'review 1': NEG OK on
+  b43c2a48. Re-walked on the release of 2bfd9914: Shift+B line = the editor line; lap1536b exit 0, errors 0.
+- Pre-existing, not changed (also live): the first Exit tap with changes says 'Esc again leaves without saving' to a touch
+  pilot (course.edit.unsaved); the second tap leaves. A refusal line said in the edit view can still show for a few
+  seconds after the test flight starts (seen in the testfly picture).
+- NEG of the lane's own tests: editfix-e4 'E4' with keyboard.ts and app/keys.ts of origin/main: 3 failed (NEG OK).
+- Ran: tsc apps/fly exit 0; editfix-e4 + editfix-e2 + a6-reference 16 passed (a6 hash held); accept-fly B6 B7 B9-B16 all
+  PASS, exit 0, target http://localhost:5831; gates.py: see the line under it.
+- Not verified: the owner's laptop, a real phone or touch screen, a real pad, and a person took no part; the live check
+  edit-mouse-wroclaw was not run against the live site.
+
 ## What the owner does
 
 1. Opens a scan (Wroclaw), clicks into the scene, flies with Space and W.
@@ -223,6 +246,11 @@ The owner's laptop was not used. A real touch screen, a real 144 Hz panel and a 
 emulated in headless Chrome. The live check edit-mouse-wroclaw was not run against the live site (by the task).
 
 ## For the lead
+
+Deploy order (review 1): the page only. nginx: no. API files (apps/api): no. Rooms service: no. Sound package
+(packages/sonic-fpv pin): no. Page files since origin/main: apps/fly/src/app/builtin/course.ts, apps/fly/src/app/keys.ts,
+apps/fly/src/devices/keyboard.ts, apps/fly/src/course/editor/{editor.css, keys.ts}, packages/i18n/locales/fly/course/
+{en,es,pl,ru}.json; plus deploy/live-checks.sh (the check script, not a server config) and tests/probe.
 
 Since efd17add (stage E4-rest): apps/fly/src/app/builtin/course.ts, apps/fly/src/app/keys.ts,
 apps/fly/src/devices/keyboard.ts, apps/fly/src/course/editor/editor.css, packages/i18n/locales/fly/course/{en,es,pl,ru}.json,
