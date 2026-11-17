@@ -57,7 +57,11 @@ Facts V1-a to V1-f, Design 1 to 7): the numbers there are the "before" of this l
   logs tc3.log, a6-3.log, gates3.log there). Run 3 of 2026-11-17 at pin 4c8e4e1 (only the package's test-audio changed):
   pnpm -r typecheck 0 errors; gates.py --only vitest,architecture,i18n,b18,leaks all PASS (vitest 103 s; logs tc4.log,
   gates4.log; U:/Temp/gsfpv-gates-20261117-204007). a6-reference not re-run: no flight, input or collision file changed
-  since run 2. Run again at the end of the stage, after W1.6 and the hum-lead proof.
+  since run 2. Run 4 of 2026-11-17 at pin bd79c96 (the package's test-audio and one new test changed): pnpm -r typecheck
+  0 errors (tc6.log); gates.py --only vitest,architecture,i18n,b18,leaks all PASS (vitest 102 s; log gates5.log;
+  U:/Temp/gsfpv-gates-20261117-205509; evidence/2026-11-17/b-repo-b18.json rewritten by the gate and committed).
+  a6-reference not re-run: no file of apps/fly/src/session, packages/sim-core, input or collision changed since run 2.
+  Run again after W1.6.
 
 ### Left of W1-build (exact, in this order)
 1. W1.4 rest: a glossary entry for 'speed.brake' (src/i18n/catalog.ts CUE_IDS, cue.speed.brake.name/.glossary in the
@@ -81,7 +85,9 @@ Facts V1-a to V1-f, Design 1 to 7): the numbers there are the "before" of this l
    evidence/ear-pilot/*speed-lessons* (tools/ear-pilot.ts exports main() only: run it through a two-line runner).
 4. W1.7 done (77185cd). C:/dev/ShramkoSonicFPV still has evidence/audio-proofs.json and demo-check.json modified by an
    earlier hand: not committed.
-5. W1.8 again (pin 77185cd: only the package's test-audio changed since run 3); then the stage's commit of both repositories.
+5. W1.8 done at pin bd79c96 (run 4). Left of W1-build after this run: item 3 (W1.6, waits for the lead's decision, see
+   there; a fresh run cannot settle it alone) and item 1's glossary entry (a text for the cue list, not a flight need);
+   after W1.6, W1.8 once more and the stage's commit of both repositories.
 - Design 2 targets are not met yet (W1-b at 8 m/s: streams median 3 against 2, worst second 6.76 against 3, onsets 24.8 a
   second against under 15); counted at 5, 8 and 12 m/s is 0 of 6 (the goal needs 4 of 6 at 8 m/s). Noticed, not chased: at
   5 m/s the brought commit has streams median 6 against 5 in V1-a (file suspected: packages/sonic-fpv src/cues/budget.ts, the
