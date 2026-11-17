@@ -29,7 +29,9 @@ const MEASURE = () => {
     const W = innerWidth, H = innerHeight;
     const rd = (b) => ({ x: Math.round(b.x), y: Math.round(b.y), w: Math.round(b.width ?? b.w), h: Math.round(b.height ?? b.h) });
     const shown = (e) => {
-        for (let p = e; p && p !== document.documentElement; p = p.parentElement) {
+        for (let p = e, child = null; p && p !== document.documentElement; child = p, p = p.parentElement) {
+            // the content of a closed <details> is not drawn (only its summary)
+            if (p.tagName === "DETAILS" && !p.open && child && child.tagName !== "SUMMARY") return false;
             const c = getComputedStyle(p);
             if (c.display === 'none' || c.visibility === 'hidden' || Number(c.opacity) === 0) return false;
         }
@@ -161,8 +163,12 @@ try {
     await page.waitForTimeout(2500);
     if (STATES.includes('before')) await measureAll('before', SIZES);
     if (STATES.includes('flight') || STATES.includes('finish')) {
-        // take off (the keyboard's W or Space; on touch the same key: the probe tests the layout, not the touch take-off)
+        // take off: the keyboard's Space; on touch a tap on the left stick as well
         await page.keyboard.down('Space'); await page.waitForTimeout(400); await page.keyboard.up('Space');
+        if (TOUCH) { // the prompt says: touch a stick to take off
+            const pad = await ev(() => { const b = document.querySelector(".touch-pad.left")?.getBoundingClientRect(); return b ? [b.x + b.width / 2, b.y + b.height / 2] : null; });
+            if (pad) { await page.touchscreen.tap(pad[0], pad[1]); await page.waitForTimeout(600); }
+        }
         await ev(INSTALL);
         const poses = await ev(() => window.__gsfpv.course.gatePoses());
         out.gates = poses.length;
