@@ -206,7 +206,35 @@ Release check 1 (2026-11-17, head 299876a4 plus this status part; review file U:
 - Not verified: pointer lock (headless Chrome does not grant it: the click into the scene left pointerLockElement null); the
   owner's laptop, a real phone, touch, a second real person and real network lag took no part; the sound was counted, not heard.
 
+Release check 2 (2026-11-17, after the approved d5ce7a24; review file U:/Temp/gsfpv-train3/reviews/race-review-1.md).
+- Merge: origin/main (clockfix, 015daf1b) merged with --no-ff, no conflict (an untracked older evidence/2026-11-17/b-repo-b18.json
+  was moved aside to the review folder first).
+- Walk (U:/Temp/gsfpv-train3/reviews/race/walk2.mts, logs before-, after-, after2-walk2.log): release build, two keyboard pages
+  in a room on Wroclaw 70b50d42 at 1536x730 dpr 1.25 plus a third page with touch (input=touch, 844x390 dpr 2, then 667x375);
+  rectangles of the board, the course clock, the banner and the walls caption on the ground, in the air, after a lap, paused.
+- F1 PROVEN, repaired (41a7c4a6): after the clockfix merge the course clock
+  stands in the left column on a short keyboard view (16..150 x 112..206 at 844x390 and 667x375), the board lay over it (844:
+  board 10..180 x 112..161; 667: 10..167 x 66..115; picture before-c844.png: rows over the time and its close cross). Now the
+  board hides while the clock is drawn over its place and is back when the clock hides (the lap's own time, measured: board
+  10..182 x 112..161 at 844 after a lap) and at taller views (1536x730: board 10..182 x 66..115, clock 729..807 x 120..217).
+- F2 PROVEN, repaired (c4121312): touch at 844x390, the board (10..182 x 112..181) covered the THR / speed / ALT line over the
+  stick pads; at 667x375 too. The board now goes 6 px under that line (844: 10..182 x 136..205; 667: 10..167 x 121..190),
+  else hides (above 60 % of the height). Picture after2-c844.png looked at.
+- After both: no overlap of board with clock, walls caption or banner at 1536x730, 844x390, 667x375, keyboard and touch; paused:
+  board and clock hidden. Tests tools/bench/test/rooms-board-clock.test.ts 4 OK; negative controls (neg_control.py against the
+  previous board-view.ts): the clock test 1 failure, the touch test 1 failure.
+- Not run: accept-fly (only apps/fly/src/rooms/board-view.ts changed since d5ce7a24 besides the merge; no flight, key, input or
+  session code). deploy/live-checks.sh not changed by the lane.
+- Not verified: pointer lock (headless), the owner's laptop, a real phone, a person; on touch the board lies over part of the
+  left stick pad's ring (it takes no pointer, touches pass through); the 'School 1/4' chip touches the THR line on touch at
+  844x390 (not this lane's, same without a room).
+
 ## For the lead
+
+- Deploy order (release check 2, unchanged by the clockfix merge and the two repairs: they change only the page): page yes;
+  rooms service yes (apps/rooms/board.py new, apps/rooms/rooms.py changed, deploy/release-rooms.sh FILES holds board.py);
+  compose no; nginx no; API files no (apps/api unchanged); sound package no (packages/sonic-fpv pin unchanged). Rooms service
+  first (`bash deploy/release-rooms.sh`, health 200), then the site.
 
 - Deploy order in one line each (release check 1): page yes; rooms service yes (apps/rooms/board.py new, apps/rooms/rooms.py
   changed; deploy/release-rooms.sh FILES holds board.py); compose no (deploy/compose.yml unchanged); nginx no; API files no
