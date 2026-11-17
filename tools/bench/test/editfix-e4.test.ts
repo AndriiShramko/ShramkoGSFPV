@@ -98,3 +98,16 @@ describe('editfix E4: a key the edit view swallows says why', () => {
         }
     });
 });
+
+// finding 3 of the check E3, measured (U:/Temp/gsfpv-train3/editfix/verify2/touch1536.json, 1536x730 touch): the second
+// Exit tap went down on Exit at x 771-815, pointerup cleared the held line (its width 340 -> 420 px), Exit moved to 730-775
+// and the tap's click landed on the line. The line now has a fixed basis, so its text never changes the bar's width.
+describe('editfix E4.2: the bar keeps its width when the line changes', () => {
+    it('the line of the top bar has a fixed flex basis, not the width of its text', () => {
+        const css = readFileSync(join(__dirname, '../../../apps/fly/src/course/editor/editor.css'), 'utf8');
+        const rule = /.ce-topbar .ce-tb-line {([^}]*)}/.exec(css);
+        expect(rule).not.toBeNull();
+        const flex = /flex:s*([^;]+);/.exec(rule![1]);
+        expect(flex?.[1].trim()).toBe('0 1 420px');
+    });
+});

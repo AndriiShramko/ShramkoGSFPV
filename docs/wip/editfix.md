@@ -63,7 +63,12 @@ His laptop: Windows, RTX, 144 Hz, Chrome, keyboard and mouse, layouts ru/pl/en.
   (editor3-flying.test.ts matched the old block call; its regex now takes the new second argument, 13 passed, commit of this
   line) and 4 files failed only because this run's shell has no 'python' on PATH (rooms-open-vote, rooms-race,
   rooms-socket, scene-default): with Python 3.11 on PATH 4 files, 26 tests passed. Logs U:/Temp/gsfpv-gates-20261117-011121.
-- [ ] E4.2 finding 3 (second Exit tap on touch): measure the Exit box at pointerup and at click, repair, touch1536 walk.
+- [x] E4.2 finding 3 (commit of this line). Measured on the release of ebe6442e (walk.mjs copy verify/walk2.mjs logs the Exit
+  box per event; U:/Temp/gsfpv-train3/editfix/verify2/touch1536.json step exitlog): tap 2 at x 793: pointerdown on Exit,
+  Exit at x 771-815, line 340 px; at pointerup the held line was cleared (line 420 px) and Exit was at 730-775; the click
+  (hit-tested after pointerup) went to SPAN.ce-tb-line. Repair: editor.css .ce-tb-line flex 0 1 420px (a fixed basis, the
+  text no longer sets the bar's width). Test editfix-e4.test.ts 6 passed; NEG: editor.css of ebe6442e: 1 failed by
+  assertion. touch1536 walk after the repair: see E4.6.
 - [x] E4.3 finding 2 (commit of this line): app/keys.ts block(blocked, refused?) tells a block the routed action of a key it
   swallowed (not Esc, a repeat, a key a screen took, text); course.ts openEdit's block says 'course.edit.keyOff' (en es pl
   ru: '<key> works in flight, not in the editor: press Esc to leave the editor, then <key>.', the key by event.code, so any
