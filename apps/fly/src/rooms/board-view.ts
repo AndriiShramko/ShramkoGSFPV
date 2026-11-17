@@ -117,21 +117,32 @@ export class BoardView {
         const w = this.doc.querySelector('.walls-menu') as HTMLElement | null;
         const d = w?.closest('details') ?? null;
         const sum = d?.querySelector('summary') ?? null;
+        const now = this.board.getBoundingClientRect();
+        const vw = this.doc.defaultView?.innerWidth ?? 0;
+        const vh = this.doc.defaultView?.innerHeight ?? 0;
+        const right = now.left + Math.max(now.width, Math.min(230, 0.3 * vw));
         if (w && sum && !d!.closest('[hidden]') && getComputedStyle(d!).display !== 'none') {
             const a = sum.getBoundingClientRect();
             const m = d!.open && getComputedStyle(w).display !== 'none' ? w.getBoundingClientRect() : null;
             const r = m && m.width > 0
                 ? { left: Math.min(a.left, m.left), top: Math.min(a.top, m.top), right: Math.max(a.right, m.right), bottom: Math.max(a.bottom, m.bottom), width: 1 }
                 : a;
-            const now = this.board.getBoundingClientRect();
             const top = now.top - this.dy; const bottom = now.bottom - this.dy;
-            const vw = this.doc.defaultView?.innerWidth ?? 0;
-            const vh = this.doc.defaultView?.innerHeight ?? 0;
-            const right = now.left + Math.max(now.width, Math.min(230, 0.3 * vw));
             if (r.width > 0 && r.top < bottom && r.bottom > top && r.left < right && r.right > now.left) {
                 if (r.left > now.left + 120) mw = `${Math.floor(r.left - now.left - 6)}px`;
                 else if (r.bottom + 6 + now.height <= 0.6 * vh) dy = Math.ceil(r.bottom + 6 - top);
                 else vis = 'hidden';
+            }
+        }
+        // release check 2 of lane race: on a short keyboard view the course clock (course/hud.css, lane clockfix) stands in the
+        // same left column (16..150 x 112..206 at 844x390 and 667x375), so the board gives way to it: hidden while the clock is
+        // drawn there, back when the clock hides (the lap's own time) or moves (a taller view: the clock is at the top centre)
+        const ck = this.doc.querySelector('[data-testid=course-hud]') as HTMLElement | null;
+        if (vis === '' && ck && !ck.closest('[hidden]')) {
+            const cs = getComputedStyle(ck);
+            const c = ck.getBoundingClientRect();
+            if (boardMeetsClock(now.left, now.top - this.dy + dy, right, now.bottom - this.dy + dy, cs.display !== 'none' && cs.visibility !== 'hidden' ? c : null)) {
+                vis = 'hidden';
             }
         }
         if (dy !== this.dy) {
@@ -172,6 +183,13 @@ export class BoardView {
         this.banner.remove();
         this.rows.clear();
     }
+}
+
+/** Whether the board's place (left, top, right, bottom in css px) meets the drawn course clock (null: not drawn). */
+export function boardMeetsClock(left: number, top: number, right: number, bottom: number,
+    clock: { left: number; top: number; right: number; bottom: number; width: number; height: number } | null): boolean {
+    if (!clock || clock.width <= 0 || clock.height <= 0) return false;
+    return clock.left < right && clock.right > left && clock.top < bottom && clock.bottom > top;
 }
 
 /** A short rising blip for a lead change in an ordinary flight (no sound mode); never awaited, never in the way. */
