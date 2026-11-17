@@ -78,13 +78,35 @@ His laptop: Windows, RTX, 144 Hz, Chrome, keyboard and mouse, layouts ru/pl/en.
   Ctrl+Z, Tab, F6: its capture listener stops them) never reach the router, so they keep the editor's own words. W A S D E
   Q Space are flying keys (not routed): the view or the test flight. Test editfix-e4.test.ts 5 passed (+ app-keys 22);
   NEG: keys.ts, course.ts, en.json of HEAD 6e2d507d: the 2 new tests fail by assertion; tsc apps/fly exit 0. NOT walked.
-- [ ] E4.4 count '.course-editor' roots and '.ce-shown' right after the Courses click.
-- [ ] E4.5 look at up to 10 pictures (editfix-after-*, verify-*), one sentence each.
-- [ ] E4.6 release build, walls in dist/walls; walk.mjs lap1536 lap1097ru touch1536; probe over all cases; editor3-smoke
-  70b50d42 887f27aa; accept-fly B6-B16; a6; typecheck; gates.py full; live-checks.sh edit-mouse-wroclaw extended if needed;
-  parts 'Verify 2', 'What the owner does', 'For the lead'.
+- [x] E4.4 not a fault: lap1536 on the release of faa8b553 (walk2.mjs step flash-courses): '.course-editor' roots 1 at 0, 100, 300,
+  600, 1000, 1500 ms after the click; '.ce-shown' 2 at 0-100 ms, 1 to 1000 ms, 0 at 1500 ms; the window open. Keys the same (1 root).
+- [x] E4.5 pictures looked at (8): editfix-after-lap-1097 (bar at the left under the credit, START gate selected, no line on the
+  bar: at max-height 500 px the line is hidden by design, so refusal words are not seen there); editfix-after-touch-1536 and
+  -pl-1536 (bar, long open line cut with an ellipsis, START gate with handles); verify-lap1097ru-05-add (the new gate selected
+  in view); verify-lap1536-07-back and -10-pause (the view sits inside a yellow gate that fills the left half; P showed
+  nothing then, now a line); verify-touch1536-06-exit (the edit view still open after tap 2: finding 3, repaired);
+  verify-lap1097ru-02-open (opened in the air, no gate in the view, the start gate's arrow at the bottom left edge).
+  Finding (listed, not repaired): at 1536x730 x1.25 the top bar (bottom about 46 CSS px) covers about 6 CSS px of the top
+  edge of the sound, full screen and Share buttons (top row starts about 40 px); they stay clickable below that.
+- [~] E4.6 release of 27151009 (exit 0, sha256 2fabfbc9...), walls in dist/walls, serve-csp 5822. walk2.mjs (walk.mjs plus an
+  event log of the Exit box and the Courses flash count): touch1536, lap1536, lap1097ru all exit 0, page errors 0: touch Exit
+  tap 2 leaves (tap 1 the unsaved line, tap 2 open false; Exit at x 730-775, line 420 px at pointerdown, pointerup and click);
+  lap1536 testfly 1 Space press to the test flight after Shift+B in the air (before: never), P and Shift+T say their line;
+  every control has an effect. Chain (U:/Temp/gsfpv-train3/editfix/verify2/chain.log, evidence/2026-11-17/editfix-final):
+  probe base-1920 exit 0 70s; probe fly-1536 exit 0 84s; probe fly-ru-1536 exit 0 79s; probe fly-tap-1536 exit 0 79s; probe nofly-lock-1920 exit 0 55s; probe nofly-nolock-1920 exit 0 75s; probe lap-1536 exit 0 72s; probe lap-1280 exit 0 75s; probe lap-1097 exit 0 82s; probe lap-1366 exit 0 74s; probe touch-1536 exit 0 72s; probe ru-1536 exit 0 75s; probe pl-1536 exit 0 76s; probe early-building-1536 exit 0 80s; probe early-controls-1536 exit 0 76s; probe weak-1536 exit 0 78s. a6-reference + editfix-e2 + editfix-e4: 15 passed; tsc apps/fly exit 0; origin/main has no commit the branch lacks.
 
-## Left after E4 (exact list for the next run; reply budget of this run spent)
+## Left after E4-rest run 2 (exact list; this run's budget spent)
+
+1. Read U:/Temp/gsfpv-train3/editfix/verify2/chain.log: every probe case, the two smoke runs and accept-fly must say exit 0
+   (accept-fly.log first line names http://localhost:5822); restore tracked evidence files accept-fly rewrote
+   (git status, git checkout); commit evidence/2026-11-17/editfix-final. Stop the server on 5822 (serve-csp) when done.
+2. git fetch; merge origin/main if it moved; gates.py without --only (Python 3.11 on PATH) on the final head, exit 0.
+3. Write parts 'Verify 2', 'What the owner does' (add: one Space test-flies after Shift+B, a short Space back; P, Shift+T and
+   the other flight keys say a line), 'For the lead' (files since efd17add: course.ts, keys.ts, devices/keyboard.ts,
+   editor.css, locales course en es pl ru, edit-mouse-probe.mjs, tests editfix-e4 and editor3-flying, live-checks.sh;
+   page only, no server change).
+
+## Left after E4 (run 1)
 
 1. E4.2 touch Exit: measure the Exit box at pointerup and at click in a touch tap (walk.mjs touch1536), then the repair
    (top-bar.ts 64 clears the held line on pointerup: a fixed width for the line, or clear on click), touch1536 again.
