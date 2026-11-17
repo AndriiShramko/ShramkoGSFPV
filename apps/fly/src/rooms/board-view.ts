@@ -28,7 +28,6 @@ export class BoardView {
     readonly banner: HTMLElement;
     private readonly rows = new Map<number, HTMLElement>();
     private key = '';
-    private fits = 0;
 
     constructor(parent: HTMLElement, private readonly doc: Document = document) {
         this.board = doc.createElement('div');
@@ -51,7 +50,7 @@ export class BoardView {
         if (!shown) return;
         const key = JSON.stringify(list);
         if (key === this.key) {
-            if (++this.fits % 30 === 0) this.fit();
+            this.fit();
             return;
         }
         this.key = key;
@@ -103,17 +102,24 @@ export class BoardView {
 
     /** The board narrows when the voxel panel's header lies over its place (844x390: header at x 179, y 112). */
     private fit(): void {
-        this.board.style.maxWidth = '';
-        this.board.style.marginTop = '';
-        // the header first: a selector list would return the whole menu (it comes first in document order)
+        // reads first, writes only on a change, so a frame does not force a second layout (run 5: a fit every 30 frames left the
+        // board over the fold button for up to half a second after a resize)
+        let mw = ''; let mt = '';
         const w = (this.doc.querySelector('.walls-menu .walls-head') ?? this.doc.querySelector('.walls-menu')) as HTMLElement | null;
-        if (!w || w.closest('[hidden]') || getComputedStyle(w).display === 'none') return;
-        const r = w.getBoundingClientRect();
-        const b = this.board.getBoundingClientRect();
-        if (!(r.width > 0 && r.top < b.bottom && r.bottom > b.top && r.left < b.right && r.right > b.left)) return;
-        // narrower when the header starts far enough to the right, else under the header
-        if (r.left > b.left + 120) this.board.style.maxWidth = `${Math.floor(r.left - b.left - 6)}px`;
-        else this.board.style.marginTop = `${Math.ceil(r.bottom - b.top + 6)}px`;
+        if (w && !w.closest('[hidden]') && getComputedStyle(w).display !== 'none') {
+            const r = w.getBoundingClientRect();
+            const b = this.board.getBoundingClientRect();
+            const top = b.top - (parseFloat(this.board.style.marginTop) || 0);
+            const vw = this.doc.defaultView?.innerWidth ?? 0;
+            const right = b.left + Math.max(b.width, Math.min(230, 0.3 * vw));
+            if (r.width > 0 && r.top < top + b.height && r.bottom > top && r.left < right && r.right > b.left) {
+                // narrower when the header starts far enough to the right, else under the header
+                if (r.left > b.left + 120) mw = `${Math.floor(r.left - b.left - 6)}px`;
+                else mt = `${Math.ceil(r.bottom - top + 6)}px`;
+            }
+        }
+        if (this.board.style.maxWidth !== mw) this.board.style.maxWidth = mw;
+        if (this.board.style.marginTop !== mt) this.board.style.marginTop = mt;
     }
 
     /** The banner's text of this frame, null hides it; the pilot's own takeover is green. */

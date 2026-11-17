@@ -135,11 +135,14 @@ const SHOTS = 'U:/Temp/gsfpv-train3/shots';
 /** In-page watcher: every drawn frame it logs when the banner's text or the board's row order changes (page clock = this
  *  PC's clock, as Date.now() in Node) and, while the board or the banner shows, every overlap of their rectangles with the
  *  middle third, the clock block, the lap's time, the mode chip and the page's buttons. */
-const WATCH = `(() => { if (window.__r2) return; const w = window.__r2 = { log: [], over: {}, snaps: {} };
+const WATCH = `(() => { if (window.__r2) return; const w = window.__r2 = { log: [], over: {}, snaps: {}, once: {} };
     const R = (el) => { if (!el || el.hidden) return null; const cs = getComputedStyle(el); if (cs.display === 'none' || cs.visibility === 'hidden' || +cs.opacity === 0) return null;
         const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0 ? [r.left, r.top, r.right, r.bottom].map(Math.round) : null; };
     const hit = (a, b) => !!a && !!b && a[0] < b[2] && b[0] < a[2] && a[1] < b[3] && b[1] < a[3];
-    let lb = null, lo = '';
+    let lb = null, lo = ''; let prev = {}; let cur = {};
+    // an overlap counts when it holds for two drawn frames in a row (run 5: the frame in which Escape opens the pause menu still
+    // drew the board; one frame is not seen by a person); single-frame ones are kept in w.once
+    const put = (k, v) => { cur[k] = 1; if (prev[k]) w.over[k] = v; else if (!w.over[k]) w.once[k] = v; };
     const tick = () => { try {
         const bn = document.querySelector('[data-testid=rooms-lead]'); const bd = document.querySelector('[data-testid=rooms-board]');
         const rb = R(bn), rd = R(bd); const now = Date.now(); const W = innerWidth, H = innerHeight;
@@ -153,12 +156,12 @@ const WATCH = `(() => { if (window.__r2) return; const w = window.__r2 = { log: 
             const o = { mid: [W / 3, H / 3, 2 * W / 3, 2 * H / 3].map(Math.round), clock: R(document.querySelector('[data-testid=course-hud]')), lapTime: R(document.querySelector('[data-testid=course-splash]')), mode: R(document.querySelector('[data-testid=mode-chip]')) };
             const btns = [...root.querySelectorAll('button, a[href], [role=button], [data-action]')].filter((e) => getComputedStyle(e).pointerEvents !== 'none').map((e) => [e.dataset.action || e.getAttribute('aria-label') || e.textContent.trim().slice(0, 24), R(e)]).filter((x) => x[1]);
             for (const [n, a] of [['board', rd], ['banner', rb]]) { if (!a) continue;
-                for (const k in o) if (hit(a, o[k])) w.over[n + '~' + k + '@' + W] = { a, b: o[k], W, H };
-                for (const [lab, b] of btns) if (hit(a, b)) w.over[n + '~btn:' + lab + '@' + W] = { a, b, W, H }; }
+                for (const k in o) if (hit(a, o[k])) put(n + '~' + k + '@' + W, { a, b: o[k], W, H });
+                for (const [lab, b] of btns) if (hit(a, b)) put(n + '~btn:' + lab + '@' + W, { a, b, W, H }); }
             const key = W + 'x' + H + (rb ? '+banner' : '') + (o.lapTime ? '+lap' : '');
             if (!w.snaps[key]) w.snaps[key] = { board: rd, banner: rb, ...o, btns: btns.length };
         }
-    } catch (e) { w.err = String(e); } requestAnimationFrame(tick); };
+    } catch (e) { w.err = String(e); } prev = cur; cur = {}; requestAnimationFrame(tick); };
     requestAnimationFrame(tick); })()`;
 
 const r2log = (p: Page): Promise<Any> => p.evaluate('window.__r2 ? JSON.parse(JSON.stringify(window.__r2)) : null') as Promise<Any>;
@@ -185,7 +188,7 @@ async function takeover(who: Page, other: Page, fw: Frames, offs: number[], shot
     const sendT = (bt: number): number => Math.max(-Infinity, ...sends.filter((x) => x.t <= bt + 50).map((x) => x.t));
     const orderAfter = (l: Any): string => [...(l?.log ?? [])].reverse().find((x: Any) => x.kind === 'order' && x.order)?.order ?? '';
     const movedAt = (l: Any): Any => (l?.log ?? []).find((x: Any) => x.t >= t0 && x.kind === 'order' && String(x.order).startsWith(String(me.slot)));
-    return { fly: { pts: fl.pts, laps: fl.laps }, tries, me, time, seen, shotFile, sends: sends.length,
+    return { fly: { pts: fl.pts, laps: fl.laps, nexts: fl.nexts, crashes: fl.crashes }, tries, me, time, seen, shotFile, sends: sends.length,
         bannerWho: bw ?? null, bannerOther: bo ?? null,
         lagWhoMs: bw ? bw.t - sendT(bw.t) : null, lagOtherMs: bo ? bo.t - sendT(bo.t) : null,
         whoMine: bw?.mine === '1', otherNamed: !!bo && bo.mine === '0' && String(bo.text).includes(me.nick ?? '?'),
@@ -217,10 +220,10 @@ async function r2(A: Page, B: Page, LB: Launched, fa: Frames, fb: Frames, out: A
     r.phase1 = { f1a: { pts: f1a.pts, laps: f1a.laps }, f1b: { pts: f1b.pts, laps: f1b.laps }, aSlot: a1.slot, aRows: a1.board?.rows, bRows: b1.board?.rows, oa1, ob1, boardShot, noLap };
     // phase 2: B beats A (half the points per gate); the picture on A at 1920x1080 at the moment of the takeover
     const t2 = await takeover(B, A, fb, [1.5, 0.5, -0.5, -1.5], 'race-lead-change.png');
-    // phase 3: A at 844x390 beats B again (two points per gate, flown again until it leads)
+    // phase 3: A at 844x390 beats B again (three points per gate, flown again until it leads)
     await A.setViewportSize({ width: 844, height: 390 });
     await A.waitForTimeout(800);
-    const t3 = await takeover(A, B, fa, [0.6, -0.6], null);
+    const t3 = await takeover(A, B, fa, [1.0, 0, -1.0], null);
     const smallShot = await shot(A, 'race-844.png');
     r.takeovers = { t2, t3, smallShot };
     const lbB = await r2log(B);
@@ -237,7 +240,7 @@ async function r2(A: Page, B: Page, LB: Launched, fa: Frames, fb: Frames, out: A
     const alone = await until(A, "return r.members.length === 1 && b.shown === false && getComputedStyle(document.querySelector('[data-testid=rooms-board]')).display === 'none';", 30000);
     const la = await r2log(A);
     r.pause = { paused, resumed, alone };
-    r.overA = la?.over; r.snapsA = la?.snaps; r.overB = lbB?.over; r.snapsB = lbB?.snaps; r.err = [la?.err ?? null, lbB?.err ?? null];
+    r.onceA = la?.once; r.onceB = lbB?.once; r.overA = la?.over; r.snapsA = la?.snaps; r.overB = lbB?.over; r.snapsB = lbB?.snaps; r.err = [la?.err ?? null, lbB?.err ?? null];
     const sameBoard1 = JSON.stringify(a1.board?.rows) === JSON.stringify(b1.board?.rows) && oa1 === ob1 && oa1.startsWith(String(a1.slot));
     const quick = (t: Any): boolean => t.lagWhoMs !== null && t.lagOtherMs !== null && t.lagWhoMs <= 1000 && t.lagOtherMs <= 1000;
     out.checks = {
