@@ -36,12 +36,9 @@ Facts V1-a to V1-f, Design 1 to 7): the numbers there are the "before" of this l
   6 m/s (8, 10, 12, 15 m/s fail on every seed), so by the package's shipping rule (test/speed-ladder.test.ts: cap at most
   median top / 1.25) no cap above 4.8 m/s can ship yet; no lesson built.
 - [ ] W1.7 offline audio proofs for the new rules (streams at 8 m/s, hum lead, peak rule).
-- [~] W1.8 simulator typecheck, gates.py --only vitest,architecture,i18n,b18,leaks, a6-reference: all pass at pin da0ab7d
-  (run 1 of 2026-11-16: pnpm -r typecheck 0 errors; a6-reference 1 passed; gates architecture, i18n, b18 PASS; vitest 385
-  files passed and 4 failed with "spawn python ENOENT", leaks "no python program": this run's shell had no python on PATH;
-  rerun with the py launcher copied as U:/Temp/gsfpv-train2/sonic5/pybin/python.exe in front of PATH (bash form
-  /u/Temp/gsfpv-train2/sonic5/pybin): rooms-open-vote, rooms-race, rooms-socket, scene-default 4 files 26 passed, leaks
-  PASS). Run again at the end of the stage, after W1.4 to W1.7.
+- [~] W1.8 run 2 of 2026-11-17 at pin cd37a57: pnpm -r typecheck 0 errors; a6-reference 1 passed; gates.py --only
+  vitest,architecture,i18n,b18,leaks all PASS (vitest 129 s; python from U:/Temp/gsfpv-train2/sonic5/pybin in front of PATH,
+  logs tc3.log, a6-3.log, gates3.log there). Run again at the end of the stage, after W1.6 and W1.7.
 
 ### Left of W1-build (exact, in this order)
 1. W1.4 rest: a glossary entry for 'speed.brake' (src/i18n/catalog.ts CUE_IDS, cue.speed.brake.name/.glossary in the
