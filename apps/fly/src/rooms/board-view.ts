@@ -103,23 +103,23 @@ export class BoardView {
     /** The board narrows when the voxel panel's header lies over its place (844x390: header at x 179, y 112). */
     private fit(): void {
         // reads first, writes only on a change, so a frame does not force a second layout (run 5: a fit every 30 frames left the
-        // board over the fold button for up to half a second after a resize)
-        let mw = ''; let mt = '';
-        const w = (this.doc.querySelector('.walls-menu .walls-head') ?? this.doc.querySelector('.walls-menu')) as HTMLElement | null;
+        // board over the fold button for up to half a second after a resize). The whole panel counts, not only its header: run 6
+        // put the board under the header and so over the panel's own toggle (844x390); a panel that starts too far left hides the
+        // board until it closes (the board takes no pointer, the panel is what the pilot opened).
+        let mw = ''; let vis = '';
+        const w = this.doc.querySelector('.walls-menu') as HTMLElement | null;
         if (w && !w.closest('[hidden]') && getComputedStyle(w).display !== 'none') {
             const r = w.getBoundingClientRect();
             const b = this.board.getBoundingClientRect();
-            const top = b.top - (parseFloat(this.board.style.marginTop) || 0);
             const vw = this.doc.defaultView?.innerWidth ?? 0;
             const right = b.left + Math.max(b.width, Math.min(230, 0.3 * vw));
-            if (r.width > 0 && r.top < top + b.height && r.bottom > top && r.left < right && r.right > b.left) {
-                // narrower when the header starts far enough to the right, else under the header
+            if (r.width > 0 && r.top < b.bottom && r.bottom > b.top && r.left < right && r.right > b.left) {
                 if (r.left > b.left + 120) mw = `${Math.floor(r.left - b.left - 6)}px`;
-                else mt = `${Math.ceil(r.bottom - top + 6)}px`;
+                else vis = 'hidden';
             }
         }
         if (this.board.style.maxWidth !== mw) this.board.style.maxWidth = mw;
-        if (this.board.style.marginTop !== mt) this.board.style.marginTop = mt;
+        if (this.board.style.visibility !== vis) this.board.style.visibility = vis;
     }
 
     /** The banner's text of this frame, null hides it; the pilot's own takeover is green. */
