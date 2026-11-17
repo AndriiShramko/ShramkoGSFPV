@@ -184,7 +184,8 @@ async function takeover(who: Page, other: Page, fw: Frames, offs: number[], shot
         fl = await fly(who, 3, o, 1); tries++; me = await ev<Any>(who, ME);
         plan.push({ k: o.length, last: me.last, best: me.row?.best ?? null, top: me.top });
         if ((me.row && me.row.best < me.top) || tries >= 4) break;
-        const lo = 3600; const hi = me.top - 400;
+        let lo = 3600; let hi = me.top - 400;
+        if (hi <= lo) { lo = 3100; hi = me.top - 100; } // run 10: B's 3.59 s left A no window with the wide margins
         if (typeof me.last === 'number' && me.last > 0 && hi > lo) o = spread(Math.max(2, Math.min(24, Math.round((o.length * (lo + hi)) / 2 / me.last))));
     }
     const seen = await until(other, `${BANNER_ON}${JSON.stringify(me.nick ?? '?')});`, 15000);
@@ -229,16 +230,20 @@ async function r2(A: Page, B: Page, LB: Launched, fa: Frames, fb: Frames, out: A
     const boardShot = await shot(A, 'race-board.png');
     r.phase1 = { f1a: { pts: f1a.pts, laps: f1a.laps }, f1b: { pts: f1b.pts, laps: f1b.laps }, aSlot: a1.slot, aRows: a1.board?.rows, bRows: b1.board?.rows, oa1, ob1, boardShot, noLap };
     // phase 2: B beats A (half the points per gate); the picture on A at 1920x1080 at the moment of the takeover
-    const t2 = await takeover(B, A, fb, [1.5, 0.5, -0.5, -1.5], 'race-lead-change.png');
+    const t2 = await takeover(B, A, fb, [1.5, 1.1, 0.7, 0.3, -0.3, -0.7, -1.1, -1.5], 'race-lead-change.png'); // run 10: 4 points gave B 3.59 s, A's window 3.0 to 3.59 s
     // phase 3: A at 844x390 beats B again (three points per gate to start, then scaled, flown again until it leads;
     // run 7: [1, 0, -1] gave A 5.33 s against B's 3.43 s in 3 tries; run 8: [0.75, -0.75] gave laps under 3 s, refused)
     await A.setViewportSize({ width: 844, height: 390 });
     await A.waitForTimeout(800);
     const t3 = await takeover(A, B, fa, [1.05, 0.05, -0.95], null);
+    // run 10: the walls panel (details [data-testid=walls-more]) was open at 844x390, nobody in the probe opened it; it is
+    // recorded, folded, and the board is measured under its header
+    const wallsWasOpen = await A.evaluate("(() => { const d = document.querySelector('[data-testid=walls-more]'); const o = !!d && d.open; if (o) d.open = false; return o; })()");
+    await A.waitForTimeout(400);
     const smallShot = await shot(A, 'race-844.png');
     // run 9 passed 8 of 8 while the board hid behind the folded walls panel at 844x390 for the whole flight
     const small = await ev<Any>(A, "const e = document.querySelector('[data-testid=rooms-board]'); const s = getComputedStyle(e); const q = e.getBoundingClientRect(); const w = document.querySelector('.walls-menu'); const p = w ? w.getBoundingClientRect() : null; return { display: s.display, visibility: s.visibility, rect: [q.left, q.top, q.right, q.bottom].map(Math.round), walls: p ? [p.left, p.top, p.right, p.bottom].map(Math.round) : null, rows: e.querySelectorAll('[data-slot]').length };");
-    r.takeovers = { t2, t3, smallShot, small };
+    r.takeovers = { t2, t3, smallShot, small, wallsWasOpen };
     const lbB = await r2log(B);
     // the pause menu: Escape on A hides the board and the banner
     const vis = "const v = (s) => { const e = document.querySelector(s); return !!e && getComputedStyle(e).display !== 'none'; };";
