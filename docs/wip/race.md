@@ -85,8 +85,12 @@ Stage R2-board:
   Test tools/bench/test/rooms-lead.test.ts: 6 OK (with rooms-board and sonic-int-lazy 18 of 18). Negative controls
   (lead.ts is new, so mutants): an equal time takes the lead, a slower lap gives a banner, BANNER_MS 4000, one pilot sees
   the board, the row of a pilot who left shown: each 1 failure. tsc of apps/fly clean.
-- [ ] R2.2 gates.py --only vitest,api-unittest,architecture,i18n,b18,leaks and a6-reference on R2.1.
-- [ ] R2.3 Release build of R2.1 (node scripts/build-release.mjs), local rooms service and walls stand-in as in R1.3.
+- [x] R2.2 (a246eedf) gates.py --only vitest,api-unittest,architecture,i18n,b18,leaks all PASS (vitest 151 s, api-unittest
+  228 s; log U:/Temp/gsfpv-train3/race/gates-r2.log); a6-reference 1 OK (log a6-r2.log).
+- [x] R2.3 Release build of a246eedf is in dist (sha256 3ba01c12..., 1937 files; log U:/Temp/gsfpv-train3/race/build-r2.log).
+  A next run with HEAD at the status commit after a246eedf (only this file changed) may serve it as it is; the local
+  rooms service and the walls stand-in (dist/walls) are started as in R1.3 (rooms-board.ts).
+  Not done in this run: the browser run at the stage start (the reply budget went to the build of L3 to L6).
 - [ ] R2.4 Probe: extend tools/bench/src/rooms-board.ts (rendering on, holds of at most 10 min, on 70b50d42): both keyboard
   pilots fly laps; hook rooms.board.shown and the board's row order equal on both pages; B beats A's best: both pages show
   banner (hook rooms.board.banner with B's nick and time) within 1 s and the rows swap; rects of [data-testid=rooms-board]
