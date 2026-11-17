@@ -45,7 +45,10 @@ Facts V1-a to V1-f, Design 1 to 7): the numbers there are the "before" of this l
   side effect: reverted, not committed. Left: the hum-lead proof (see Left 4).
 - [~] W1.8 run 2 of 2026-11-17 at pin cd37a57: pnpm -r typecheck 0 errors; a6-reference 1 passed; gates.py --only
   vitest,architecture,i18n,b18,leaks all PASS (vitest 129 s; python from U:/Temp/gsfpv-train2/sonic5/pybin in front of PATH,
-  logs tc3.log, a6-3.log, gates3.log there). Run again at the end of the stage, after W1.6 and W1.7.
+  logs tc3.log, a6-3.log, gates3.log there). Run 3 of 2026-11-17 at pin 4c8e4e1 (only the package's test-audio changed):
+  pnpm -r typecheck 0 errors; gates.py --only vitest,architecture,i18n,b18,leaks all PASS (vitest 103 s; logs tc4.log,
+  gates4.log; U:/Temp/gsfpv-gates-20261117-204007). a6-reference not re-run: no flight, input or collision file changed
+  since run 2. Run again at the end of the stage, after W1.6 and the hum-lead proof.
 
 ### Left of W1-build (exact, in this order)
 1. W1.4 rest: a glossary entry for 'speed.brake' (src/i18n/catalog.ts CUE_IDS, cue.speed.brake.name/.glossary in the
