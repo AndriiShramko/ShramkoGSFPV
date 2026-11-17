@@ -1,0 +1,645 @@
+{
+ "input": "key",
+ "scene": "70b50d42",
+ "sizes": [
+  "932x430",
+  "844x390",
+  "740x360",
+  "667x375",
+  "1366x768",
+  "1280x720",
+  "390x844"
+ ],
+ "rows": [
+  {
+   "state": "before",
+   "size": "932x430",
+   "short": true,
+   "W": 932,
+   "H": 430,
+   "block": {
+    "x": 16,
+    "y": 142,
+    "w": 263,
+    "h": 56
+   },
+   "cross": {
+    "x": 229,
+    "y": 148,
+    "w": 44,
+    "h": 44
+   },
+   "crossInBlock": true,
+   "clockText": "Fly through START to start the clock",
+   "over": [],
+   "things": 45,
+   "flying": false,
+   "cinemaTop": "80px",
+   "crossLabel": "Hide the course",
+   "crossTitle": "Hide the course (Shift+T)",
+   "next": 0,
+   "laps": 0
+  },
+  {
+   "state": "before",
+   "size": "844x390",
+   "short": true,
+   "W": 844,
+   "H": 390,
+   "block": {
+    "x": 16,
+    "y": 142,
+    "w": 249,
+    "h": 56
+   },
+   "cross": {
+    "x": 215,
+    "y": 148,
+    "w": 44,
+    "h": 44
+   },
+   "crossInBlock": true,
+   "clockText": "Fly through START to start the clock",
+   "over": [],
+   "things": 42,
+   "flying": false,
+   "cinemaTop": "80px",
+   "crossLabel": "Hide the course",
+   "crossTitle": "Hide the course (Shift+T)",
+   "next": 0,
+   "laps": 0
+  },
+  {
+   "state": "before",
+   "size": "740x360",
+   "short": true,
+   "W": 740,
+   "H": 360,
+   "block": {
+    "x": 16,
+    "y": 112,
+    "w": 215,
+    "h": 56
+   },
+   "cross": {
+    "x": 181,
+    "y": 118,
+    "w": 44,
+    "h": 44
+   },
+   "crossInBlock": true,
+   "clockText": "Fly through START to start the clock",
+   "over": [],
+   "things": 43,
+   "flying": false,
+   "cinemaTop": "80px",
+   "crossLabel": "Hide the course",
+   "crossTitle": "Hide the course (Shift+T)",
+   "next": 0,
+   "laps": 0
+  },
+  {
+   "state": "before",
+   "size": "667x375",
+   "short": true,
+   "W": 667,
+   "H": 375,
+   "block": {
+    "x": 16,
+    "y": 112,
+    "w": 190,
+    "h": 56
+   },
+   "cross": {
+    "x": 156,
+    "y": 118,
+    "w": 44,
+    "h": 44
+   },
+   "crossInBlock": true,
+   "clockText": "Fly through START to start the clock",
+   "over": [],
+   "things": 42,
+   "flying": false,
+   "cinemaTop": "80px",
+   "crossLabel": "Hide the course",
+   "crossTitle": "Hide the course (Shift+T)",
+   "next": 0,
+   "laps": 0
+  },
+  {
+   "state": "before",
+   "size": "1366x768",
+   "short": false,
+   "W": 1366,
+   "H": 768,
+   "block": {
+    "x": 579,
+    "y": 120,
+    "w": 207,
+    "h": 17
+   },
+   "cross": {
+    "x": 795,
+    "y": 120,
+    "w": 44,
+    "h": 44
+   },
+   "crossInBlock": false,
+   "clockText": "Fly through START to start the clock",
+   "over": [],
+   "things": 44,
+   "flying": false,
+   "cinemaTop": "101px",
+   "crossLabel": "Hide the course",
+   "crossTitle": "Hide the course (Shift+T)",
+   "next": 0,
+   "laps": 0
+  },
+  {
+   "state": "before",
+   "size": "1280x720",
+   "short": false,
+   "W": 1280,
+   "H": 720,
+   "block": {
+    "x": 536,
+    "y": 120,
+    "w": 207,
+    "h": 17
+   },
+   "cross": {
+    "x": 752,
+    "y": 120,
+    "w": 44,
+    "h": 44
+   },
+   "crossInBlock": false,
+   "clockText": "Fly through START to start the clock",
+   "over": [],
+   "things": 44,
+   "flying": false,
+   "cinemaTop": "101px",
+   "crossLabel": "Hide the course",
+   "crossTitle": "Hide the course (Shift+T)",
+   "next": 0,
+   "laps": 0
+  },
+  {
+   "state": "before",
+   "size": "390x844",
+   "short": false,
+   "W": 390,
+   "H": 844,
+   "block": {
+    "x": 98,
+    "y": 120,
+    "w": 195,
+    "h": 33
+   },
+   "cross": {
+    "x": 301,
+    "y": 120,
+    "w": 44,
+    "h": 44
+   },
+   "crossInBlock": false,
+   "clockText": "Fly through START to start the clock",
+   "over": [
+    {
+     "part": "cross",
+     "what": "button.btn.icon",
+     "text": "",
+     "r": {
+      "x": 334,
+      "y": 86,
+      "w": 40,
+      "h": 40
+     }
+    }
+   ],
+   "things": 42,
+   "flying": false,
+   "cinemaTop": "165px",
+   "crossLabel": "Hide the course",
+   "crossTitle": "Hide the course (Shift+T)",
+   "next": 0,
+   "laps": 0
+  },
+  {
+   "state": "flight",
+   "size": "390x844",
+   "short": false,
+   "W": 390,
+   "H": 844,
+   "block": {
+    "x": 156,
+    "y": 120,
+    "w": 78,
+    "h": 97
+   },
+   "cross": {
+    "x": 242,
+    "y": 120,
+    "w": 44,
+    "h": 44
+   },
+   "crossInBlock": false,
+   "clockText": "0:01.16Lap 1 of 1\nGate 2 of 35\nLast -\nBest -",
+   "over": [],
+   "things": 42,
+   "flying": true,
+   "cinemaTop": "165px",
+   "crossLabel": "Hide the course",
+   "crossTitle": "Hide the course (Shift+T)",
+   "next": 1,
+   "laps": 0
+  },
+  {
+   "state": "flight",
+   "size": "1280x720",
+   "short": false,
+   "W": 1280,
+   "H": 720,
+   "block": {
+    "x": 601,
+    "y": 120,
+    "w": 78,
+    "h": 97
+   },
+   "cross": {
+    "x": 687,
+    "y": 120,
+    "w": 44,
+    "h": 44
+   },
+   "crossInBlock": false,
+   "clockText": "0:01.90Lap 1 of 1\nGate 2 of 35\nLast -\nBest -",
+   "over": [],
+   "things": 44,
+   "flying": true,
+   "cinemaTop": "165px",
+   "crossLabel": "Hide the course",
+   "crossTitle": "Hide the course (Shift+T)",
+   "next": 1,
+   "laps": 0
+  },
+  {
+   "state": "flight",
+   "size": "1366x768",
+   "short": false,
+   "W": 1366,
+   "H": 768,
+   "block": {
+    "x": 644,
+    "y": 120,
+    "w": 78,
+    "h": 97
+   },
+   "cross": {
+    "x": 730,
+    "y": 120,
+    "w": 44,
+    "h": 44
+   },
+   "crossInBlock": false,
+   "clockText": "0:02.63Lap 1 of 1\nGate 2 of 35\nLast -\nBest -",
+   "over": [],
+   "things": 44,
+   "flying": true,
+   "cinemaTop": "165px",
+   "crossLabel": "Hide the course",
+   "crossTitle": "Hide the course (Shift+T)",
+   "next": 1,
+   "laps": 0
+  },
+  {
+   "state": "flight",
+   "size": "667x375",
+   "short": true,
+   "W": 667,
+   "H": 375,
+   "block": {
+    "x": 16,
+    "y": 112,
+    "w": 134,
+    "h": 94
+   },
+   "cross": {
+    "x": 100,
+    "y": 137,
+    "w": 44,
+    "h": 44
+   },
+   "crossInBlock": true,
+   "clockText": "0:03.36Lap 1 of 1\nGate 2 of 35\nLast -\nBest -",
+   "over": [],
+   "things": 42,
+   "flying": true,
+   "cinemaTop": "165px",
+   "crossLabel": "Hide the course",
+   "crossTitle": "Hide the course (Shift+T)",
+   "next": 1,
+   "laps": 0
+  },
+  {
+   "state": "flight",
+   "size": "740x360",
+   "short": true,
+   "W": 740,
+   "H": 360,
+   "block": {
+    "x": 16,
+    "y": 112,
+    "w": 134,
+    "h": 94
+   },
+   "cross": {
+    "x": 100,
+    "y": 137,
+    "w": 44,
+    "h": 44
+   },
+   "crossInBlock": true,
+   "clockText": "0:04.13Lap 1 of 1\nGate 2 of 35\nLast -\nBest -",
+   "over": [],
+   "things": 42,
+   "flying": true,
+   "cinemaTop": "165px",
+   "crossLabel": "Hide the course",
+   "crossTitle": "Hide the course (Shift+T)",
+   "next": 1,
+   "laps": 0
+  },
+  {
+   "state": "flight",
+   "size": "844x390",
+   "short": true,
+   "W": 844,
+   "H": 390,
+   "block": {
+    "x": 16,
+    "y": 112,
+    "w": 134,
+    "h": 94
+   },
+   "cross": {
+    "x": 100,
+    "y": 137,
+    "w": 44,
+    "h": 44
+   },
+   "crossInBlock": true,
+   "clockText": "0:04.89Lap 1 of 1\nGate 2 of 35\nLast -\nBest -",
+   "over": [],
+   "things": 42,
+   "flying": true,
+   "cinemaTop": "165px",
+   "crossLabel": "Hide the course",
+   "crossTitle": "Hide the course (Shift+T)",
+   "next": 1,
+   "laps": 0
+  },
+  {
+   "state": "flight",
+   "size": "932x430",
+   "short": true,
+   "W": 932,
+   "H": 430,
+   "block": {
+    "x": 16,
+    "y": 112,
+    "w": 134,
+    "h": 94
+   },
+   "cross": {
+    "x": 100,
+    "y": 137,
+    "w": 44,
+    "h": 44
+   },
+   "crossInBlock": true,
+   "clockText": "0:05.66Lap 1 of 1\nGate 2 of 35\nLast -\nBest -",
+   "over": [],
+   "things": 42,
+   "flying": true,
+   "cinemaTop": "165px",
+   "crossLabel": "Hide the course",
+   "crossTitle": "Hide the course (Shift+T)",
+   "next": 1,
+   "laps": 0
+  },
+  {
+   "state": "finish",
+   "size": "932x430",
+   "short": true,
+   "W": 932,
+   "H": 430,
+   "block": {
+    "x": 16,
+    "y": 112,
+    "w": 141,
+    "h": 94
+   },
+   "cross": {
+    "x": 107,
+    "y": 137,
+    "w": 44,
+    "h": 44
+   },
+   "crossInBlock": true,
+   "clockText": "0:10.46Lap 1 of 1\nGate 25 of 35\nLast 0:15.50\nBest 0:15.30",
+   "over": [],
+   "things": 31,
+   "flying": true,
+   "cinemaTop": "80px",
+   "crossLabel": "Hide the course",
+   "crossTitle": "Hide the course (Shift+T)",
+   "next": 24,
+   "laps": 0
+  },
+  {
+   "state": "finish",
+   "size": "844x390",
+   "short": true,
+   "W": 844,
+   "H": 390,
+   "block": {
+    "x": 16,
+    "y": 112,
+    "w": 141,
+    "h": 94
+   },
+   "cross": {
+    "x": 107,
+    "y": 137,
+    "w": 44,
+    "h": 44
+   },
+   "crossInBlock": true,
+   "clockText": "0:11.26Lap 1 of 1\nGate 25 of 35\nLast 0:15.50\nBest 0:15.30",
+   "over": [],
+   "things": 31,
+   "flying": true,
+   "cinemaTop": "80px",
+   "crossLabel": "Hide the course",
+   "crossTitle": "Hide the course (Shift+T)",
+   "next": 24,
+   "laps": 0
+  },
+  {
+   "state": "finish",
+   "size": "740x360",
+   "short": true,
+   "W": 740,
+   "H": 360,
+   "block": {
+    "x": 16,
+    "y": 112,
+    "w": 141,
+    "h": 94
+   },
+   "cross": {
+    "x": 107,
+    "y": 137,
+    "w": 44,
+    "h": 44
+   },
+   "crossInBlock": true,
+   "clockText": "0:12.03Lap 1 of 1\nGate 25 of 35\nLast 0:15.50\nBest 0:15.30",
+   "over": [],
+   "things": 31,
+   "flying": true,
+   "cinemaTop": "80px",
+   "crossLabel": "Hide the course",
+   "crossTitle": "Hide the course (Shift+T)",
+   "next": 24,
+   "laps": 0
+  },
+  {
+   "state": "finish",
+   "size": "667x375",
+   "short": true,
+   "W": 667,
+   "H": 375,
+   "block": {
+    "x": 16,
+    "y": 112,
+    "w": 141,
+    "h": 94
+   },
+   "cross": {
+    "x": 107,
+    "y": 137,
+    "w": 44,
+    "h": 44
+   },
+   "crossInBlock": true,
+   "clockText": "0:12.80Lap 1 of 1\nGate 25 of 35\nLast 0:15.50\nBest 0:15.30",
+   "over": [],
+   "things": 31,
+   "flying": true,
+   "cinemaTop": "80px",
+   "crossLabel": "Hide the course",
+   "crossTitle": "Hide the course (Shift+T)",
+   "next": 24,
+   "laps": 0
+  },
+  {
+   "state": "finish",
+   "size": "1366x768",
+   "short": false,
+   "W": 1366,
+   "H": 768,
+   "block": {
+    "x": 644,
+    "y": 120,
+    "w": 78,
+    "h": 97
+   },
+   "cross": {
+    "x": 730,
+    "y": 120,
+    "w": 44,
+    "h": 44
+   },
+   "crossInBlock": false,
+   "clockText": "0:13.56Lap 1 of 1\nGate 25 of 35\nLast 0:15.50\nBest 0:15.30",
+   "over": [],
+   "things": 33,
+   "flying": true,
+   "cinemaTop": "80px",
+   "crossLabel": "Hide the course",
+   "crossTitle": "Hide the course (Shift+T)",
+   "next": 24,
+   "laps": 0
+  },
+  {
+   "state": "finish",
+   "size": "1280x720",
+   "short": false,
+   "W": 1280,
+   "H": 720,
+   "block": {
+    "x": 601,
+    "y": 120,
+    "w": 78,
+    "h": 97
+   },
+   "cross": {
+    "x": 687,
+    "y": 120,
+    "w": 44,
+    "h": 44
+   },
+   "crossInBlock": false,
+   "clockText": "0:14.26Lap 1 of 1\nGate 25 of 35\nLast 0:15.50\nBest 0:15.30",
+   "over": [],
+   "things": 33,
+   "flying": true,
+   "cinemaTop": "80px",
+   "crossLabel": "Hide the course",
+   "crossTitle": "Hide the course (Shift+T)",
+   "next": 24,
+   "laps": 0
+  },
+  {
+   "state": "finish",
+   "size": "390x844",
+   "short": false,
+   "W": 390,
+   "H": 844,
+   "block": {
+    "x": 156,
+    "y": 120,
+    "w": 78,
+    "h": 97
+   },
+   "cross": {
+    "x": 242,
+    "y": 120,
+    "w": 44,
+    "h": 44
+   },
+   "crossInBlock": false,
+   "clockText": "0:15.00Lap 1 of 1\nGate 25 of 35\nLast 0:15.50\nBest 0:15.30",
+   "over": [],
+   "things": 31,
+   "flying": true,
+   "cinemaTop": "80px",
+   "crossLabel": "Hide the course",
+   "crossTitle": "Hide the course (Shift+T)",
+   "next": 24,
+   "laps": 0
+  }
+ ],
+ "notes": [],
+ "gates": 35,
+ "afterStart": {
+  "next": 1,
+  "clock": "0:00.46Lap 1 of 1\nGate 2 of 35\nLast -\nBest -"
+ },
+ "passes": 401,
+ "finished": false,
+ "overlapsOnShortViews": 0
+}
