@@ -27,8 +27,11 @@ Facts V1-a to V1-f, Design 1 to 7): the numbers there are the "before" of this l
   passed (a full run with a glossary entry for the cue failed 4 files that need recorded voices: the entry was taken out);
   three tsc 0 errors. Merge of origin/main 89c9c86e as 584f31bb (21 untracked older evidence files that main now tracks
   moved to U:/Temp/gsfpv-train2/sonic5/untracked-before-merge-89c9c86e); pnpm -r typecheck 0 errors after it and at 26be7f8.
-- [~] W1.5 Design 5 rest: measured that it is needed (Facts W1-d: with the line on, course 1 counts 0 of 3 at 2 m/s);
-  not built yet.
+- [x] W1.5 Design 5 rest, package cd37a57 on train6, simulator pin cd37a57: kept (Facts W1-e). In front of the next gate
+  (gate aim on, entry side) the racing line's look ends at the gate's approach point (src/cues/line.ts update capS and
+  placeOf; src/lesson/runner.ts lineTarget); never behind the craft. Test test/line-gate-cap.test.ts (4 tests), negative
+  control with the old src/cues/line.ts fails by assertion ("expected -10 to be close to -4"); line.test.ts and
+  speed-lead.test.ts pass (18 tests in the three files); three tsc 0 errors. The line stays off by default.
 - [ ] W1.6 Design 6 (lessons speed-5 to speed-8 at 6, 8, 10, 12 m/s, texts en/es/pl/ru, caps lift by passing), unit tests with
   negative controls.
 - [ ] W1.7 offline audio proofs for the new rules (streams at 8 m/s, hum lead, peak rule).
@@ -43,9 +46,8 @@ Facts V1-a to V1-f, Design 1 to 7): the numbers there are the "before" of this l
 1. W1.4 rest: a glossary entry for 'speed.brake' (src/i18n/catalog.ts CUE_IDS, cue.speed.brake.name/.glossary in the
    package's locales en/es/pl/ru) needs the package's recorded-voice fixtures and words check (test/events, lesson-schedule,
    lessons, words failed without them); a planner-level test that the brake cue fires on a course at 8 m/s.
-2. W1.5 Design 5 rest, needed (Facts W1-d): shorten the line's look to the gate's approach point when a gate is nearer than
-   the look (package src/cues/line.ts and src/lesson/runner.ts beaconTarget, the gate aim within max(3 m, 0.4 s x v)); test
-   with negative control; table again with --line on and --line off (keep rule as before).
+2. W1.5 done (cd37a57). Not chased: with the line on, course 2 seed 2 at 2 m/s now fails at gate 6 of 24 (it counted in
+   W1-d); course 1 counts 2 of 3, not 3 of 3, so Design 5's condition for the line as the guide is still not met.
 3. W1.6 Design 6: lessons speed-5 to speed-8 at 6, 8, 10, 12 m/s (estimates), texts in en, es, pl, ru with the word 'key'
    before a key's letter; each opens after a counted pass of the step before; scan-free and N courses take the highest
    passed cap, at least 5 m/s; tests with negative controls.
@@ -61,7 +63,7 @@ Facts V1-a to V1-f, Design 1 to 7): the numbers there are the "before" of this l
 - Package branch train6 (local only, not pushed): 5e04268 (7678880 cherry-picked), e28399f, da0ab7d. Simulator pin (local):
   da0ab7d; origin/main's pin is 293ebae. Deploy order later: the package's main first, then the pin.
 - Files changed outside apps/fly/src/sonic so far: docs/wip/sonic5.md, packages/sonic-fpv (pin).
-- Package branch train6 now also 2bea5d9, 26be7f8 (design 4); simulator pin (local) 26be7f8.
+- Package branch train6 now also 2bea5d9, 26be7f8 (design 4), cd37a57 (design 5 rest); simulator pin (local) cd37a57.
 
 ### Stage W2-prove
 - [ ] not started.
@@ -126,3 +128,15 @@ needed the speed layer, which scan-free and the courses do not have: table ident
 - At 2 m/s course 1 fails every seed (gates 24, 20, 21 of 24, the first with all gates but no counted pass), course 2
   counts 3 of 3. Design 5's condition holds ("until course 1 counts at 2 m/s with the line on, the gate hum stays the
   guide"): W1.5 is needed; the line stays off by default.
+
+### W1-e: Design 5 rest, the look capped at the gate's approach point (package cd37a57, --line on), outputs w1-d5-s1/s2.json and .log
+| m/s | counted | gates med | v50 | streams median / worst / max | onsets/s | words/10 s | hum spare med / min s |
+|---|---|---|---|---|---|---|---|
+| 2 | 4 of 6 | 24 | 2.0 | 4 / 6.84 / 7 | 13.46 | 3.04 | 9.35 / 1.92 |
+| 5 | 0 of 6 | 2.5 | 3.77 | 5 / 6.27 / 7 | 27.79 | 9.70 | 3.56 / 1.08 |
+| 8 | 0 of 6 | 1 | 4.11 | 4 / 6.88 / 8 | 27.66 | 11.59 | 2.01 / 0.04 |
+| 12 | 0 of 6 | 1.5 | 4.51 | 3 / 4.76 / 8 | 23.07 | 15.06 | 0.55 / 0.50 |
+- Against W1-d (line on, 26be7f8): at 2 m/s counted 3 -> 4 of 6; course 1 0 -> 2 of 3 (seed 3 fails at gate 2), course 2
+  3 -> 2 of 3 (seed 2 fails at gate 6); 5, 8 and 12 m/s counted 0 of 6 as before (gates median at 8 m/s 2 -> 1). Kept by the
+  lane's rule (counted at 8 m/s did not fall, 2 and 5 m/s not worse). The line-off table (default) is unchanged by
+  construction: the cap is only in lineTarget, which the line-off flights never call.
