@@ -105,9 +105,12 @@ describe('editfix E4: a key the edit view swallows says why', () => {
 describe('editfix E4.2: the bar keeps its width when the line changes', () => {
     it('the line of the top bar has a fixed flex basis, not the width of its text', () => {
         const css = readFileSync(join(__dirname, '../../../apps/fly/src/course/editor/editor.css'), 'utf8');
-        const rule = /.ce-topbar .ce-tb-line {([^}]*)}/.exec(css);
+        const rule = /\.ce-topbar \.ce-tb-line \{([^}]*)\}/.exec(css);
         expect(rule).not.toBeNull();
-        const flex = /flex:s*([^;]+);/.exec(rule![1]);
-        expect(flex?.[1].trim()).toBe('0 1 420px');
+        const body = rule![1].replace(/\/\*[\s\S]*?\*\//g, '');
+        const flex = /(^|[\s;])flex:\s*([^;]+);/.exec(body);
+        expect(flex?.[2].trim()).toBe('0 1 420px');
+        // the bar is placed (absolute) and sized by its items' max-content: the width must be set too (measured 340 px without)
+        expect(/(^|[\s;])width:\s*420px;/.exec(body)).not.toBeNull();
     });
 });

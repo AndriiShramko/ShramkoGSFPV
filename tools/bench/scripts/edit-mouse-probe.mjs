@@ -8,7 +8,7 @@
 //   node tools/bench/scripts/edit-mouse-probe.mjs <address with /en> <scan> <WxH> <device scale> <touch 0|1> <layout en|ru|pl> <name> <out.json>
 // env: LOCK=0 (never click into the scene: no pointer lock; the take-off by keys), EARLY=building|controls (Shift+B while the
 // course is made / in the first second after the Controls screen closes), QUERY (more query, e.g. &set.display.deviceClass=
-// desktop-weak), FLY=0 (no take-off), COURSE_MS (wait for the course, default 480000), SHOTS (U:/Temp/gsfpv-train3/shots). Never presses a save, send, vote or create control
+// desktop-weak), FLY=0 (no take-off), ONESPACE=1 (one Space test-flies after the open, a short Space back), COURSE_MS (wait for the course, default 480000), SHOTS (U:/Temp/gsfpv-train3/shots). Never presses a save, send, vote or create control
 // on an address that is not localhost. Headless (tools/bench/src/chrome.mjs pickBrowser); takes no GPU lock itself (wrap it).
 // Exit 1 when a step has no effect.
 import { createRequire } from 'node:module';
@@ -209,6 +209,18 @@ try {
         res.tap = { back: back.ok, ms: back.ms, mode: back.v.mode, hud: back.v.hud, topLine: back.v.topLine };
     }
 
+    // ONESPACE=1 (lane editfix E4.6): opened in the air, one Space starts the test flight inside the mode (the editor stopped
+    // the keyboard pilot's motors, editfix E4.1), and a short Space brings the edit view back. Space saves and sends nothing.
+    if (env.ONESPACE === '1' && s0.mode === 'edit') {
+        await key('Space', { hold: 120 });
+        const fly = await until(snap, (s) => s.mode === 'fly', 4000, 250);
+        await sleep(600);
+        await key('Space', { hold: 90 });
+        const back = await until(snap, (s) => s.mode === 'edit', 4000, 250);
+        res.oneSpace = { armedAtOpen: s0.hud && s0.hud.armed, fly: fly.ok, flyMs: fly.ms, back: back.ok, backMs: back.ms, hud: back.v.hud, topLine: back.v.topLine };
+        judge('oneSpace', fly.ok && back.ok, res.oneSpace);
+        await sleep(800);
+    }
     // (a) the view: keys, right drag, left drag on the scene, wheel
     const moves = [];
     for (const k of ['KeyW', 'KeyS', 'KeyD', 'KeyA', 'KeyE', 'KeyQ']) {

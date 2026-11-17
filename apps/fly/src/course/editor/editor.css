@@ -160,8 +160,10 @@
     padding: 0 4px;
     /* train 3 I2 (D6): never two lines; at most 420 px with an ellipsis, the full text in its title (top-bar.ts).
        lane editfix E4.2: a fixed basis, not the text's width: a new line no longer moves the centred buttons (a touch tap's
-       click is hit-tested after pointerup cleared the held line, and the second Exit tap landed on this line) */
+       click is hit-tested after pointerup cleared the held line, and the second Exit tap landed on this line). The width
+       too: Chrome sizes the placed bar by its items' max-content, which a basis alone does not set (measured: 340 px) */
     flex: 0 1 420px;
+    width: 420px;
     min-width: 0;
     max-width: 420px;
     white-space: nowrap;

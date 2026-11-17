@@ -218,7 +218,9 @@ run edit-mode-wroclaw locked editlive
 # gate lives in the page), the top bar's other buttons, Exit. edit-mouse-probe.mjs on an address that is not localhost
 # skips Save and every window row whose words save, send, vote, report, publish, create or go to the admin (source lines
 # 275-289); nothing is stored on the server. The check: the probe's exit 0 (every step had its effect).
-editmouse() { node scripts/edit-mouse-probe.mjs "$SITE/en" 70b50d42 1536x730 1.25 0 en live-mouse "$OUT/edit-mouse-wroclaw.json"; }
+# ONESPACE=1 (lane editfix E4.6): after Shift+B in the air one Space starts the test flight in the mode, a short Space
+# brings the edit view back (Space saves and sends nothing).
+editmouse() { ONESPACE=1 node scripts/edit-mouse-probe.mjs "$SITE/en" 70b50d42 1536x730 1.25 0 en live-mouse "$OUT/edit-mouse-wroclaw.json"; }
 run edit-mouse-wroclaw locked editmouse
 # Fly by Sound over a course made in the ordinary flight (lane mix, sonic-int-review.ts r11 with Z5_COURSE_FIRST=1: Shift+G
 # in the ordinary flight, then Backslash; the same keys as soniccheck above, nothing sent or saved; rendering off, no lock).
