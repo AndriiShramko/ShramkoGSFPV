@@ -88,6 +88,11 @@ Facts V1-a to V1-f, Design 1 to 7): the numbers there are the "before" of this l
 5. W1.8 done at pin bd79c96 (run 4). Left of W1-build after this run: item 3 (W1.6, waits for the lead's decision, see
    there; a fresh run cannot settle it alone) and item 1's glossary entry (a text for the cue list, not a flight need);
    after W1.6, W1.8 once more and the stage's commit of both repositories.
+6. Run 5 of 2026-11-17 (started by the lane supervisor, no person watching): origin/main still 89c9c86e (merged as
+   584f31bb, no merge needed); simulator tree clean; package train6 head bd79c96 = the pin; no decision on W1.6 found
+   (C:/dev/gsfpv-v03/docs/wip/train3-lead.md names no sonic5 decision). Nothing re-run: inputs unchanged since run 4.
+   W1-build stays blocked on the lead's decision of item 3; a further supervisor run finds the same block until the lead
+   decides, so it should not be started before that.
 - Design 2 targets are not met yet (W1-b at 8 m/s: streams median 3 against 2, worst second 6.76 against 3, onsets 24.8 a
   second against under 15); counted at 5, 8 and 12 m/s is 0 of 6 (the goal needs 4 of 6 at 8 m/s). Noticed, not chased: at
   5 m/s the brought commit has streams median 6 against 5 in V1-a (file suspected: packages/sonic-fpv src/cues/budget.ts, the
