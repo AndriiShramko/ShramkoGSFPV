@@ -164,7 +164,8 @@
    button. Its place lies over nothing else at 932x430, 844x390, 740x360 and 667x375, before take-off, in a flight and at
    the finish (measured by tools/bench/scripts/clock-place-probe.mjs). No value kept by a script decides the place (the
    lift by --cinema-top kept a stale height after a rotation in a flight): it follows the layout by itself.
-   Keyboard: the left column, under the scene credit and the walls caption (the top of .rec-notice in cinema.css) and under
+   Keyboard: the left column, under the scene credit and the walls caption (its bottom measured at 101 to 104 px; --bake-bottom
+   is the walls box's, not the caption's) and under
    the course note (--course-push); at most a third of the view less 32 px wide, so it stays out of the middle third and
    left of the take-off prompt. Touch: the bottom middle between the stick pads (fly.css .touch-pad), under the REC row,
    above the ARM button when that shows. */
@@ -185,7 +186,7 @@
     }
     .course-hud .course-hud-x { position: static; grid-column: 2; grid-row: 1 / span 2; margin: 0; }
     body:not(.touch-on) .course-hud {
-        top: calc(max(calc(max(10px, env(safe-area-inset-top)) + 84px + var(--banner-h, 0px)), calc(var(--bake-bottom, 0px) + 8px)) + var(--course-push, 0px));
+        top: calc(max(calc(max(10px, env(safe-area-inset-top)) + 102px + var(--banner-h, 0px)), calc(var(--bake-bottom, 0px) + 8px)) + var(--course-push, 0px));
         left: max(16px, env(safe-area-inset-left));
         right: auto;
         bottom: auto;
