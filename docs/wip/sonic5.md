@@ -27,7 +27,8 @@ Facts V1-a to V1-f, Design 1 to 7): the numbers there are the "before" of this l
   passed (a full run with a glossary entry for the cue failed 4 files that need recorded voices: the entry was taken out);
   three tsc 0 errors. Merge of origin/main 89c9c86e as 584f31bb (21 untracked older evidence files that main now tracks
   moved to U:/Temp/gsfpv-train2/sonic5/untracked-before-merge-89c9c86e); pnpm -r typecheck 0 errors after it and at 26be7f8.
-- [ ] W1.5 Design 5 rest (the line's look shortened near a gate) only if the line still fails near a gate.
+- [~] W1.5 Design 5 rest: measured that it is needed (Facts W1-d: with the line on, course 1 counts 0 of 3 at 2 m/s);
+  not built yet.
 - [ ] W1.6 Design 6 (lessons speed-5 to speed-8 at 6, 8, 10, 12 m/s, texts en/es/pl/ru, caps lift by passing), unit tests with
   negative controls.
 - [ ] W1.7 offline audio proofs for the new rules (streams at 8 m/s, hum lead, peak rule).
@@ -42,7 +43,9 @@ Facts V1-a to V1-f, Design 1 to 7): the numbers there are the "before" of this l
 1. W1.4 rest: a glossary entry for 'speed.brake' (src/i18n/catalog.ts CUE_IDS, cue.speed.brake.name/.glossary in the
    package's locales en/es/pl/ru) needs the package's recorded-voice fixtures and words check (test/events, lesson-schedule,
    lessons, words failed without them); a planner-level test that the brake cue fires on a course at 8 m/s.
-2. W1.5 Design 5 rest, only if the line still fails near a gate (line on, --line on, same courses).
+2. W1.5 Design 5 rest, needed (Facts W1-d): shorten the line's look to the gate's approach point when a gate is nearer than
+   the look (package src/cues/line.ts and src/lesson/runner.ts beaconTarget, the gate aim within max(3 m, 0.4 s x v)); test
+   with negative control; table again with --line on and --line off (keep rule as before).
 3. W1.6 Design 6: lessons speed-5 to speed-8 at 6, 8, 10, 12 m/s (estimates), texts in en, es, pl, ru with the word 'key'
    before a key's letter; each opens after a counted pass of the step before; scan-free and N courses take the highest
    passed cap, at least 5 m/s; tests with negative controls.
@@ -112,3 +115,14 @@ needed the speed layer, which scan-free and the courses do not have: table ident
   1.48 s, hum spare median 1.31 -> 1.89 s, but streams median 3 -> 4 and onsets 24.8 -> 27.1 a second (Design 2 moves
   away); at 12 m/s the worst second 6.21 -> 5.33, onsets 23.8 -> 22.1. Kept by the rule (counted at 8 m/s did not fall, 2 and
   5 m/s as they were); the extra stream is the brake cue itself, a candidate for the budget's count in W1.7.
+
+### W1-d: the line on (package 26be7f8, --line on), outputs w1-line-s1/s2.json and .log
+| m/s | counted | gates med | streams median / worst / max | onsets/s | words/10 s | hum spare med / min s |
+|---|---|---|---|---|---|---|
+| 2 | 3 of 6 | 24 | 4 / 6.73 / 7 | 13.42 | 3.17 | 9.64 / 1.70 |
+| 5 | 0 of 6 | 1.5 | 3.5 / 6.0 / 8 | 26.55 | 10.68 | 2.67 / 1.31 |
+| 8 | 0 of 6 | 2 | 3 / 6.29 / 7 | 25.98 | 13.32 | 1.04 / 0.99 |
+| 12 | 0 of 6 | 1 | 3 / 4.49 / 8 | 24.07 | 18.59 | 1.21 / 0.55 |
+- At 2 m/s course 1 fails every seed (gates 24, 20, 21 of 24, the first with all gates but no counted pass), course 2
+  counts 3 of 3. Design 5's condition holds ("until course 1 counts at 2 m/s with the line on, the gate hum stays the
+  guide"): W1.5 is needed; the line stays off by default.
