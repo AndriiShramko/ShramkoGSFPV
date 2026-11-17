@@ -169,7 +169,7 @@ const BANNER_ON = "const e = document.querySelector('[data-testid=rooms-lead]');
 /** One takeover: `who` flies two quick rounds; both pages' logs say when who's banner showed and how the rows moved. */
 async function takeover(who: Page, other: Page, fw: Frames, offs: number[], shotName: string | null): Promise<Any> {
     const t0 = Date.now();
-    const fl = await fly(who, 2, offs, 1);
+    const fl = await fly(who, 3, offs, 1);
     const me = await ev<Any>(who, 'return { slot: r.slot, nick: (r.members.find((m) => m.slot === r.slot) || {}).nick, row: b.rows.find((x) => x.slot === r.slot) };');
     const seen = await until(other, `${BANNER_ON}${JSON.stringify(me.nick ?? '?')});`, 15000);
     const shotFile = shotName ? await shot(other, shotName) : null;
@@ -201,8 +201,9 @@ async function r2(A: Page, B: Page, LB: Launched, fa: Frames, fb: Frames, out: A
     out.r2 = r;
     if (!aCourse || !bCourse) throw new Error('no shared course: ' + JSON.stringify(r));
     const noLap = await ev<Any>(A, "return { shown: b.shown, withLap: b.rows.filter((x) => x.laps > 0).length, shownDom: getComputedStyle(document.querySelector('[data-testid=rooms-board]')).display !== 'none' };");
-    // phase 1: both fly; B slower (each point held 2 frames), so A leads
-    const [f1a, f1b] = await Promise.all([fly(A, 2), fly(B, 2, undefined, 2)]);
+    // phase 1: both fly slowly (each point held 2 frames on A, 3 on B), so A leads; a takeover flies 3 quick rounds (run 1: the
+    // first round's lap holds the wait before it, so 2 rounds gave no clean quick lap)
+    const [f1a, f1b] = await Promise.all([fly(A, 2, undefined, 2), fly(B, 2, undefined, 3)]);
     const both = 'return !!b && b.rows.length === 2 && b.rows.every((x) => x.laps > 0 && x.best > 0) && b.shown === true;';
     const [aBoth, bBoth] = await Promise.all([until(A, both, 15000), until(B, both, 15000)]);
     await A.waitForTimeout(2600);
@@ -212,11 +213,11 @@ async function r2(A: Page, B: Page, LB: Launched, fa: Frames, fb: Frames, out: A
     const boardShot = await shot(A, 'race-board.png');
     r.phase1 = { f1a: { pts: f1a.pts, laps: f1a.laps }, f1b: { pts: f1b.pts, laps: f1b.laps }, aSlot: a1.slot, aRows: a1.board?.rows, bRows: b1.board?.rows, oa1, ob1, boardShot, noLap };
     // phase 2: B beats A (half the points per gate); the picture on A at 1920x1080 at the moment of the takeover
-    const t2 = await takeover(B, A, fb, [1.5, 0.5, -0.5, -1.5], 'race-lead-change.png');
+    const t2 = await takeover(B, A, fb, [1.0, 0, -1.0], 'race-lead-change.png');
     // phase 3: A at 844x390 beats B again (three points per gate)
     await A.setViewportSize({ width: 844, height: 390 });
     await A.waitForTimeout(800);
-    const t3 = await takeover(A, B, fa, [1.0, 0, -1.0], null);
+    const t3 = await takeover(A, B, fa, [0.6, -0.6], null);
     const smallShot = await shot(A, 'race-844.png');
     r.takeovers = { t2, t3, smallShot };
     const lbB = await r2log(B);
