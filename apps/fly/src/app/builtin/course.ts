@@ -53,7 +53,7 @@ import { gateFlownPose, placeGate, placeInState, type FlownPose } from '../../co
 import type { CourseCheck, EditorState } from '@gsfpv/tracks';
 import { myTokens, myVotes, rememberToken, rememberVote, voterId } from '../../course/store';
 import { EditorPanel } from '../../course/editor/panel';
-import { editorKey, forwardOf, keyRoute } from '../../course/editor/keys';
+import { editorKey, forwardOf, keyOffLine, keyRoute } from '../../course/editor/keys';
 import type { EditorCommand, KeyPress } from '../../course/editor/keys';
 import { ACTION_KEYS, actionKey, gateLine, problemsLine, refusalText } from '../../course/editor/words';
 import { ADD_FIX_KEY, SAVE_FIX_KEY, firstWrong } from '../../course/editor/texts';
@@ -916,7 +916,11 @@ export const course: Feature = {
             // lane editfix E4: a keyboard pilot's motors stop too, so one Space test-flies (keyboard.ts stopKeyboardArm)
             if (os.respawn) stopKeyboardArm();
             // lane editfix E4 (finding 2 of E3): a flight key the edit view swallows (P, Shift+T ...) says why and what to press
-            unblock = ctx.keys.block(() => ed !== null && mode === 'edit', (_a, e) => say(t('course.edit.keyOff', { key: keyName(e) }), true));
+            // review 1: Shift+B (this editor's own key) repeats the editor's line instead (course/editor/keys.ts keyOffLine)
+            unblock = ctx.keys.block(() => ed !== null && mode === 'edit', (a, e) => {
+                const l = keyOffLine(a, keyName(e));
+                say(t(l.key, l.vars), true);
+            });
             panel = new EditorPanel(ctx.ui, { key: (p) => applyKey(p), saveMine: (n, ti) => void saveMine(n, ti), saveAll: () => void saveAll(), saveAdmin: (ti) => void saveAdmin(ti), vote: (id, v) => void vote(id, v), open: (id) => openRow(id) });
             panel.defaults('', run.track.title);
             panel.adminOn(adminLive);

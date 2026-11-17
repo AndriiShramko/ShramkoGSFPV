@@ -90,12 +90,24 @@ describe('editfix E4: a key the edit view swallows says why', () => {
 
     it('course.ts gives the edit view its line, in all four languages', () => {
         const src = readFileSync(join(__dirname, '../../../apps/fly/src/app/builtin/course.ts'), 'utf8');
-        expect(src).toMatch(/ctx\.keys\.block\(\(\) => ed !== null && mode === 'edit', \(_a, e\) => say\(t\('course\.edit\.keyOff'/);
+        expect(src).toMatch(/ctx\.keys\.block\(\(\) => ed !== null && mode === 'edit', \(a, e\) => \{\s*const l = keyOffLine\(a, keyName\(e\)\);\s*say\(t\(l\.key, l\.vars\), true\);/);
         for (const lang of ['en', 'es', 'pl', 'ru']) {
             const j = JSON.parse(readFileSync(join(__dirname, `../../../packages/i18n/locales/fly/course/${lang}.json`), 'utf8')) as Record<string, string>;
             expect(j['course.edit.keyOff'], lang).toContain('{key}');
             expect(j['course.edit.keyOff'], lang).toContain('Esc');
         }
+    });
+});
+
+// review 1 of lane editfix, measured on the release of b43c2a48 (1536x730, ?render=off): Shift+B pressed in the edit view
+// said 'Shift+B works in flight, not in the editor: press Esc to leave the editor, then Shift+B.', i.e. leave and come back
+// into the same editor. Shift+B now repeats the editor's own line; every other swallowed flight key keeps the keyOff line.
+describe('editfix review 1: Shift+B in the edit view does not send the pilot out and back in', () => {
+    it('keyOffLine gives Shift+B the editor line and P, Shift+T the keyOff line', async () => {
+        const { keyOffLine } = await import('../../../apps/fly/src/course/editor/keys');
+        expect(keyOffLine('course.edit', 'Shift+B')).toEqual({ key: 'course.edit.opened' });
+        expect(keyOffLine('pause.toggle', 'P')).toEqual({ key: 'course.edit.keyOff', vars: { key: 'P' } });
+        expect(keyOffLine('course.toggle', 'Shift+T')).toEqual({ key: 'course.edit.keyOff', vars: { key: 'Shift+T' } });
     });
 });
 
