@@ -36,6 +36,11 @@ const SLOT_COLOURS: readonly [number, number, number][] = [
     [1, 0.35, 0.2], [0.2, 0.7, 1], [0.35, 0.9, 0.3], [1, 0.8, 0.15], [0.85, 0.4, 1], [0.15, 0.95, 0.85], [1, 0.45, 0.7], [0.95, 0.95, 0.95]
 ];
 const LOST: [number, number, number] = [0.45, 0.45, 0.45];
+/** A slot's colour as CSS (the board's names, rooms/board-view.ts), a little lighter so it reads on the dark board. */
+export function slotCss(slot: number): string {
+    const c = SLOT_COLOURS[((slot % 8) + 8) % 8]!;
+    return `rgb(${c.map((v) => Math.round((0.25 + 0.75 * v) * 255)).join(',')})`;
+}
 /** the rotor discs and the nose: the slot colour mixed this far towards white, so the parts read apart */
 const LIGHT = 0.55;
 /** the body and the arms: the slot colour this dark, against the light discs */

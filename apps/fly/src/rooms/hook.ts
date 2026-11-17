@@ -36,7 +36,11 @@ export interface RoomsHook {
     /** added by lane rooms2, stage Q2: the room's race as this page sees it; null outside a room */
     race?: RaceHook | null;
     /** added by lane race: the room's course and its board of best laps (rooms/board.ts); null outside a room */
-    board?: { course: string | null; rows: readonly BoardRow[]; sent: number; adopting: string | null } | null;
+    board?: {
+        course: string | null; rows: readonly BoardRow[]; sent: number; adopting: string | null;
+        /** lane race R2 (L3, L4): whether the board is on the screen, and the lead banner's text while it shows */
+        shown?: boolean; banner?: string | null; leads?: number;
+    } | null;
 }
 
 /** The race of the room on this page (apps/fly/src/rooms/race-page.ts). */

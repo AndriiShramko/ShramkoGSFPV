@@ -66,6 +66,36 @@ Stage R1-share:
   all PASS (vitest 139 s, api-unittest 231 s; log U:/Temp/gsfpv-train3/race/gates-r1c.log); a6-reference,
   rooms-board.test.ts and sonic-int-lazy.test.ts 13 of 13 OK. Stage R1-share done; next stage R2-board.
 
+Stage R2-board:
+- [x] R2.0 Merge of origin/main efd17add (merge commit cbfa2da4); tsc of apps/fly clean after it. 21 untracked evidence files
+  of lane fix3a (evidence/2026-11-15/b-fly*, b-repo-b18.json) were in the way of main's tracked ones and differed from them:
+  moved, not deleted, to U:/Temp/gsfpv-train3/race/fix3a-untracked/ with their paths.
+- [x] R2.1 (this commit) L3, L4, L5, L6 built. apps/fly/src/rooms/lead.ts (pure: fmtLap m:ss.cc, boardShown, viewRows,
+  leadChange, leadLine, LeadBanner; BANNER_MS 2000 and MOVE_MS 300 are estimates), apps/fly/src/rooms/board-view.ts (the
+  board at the left edge 40 px under the mode chip's top, at most min(230 px, 30 % of the width) wide; the banner at 23 %
+  of the height, centred, one line of at most 3 % of the height, so its bottom stays above a third of the height; neither
+  takes a pointer, so neither needs a cross; rows glide to their new place in MOVE_MS; own row marked by a light band and
+  an outline; the own takeover in green; leadBlip: a 0.18 s two-note sound in an ordinary flight),
+  remote-stage.ts slotCss (the slot colour for the names), announce.ts (optional quietCue), hook rooms.board gets
+  shown, banner, leads. builtin/rooms.ts: on each blap on the room's course leadChange against the rows before it; a lead
+  shows the banner; in Fly by Sound one spoken line (narrator on) or the course's chime 'checkpoint' (narrator off, through
+  sayVia's quietCue; never awaited), else leadBlip. The board shows while the page is in the room, the room has a course,
+  two or more pilots are in it, the HUD is on and the flight is not paused. L5: no button; the countdown race stays off as
+  found (RACE_ON false; reason below). Texts rooms.lead.other / rooms.lead.mine in en, es, pl, ru.
+  Test tools/bench/test/rooms-lead.test.ts: 6 OK (with rooms-board and sonic-int-lazy 18 of 18). Negative controls
+  (lead.ts is new, so mutants): an equal time takes the lead, a slower lap gives a banner, BANNER_MS 4000, one pilot sees
+  the board, the row of a pilot who left shown: each 1 failure. tsc of apps/fly clean.
+- [ ] R2.2 gates.py --only vitest,api-unittest,architecture,i18n,b18,leaks and a6-reference on R2.1.
+- [ ] R2.3 Release build of R2.1 (node scripts/build-release.mjs), local rooms service and walls stand-in as in R1.3.
+- [ ] R2.4 Probe: extend tools/bench/src/rooms-board.ts (rendering on, holds of at most 10 min, on 70b50d42): both keyboard
+  pilots fly laps; hook rooms.board.shown and the board's row order equal on both pages; B beats A's best: both pages show
+  banner (hook rooms.board.banner with B's nick and time) within 1 s and the rows swap; rects of [data-testid=rooms-board]
+  and [data-testid=rooms-lead] at 1920x1080, 1280x720, 844x390 against the middle third, the clock block, the lap time place
+  (20 % of the height), the mode chip and the page's buttons; pause menu open: both hidden; one pilot alone: no board.
+- [ ] R2.5 Pictures in U:/Temp/gsfpv-train3/shots: race-board.png, race-lead-change.png, race-844.png, each looked at.
+- [ ] R2.6 rooms-two-page.mjs, train1-live.ts rooms against local servers, accept-fly B6 B7 B9..B16, mouse-free-probe.
+- [ ] R2.7 Status: deploy order, a read-only live check for the lead, What the owner does, not verified.
+
 Why train 2 left the race off (docs/wip/rooms2.md, Q2 runs 2 and 3; not re-run here: the race is off in the build): rooms-race.ts
 moved each craft along race.path on the real scan's course g1.438779389 (9 gates) and both pages passed gates 0 and 1,
 then stayed at next 2 for 1645 frames over 3 rounds; no lap was reported (`sent` 0), 7 of 11 checks. The same stepping
@@ -81,3 +111,7 @@ on the test scene threeRooms: 60 seeds, 0 stuck. Open: the probe's path or the g
   apps/fly/src/app/builtin/rooms.ts (the board's wiring: welcome, board, blap, one look per frame; the hook shows
   adopting cleared),
   docs/rooms-protocol.md (section "The room's course and the board of best laps").
+- R2 (lane race, stage R2-board): outside apps/fly/src/rooms and apps/rooms it changed apps/fly/src/app/builtin/rooms.ts
+  (board and banner wiring), packages/i18n/locales/fly/rooms/{en,es,pl,ru}.json (rooms.lead.other, rooms.lead.mine) and
+  the new test tools/bench/test/rooms-lead.test.ts. apps/rooms is unchanged by R2 (the server's `lead` flag of R1 is not
+  read: the page decides by the same rule, so an old service gives the same banners).
