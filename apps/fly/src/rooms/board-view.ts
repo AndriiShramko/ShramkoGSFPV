@@ -17,7 +17,8 @@ const BOARD_CSS = 'position:absolute;left:max(10px,env(safe-area-inset-left));' 
     'font:600 13px/1.25 system-ui,sans-serif;color:#fff;background:rgba(0,0,0,.5);border-radius:8px;padding:4px 6px;';
 const ROW_CSS = 'display:grid;grid-template-columns:1.4em minmax(0,1fr) auto auto;gap:0 8px;align-items:baseline;' +
     'padding:2px 4px;border-radius:5px;white-space:nowrap;will-change:transform;';
-const BANNER_CSS = 'position:absolute;left:50%;top:calc(max(14px,env(safe-area-inset-top)) + var(--banner-h,0px) + 68px);' +
+const BANNER_TOP = 'calc(max(14px,env(safe-area-inset-top)) + var(--banner-h,0px) + 68px)';
+const BANNER_CSS = `position:absolute;left:50%;top:${BANNER_TOP};` +
     'transform:translateX(-50%);pointer-events:none;max-width:min(44vw,640px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;' +
     'font:700 clamp(13px,2.4vh,20px)/1.25 system-ui,sans-serif;color:#fff;background:rgba(0,0,0,.55);' +
     'padding:4px 14px;border-radius:999px;';
@@ -103,11 +104,15 @@ export class BoardView {
     /** The board narrows when the voxel panel's header lies over its place (844x390: header at x 179, y 112). */
     private fit(): void {
         this.board.style.maxWidth = '';
-        const w = this.doc.querySelector('.walls-menu') as HTMLElement | null;
-        if (!w || w.offsetParent === null) return;
+        this.board.style.marginTop = '';
+        const w = this.doc.querySelector('.walls-menu .walls-head, .walls-menu') as HTMLElement | null;
+        if (!w || w.closest('[hidden]') || getComputedStyle(w).display === 'none') return;
         const r = w.getBoundingClientRect();
         const b = this.board.getBoundingClientRect();
-        if (r.top < b.bottom && r.bottom > b.top && r.left < b.right && r.right > b.left && r.left > b.left + 80) this.board.style.maxWidth = `${Math.floor(r.left - b.left - 6)}px`;
+        if (!(r.width > 0 && r.top < b.bottom && r.bottom > b.top && r.left < b.right && r.right > b.left)) return;
+        // narrower when the header starts far enough to the right, else under the header
+        if (r.left > b.left + 120) this.board.style.maxWidth = `${Math.floor(r.left - b.left - 6)}px`;
+        else this.board.style.marginTop = `${Math.ceil(r.bottom - b.top + 6)}px`;
     }
 
     /** The banner's text of this frame, null hides it; the pilot's own takeover is green. */
@@ -121,12 +126,18 @@ export class BoardView {
         this.banner.dataset.mine = mine ? '1' : '0';
         this.banner.style.display = '';
         // the lap's own time shows at the same moment on the page whose lap took the lead: the banner goes just under it
-        this.banner.style.top = '';
+        // (a smaller line there, so it ends above a third of the height: 1280x720 lap time 78 to 210 px, third at 240 px)
+        this.banner.style.top = BANNER_TOP;
+        this.banner.style.fontSize = '';
         const sp = this.doc.querySelector('[data-testid=course-splash]') as HTMLElement | null;
         if (!sp || sp.hidden) return;
         const r = sp.getBoundingClientRect();
         const b = this.banner.getBoundingClientRect();
-        if (r.height > 0 && r.top < b.bottom && r.bottom > b.top) this.banner.style.top = `${Math.round(r.bottom + 6)}px`;
+        if (!(r.height > 0 && r.top < b.bottom && r.bottom > b.top)) return;
+        this.banner.style.fontSize = '13px';
+        const hgt = this.banner.getBoundingClientRect().height;
+        const third = (this.doc.defaultView?.innerHeight ?? 0) / 3;
+        this.banner.style.top = `${Math.round(Math.min(r.bottom + 2, third - hgt - 1))}px`;
     }
 
     dispose(): void {

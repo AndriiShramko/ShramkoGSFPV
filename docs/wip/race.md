@@ -96,6 +96,19 @@ Stage R2-board:
   banner (hook rooms.board.banner with B's nick and time) within 1 s and the rows swap; rects of [data-testid=rooms-board]
   and [data-testid=rooms-lead] at 1920x1080, 1280x720, 844x390 against the middle third, the clock block, the lap time place
   (20 % of the height), the mode chip and the page's buttons; pause menu open: both hidden; one pilot alone: no board.
+  [~] Done so far (7b7caaa3, 0de288d2, c215b502, this commit): rooms-board.ts MODE=r2 (cd tools/bench; MODE=r2 npx tsx
+  src/rooms-board.ts; takes the lock itself; 120 to 170 s). Run 3 on the release of c215b502 (log
+  U:/Temp/gsfpv-train3/race/rooms-board-r2-3.log, evidence/2026-11-17/rooms-board.json not committed): 7 of 8 checks pass:
+  no board row before laps; both pages same order; B's takeover banner on both pages 53 ms after B's lap was sent ('You
+  lead, 0:04.67' green on B, 'Pilot-0157 leads, 0:04.67' on A), rows swap with the move; A takes it back at 844x390 (57 ms);
+  Escape hides board and banner; alone, no board. Failed: noOverlap. Run 1 and 2 measured the places: banner at 23vh lay
+  over the lap's time (1920) and the clock block 142-239 px and its cross (1280x720); at 64 px over the sound button
+  (38-78 px at 1280). Run 3 showed two faults of mine, fixed in this commit but NOT yet run: the banner fell to y 0 (style.top
+  cleared; now BANNER_TOP, 82 px, and under the lap's time in 13 px while that shows, capped above a third of the height),
+  and the board (10,66..182,115 at 844x390) still lay over the voxel panel's fold button (179,112..223,156) because
+  offsetParent is null for a fixed panel (now computed style; narrower, or under the header).
+  Left for R2.4: build the release of this commit, copy U:/Temp/gsfpv-train2/walls/release/70b50d42 to dist/walls, rerun
+  MODE=r2 and see 8 of 8; if noOverlap still fails, read r2.overA/overB in the evidence.
 - [ ] R2.5 Pictures in U:/Temp/gsfpv-train3/shots: race-board.png, race-lead-change.png, race-844.png, each looked at.
 - [ ] R2.6 rooms-two-page.mjs, train1-live.ts rooms against local servers, accept-fly B6 B7 B9..B16, mouse-free-probe.
 - [ ] R2.7 Status: deploy order, a read-only live check for the lead, What the owner does, not verified.
