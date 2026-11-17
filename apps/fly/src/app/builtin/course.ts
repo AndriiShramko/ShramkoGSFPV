@@ -46,6 +46,7 @@ import { GateBar } from '../../course/editor/gate-bar';
 import { TopBar } from '../../course/editor/top-bar';
 import { ADD_RAY_M, addAction, addFacing, addLift, addPoint, facingFrom } from '../../course/editor/add-place';
 import { flyShows, modeStep, openStep, type EditMode } from '../../course/editor/fly-mode';
+import { stopKeyboardArm } from '../../devices/keyboard';
 import type { Ray } from '../../course/editor/pick';
 import { camFrom } from '../../course/editor/fly-cam';
 import { gateFlownPose, placeGate, placeInState, type FlownPose } from '../../course/editor/drag';
@@ -910,6 +911,8 @@ export const course: Feature = {
             const os = openStep(!!ctx.session.sim?.armed);
             crashHold = os.hold;
             if (os.respawn) ctx.session.respawnStart();
+            // lane editfix E4: a keyboard pilot's motors stop too, so one Space test-flies (keyboard.ts stopKeyboardArm)
+            if (os.respawn) stopKeyboardArm();
             unblock = ctx.keys.block(() => ed !== null && mode === 'edit');
             panel = new EditorPanel(ctx.ui, { key: (p) => applyKey(p), saveMine: (n, ti) => void saveMine(n, ti), saveAll: () => void saveAll(), saveAdmin: (ti) => void saveAdmin(ti), vote: (id, v) => void vote(id, v), open: (id) => openRow(id) });
             panel.defaults('', run.track.title);

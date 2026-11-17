@@ -51,6 +51,20 @@ His laptop: Windows, RTX, 144 Hz, Chrome, keyboard and mouse, layouts ru/pl/en.
   all 8 gates PASS. Findings 1 (keyboard test flight after Shift+B in the air) and 3 (second Exit tap on touch) PROVEN,
   NOT repaired (reply budget); finding 2 pre-existing. Left: repair 1 and 3 with tests, NEG, a new browser pass.
 
+- [x] E4.1 (stage E4-rest, item 1, code part; commit of this line) devices/keyboard.ts stopKeyboardArm() (window event
+  KB_ARM_STOP; the active keyboard game pilot calls arm.stop(), drops a held Space; a passive keyboard, i.e. a pad or radio
+  flies, is left alone), course.ts openEdit calls it when os.respawn (opened armed). Test tools/bench/test/editfix-e4.test.ts
+  3 passed; NEG: keyboard.ts and course.ts of HEAD efd17add in place: 3 failed by assertion (exit 1); editor3-i2-space 3
+  passed; a6-reference + editfix-e2: 9 passed (hash unchanged); tsc apps/fly exit 0. NOT walked in a browser yet.
+- [ ] E4.1b the line shown when a flight key is pressed in the edit view (what to press to test-fly), en es pl ru.
+- [ ] E4.2 finding 3 (second Exit tap on touch): measure the Exit box at pointerup and at click, repair, touch1536 walk.
+- [ ] E4.3 finding 2: P, Shift+T and every other silent flight key in the edit view say one line (keymap read once).
+- [ ] E4.4 count '.course-editor' roots and '.ce-shown' right after the Courses click.
+- [ ] E4.5 look at up to 10 pictures (editfix-after-*, verify-*), one sentence each.
+- [ ] E4.6 release build, walls in dist/walls; walk.mjs lap1536 lap1097ru touch1536; probe over all cases; editor3-smoke
+  70b50d42 887f27aa; accept-fly B6-B16; a6; typecheck; gates.py full; live-checks.sh edit-mouse-wroclaw extended if needed;
+  parts 'Verify 2', 'What the owner does', 'For the lead'.
+
 ## Left after E2
 
 - After Shift+B in the air the drone waits at the start with motors on (ARMED in the corner). The mode stays 'edit'
