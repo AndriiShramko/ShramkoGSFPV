@@ -8,6 +8,7 @@ import type { KeyPress } from './keys';
 import { CAM_ROWS, KEY_ROWS } from './keys';
 import { markText } from './words';
 import { mayVote } from './rules';
+import { flashPart } from './flash';
 import './editor.css';
 
 export interface PanelHost {
@@ -163,6 +164,8 @@ export class EditorPanel {
         this.drawer.setAttribute('aria-expanded', 'true');
         const at = part === 'keys' ? this.keys : part === 'courses' ? this.listTitle : this.name;
         at.scrollIntoView({ block: 'nearest' });
+        // editfix E2.4: the part lights up, so the press has a visible effect even when it was already on screen
+        flashPart(part === 'courses' ? this.rows : at);
     }
 
     names(): { name: string; title: string } {

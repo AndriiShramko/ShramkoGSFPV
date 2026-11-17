@@ -1,0 +1,314 @@
+{
+ "id": "70b50d42",
+ "name": "wroclaw",
+ "sizes": [
+  {
+   "width": 1920,
+   "height": 1080
+  },
+  {
+   "width": 1280,
+   "height": 720
+  },
+  {
+   "width": 844,
+   "height": 390
+  }
+ ],
+ "laps": 3,
+ "scale": null,
+ "off": false,
+ "errors": [],
+ "checks": {},
+ "firstS": 10.15,
+ "seed": 1231947852,
+ "install": {
+  "bot": true
+ },
+ "unit": 1,
+ "gates": 38,
+ "shapes": [
+  "ring",
+  "ring",
+  "ring",
+  "square",
+  "ring",
+  "ring",
+  "ring",
+  "ring",
+  "cube-frame",
+  "ring",
+  "ring",
+  "ring",
+  "square",
+  "ring",
+  "ring",
+  "square",
+  "square",
+  "square",
+  "ring",
+  "ring",
+  "ring",
+  "square",
+  "ring",
+  "square",
+  "ring",
+  "ring",
+  "ring",
+  "ring",
+  "ring",
+  "ring",
+  "ring",
+  "ring",
+  "cube-frame",
+  "ring",
+  "ring",
+  "ring",
+  "ring",
+  "ring"
+ ],
+ "closed": false,
+ "look": {
+  "banners": 2,
+  "groundLines": 2,
+  "plate": 0,
+  "roles": [
+   "start",
+   null,
+   null,
+   null,
+   null,
+   null,
+   null,
+   null,
+   null,
+   null,
+   null,
+   null,
+   null,
+   null,
+   null,
+   null,
+   null,
+   null,
+   null,
+   null,
+   null,
+   null,
+   null,
+   null,
+   null,
+   null,
+   null,
+   null,
+   null,
+   null,
+   null,
+   null,
+   null,
+   null,
+   null,
+   null,
+   null,
+   "finish"
+  ]
+ },
+ "before": {
+  "clock": "Fly through START to start the clock",
+  "guide": {
+   "shown": true,
+   "gate": 0,
+   "metres": 18,
+   "side": "left",
+   "behind": true,
+   "inFrame": false,
+   "bearingDeg": -137,
+   "x": 80,
+   "y": 540
+  },
+  "next": 0,
+  "laps": 0
+ },
+ "shots": [
+  "course4-start-gate-wroclaw",
+  "course4-start-gate-back-wroclaw",
+  "course4-start-60m-wroclaw",
+  "course4-finish-card-wroclaw-e1-1920x1080",
+  "course4-next-gate-wroclaw",
+  "course4-finish-card-wroclaw-e2-1280x720",
+  "course4-finish-card-wroclaw-e3-844x390"
+ ],
+ "at60": {
+  "key": "renderer",
+  "signs": [
+   {
+    "w": 16.4,
+    "h": 5.19,
+    "x0": 951.8,
+    "y0": 746.94,
+    "behind": false
+   }
+  ],
+  "canvasW": 1920,
+  "canvasH": 1080,
+  "W": 1920,
+  "H": 1080
+ },
+ "guide60": {
+  "text": "START · 60 m",
+  "hidden": false,
+  "w": 77,
+  "h": 16,
+  "fs": 13
+ },
+ "afterPictures": {
+  "clock": "Fly through START to start the clock",
+  "next": 0,
+  "laps": 0
+ },
+ "ends": [
+  {
+   "lap": 1,
+   "size": "1920x1080",
+   "kind": "card",
+   "text": "0:31.83",
+   "delta": "",
+   "tone": "first",
+   "mode": "large",
+   "alpha": 1,
+   "color": "rgb(255, 255, 255)",
+   "opacity": "1",
+   "pointerEvents": "none",
+   "shown": true,
+   "rect": {
+    "x": 782.29,
+    "y": 151.21,
+    "w": 355.42,
+    "h": 129.58
+   },
+   "centreShare": 0.2,
+   "fontShare": 0.06,
+   "middleThirdFree": true,
+   "insideWidth": true,
+   "lapsInside": true,
+   "lastMs": 31835,
+   "bestMs": 31835,
+   "lastText": "0:31.84",
+   "clockHasIt": true,
+   "clock": "0:00.00Lap 1 of 1\nGate 1 of 38\nLast 0:31.83\nBest 0:31.83",
+   "cardText": "Course done0:31.83Total 0:31.83   Best lap 0:31.83",
+   "clockShownWithSplash": false,
+   "goneAfterMs": 3433,
+   "clockAfter": {
+    "shown": true,
+    "rect": {
+     "x": 920.9,
+     "y": 120,
+     "w": 78.2,
+     "h": 97.44
+    },
+    "middleThirdFree": true,
+    "insideWidth": true
+   }
+  },
+  {
+   "lap": 1,
+   "size": "1280x720",
+   "kind": "card",
+   "text": "0:33.60",
+   "delta": "+1.76",
+   "tone": "slower",
+   "mode": "large",
+   "alpha": 1,
+   "color": "rgb(255, 255, 255)",
+   "opacity": "1",
+   "pointerEvents": "none",
+   "shown": true,
+   "rect": {
+    "x": 521.52,
+    "y": 89.15,
+    "w": 236.95,
+    "h": 109.7
+   },
+   "centreShare": 0.18,
+   "fontShare": 0.06,
+   "middleThirdFree": true,
+   "insideWidth": true,
+   "lapsInside": true,
+   "lastMs": 33600,
+   "bestMs": 31835,
+   "lastText": "0:33.60",
+   "clockHasIt": true,
+   "clock": "0:00.00Lap 1 of 1\nGate 1 of 38\nLast 0:33.60\nBest 0:31.83",
+   "cardText": "Course done0:33.60+1.76Total 0:33.60   Best lap 0:33.60",
+   "clockShownWithSplash": false,
+   "goneAfterMs": 3467,
+   "clockAfter": {
+    "shown": true,
+    "rect": {
+     "x": 600.9,
+     "y": 120,
+     "w": 78.2,
+     "h": 97.44
+    },
+    "middleThirdFree": true,
+    "insideWidth": true
+   }
+  },
+  {
+   "lap": 1,
+   "size": "844x390",
+   "kind": "card",
+   "text": "0:31.73",
+   "delta": "-0.10",
+   "tone": "best",
+   "mode": "large",
+   "alpha": 1,
+   "color": "rgb(166, 255, 26)",
+   "opacity": "1",
+   "pointerEvents": "none",
+   "shown": true,
+   "rect": {
+    "x": 357.89,
+    "y": 290.59,
+    "w": 128.22,
+    "h": 59.41
+   },
+   "centreShare": 0.81,
+   "fontShare": 0.06,
+   "middleThirdFree": true,
+   "insideWidth": true,
+   "lapsInside": true,
+   "lastMs": 31733,
+   "bestMs": 31733,
+   "lastText": "0:31.73",
+   "clockHasIt": true,
+   "clock": "0:00.00Lap 1 of 1\nGate 1 of 38\nLast 0:31.73\nBest 0:31.73",
+   "cardText": "Course done0:31.73-0.10Total 0:31.73   Best lap 0:31.73",
+   "clockShownWithSplash": false,
+   "goneAfterMs": 3460,
+   "clockAfter": {
+    "shown": true,
+    "rect": {
+     "x": 761.73,
+     "y": 199.44,
+     "w": 66.27,
+     "h": 81.56
+    },
+    "middleThirdFree": false,
+    "insideWidth": true
+   },
+   "after38s": {
+    "kind": "none",
+    "alpha": 0
+   }
+  }
+ ],
+ "passes": 114,
+ "nextShot": true,
+ "nextLook": {
+  "next": 4,
+  "plate": 4
+ },
+ "crashes": 0
+}

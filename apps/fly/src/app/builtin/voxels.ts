@@ -24,7 +24,8 @@ export const voxels: Feature = {
             setMode: (m) => v.setMode(m),
             setStyle: (st) => v.configure({ style: st }),
             setOpacity: (a) => v.configure({ opacity: a }),
-            setRadius: (m) => { v.radiusM = Math.max(2, Math.min(60, m)); }
+            setRadius: (m) => { v.radiusM = Math.max(2, Math.min(60, m)); },
+            setDetail: (d) => v.forceDetail(d)
         };
     }
 };

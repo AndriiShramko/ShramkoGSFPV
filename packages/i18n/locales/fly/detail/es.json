@@ -1,0 +1,16 @@
+{
+  "detail.comingStart": "Detalle: {drawn} de {top} M, archivos por llegar: {files}",
+  "detail.coming": "Detalle: {drawn} de {top} M, archivos por llegar: {files}, unos {secs} s",
+  "detail.full": "Detalle: completo para tu ajuste",
+  "detail.nofiner": "Detalle: completo. Este escaneo no tiene un nivel más fino aquí",
+  "detail.kept": "Detalle: se mantiene tu ajuste. La imagen va más lenta que tu pantalla",
+  "detail.release": "Que elija la página",
+  "detail.lowered": "Detalle: {drawn} de {top} M, rebajado para que el vuelo sea fluido",
+  "detail.network": "Detalle: archivos que no llegaron: {files}. Reintentando",
+  "detail.givenup": "Detalle: archivos que no llegaron: {files}. Revisa la conexión y vuelve a intentarlo",
+  "detail.retry": "Reintentar",
+  "detail.still": "Detalle: más nítido durante la pausa ({drawn} M)",
+  "set.display.stillDetail": "Más detalle en reposo",
+  "set.display.stillDetail.help": "Mientras el vuelo está en pausa, el escaneo carga más detalle paso a paso, mientras la imagen siga lo bastante fluida para mirarla. Al volver a volar, el detalle de vuelo regresa en uno o dos segundos; en un ordenador lento esos primeros momentos pueden ser menos fluidos. Desactívala si te molesta.",
+  "detail.stilloff": "Detalle: vuelve el detalle de vuelo. La tarjeta gráfica se quedó sin memoria, así que «Más detalle en reposo» queda desactivado en este dispositivo"
+}

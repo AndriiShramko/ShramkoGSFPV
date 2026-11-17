@@ -74,6 +74,17 @@ export function editModeFlying(): boolean {
     return typeof document !== 'undefined' && !!document.querySelector(EDIT_FLYING);
 }
 
+/**
+ * Lane editfix E4 (finding 1 of E3): the course editor opened in the air (Shift+B) stops the keyboard game pilot's motors, so
+ * the crash hold clears on the next frame and ONE Space (or W) starts the test flight; a pad or radio keeps its own switch.
+ * A window event, so the editor needs no handle on the source.
+ */
+export const KB_ARM_STOP = 'gsfpv:kb-arm-stop';
+
+export function stopKeyboardArm(): void {
+    if (typeof dispatchEvent === 'function') dispatchEvent(new Event(KB_ARM_STOP));
+}
+
 export function dialogOpen(): boolean {
     return !!document.querySelector(`${DIALOGS}, ${EDIT_MODE}`);
 }
@@ -121,6 +132,7 @@ export class KeyboardSource {
         this.controls = controls;
         addEventListener('keydown', this.onDown, { capture: true });
         addEventListener('keyup', this.onUp, { capture: true });
+        addEventListener(KB_ARM_STOP, this.armStop);
         // a key released in another window never sends its keyup here: forget held keys on leaving
         addEventListener('blur', this.release);
         document.addEventListener('visibilitychange', this.release);
@@ -293,9 +305,19 @@ export class KeyboardSource {
         return !g.armed && g.block !== 'crashed';
     }
 
+    /** KB_ARM_STOP: the keyboard game pilot's motors stop and a held Space no longer climbs (the same call as the edit tap) */
+    private armStop = (): void => {
+        if (this.passive || !this.isGame) return;
+        this.game!.pilot.arm.stop();
+        this.down.delete('Space');
+        this.editSpaceAt = null;
+        this.emitGame(performance.now());
+    };
+
     dispose(): void {
         removeEventListener('keydown', this.onDown, { capture: true });
         removeEventListener('keyup', this.onUp, { capture: true });
+        removeEventListener(KB_ARM_STOP, this.armStop);
         removeEventListener('blur', this.release);
         document.removeEventListener('visibilitychange', this.release);
         clearInterval(this.timer);

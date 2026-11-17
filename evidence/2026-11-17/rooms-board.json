@@ -1,0 +1,691 @@
+{
+  "name": "rooms-board",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "157.0.8103.52",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-11-17T03:44:47.673Z",
+    "gitHead": "d49bb30d",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "scene": "70b50d42",
+  "gpuLock": "C:/dev/.gpu-lock",
+  "browser": {
+    "kind": "system-chrome",
+    "version": "157.0.8103.52",
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "why": "installed"
+  },
+  "loadMs": 9381,
+  "joinMs": 15442,
+  "meet": {
+    "aIn": true,
+    "bIn": true,
+    "how": "key9",
+    "sameRoom": true,
+    "aMembers": 2,
+    "bMembers": 2
+  },
+  "r2": {
+    "aCourse": true,
+    "bCourse": true,
+    "course": "g1.1296321243",
+    "phase1": {
+      "f1a": {
+        "pts": 640,
+        "laps": 0
+      },
+      "f1b": {
+        "pts": 960,
+        "laps": 0
+      },
+      "aSlot": 0,
+      "aRows": [
+        {
+          "slot": 0,
+          "nick": "Pilot-5688",
+          "best": 9667,
+          "laps": 2
+        },
+        {
+          "slot": 1,
+          "nick": "Pilot-5691",
+          "best": 14467,
+          "laps": 2
+        }
+      ],
+      "bRows": [
+        {
+          "slot": 0,
+          "nick": "Pilot-5688",
+          "best": 9667,
+          "laps": 2
+        },
+        {
+          "slot": 1,
+          "nick": "Pilot-5691",
+          "best": 14467,
+          "laps": 2
+        }
+      ],
+      "oa1": "0,1",
+      "ob1": "0,1",
+      "boardShot": "U:/Temp/gsfpv-train3/shots/race-board.png",
+      "noLap": {
+        "shown": true,
+        "withLap": 0,
+        "shownDom": true
+      }
+    },
+    "takeovers": {
+      "t2": {
+        "fly": {
+          "pts": 480,
+          "laps": 0,
+          "nexts": {
+            "0": 24,
+            "1": 48,
+            "2": 24,
+            "3": 24,
+            "4": 24,
+            "5": 24,
+            "6": 24,
+            "7": 6,
+            "8": 24,
+            "9": 42,
+            "10": 6,
+            "11": 24,
+            "12": 24,
+            "13": 42,
+            "14": 24,
+            "15": 24,
+            "16": 24,
+            "17": 24,
+            "18": 24
+          },
+          "crashes": 0
+        },
+        "tries": 1,
+        "plan": [
+          {
+            "k": 8,
+            "last": 5065,
+            "best": 5065,
+            "top": 9667
+          }
+        ],
+        "me": {
+          "slot": 1,
+          "nick": "Pilot-5691",
+          "row": {
+            "slot": 1,
+            "nick": "Pilot-5691",
+            "best": 5065,
+            "laps": 5
+          },
+          "top": 9667,
+          "last": 5065
+        },
+        "time": "0:05.07",
+        "seen": true,
+        "shotFile": "U:/Temp/gsfpv-train3/shots/race-lead-change.png",
+        "sends": 3,
+        "bannerWho": {
+          "t": 1794887036408,
+          "kind": "banner",
+          "text": "You lead, 0:05.07",
+          "mine": "1",
+          "W": 1280,
+          "H": 720
+        },
+        "bannerOther": {
+          "t": 1794887036409,
+          "kind": "banner",
+          "text": "Pilot-5691 leads, 0:05.07",
+          "mine": "0",
+          "W": 1920,
+          "H": 1080
+        },
+        "lagWhoMs": 60,
+        "lagOtherMs": 61,
+        "whoMine": true,
+        "otherNamed": true,
+        "orderWho": "1,0",
+        "orderOther": "1,0",
+        "movedWho": {
+          "t": 1794887031075,
+          "kind": "order",
+          "order": "1,0",
+          "moving": true,
+          "W": 1280,
+          "H": 720
+        },
+        "movedOther": {
+          "t": 1794887031076,
+          "kind": "order",
+          "order": "1,0",
+          "moving": true,
+          "W": 1920,
+          "H": 1080
+        }
+      },
+      "t3": {
+        "fly": {
+          "pts": 420,
+          "laps": 0,
+          "nexts": {
+            "0": 21,
+            "1": 42,
+            "2": 21,
+            "3": 21,
+            "4": 21,
+            "5": 21,
+            "6": 21,
+            "7": 6,
+            "8": 21,
+            "9": 40,
+            "10": 7,
+            "11": 16,
+            "12": 21,
+            "13": 36,
+            "14": 21,
+            "15": 21,
+            "16": 21,
+            "17": 21,
+            "18": 21
+          },
+          "crashes": 0
+        },
+        "tries": 2,
+        "plan": [
+          {
+            "k": 3,
+            "last": 1901,
+            "best": 9667,
+            "top": 5065
+          },
+          {
+            "k": 7,
+            "last": 4401,
+            "best": 4367,
+            "top": 5065
+          }
+        ],
+        "me": {
+          "slot": 0,
+          "nick": "Pilot-5688",
+          "row": {
+            "slot": 0,
+            "nick": "Pilot-5688",
+            "best": 4367,
+            "laps": 6
+          },
+          "top": 5065,
+          "last": 4401
+        },
+        "time": "0:04.37",
+        "seen": false,
+        "shotFile": null,
+        "sends": 6,
+        "bannerWho": {
+          "t": 1794887057017,
+          "kind": "banner",
+          "text": "You lead, 0:04.37",
+          "mine": "1",
+          "W": 844,
+          "H": 390
+        },
+        "bannerOther": {
+          "t": 1794887057009,
+          "kind": "banner",
+          "text": "Pilot-5688 leads, 0:04.37",
+          "mine": "0",
+          "W": 1280,
+          "H": 720
+        },
+        "lagWhoMs": 67,
+        "lagOtherMs": 59,
+        "whoMine": true,
+        "otherNamed": true,
+        "orderWho": "0,1",
+        "orderOther": "0,1",
+        "movedWho": {
+          "t": 1794887057017,
+          "kind": "order",
+          "order": "0,1",
+          "moving": true,
+          "W": 844,
+          "H": 390
+        },
+        "movedOther": {
+          "t": 1794887057009,
+          "kind": "order",
+          "order": "0,1",
+          "moving": true,
+          "W": 1280,
+          "H": 720
+        }
+      },
+      "smallShot": "U:/Temp/gsfpv-train3/shots/race-844.png",
+      "small": {
+        "display": "block",
+        "visibility": "visible",
+        "rect": [
+          10,
+          112,
+          182,
+          161
+        ],
+        "walls": [
+          16,
+          61,
+          108,
+          105
+        ],
+        "rows": 2
+      },
+      "wallsWasOpen": false
+    },
+    "pause": {
+      "paused": {
+        "menu": true,
+        "board": false,
+        "banner": false,
+        "shown": false
+      },
+      "resumed": {
+        "menu": false,
+        "board": true,
+        "shown": true
+      },
+      "alone": true
+    },
+    "onceA": {
+      "board~btn:pause.continue@844": {
+        "a": [
+          10,
+          112,
+          182,
+          161
+        ],
+        "b": [
+          33,
+          151,
+          378,
+          192
+        ],
+        "W": 844,
+        "H": 390
+      }
+    },
+    "onceB": {},
+    "overA": {},
+    "snapsA": {
+      "1920x1080": {
+        "board": [
+          10,
+          66,
+          145,
+          115
+        ],
+        "banner": null,
+        "mid": [
+          640,
+          360,
+          1280,
+          720
+        ],
+        "clock": [
+          856,
+          120,
+          1064,
+          137
+        ],
+        "lapTime": null,
+        "mode": [
+          157,
+          9,
+          256,
+          37
+        ],
+        "btns": 11
+      },
+      "1920x1080+lap": {
+        "board": [
+          10,
+          66,
+          145,
+          115
+        ],
+        "banner": null,
+        "mid": [
+          640,
+          360,
+          1280,
+          720
+        ],
+        "clock": null,
+        "lapTime": [
+          782,
+          151,
+          1138,
+          281
+        ],
+        "mode": [
+          157,
+          9,
+          256,
+          37
+        ],
+        "btns": 10
+      },
+      "1920x1080+banner+lap": {
+        "board": [
+          10,
+          66,
+          182,
+          115
+        ],
+        "banner": [
+          886,
+          82,
+          1034,
+          109
+        ],
+        "mid": [
+          640,
+          360,
+          1280,
+          720
+        ],
+        "clock": null,
+        "lapTime": [
+          782,
+          151,
+          1138,
+          281
+        ],
+        "mode": [
+          157,
+          9,
+          256,
+          37
+        ],
+        "btns": 10
+      },
+      "1920x1080+banner": {
+        "board": [
+          10,
+          66,
+          182,
+          115
+        ],
+        "banner": [
+          860,
+          82,
+          1060,
+          109
+        ],
+        "mid": [
+          640,
+          360,
+          1280,
+          720
+        ],
+        "clock": [
+          921,
+          120,
+          999,
+          217
+        ],
+        "lapTime": null,
+        "mode": [
+          157,
+          9,
+          256,
+          37
+        ],
+        "btns": 11
+      },
+      "844x390": {
+        "board": [
+          10,
+          66,
+          182,
+          115
+        ],
+        "banner": null,
+        "mid": [
+          281,
+          130,
+          563,
+          260
+        ],
+        "clock": [
+          762,
+          199,
+          828,
+          281
+        ],
+        "lapTime": null,
+        "mode": [
+          157,
+          9,
+          256,
+          37
+        ],
+        "btns": 10
+      },
+      "844x390+lap": {
+        "board": [
+          10,
+          112,
+          182,
+          161
+        ],
+        "banner": null,
+        "mid": [
+          281,
+          130,
+          563,
+          260
+        ],
+        "clock": null,
+        "lapTime": [
+          358,
+          291,
+          486,
+          350
+        ],
+        "mode": [
+          157,
+          9,
+          256,
+          37
+        ],
+        "btns": 9
+      },
+      "844x390+banner+lap": {
+        "board": [
+          10,
+          112,
+          182,
+          161
+        ],
+        "banner": [
+          348,
+          82,
+          496,
+          109
+        ],
+        "mid": [
+          281,
+          130,
+          563,
+          260
+        ],
+        "clock": null,
+        "lapTime": [
+          358,
+          291,
+          486,
+          350
+        ],
+        "mode": [
+          157,
+          9,
+          256,
+          37
+        ],
+        "btns": 9
+      }
+    },
+    "overB": {},
+    "snapsB": {
+      "1280x720": {
+        "board": [
+          10,
+          66,
+          145,
+          115
+        ],
+        "banner": null,
+        "mid": [
+          427,
+          240,
+          853,
+          480
+        ],
+        "clock": null,
+        "lapTime": null,
+        "mode": [
+          157,
+          9,
+          256,
+          37
+        ],
+        "btns": 10
+      },
+      "1280x720+banner": {
+        "board": [
+          10,
+          66,
+          182,
+          115
+        ],
+        "banner": [
+          540,
+          82,
+          740,
+          109
+        ],
+        "mid": [
+          427,
+          240,
+          853,
+          480
+        ],
+        "clock": [
+          601,
+          142,
+          679,
+          239
+        ],
+        "lapTime": null,
+        "mode": [
+          157,
+          9,
+          256,
+          37
+        ],
+        "btns": 11
+      },
+      "1280x720+lap": {
+        "board": [
+          10,
+          66,
+          182,
+          115
+        ],
+        "banner": null,
+        "mid": [
+          427,
+          240,
+          853,
+          480
+        ],
+        "clock": null,
+        "lapTime": [
+          522,
+          101,
+          758,
+          187
+        ],
+        "mode": [
+          157,
+          9,
+          256,
+          37
+        ],
+        "btns": 10
+      },
+      "1280x720+banner+lap": {
+        "board": [
+          10,
+          66,
+          182,
+          115
+        ],
+        "banner": [
+          574,
+          201,
+          706,
+          225
+        ],
+        "mid": [
+          427,
+          240,
+          853,
+          480
+        ],
+        "clock": null,
+        "lapTime": [
+          522,
+          89,
+          758,
+          199
+        ],
+        "mode": [
+          157,
+          9,
+          256,
+          37
+        ],
+        "btns": 10
+      }
+    },
+    "err": [
+      null,
+      null
+    ]
+  },
+  "checks": {
+    "controlNoBoardBeforeLaps": true,
+    "boardSameOrderBothPages": true,
+    "bTakesLeadBannerBothWithin1s": true,
+    "rowsSwapWithMove": true,
+    "aTakesLeadBackAt844": true,
+    "boardSeenAt844": true,
+    "noOverlap": true,
+    "pauseHidesBoth": true,
+    "aloneNoBoard": true
+  },
+  "pass": true,
+  "runMs": 156697
+}

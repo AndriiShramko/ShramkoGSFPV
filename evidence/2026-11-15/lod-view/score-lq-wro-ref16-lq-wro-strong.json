@@ -1,0 +1,281 @@
+{
+ "name": "lod-view/score-lq-wro-ref16",
+ "date": "2026-11-15T19:41:25.004Z",
+ "reference": "lq-wro-ref16",
+ "labels": [
+  "lq-wro-strong",
+  "lq-wro-weak",
+  "lq-wro-16",
+  "lq-wro-16live",
+  "lq-wro-16slow",
+  "lq-wro-16unc"
+ ],
+ "band": null,
+ "measure": "PSNR on luma in dB against the reference run's picture of the same place (a turn's pictures against the reference at the end of that turn): psnr over the whole picture, psnrLit over the reference's lit pixels (the scan, not the black sky), psnrQuarter with 4x4 pixels averaged",
+ "rows": [
+  {
+   "label": "lq-wro-strong",
+   "picture": "end",
+   "against": "lq-wro-ref16-end",
+   "width": 1920,
+   "height": 1080,
+   "psnr": 30.65,
+   "psnrQuarter": 34.84,
+   "litShare": 1,
+   "psnrLit": 30.65
+  },
+  {
+   "label": "lq-wro-strong",
+   "picture": "t10",
+   "against": "lq-wro-ref16-t10",
+   "width": 1920,
+   "height": 1080,
+   "psnr": 28.25,
+   "psnrQuarter": 31.23,
+   "litShare": 1,
+   "psnrLit": 28.25
+  },
+  {
+   "label": "lq-wro-strong",
+   "picture": "t30",
+   "against": "lq-wro-ref16-t30",
+   "width": 1920,
+   "height": 1080,
+   "psnr": 30.65,
+   "psnrQuarter": 34.84,
+   "litShare": 1,
+   "psnrLit": 30.65
+  },
+  {
+   "label": "lq-wro-strong",
+   "picture": "t60",
+   "against": "lq-wro-ref16-t60",
+   "width": 1920,
+   "height": 1080,
+   "psnr": 30.65,
+   "psnrQuarter": 34.84,
+   "litShare": 1,
+   "psnrLit": 30.65
+  },
+  {
+   "label": "lq-wro-weak",
+   "picture": "end",
+   "against": "lq-wro-ref16-end",
+   "width": 1920,
+   "height": 1080,
+   "psnr": 27.54,
+   "psnrQuarter": 31.26,
+   "litShare": 1,
+   "psnrLit": 27.54
+  },
+  {
+   "label": "lq-wro-weak",
+   "picture": "t10",
+   "against": "lq-wro-ref16-t10",
+   "width": 1920,
+   "height": 1080,
+   "psnr": 27.3,
+   "psnrQuarter": 30.91,
+   "litShare": 1,
+   "psnrLit": 27.3
+  },
+  {
+   "label": "lq-wro-weak",
+   "picture": "t30",
+   "against": "lq-wro-ref16-t30",
+   "width": 1920,
+   "height": 1080,
+   "psnr": 27.54,
+   "psnrQuarter": 31.26,
+   "litShare": 1,
+   "psnrLit": 27.54
+  },
+  {
+   "label": "lq-wro-weak",
+   "picture": "t60",
+   "against": "lq-wro-ref16-t60",
+   "width": 1920,
+   "height": 1080,
+   "psnr": 27.54,
+   "psnrQuarter": 31.26,
+   "litShare": 1,
+   "psnrLit": 27.54
+  },
+  {
+   "label": "lq-wro-16",
+   "picture": "end",
+   "against": "lq-wro-ref16-end",
+   "width": 1920,
+   "height": 1080,
+   "psnr": 71.97,
+   "psnrQuarter": 80.39,
+   "litShare": 1,
+   "psnrLit": 71.97
+  },
+  {
+   "label": "lq-wro-16",
+   "picture": "t10",
+   "against": "lq-wro-ref16-t10",
+   "width": 1920,
+   "height": 1080,
+   "psnr": 22.12,
+   "psnrQuarter": 23.02,
+   "litShare": 1,
+   "psnrLit": 22.12
+  },
+  {
+   "label": "lq-wro-16",
+   "picture": "t30",
+   "against": "lq-wro-ref16-t30",
+   "width": 1920,
+   "height": 1080,
+   "psnr": 39.93,
+   "psnrQuarter": 43.23,
+   "litShare": 1,
+   "psnrLit": 39.93
+  },
+  {
+   "label": "lq-wro-16",
+   "picture": "t60",
+   "against": "lq-wro-ref16-t60",
+   "width": 1920,
+   "height": 1080,
+   "psnr": 71.7,
+   "psnrQuarter": 80.21,
+   "litShare": 1,
+   "psnrLit": 71.7
+  },
+  {
+   "label": "lq-wro-16live",
+   "picture": "end",
+   "against": "lq-wro-ref16-end",
+   "width": 1920,
+   "height": 1080,
+   "psnr": 71.87,
+   "psnrQuarter": 80.08,
+   "litShare": 1,
+   "psnrLit": 71.87
+  },
+  {
+   "label": "lq-wro-16live",
+   "picture": "t10",
+   "against": "lq-wro-ref16-t10",
+   "width": 1920,
+   "height": 1080,
+   "psnr": 21.57,
+   "psnrQuarter": 22.61,
+   "litShare": 1,
+   "psnrLit": 21.57
+  },
+  {
+   "label": "lq-wro-16live",
+   "picture": "t30",
+   "against": "lq-wro-ref16-t30",
+   "width": 1920,
+   "height": 1080,
+   "psnr": 32.73,
+   "psnrQuarter": 37.95,
+   "litShare": 1,
+   "psnrLit": 32.73
+  },
+  {
+   "label": "lq-wro-16live",
+   "picture": "t60",
+   "against": "lq-wro-ref16-t60",
+   "width": 1920,
+   "height": 1080,
+   "psnr": 34.22,
+   "psnrQuarter": 44.81,
+   "litShare": 1,
+   "psnrLit": 34.22
+  },
+  {
+   "label": "lq-wro-16slow",
+   "picture": "end",
+   "against": "lq-wro-ref16-end",
+   "width": 1920,
+   "height": 1080,
+   "psnr": 29.46,
+   "psnrQuarter": 36.01,
+   "litShare": 1,
+   "psnrLit": 29.46
+  },
+  {
+   "label": "lq-wro-16slow",
+   "picture": "t10",
+   "against": "lq-wro-ref16-t10",
+   "width": 1920,
+   "height": 1080,
+   "psnr": 28.32,
+   "psnrQuarter": 32.9,
+   "litShare": 1,
+   "psnrLit": 28.32
+  },
+  {
+   "label": "lq-wro-16slow",
+   "picture": "t30",
+   "against": "lq-wro-ref16-t30",
+   "width": 1920,
+   "height": 1080,
+   "psnr": 29.45,
+   "psnrQuarter": 36.01,
+   "litShare": 1,
+   "psnrLit": 29.45
+  },
+  {
+   "label": "lq-wro-16slow",
+   "picture": "t60",
+   "against": "lq-wro-ref16-t60",
+   "width": 1920,
+   "height": 1080,
+   "psnr": 29.46,
+   "psnrQuarter": 36.01,
+   "litShare": 1,
+   "psnrLit": 29.46
+  },
+  {
+   "label": "lq-wro-16unc",
+   "picture": "end",
+   "against": "lq-wro-ref16-end",
+   "width": 1920,
+   "height": 1080,
+   "psnr": 29.45,
+   "psnrQuarter": 36.01,
+   "litShare": 1,
+   "psnrLit": 29.45
+  },
+  {
+   "label": "lq-wro-16unc",
+   "picture": "t10",
+   "against": "lq-wro-ref16-t10",
+   "width": 1920,
+   "height": 1080,
+   "psnr": 28.45,
+   "psnrQuarter": 33.25,
+   "litShare": 1,
+   "psnrLit": 28.45
+  },
+  {
+   "label": "lq-wro-16unc",
+   "picture": "t30",
+   "against": "lq-wro-ref16-t30",
+   "width": 1920,
+   "height": 1080,
+   "psnr": 29.46,
+   "psnrQuarter": 36.01,
+   "litShare": 1,
+   "psnrLit": 29.46
+  },
+  {
+   "label": "lq-wro-16unc",
+   "picture": "t60",
+   "against": "lq-wro-ref16-t60",
+   "width": 1920,
+   "height": 1080,
+   "psnr": 29.46,
+   "psnrQuarter": 36.01,
+   "litShare": 1,
+   "psnrLit": 29.46
+  }
+ ]
+}

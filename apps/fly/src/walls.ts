@@ -15,6 +15,8 @@ import type { BakeResult, GpuLimits, RefinePlan, SceneSize } from './bake';
 import { WallCache, keepBuilt, keepThenUse, keptLine, loadBakeSpeed, saveBakeSpeed, wallsKey, wallsSha } from './wallcache';
 import type { ImportReport, KeepResult, WallsKeyInput, WallsRow } from './wallcache';
 import { ensureWalls } from './walls-first';
+import { placePanel } from './ui/voxel-panel';
+import { closeTop, panelHead } from './ui/panel-head';
 import { FREEZE_NOTE_S, PROGRESS_TICK_MS, ProgressClock, SpeechPacer, mayFreeze, progressLine, spokenLine, wallsSteps } from './course/progress';
 import type { ProgressWhat } from './course/progress';
 
@@ -141,17 +143,51 @@ export function mountWalls(o: WallsOptions): WallsHook {
     const inUse = h('div', { 'data-testid': 'walls-in-use' });
     const storeInfo = h('div', { 'data-testid': 'walls-store' });
     const file = h('input', { type: 'file', accept: '.zip,application/zip', hidden: true, 'data-testid': 'walls-import-file' }) as HTMLInputElement;
-    const more = h('details', { 'data-testid': 'walls-more' }, summary,
-        // narrow: on a desktop the keyboard card sits right of the credit line, bottom middle
-        h('div', { class: 'walls-menu', style: 'display: flex; flex-direction: column; align-items: flex-start; gap: 8px; margin: 4px 0 8px; max-width: min(250px, 70vw)' },
-            o.controls ?? null,
-            inUse,
-            storeInfo,
-            h('div', { style: 'display: flex; flex-wrap: wrap; gap: 8px' },
-                h('button', { type: 'button', class: 'btn', 'data-action': 'walls-export', onclick: () => void exportToFile() }, t('bake.store.export')),
-                h('button', { type: 'button', class: 'btn', 'data-action': 'walls-import', onclick: () => file.click() }, t('bake.store.import')),
-                h('button', { type: 'button', class: 'btn', 'data-action': 'walls-clear', onclick: () => void clearStore() }, t('bake.store.clear'))),
-            file));
+    // V4 (lane voxview, the owner's message 60): a header with the panel's name, a fold button and a close cross,
+    // 44 px each; the panel is fixed to the view, placed from the chip (ui/voxel-panel.ts) and scrolls inside itself
+    const body = h('div', { class: 'walls-body', 'data-testid': 'walls-body' },
+        o.controls ?? null,
+        inUse,
+        storeInfo,
+        h('div', { style: 'display: flex; flex-wrap: wrap; gap: 8px' },
+            h('button', { type: 'button', class: 'btn', 'data-action': 'walls-export', onclick: () => void exportToFile() }, t('bake.store.export')),
+            h('button', { type: 'button', class: 'btn', 'data-action': 'walls-import', onclick: () => file.click() }, t('bake.store.import')),
+            h('button', { type: 'button', class: 'btn', 'data-action': 'walls-clear', onclick: () => void clearStore() }, t('bake.store.clear'))),
+        file);
+    // seam c of integration F: the header is uiaudit's panelHead (ui/panel-head.ts, decision U1), so this panel looks
+    // and closes like every other; data-panel lets closeTop find its cross; the probes' data-action names stay
+    const head = panelHead(t('voxels.panel.title'), { close: t('voxels.panel.close'), key: 'Esc', collapse: t('voxels.panel.fold'), expand: t('voxels.panel.unfold') }, () => { more.open = false; }, (f) => { body.hidden = f; });
+    head.head.classList.add('walls-head');
+    head.close.dataset.action = 'voxpanel-close';
+    if (head.fold) head.fold.dataset.action = 'voxpanel-fold';
+    const menu = h('div', { class: 'walls-menu', role: 'dialog', 'aria-label': t('voxels.panel.title'), 'data-testid': 'walls-panel', 'data-panel': 'walls' }, head.head, body);
+    const more = h('details', { 'data-testid': 'walls-more' }, summary, menu) as HTMLDetailsElement;
+    function fold(on: boolean): void {
+        body.hidden = on;
+        head.setFolded(on);
+    }
+    fold(false);
+    function placeMenu(): void {
+        if (!more.open) return;
+        const p = placePanel(summary.getBoundingClientRect(), window.innerWidth, window.innerHeight);
+        const st = menu.style;
+        st.left = `${p.left}px`;
+        st.width = `${p.width}px`;
+        st.maxHeight = `${p.maxHeight}px`;
+        st.top = p.top === null ? 'auto' : `${p.top}px`;
+        st.bottom = p.bottom === null ? 'auto' : `${p.bottom}px`;
+    }
+    more.addEventListener('toggle', () => { if (more.open) { fold(false); placeMenu(); } });
+    window.addEventListener('resize', placeMenu);
+    // Esc with the panel open closes the top panel and nothing else (capture: before the app's keys and the edit mode
+    // see it). ONE mechanism: closeTop picks the top [data-panel] or .panel by z-index, as pause.ts does in a pause.
+    const onEsc = (e: KeyboardEvent): void => {
+        if (e.key !== 'Escape' || !more.open) return;
+        if (!closeTop(document)) more.open = false;
+        e.stopPropagation();
+        e.preventDefault();
+    };
+    window.addEventListener('keydown', onEsc, true);
     // top middle: only what needs the pilot (a build or refine button, progress, the result); empty
     // otherwise, so it covers nothing (on a phone the pad hint sits there)
     // CR-2: while a build runs, a bar that moves on the compositor (it keeps moving when the main thread is held by the
@@ -212,6 +248,8 @@ export function mountWalls(o: WallsOptions): WallsHook {
             clearTimeout(keepTimer);
             box.remove();
             more.remove();
+            window.removeEventListener('resize', placeMenu);
+            window.removeEventListener('keydown', onEsc, true);
         },
         rows: async () => (await cacheP).rows(),
         clear: () => clearStore(),

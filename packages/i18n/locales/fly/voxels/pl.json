@@ -4,5 +4,10 @@
   "voxels.dropFloaters.on": "Usunięte pływające kawałki poniżej {n} bloków: {pieces}",
   "voxels.dropFloaters.off": "Pływające kawałki zostają: każdy znowu liczy się jako ściana",
   "voxels.dropped": "usunięte ze ścian pływające kawałki poniżej {n} bloków: {pieces}",
-  "voxels.dropHint": "małe można usunąć ze ścian w Ustawieniach → Ściany i siatka wokseli"
+  "voxels.dropHint": "małe można usunąć ze ścian w Ustawieniach → Ściany i siatka wokseli",
+  "voxels.panel.title": "Ściany i woksele",
+  "voxels.panel.fold": "Zwiń panel",
+  "voxels.panel.unfold": "Rozwiń panel",
+  "voxels.panel.close": "Zamknij",
+  "voxels.legendOff": "Ukryj siatkę wokseli"
 }

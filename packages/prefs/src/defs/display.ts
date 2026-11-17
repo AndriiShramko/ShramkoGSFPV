@@ -29,6 +29,8 @@ export const DISPLAY_DEFS: readonly SettingDef[] = [
     // others name the class by hand, for a wrong guess. The class picks the preset (drawing, splat budget, top
     // render scale) that 'auto' in Render and Splat budget stands for; the owner edits the presets in the admin.
     { id: 'display.deviceClass', group: 'display', scope: 'global', type: 'enum', options: ['auto', 'desktop-strong', 'desktop-weak', 'tablet', 'phone'], default: 'auto', apply: 'live', shown: ['settings'], status: 'shipped', since: 2 },
+    // train 3 lane loadq G6 (owner's message 59): more detail while the craft is still or the flight paused (app/builtin/still.ts)
+    { id: 'display.stillDetail', group: 'display', scope: 'global', type: 'bool', default: true, apply: 'live', shown: ['settings'], advanced: true, status: 'shipped', since: 2 },
     // 'system' follows prefers-reduced-motion; v0.2 re-read the OS on every panel open (D-b)
     { id: 'display.reducedMotion', group: 'display', scope: 'global', type: 'enum', options: ['system', 'on', 'off'], default: 'system', apply: 'live', shown: ['settings'], status: 'shipped', since: 1, items: [20] },
     { id: 'display.frameStats', group: 'display', scope: 'global', type: 'bool', default: false, apply: 'live', shown: ['key'], action: 'frameStats.toggle', status: 'shipped', since: 1, items: [12] },

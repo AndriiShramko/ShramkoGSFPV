@@ -7,8 +7,9 @@
 // in their own colour (no longer walls), and its panel's preview adds a translucent plane at the height.
 import { VoxelOverlay, VOXEL_STYLES } from '@gsfpv/render-pc';
 import type { VoxelStyle } from '@gsfpv/render-pc';
-import { FLOATER_MIN_BLOCKS_MAX, ceilingCut, overlayChunkSize, planChunksAround, validCeiling } from '@gsfpv/collision';
-import type { CeilingCut, VoxelCollision } from '@gsfpv/collision';
+import { FLOATER_MIN_BLOCKS_MAX, ceilingCut, chunkDims, overlapKeys, overlayChunkSize, planChunksAround, validCeiling } from '@gsfpv/collision';
+import type { CeilingCut, PlannedChunk, VoxelCollision } from '@gsfpv/collision';
+import { KEEPER_EVERY_MS, drawnShare, fillLeftS, keeperStep, trimFillSamples, type FillSample } from './voxel-keeper';
 import type { FlightSession } from './session';
 import type { FromWorker, ToWorker, WorkerGrid } from './voxels.worker';
 
@@ -51,6 +52,9 @@ function saveVoxelPrefs(p: VoxelPrefs): void {
     try { localStorage.setItem(PREFS_KEY, JSON.stringify(p)); } catch { /* storage blocked */ }
 }
 
+/** Uploads per frame in the whole-scene view (estimate; the overlay's per-frame face cap still holds). */
+const WHOLE_UPLOADS_PER_FRAME = 8;
+
 export type VoxelState = 'off' | 'no-walls' | 'preparing' | 'ready' | 'failed';
 
 export interface VoxelStats {
@@ -64,9 +68,31 @@ export interface VoxelStats {
     chunks: number;
     quads: number;
     triangles: number;
+    /** V1: depth-only copies of the gates and other World items drawn before the voxels */
+    depthItems: number;
     /** the plan's reach: per voxel up to fineRadiusM, per block up to radiusM (m) */
     fineRadiusM: number;
     radiusM: number;
+    /** the view of voxels alone plans the whole scene (X2): every occupied chunk, far ones as larger cubes */
+    whole: boolean;
+    /** chunks of the walls holding a wall cell, chunks planned, chunks drawn at their planned level */
+    wallChunks: number;
+    plannedChunks: number;
+    drawnChunks: number;
+    /** drawnChunks / plannedChunks in percent (0 before the first plan, 100 when the plan is empty) */
+    share: number;
+    /** the whole view while it fills: seconds left at the pace so far (null: unknown or full) */
+    fillLeftS: number | null;
+    /** chunks on screen at their planned level, per level (index: 0 voxels, 1 blocks of 4, 2 cubes of 8, 3 cubes of 16 voxels) */
+    perLevel: number[];
+    /** the meshes (draws) those chunks take per level: far chunks are joined into group meshes */
+    meshesPerLevel: number[];
+    /** distance of the farthest chunk planned, and of the farthest drawn (m) */
+    farthestM: number;
+    drawnFarM: number;
+    /** the frame rate keeper's share of the face budgets (1 = full; V3: it never removes chunks) and its mean frame (ms) */
+    detail: number;
+    frameMs: number;
     inFlight: number;
     pendingUploads: number;
     /** connected pieces of the walls and the floating ones among them */
@@ -102,6 +128,18 @@ export class VoxelController {
     radiusM = 20;
     fineQuads = 600_000;
     coarseQuads = 250_000;
+    /** level 2 cubes (8 voxels) past the two budgets in the whole-scene view; the rest of the scene is level 3 (estimate) */
+    farQuads = 250_000;
+    /** the frame rate keeper's share of the budgets, its mean frame time, and a forced share (test hook) */
+    private detail = 1;
+    private forced: number | null = null;
+    private keeper = { last: 0, sum: 0, n: 0, at: 0, fast: 0, ms: 0 };
+    private lastPlan: PlannedChunk[] = [];
+    private planFar = 0;
+    /** when the whole view's fill began (performance.now), 0 when full */
+    private fillFrom = 0;
+    /** readings of the share since the fill began (first one kept), for the pace of the last 2 s */
+    private fillSamples: FillSample[] = [];
     private session: FlightSession;
     private overlay: VoxelOverlay | null = null;
     private worker: Worker | null = null;
@@ -115,10 +153,13 @@ export class VoxelController {
     private components = 0;
     private floaters = 0;
     private known = { fine: new Map<number, number>(), coarse: new Map<number, number>() };
+    /** levels 2 and up: quads per chunk and their sums (lod -> ...) */
+    private knownFar = new Map<number, Map<number, number>>();
+    private sumFar = new Map<number, { q: number; n: number }>();
     private sum = { fine: 0, nFine: 0, coarse: 0, nCoarse: 0, ms: 0, n: 0 };
-    private wanted = new Map<number, 0 | 1>();
+    private wanted = new Map<number, number>();
     /** the level drawn per chunk; STALE: drawn in colours a floater preview change made old */
-    private loaded = new Map<number, 0 | 1 | typeof STALE>();
+    private loaded = new Map<number, number>();
     /** the floater filter's preview (previewFloaters): N, or null when off */
     private previewN: number | null = null;
     /** the collision ceiling's preview (previewCeiling): a height in scan metres, or null when off */
@@ -262,6 +303,17 @@ export class VoxelController {
         this.notify();
     }
 
+    /** The view of voxels alone with no preview running: the whole scene is planned (X2). */
+    private get whole(): boolean {
+        return this.shown === 'only' && this.previewN === null && this.previewC === null;
+    }
+
+    /** Force the keeper's share of the budgets (0.05..1; null: the keeper decides again). Tests and the bench. */
+    forceDetail(d: number | null): void {
+        this.forced = d === null || !Number.isFinite(d) ? null : Math.max(0.05, Math.min(1, d));
+        this.lastPlanAt = 0;
+    }
+
     /** V: off -> over the scan -> voxels only -> off. */
     cycle(): VoxelMode {
         this.setMode(VOXEL_MODES[(VOXEL_MODES.indexOf(this.mode) + 1) % VOXEL_MODES.length]);
@@ -313,7 +365,7 @@ export class VoxelController {
         const on = mode !== 'off' && walls;
         if (on && !this.overlay) this.overlay = new VoxelOverlay(this.session.renderer);
         this.overlay?.setVisible(on);
-        this.overlay?.setLook(this.look, mode === 'only' ? this.prefs.opacityOnly : this.prefs.opacityOverlay);
+        this.overlay?.setLook(this.look, mode === 'only' ? this.prefs.opacityOnly : this.prefs.opacityOverlay, mode === 'only' && walls);
         // without walls there is nothing to fly on: the scan stays
         this.session.renderer.setSplatVisible(!(mode === 'only' && walls));
         if (on) this.ensureWorker();
@@ -332,7 +384,8 @@ export class VoxelController {
         if (want !== this.col) this.resetFor(want);
         this.recut();
         this.ceilingPlane();
-        if (this.shown === 'off' || !this.overlay || !this.col) return;
+        if (this.shown === 'off' || !this.overlay || !this.col) { this.keeper.last = 0; return; }
+        this.keep(now);
         const t0 = performance.now();
         this.overlay.update();
         const t1 = performance.now();
@@ -347,6 +400,19 @@ export class VoxelController {
             this.perf.replan += t2 - t1;
             this.perf.replanMax = Math.max(this.perf.replanMax, t2 - t1);
         }
+    }
+
+    /** V3: the frame rate keeper (voxel-keeper.ts) lowers the far cubes' detail when frames are slow; it never removes chunks. */
+    private keep(now: number): void {
+        const k = this.keeper;
+        if (k.last > 0) { k.sum += now - k.last; k.n++; }
+        k.last = now;
+        if (now - k.at < KEEPER_EVERY_MS || k.n === 0) return;
+        k.ms = k.sum / k.n;
+        k.at = now; k.sum = 0; k.n = 0;
+        const next = keeperStep(this.detail, k.ms, k.fast);
+        k.fast = next.fast;
+        if (next.detail !== this.detail) { this.detail = next.detail; this.lastPlanAt = 0; }
     }
 
     /** During the ceiling preview: the plane at the previewed height in the flown world, centred under the camera. */
@@ -369,6 +435,9 @@ export class VoxelController {
         this.occupied = null;
         this.known.fine.clear();
         this.known.coarse.clear();
+        this.knownFar.clear();
+        this.sumFar.clear();
+        this.lastPlan = [];
         this.wanted.clear();
         this.loaded.clear();
         this.inFlight.clear();
@@ -454,15 +523,43 @@ export class VoxelController {
         }
         const id = `${m.key}:${m.lod}`;
         this.inFlight.delete(id);
-        (m.lod === 0 ? this.known.fine : this.known.coarse).set(m.key, m.quads);
-        if (m.lod === 0) { this.sum.fine += m.quads; this.sum.nFine++; } else { this.sum.coarse += m.quads; this.sum.nCoarse++; }
-        this.sum.ms += m.ms;
-        this.sum.n++;
+        // a group mesh (negative key) is not one chunk: it stays out of the per-chunk sizes the plan budgets with
+        if (m.key < 0) { this.sum.ms += m.ms; this.sum.n++; }
+        else if (m.lod <= 1) (m.lod === 0 ? this.known.fine : this.known.coarse).set(m.key, m.quads);
+        else {
+            if (!this.knownFar.has(m.lod)) this.knownFar.set(m.lod, new Map());
+            this.knownFar.get(m.lod)!.set(m.key, m.quads);
+            const f = this.sumFar.get(m.lod) ?? { q: 0, n: 0 };
+            f.q += m.quads; f.n++;
+            this.sumFar.set(m.lod, f);
+        }
+        if (m.key >= 0) {
+            if (m.lod === 0) { this.sum.fine += m.quads; this.sum.nFine++; } else if (m.lod === 1) { this.sum.coarse += m.quads; this.sum.nCoarse++; }
+            this.sum.ms += m.ms;
+            this.sum.n++;
+        }
         // no longer wanted at this level (the camera moved on): measured, not drawn
         if (this.wanted.get(m.key) !== m.lod || !this.overlay) return;
         // same key: the upload replaces the other level in the same frame, so nothing blinks
         this.overlay.add(String(m.key), m);
         this.loaded.set(m.key, m.lod);
+        // keep the worker busy: the next chunks of the last plan, nearest first, without waiting for the next plan
+        this.feed();
+    }
+
+    /** Ask the worker for the chunks of the last plan not yet drawn at their level, up to maxInFlight at once. */
+    private feed(): void {
+        if (!this.worker || !this.overlay) return;
+        for (const c of this.lastPlan) {
+            if (this.inFlight.size >= this.maxInFlight) break;
+            if (this.loaded.get(c.key) === c.lod) continue;
+            const id = `${c.key}:${c.lod}`;
+            if (this.inFlight.has(id)) continue;
+            this.inFlight.add(id);
+            const [lo, hi] = this.overlay.heightRange;
+            const msg: ToWorker = { t: 'chunk', gen: this.gen, key: c.key, x: c.x, y: c.y, z: c.z, lod: c.lod, style: this.look, lo, hi, group: c.group ?? 1 };
+            this.worker.postMessage(msg);
+        }
     }
 
     private replan(): void {
@@ -473,36 +570,53 @@ export class VoxelController {
         const avgCoarse = this.sum.nCoarse ? this.sum.coarse / this.sum.nCoarse : undefined;
         // a floater preview looks further: the pieces it would drop are often away from the craft
         const radius = this.previewN !== null ? Math.max(this.radiusM, PREVIEW_RADIUS_M) : this.radiusM;
-        const plan = planChunksAround(col, this.size, this.occupied, p.x, p.y, p.z, { radius, fineQuads: this.fineQuads, coarseQuads: this.coarseQuads, known: this.known, avgFine, avgCoarse });
+        const whole = this.whole;
+        const d = this.forced ?? this.detail;
+        const avgFar = new Map<number, number>();
+        for (const [lod, f] of this.sumFar) avgFar.set(lod, f.q / f.n);
+        // the whole scene joins far chunks into group meshes (overlay.ts groupPlan): 27236 draws -> 2852 on Wroclaw
+        const plan = planChunksAround(col, this.size, this.occupied, p.x, p.y, p.z, { radius, fineQuads: this.fineQuads * d, coarseQuads: this.coarseQuads * d, known: this.known, avgFine, avgCoarse, whole, groups: whole, farQuads: this.farQuads * d, knownFar: this.knownFar, avgFar });
         this.plan = { fineRadius: plan.fineRadius, radius: plan.radius };
+        this.planFar = plan.chunks.reduce((f, c) => Math.max(f, c.farDist ?? c.dist), 0);
+        this.lastPlan = plan.chunks;
         this.planned = true;
         this.wanted = new Map(plan.chunks.map((c) => [c.key, c.lod]));
+        // small far meshes: more of them per frame in the whole view; the per-frame face cap still holds (estimate)
+        this.overlay.maxUploadsPerFrame = whole ? WHOLE_UPLOADS_PER_FRAME : 2;
+        const dims = chunkDims(col, this.size);
+        const onScreen = (k: number): boolean => this.wanted.get(k) === this.loaded.get(k) && !this.overlay!.pending(String(k));
         let quads = this.overlay.stats().quads;
         for (const [key, lod] of this.loaded) {
             const want = this.wanted.get(key);
             // a chunk that should now be coarse stays fine until its coarse mesh lands (no hole),
             // unless that keeps the drawn faces over the budgets (flying fast through a dense scan)
-            const over = want === 1 && lod === 0 && quads > this.fineQuads + this.coarseQuads;
+            // (the whole-scene view keeps every chunk until its new level lands: no hole)
+            const over = !whole && want === 1 && lod === 0 && quads > this.fineQuads + this.coarseQuads;
             if (want !== undefined && !over) continue;
-            quads -= this.known[lod === 0 ? 'fine' : 'coarse'].get(key) ?? 0;
+            // whole view: a chunk or group leaves only when the wanted meshes over the same chunks are on screen
+            if (whole && want === undefined && overlapKeys(dims, key).some((k) => this.wanted.has(k) && !onScreen(k))) continue;
+            quads -= (lod <= 1 ? this.known[lod === 0 ? 'fine' : 'coarse'].get(key) : this.knownFar.get(lod)?.get(key)) ?? 0;
             this.overlay.remove(String(key));
             this.loaded.delete(key);
         }
-        for (const c of plan.chunks) {
-            if (this.inFlight.size >= this.maxInFlight) break;
-            if (this.loaded.get(c.key) === c.lod) continue;
-            const id = `${c.key}:${c.lod}`;
-            if (this.inFlight.has(id)) continue;
-            this.inFlight.add(id);
-            const [lo, hi] = this.overlay.heightRange;
-            const msg: ToWorker = { t: 'chunk', gen: this.gen, key: c.key, x: c.x, y: c.y, z: c.z, lod: c.lod, style: this.look, lo, hi };
-            this.worker.postMessage(msg);
-        }
+        this.feed();
     }
 
     stats(): VoxelStats {
         const o = this.overlay?.stats();
         const col = this.col;
+        // on screen = uploaded at the planned level; a mesh waiting in the upload queue is not counted
+        const sh = drawnShare(this.lastPlan, (k) => (this.overlay?.pending(String(k)) ? undefined : this.loaded.get(k)));
+        // nothing planned yet (the grid is being prepared): nothing is drawn, not all of it
+        const share = this.planned ? sh.share : 0;
+        // the fill's pace: from the first plan of the whole view that was not all on screen
+        const now = performance.now();
+        if (!this.whole || share >= 100) { this.fillFrom = 0; this.fillSamples = []; }
+        else {
+            if (this.fillFrom === 0) this.fillFrom = now;
+            this.fillSamples.push({ t: now, share: sh.meshShare });
+            trimFillSamples(this.fillSamples, now);
+        }
         return {
             state: this.state,
             mode: this.mode,
@@ -513,8 +627,21 @@ export class VoxelController {
             chunks: o?.chunks ?? 0,
             quads: o?.quads ?? 0,
             triangles: o?.triangles ?? 0,
+            depthItems: o?.depthItems ?? 0,
             fineRadiusM: this.plan.fineRadius,
             radiusM: this.plan.radius,
+            whole: this.whole,
+            wallChunks: this.occupied?.size ?? 0,
+            plannedChunks: sh.total,
+            drawnChunks: sh.drawn,
+            share,
+            fillLeftS: this.fillFrom ? fillLeftS(this.fillSamples, now, sh.meshShare) : null,
+            perLevel: sh.perLevel,
+            meshesPerLevel: sh.meshesPerLevel,
+            farthestM: this.planFar,
+            drawnFarM: sh.drawnFarM,
+            detail: this.forced ?? this.detail,
+            frameMs: this.keeper.ms,
             inFlight: this.inFlight.size,
             pendingUploads: o?.pendingUploads ?? 0,
             components: this.components,

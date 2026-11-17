@@ -143,6 +143,21 @@ place, gapMs}`, ordered finished first by total, then more laps and less total, 
 `gapMs` is behind the leader when on the same lap count, else null. A passed vote ends the race (another scan). A
 welcome carries `race` (the race on, or null).
 
+## The room's course and the board of best laps (lane race, L1 and L2)
+
+- Up `{"type":"course","course":"g1.<seed>"}` (41 bytes; the course id, COURSE_RE): the course becomes the room's. Every
+  member gets `{"type":"board","course","by","rows":[]}`; a new course replaces the old one and clears the rows. The same
+  course again answers the board to the sender only. A member makes at most 5 courses per 10 minutes (the proposals
+  window of votes.py); over it the sender gets the board as it is.
+- Up `{"type":"blap","course","n","ms"}` (56 bytes): lap n (1-based, the next one) of ms on the room's course. Refused
+  (the sender gets the board with `"refused":true`) when the course is not the room's, ms is outside 3 000 to 3 600 000,
+  n is not the next lap, or the lap is longer than the time since the course came or since the member's previous lap
+  (500 ms of slack). Taken: everyone gets `{"type":"blap","course","slot","nick","n","ms","best","lead"}` (about 120
+  bytes); `lead` is true when ms is below the room's best before it (an equal time keeps the first pilot).
+- `welcome` carries `board` (the course and the rows; null without a course): a member who joins later has both.
+- Rows: `{"slot","nick","best","laps"}` ordered by best, an equal best by who flew it first; 8 rows are 560 bytes. A row
+  leaves with its member (everyone gets the board again). Memory: one board per room, at most one row per member.
+
 ## Privacy
 
 Others see only the nickname and the live pose while both are in the room. Poses are never written to disk. Client

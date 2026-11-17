@@ -1,0 +1,35 @@
+{
+ "name": "lod-view/score-lq-wro-ref16",
+ "date": "2026-11-15T20:19:24.043Z",
+ "reference": "lq-wro-ref16",
+ "labels": [
+  "lq-g5-wro-0.5-1920x1080",
+  "lq-g5-wro-1-1920x1080"
+ ],
+ "band": null,
+ "measure": "PSNR on luma in dB against the reference run's picture of the same place (a turn's pictures against the reference at the end of that turn): psnr over the whole picture, psnrLit over the reference's lit pixels (the scan, not the black sky), psnrQuarter with 4x4 pixels averaged",
+ "rows": [
+  {
+   "label": "lq-g5-wro-0.5-1920x1080",
+   "picture": "end",
+   "against": "lq-wro-ref16-end",
+   "width": 1920,
+   "height": 1080,
+   "psnr": 23.55,
+   "psnrQuarter": 25.76,
+   "litShare": 1,
+   "psnrLit": 23.55
+  },
+  {
+   "label": "lq-g5-wro-1-1920x1080",
+   "picture": "end",
+   "against": "lq-wro-ref16-end",
+   "width": 1920,
+   "height": 1080,
+   "psnr": 25.1,
+   "psnrQuarter": 27.85,
+   "litShare": 1,
+   "psnrLit": 25.1
+  }
+ ]
+}

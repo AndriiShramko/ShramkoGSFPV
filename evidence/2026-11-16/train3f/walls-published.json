@@ -1,0 +1,308 @@
+[
+ {
+  "id": "0230d903",
+  "expect": "published",
+  "errors": [],
+  "walls404": 0,
+  "wallsFiles": [
+   "/walls/0230d903/v1/scene.voxel.json 200",
+   "/walls/0230d903/v1/scene.voxel.bin 200"
+  ],
+  "readyS": 3.828,
+  "page": {
+   "status": "ready",
+   "error": null,
+   "walls": {
+    "state": "none",
+    "source": "published",
+    "voxelM": 0.2,
+    "sha": "a3a513c893c4414a0086a59b2312d36cdb4f5e1943bdf1fe976dc1fcbb1d534d",
+    "lastBake": null
+   },
+   "bake": null,
+   "wallsOn": true,
+   "action": "",
+   "inUse": "In use: 20 cm walls, ready for every pilot.",
+   "summary": "Walls 20 cm ▾"
+  },
+  "tunnel": {
+   "passes": 20,
+   "speed": 25,
+   "contacts": 20,
+   "penetrations": 0
+  },
+  "pass": true
+ },
+ {
+  "id": "1994c65c",
+  "expect": "published",
+  "errors": [],
+  "walls404": 0,
+  "wallsFiles": [
+   "/walls/1994c65c/v1/scene.voxel.json 200",
+   "/walls/1994c65c/v1/scene.voxel.bin 200"
+  ],
+  "readyS": 4.994,
+  "page": {
+   "status": "ready",
+   "error": null,
+   "walls": {
+    "state": "none",
+    "source": "published",
+    "voxelM": 0.4,
+    "sha": "8ecf2e4faa0d2e00bf2a8b1f2bdd1e85215a7e190231365ccf74a137725666d7",
+    "lastBake": null
+   },
+   "bake": null,
+   "wallsOn": true,
+   "action": "",
+   "inUse": "In use: 40 cm walls, ready for every pilot.",
+   "summary": "Walls 40 cm ▾"
+  },
+  "tunnel": {
+   "passes": 20,
+   "speed": 25,
+   "contacts": 20,
+   "penetrations": 0
+  },
+  "pass": true
+ },
+ {
+  "id": "2f1ddf5f",
+  "expect": "published",
+  "errors": [],
+  "walls404": 0,
+  "wallsFiles": [
+   "/walls/2f1ddf5f/v1/scene.voxel.json 200",
+   "/walls/2f1ddf5f/v1/scene.voxel.bin 200"
+  ],
+  "readyS": 3.729,
+  "page": {
+   "status": "ready",
+   "error": null,
+   "walls": {
+    "state": "none",
+    "source": "published",
+    "voxelM": 0.2,
+    "sha": "38e78cfa409973708686d1c6921a0d519d9e7c5daf42d688bea11386093e10c0",
+    "lastBake": null
+   },
+   "bake": null,
+   "wallsOn": true,
+   "action": "",
+   "inUse": "In use: 20 cm walls, ready for every pilot.",
+   "summary": "Walls 20 cm ▾"
+  },
+  "tunnel": {
+   "passes": 20,
+   "speed": 25,
+   "contacts": 20,
+   "penetrations": 0
+  },
+  "pass": true
+ },
+ {
+  "id": "70b50d42",
+  "expect": "published",
+  "errors": [],
+  "walls404": 0,
+  "wallsFiles": [
+   "/walls/70b50d42/v1/scene.voxel.json 200",
+   "/walls/70b50d42/v1/scene.voxel.bin 200"
+  ],
+  "readyS": 2.845,
+  "page": {
+   "status": "ready",
+   "error": null,
+   "walls": {
+    "state": "none",
+    "source": "published",
+    "voxelM": 0.1,
+    "sha": "324c631c174d2a7e0673dbf14a0a72774b8a3fcf475a3baa3b0fae0d8f6e27cf",
+    "lastBake": null
+   },
+   "bake": null,
+   "wallsOn": true,
+   "action": "",
+   "inUse": "In use: 10 cm walls, ready for every pilot.",
+   "summary": "Walls 10 cm ▾"
+  },
+  "tunnel": {
+   "passes": 20,
+   "speed": 25,
+   "contacts": 20,
+   "penetrations": 0
+  },
+  "pass": true
+ },
+ {
+  "id": "9baef54b",
+  "expect": "published",
+  "errors": [],
+  "walls404": 0,
+  "wallsFiles": [
+   "/walls/9baef54b/v1/scene.voxel.json 200",
+   "/walls/9baef54b/v1/scene.voxel.bin 200"
+  ],
+  "readyS": 3.815,
+  "page": {
+   "status": "ready",
+   "error": null,
+   "walls": {
+    "state": "none",
+    "source": "published",
+    "voxelM": 0.1,
+    "sha": "9193b17bf8028c29daade043b25f7e820aaff47a03b892deb1ba9ea6a99c9707",
+    "lastBake": null
+   },
+   "bake": null,
+   "wallsOn": true,
+   "action": "",
+   "inUse": "In use: 10 cm walls, ready for every pilot.",
+   "summary": "Walls 10 cm ▾"
+  },
+  "tunnel": {
+   "passes": 20,
+   "speed": 25,
+   "contacts": 20,
+   "penetrations": 0
+  },
+  "pass": true
+ },
+ {
+  "id": "ab5efa0e",
+  "expect": "published",
+  "errors": [],
+  "walls404": 0,
+  "wallsFiles": [
+   "/walls/ab5efa0e/v2/scene.voxel.json 200",
+   "/walls/ab5efa0e/v2/scene.voxel.bin 200"
+  ],
+  "readyS": 3.868,
+  "page": {
+   "status": "ready",
+   "error": null,
+   "walls": {
+    "state": "offer",
+    "source": "published",
+    "voxelM": 0.05,
+    "sha": "74c7218a1092ce0a469d2ef1f57e5330ad5089ae1061f1c839c5eba98b1e9ee4",
+    "lastBake": null
+   },
+   "bake": null,
+   "wallsOn": true,
+   "action": "Refine walls to 1.6 cm (about 15 s)",
+   "inUse": "In use: 5 cm walls, ready for every pilot.",
+   "summary": "Walls 5 cm ▾"
+  },
+  "tunnel": {
+   "passes": 20,
+   "speed": 25,
+   "contacts": 20,
+   "penetrations": 0
+  },
+  "pass": true
+ },
+ {
+  "id": "ba7aa29d",
+  "expect": "published",
+  "errors": [],
+  "walls404": 0,
+  "wallsFiles": [
+   "/walls/ba7aa29d/v1/scene.voxel.json 200",
+   "/walls/ba7aa29d/v1/scene.voxel.bin 200"
+  ],
+  "readyS": 3.671,
+  "page": {
+   "status": "ready",
+   "error": null,
+   "walls": {
+    "state": "none",
+    "source": "published",
+    "voxelM": 0.2,
+    "sha": "4b9093938c6ebfd56da5850ba52cbd4761a6d4e459ab07a2fb1e7a73def315f5",
+    "lastBake": null
+   },
+   "bake": null,
+   "wallsOn": true,
+   "action": "",
+   "inUse": "In use: 20 cm walls, ready for every pilot.",
+   "summary": "Walls 20 cm ▾"
+  },
+  "tunnel": {
+   "passes": 20,
+   "speed": 25,
+   "contacts": 20,
+   "penetrations": 0
+  },
+  "pass": true
+ },
+ {
+  "id": "d10c5638",
+  "expect": "published",
+  "errors": [],
+  "walls404": 0,
+  "wallsFiles": [
+   "/walls/d10c5638/v1/scene.voxel.json 200",
+   "/walls/d10c5638/v1/scene.voxel.bin 200"
+  ],
+  "readyS": 2.255,
+  "page": {
+   "status": "ready",
+   "error": null,
+   "walls": {
+    "state": "offer",
+    "source": "published",
+    "voxelM": 0.05,
+    "sha": "aa6d12b0dd22e1e620b0ed4abd730747887770e0bd3edae4bd83a85afbc4c1cc",
+    "lastBake": null
+   },
+   "bake": null,
+   "wallsOn": true,
+   "action": "Refine walls to 1.6 cm (about 5 s)",
+   "inUse": "In use: 5 cm walls, ready for every pilot.",
+   "summary": "Walls 5 cm ▾"
+  },
+  "tunnel": {
+   "passes": 20,
+   "speed": 25,
+   "contacts": 20,
+   "penetrations": 0
+  },
+  "pass": true
+ },
+ {
+  "id": "eb5f51dc",
+  "expect": "published",
+  "errors": [],
+  "walls404": 0,
+  "wallsFiles": [
+   "/walls/eb5f51dc/v1/scene.voxel.json 200",
+   "/walls/eb5f51dc/v1/scene.voxel.bin 200"
+  ],
+  "readyS": 2.992,
+  "page": {
+   "status": "ready",
+   "error": null,
+   "walls": {
+    "state": "none",
+    "source": "published",
+    "voxelM": 0.4,
+    "sha": "4f011e5e3dc503bec039e1f178f2f92991108b4a27d1a367727ea9f77cce5ba8",
+    "lastBake": null
+   },
+   "bake": null,
+   "wallsOn": true,
+   "action": "",
+   "inUse": "In use: 40 cm walls, ready for every pilot.",
+   "summary": "Walls 40 cm ▾"
+  },
+  "tunnel": {
+   "passes": 20,
+   "speed": 25,
+   "contacts": 20,
+   "penetrations": 0
+  },
+  "pass": true
+ }
+]

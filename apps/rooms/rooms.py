@@ -28,6 +28,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import protocol as P  # noqa: E402
 import votes as V  # noqa: E402
 import race as RC  # noqa: E402
+import board as BD  # noqa: E402
 import ws as W  # noqa: E402
 
 PORT = 8091
@@ -136,6 +137,7 @@ class Room:
         self.ballot = ballot or V.Ballot()
         self.race: RC.Race | None = None       # lane rooms2, stage Q2: the race on time (race.py)
         self.last_race: RC.Race | None = None  # its table, for a pilot who asks after the end
+        self.board: BD.Board | None = None     # lane race, L1 and L2: the room's course and its best laps (board.py)
         self.members: dict[int, Member] = {}
         self.host_slot: int | None = None
         self.created = time.time()
@@ -477,6 +479,31 @@ class Service:
         self._broadcast(room, {**r.message("lap"), "slot": me.slot, "n": n, "ms": ms})
         self._race_step(room, r.due(self.race_ms()))
 
+    def _course(self, room: Room, me: Member, m: dict) -> None:
+        """L1: a member made a course; it becomes the room's for everyone and the board starts empty."""
+        course = m.get("course")
+        if not isinstance(course, str) or not P.COURSE_RE.fullmatch(course):
+            return
+        me.active = self.clock()
+        if room.board is not None and room.board.course == course:
+            return self._send(me.sock, room.board.message())
+        if not self.proposals.allow(f"course:{room.id}:{me.slot}:{me.joined}"):
+            return self._send(me.sock, room.board.message() if room.board else {"type": "board", "course": None, "rows": []})
+        room.board = BD.Board(course, me.slot, self.race_ms())
+        self._broadcast(room, room.board.message())
+        log("a course came to a room")
+
+    def _blap(self, room: Room, me: Member, m: dict) -> None:
+        """L2: a finished lap on the room's course goes to everyone; a refused one is answered with the board."""
+        b = room.board
+        if b is None:
+            return
+        me.active = self.clock()
+        out = b.lap(me.slot, me.nick, set(room.members), m.get("course"), m.get("n"), m.get("ms"), self.race_ms())
+        if out is None:
+            return self._send(me.sock, {**b.message(), "refused": True})
+        self._broadcast(room, out)
+
     def _table(self, room: Room, me: Member) -> None:
         r = room.race or room.last_race
         if r is not None:
@@ -552,7 +579,8 @@ class Service:
         sock.send_text(json.dumps({"type": "welcome", "v": P.VERSION, "slot": slot, "nick": nick, "hostSlot": room.host_slot,
                                    "room": room.public(cap), "members": room.roster(), "serverMs": self.server_ms(),
                                    "vote": room.ballot.state(self.present(room)) if room.ballot.vote else None,
-                                   "race": room.race.message() if room.race else None}))
+                                   "race": room.race.message() if room.race else None,
+                                   "board": room.board.message() if room.board else None}))
         self._broadcast(room, {"type": "joined", "slot": slot, "nick": nick, "hostSlot": room.host_slot}, but=slot)
         log(f"ws join; pilots {self.pilots()}")
         try:
@@ -560,6 +588,8 @@ class Service:
         finally:
             room.members.pop(slot, None)
             room.ballot.drop(slot)
+            if room.board is not None and room.board.drop(slot):
+                self._broadcast(room, room.board.message())
             if room.race is not None and room.race.drop(slot, self.race_ms()):
                 self._broadcast(room, room.race.message())
             if room.host_slot == slot:
@@ -623,6 +653,10 @@ class Service:
                 self._lap(room, me, m)
             elif kind == "table":
                 self._table(room, me)
+            elif kind == "course":
+                self._course(room, me, m)
+            elif kind == "blap":
+                self._blap(room, me, m)
             elif kind == "leave":
                 sock.close(W.NORMAL, "leave")
                 return

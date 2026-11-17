@@ -152,3 +152,12 @@ export function keyRoute(e: KeyPress, at: KeyAt): 'pass' | 'blur' | 'save' | 'ed
     }
     return editorKey(e, [0, -1]) ? 'edit' : 'pass';
 }
+
+/**
+ * Review 1 of lane editfix: the words for a flight key the edit view swallows (keys.ts KeyRouter.block's `refused`). Shift+B
+ * opens this very editor, so 'works in flight, press Esc, then Shift+B' would send the pilot out and back in: it repeats the
+ * editor's own line (how to move, fly the course, Esc leaves). Every other routed key: '<key> works in flight ...'.
+ */
+export function keyOffLine(action: string, key: string): { key: string; vars?: Record<string, string> } {
+    return action === 'course.edit' ? { key: 'course.edit.opened' } : { key: 'course.edit.keyOff', vars: { key } };
+}

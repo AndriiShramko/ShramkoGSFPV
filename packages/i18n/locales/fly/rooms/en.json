@@ -82,5 +82,7 @@
   "rooms.race.col.laps": "Laps",
   "rooms.race.col.total": "Total, s",
   "rooms.race.col.best": "Best lap, s",
-  "rooms.race.col.gap": "Behind, s"
+  "rooms.race.col.gap": "Behind, s",
+  "rooms.lead.other": "{nick} leads, {time}",
+  "rooms.lead.mine": "You lead, {time}"
 }

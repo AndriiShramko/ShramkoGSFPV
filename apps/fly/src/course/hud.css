@@ -136,17 +136,13 @@
     visibility: hidden;
 }
 /* Course5 Z1: a short view (a phone on its side, 844x390): the top bar's buttons fill the upper third, so the clock's block
-   goes to the lower right corner over the 'crashes' line and the splash and the card to the lower middle; nothing stands
+   goes to the side (lane clockfix, below) and the splash and the card to the lower middle; nothing stands
    in the middle third (course-finish-probe.mjs measures the rectangles). Font sizes here are design values. */
 @media (max-height: 500px) {
     .course-hud {
-        top: auto;
-        left: auto;
-        right: max(16px, env(safe-area-inset-right));
-        bottom: calc(max(14px, env(safe-area-inset-bottom)) + 26px);
         transform: none;
-        text-align: right;
-        font-size: 0.7rem;
+        /* lane uiaudit U3: 12 px at the least (0.7rem measured 10.5 px at 844x390, ui-audit-probe.mjs) */
+        font-size: 12px;
         line-height: 1.25;
     }
     .course-time {
@@ -157,5 +153,56 @@
         bottom: calc(max(14px, env(safe-area-inset-bottom)) + 26px);
         transform: translateX(-50%);
         max-height: 32vh;
+    }
+}
+/* lane uiaudit fault 4 (U1): the clock block's cross, a 44 px target at the block's right (ui/panel-head.css gives the shape);
+   the block itself lets the pointer through, the cross alone takes it */
+.course-hud .course-hud-x { position: absolute; top: 0; left: 100%; margin-left: 8px; pointer-events: auto; text-shadow: none; }
+.course-hud .course-hud-x::before { content: '\00d7'; }
+/* lane clockfix (review of 7af2aad5, F1): on a short view the clock's text and its cross stand in ONE chip with the backdrop
+   of .hud-note (fly.css), the cross inside it at the right, so it reads as the clock's own and not as another thing's close
+   button. Its place lies over nothing else at 932x430, 844x390, 740x360 and 667x375, before take-off, in a flight and at
+   the finish (measured by tools/bench/scripts/clock-place-probe.mjs). No value kept by a script decides the place (the
+   lift by --cinema-top kept a stale height after a rotation in a flight): it follows the layout by itself.
+   Keyboard: the left column, under the scene credit and the walls caption (its bottom measured at 101 to 104 px; --bake-bottom
+   is the walls box's, not the caption's) and under
+   the course note (--course-push); at most a third of the view less 32 px wide, so it stays out of the middle third and
+   left of the take-off prompt. Touch: the bottom middle between the stick pads (fly.css .touch-pad), under the REC row,
+   above the ARM button when that shows. */
+@media (max-height: 500px) {
+    .course-hud {
+        display: grid;
+        grid-template-columns: minmax(0, auto) 44px;
+        column-gap: 6px;
+        align-items: center;
+        box-sizing: border-box;
+        padding: 6px 6px 6px 12px;
+        border-radius: 8px;
+        background: rgba(0, 0, 0, .6);
+    }
+    .course-hud > .course-time,
+    .course-hud > .course-lines {
+        grid-column: 1;
+    }
+    .course-hud .course-hud-x { position: static; grid-column: 2; grid-row: 1 / span 2; margin: 0; }
+    body:not(.touch-on) .course-hud {
+        top: calc(max(calc(max(10px, env(safe-area-inset-top)) + 102px + var(--banner-h, 0px)), calc(var(--bake-bottom, 0px) + 8px)) + var(--course-push, 0px));
+        left: max(16px, env(safe-area-inset-left));
+        right: auto;
+        bottom: auto;
+        max-width: calc(100vw / 3 - 32px);
+        text-align: left;
+    }
+    body.touch-on .course-hud {
+        top: auto;
+        left: 50%;
+        right: auto;
+        bottom: max(24px, env(safe-area-inset-bottom));
+        transform: translateX(-50%);
+        max-width: calc(100vw - 2 * (24px + min(40vw, 220px)) - 16px);
+        text-align: center;
+    }
+    body.touch-on #ui:has(.touch-arm:not([hidden])) .course-hud {
+        bottom: calc(max(24px, env(safe-area-inset-bottom)) + 64px);
     }
 }

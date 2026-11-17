@@ -1,4 +1,6 @@
 // Minimal DOM helpers for the simulator UI (no framework in the hot app).
+import { t } from '../i18n';
+import './panel-head.css';
 
 type Child = Node | string | null | undefined | false;
 
@@ -26,7 +28,7 @@ export function clear(el: Element): void {
 /** A modal panel over the flight view; returns the panel element. */
 export function panel(title: string, onClose?: () => void): { root: HTMLDivElement; body: HTMLDivElement; close: () => void } {
     const body = h('div', { class: 'panel-body' });
-    const closeBtn = onClose ? h('button', { class: 'panel-x', type: 'button', 'aria-label': 'Close', onclick: () => onClose() }, '×') : null;
+    const closeBtn = onClose ? h('button', { class: 'panel-x', type: 'button', 'aria-label': t('common.close'), title: `${t('common.close')} (Esc)`, 'aria-keyshortcuts': 'Escape', onclick: () => onClose() }, '×') : null;
     const root = h('div', { class: 'panel interactive', role: 'dialog', 'aria-modal': 'true', 'aria-label': title }, h('div', { class: 'panel-head' }, h('h2', {}, title), closeBtn), body);
     return { root, body, close: () => root.remove() };
 }

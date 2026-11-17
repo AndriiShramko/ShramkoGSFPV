@@ -59,7 +59,9 @@ export class TopBar {
             this.line.classList.toggle('refused', refused);
         });
         window.addEventListener('keydown', this.onAct, true);
-        window.addEventListener('pointerdown', this.onAct, true);
+        // lane editfix E2: a press clears a held line when it is let go, not when it goes down: the line's new width moved
+        // the centred buttons between down and up, and the second Exit press landed on the bar (E1 cause 2)
+        window.addEventListener('pointerup', this.onAct, true);
         window.addEventListener('resize', this.place);
         this.ui = ui;
         if (typeof ResizeObserver !== 'undefined') this.watch = new ResizeObserver(() => this.place());
@@ -121,7 +123,7 @@ export class TopBar {
     destroy(): void {
         this.hold.stop();
         window.removeEventListener('keydown', this.onAct, true);
-        window.removeEventListener('pointerdown', this.onAct, true);
+        window.removeEventListener('pointerup', this.onAct, true);
         window.removeEventListener('resize', this.place);
         this.watch?.disconnect();
         this.root.remove();

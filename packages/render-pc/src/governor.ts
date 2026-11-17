@@ -9,6 +9,32 @@
 /** a frame interval above this many display periods counts as a missed frame */
 export const MISSED_PERIODS = 1.25;
 
+/**
+ * The shortest period a frame is judged against, ms (lane loadq2, the lead's decision R1): frames that come at 60 a second
+ * or faster are smooth enough (60 is the lead's estimate of what pilots accept), so a 144 Hz screen whose frames come at
+ * 90 a second does not lower the detail. Before R1 the learned period alone was used: 2.5 ms with the frame rate free on
+ * the RTX 4090, and every tenth frame of 17.8 ms stepped a hand-set 16 M down to 6 M (docs/wip/loadq.md, lq-wro-16unc).
+ */
+export const MIN_JUDGED_PERIOD_MS = 1000 / 60;
+
+/**
+ * R1 measured (loadq2, keeper log k-after-govlog3 on Wroclaw, frame rate free): every frame the keeper counted as missed
+ * was a held frame of about 17.5 ms after a short one (the two together 21 to 26 ms, over 1.25 x 16.7) while the down
+ * window held 130 to 140 frames a second, and the detail went down four steps. So the keeper also counts the pictures
+ * drawn in the down window (judged frames that were not held): at MIN_SMOOTH_FPS or more a second it never steps down,
+ * whatever share of the frames came late (60: the lead's estimate, as above).
+ */
+export const MIN_SMOOTH_FPS = 60;
+
+/**
+ * R2, the keeper does not alternate (estimates of the lead): a step up followed by a step down within FLAP_MS doubles the
+ * calm wait before the next step up (upWindowMs at the start), up to MAX_UP_WAIT_MS; a step up that held for UP_HELD_MS
+ * puts the wait back to its start.
+ */
+export const FLAP_MS = 10000;
+export const MAX_UP_WAIT_MS = 120000;
+export const UP_HELD_MS = 60000;
+
 /** Frame intervals the display period is learned from before the governor judges any frame (2 s at 30 Hz). */
 export const PERIOD_MIN_SAMPLES = 60;
 
@@ -89,7 +115,7 @@ export class FrameGovernor {
     private last = -1;
     private period: DisplayPeriod;
     /** each judged frame: missed or not */
-    private log: { t: number; missed: boolean }[] = [];
+    private log: { t: number; missed: boolean; held: boolean }[] = [];
     private lastChange = -Infinity;
     changes = 0;
     /**
@@ -103,12 +129,40 @@ export class FrameGovernor {
     private lastStreamed = -Infinity;
     /** the display period is learned and frames are judged (see onFrame) */
     private judging = false;
+    /** frames are judged for a step down only a whole down window after this (a gap, the end of a rest: rest()) */
+    private windowFrom = -Infinity;
+    /** the previous judged interval, ms (a held frame spans it and its own) */
+    private prevDt = 0;
+    /** R2: the calm wait before a step up now, ms, and the time of the last step up (-Infinity: none open) */
+    upWaitMs: number;
+    private lastUpAt = -Infinity;
 
     constructor(steps: QualityStep[] = DEFAULT_STEPS, opts: GovernorOptions = DEFAULT_GOVERNOR) {
         this.base = steps;
         this.steps = steps.map((s) => ({ ...s }));
         this.opts = opts;
         this.period = new DisplayPeriod(opts.periodMinSamples ?? PERIOD_MIN_SAMPLES);
+        this.upWaitMs = opts.upWindowMs;
+    }
+
+    /**
+     * The period a frame is judged against, ms: the learned display period, at least MIN_JUDGED_PERIOD_MS (R1).
+     * Infinity before anything was learned.
+     */
+    get judgedPeriodMs(): number {
+        return Math.max(this.period.ms, MIN_JUDGED_PERIOD_MS);
+    }
+
+    /**
+     * A frame at rest (lane loadq G6, apps/fly quality.ts): the slower frames of a still picture are chosen, not missed,
+     * so nothing is judged or learned; the next judged frame measures from this one, and a step down needs a whole down
+     * window of judged frames after the rest (review LR-3: the first heavy frames after a move were judged alone).
+     */
+    rest(t: number): void {
+        this.last = t;
+        this.streamedBefore = false;
+        this.prevDt = 0;
+        this.windowFrom = t;
     }
 
     get current(): QualityStep {
@@ -161,6 +215,34 @@ export class FrameGovernor {
     }
 
     /**
+     * The keeper has judged this load's frames and would not step down now: off, at its lowest step, or judging with a
+     * whole down window since its last change (or rest) and no more missed frames in it than it allows. The still rise
+     * (lane loadq G6) waits for this, so the flight's step is chosen before the detail rises (review LR-4).
+     */
+    calm(t: number): boolean {
+        if (!this.enabled || this.step >= this.steps.length - 1) return true;
+        if (!this.judging || t - Math.max(this.lastChange, this.windowFrom) < this.opts.downWindowMs) return false;
+        return this.downWindow(t).n > 0 && !this.tooSlow(t);
+    }
+
+    /** The judged frames of the last down window: all, missed, and pictures drawn (not held). */
+    private downWindow(t: number): { n: number; m: number; drawn: number } {
+        let n = 0, m = 0, drawn = 0;
+        for (let i = this.log.length - 1; i >= 0 && t - this.log[i].t <= this.opts.downWindowMs; i--) {
+            n++;
+            if (this.log[i].missed) m++;
+            if (!this.log[i].held) drawn++;
+        }
+        return { n, m, drawn };
+    }
+
+    /** The down window has more missed frames than allowed and fewer than MIN_SMOOTH_FPS pictures a second (R1). */
+    private tooSlow(t: number): boolean {
+        const w = this.downWindow(t);
+        return w.n > 0 && w.m / w.n > this.opts.downMissRatio && w.drawn * 1000 < MIN_SMOOTH_FPS * this.opts.downWindowMs;
+    }
+
+    /**
      * Feed one frame timestamp (ms). Returns the new step when the quality changes, else null.
      * `excused`: the interval ending here was made on purpose (the latency guard skipped a frame),
      * so it says nothing about the GPU keeping up and is not counted as a missed frame.
@@ -188,7 +270,8 @@ export class FrameGovernor {
         const streaming = streamed || this.streamedBefore;
         this.streamedBefore = streamed;
         if (excused) return null;
-        if (dt <= 0 || dt > 1000) return null; // paused tab, debugger: not a frame-rate signal
+        // paused tab, debugger: not a frame-rate signal; a step down then needs a whole window of frames after it
+        if (dt <= 0 || dt > 1000) { this.windowFrom = t; this.prevDt = 0; return null; }
         this.period.add(t, dt);
         // a frame is late only against a display period learned from enough frames
         if (!this.period.learned) return null;
@@ -198,15 +281,20 @@ export class FrameGovernor {
             this.judging = true;
             this.lastChange = t;
         }
-        const period = this.period.ms;
+        const period = this.judgedPeriodMs;
         // 1.25 periods: a frame that took ~1.4 periods already makes the display repeat one (a 45 ms
-        // frame on a 30 Hz screen); 1.5 let a steady 22 fps pass as 'on time'
-        const missed = held || dt > MISSED_PERIODS * period;
+        // frame on a 30 Hz screen); 1.5 let a steady 22 fps pass as 'on time'. A held frame repeated the previous
+        // picture: the picture changed after this interval and the one before, judged against the same bound (R1:
+        // two 7 ms intervals of a 144 Hz screen are a 14 ms picture, faster than 60 a second)
+        const missed = held ? this.prevDt + dt > MISSED_PERIODS * period : dt > MISSED_PERIODS * period;
+        this.prevDt = dt;
         if (missed && streaming) this.streamHitches++;
-        this.log.push({ t, missed });
+        this.log.push({ t, missed, held });
         while (this.log.length && t - this.log[0].t > this.opts.upWindowMs) this.log.shift();
         if (!this.enabled) return null;
         const since = t - this.lastChange;
+        // R2: a step up that held for UP_HELD_MS puts the wait back to its start
+        if (this.lastUpAt > -Infinity && t - this.lastUpAt >= UP_HELD_MS) { this.upWaitMs = this.opts.upWindowMs; this.lastUpAt = -Infinity; }
         // the share of missed frames in the last `win` ms
         const ratio = (win: number) => {
             let n = 0, m = 0;
@@ -216,13 +304,17 @@ export class FrameGovernor {
             }
             return n ? m / n : 0;
         };
-        if (since >= this.opts.downWindowMs && this.step < this.steps.length - 1 && ratio(this.opts.downWindowMs) > this.opts.downMissRatio) {
+        if (since >= this.opts.downWindowMs && t - this.windowFrom >= this.opts.downWindowMs && this.step < this.steps.length - 1 && this.tooSlow(t)) {
+            // R2: down again soon after a step up: the next step up waits twice as long
+            if (t - this.lastUpAt < FLAP_MS) this.upWaitMs = Math.min(MAX_UP_WAIT_MS, this.upWaitMs * 2);
+            this.lastUpAt = -Infinity;
             this.step++;
             this.lastChange = t;
             this.changes++;
             return this.current;
         }
-        if (since >= this.opts.upWindowMs && this.step > 0 && ratio(this.opts.upWindowMs) <= this.opts.upMissRatio) {
+        if (since >= this.upWaitMs && this.step > 0 && ratio(this.opts.upWindowMs) <= this.opts.upMissRatio) {
+            this.lastUpAt = t;
             this.step--;
             this.lastChange = t;
             this.changes++;

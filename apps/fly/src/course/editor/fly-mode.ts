@@ -48,6 +48,23 @@ export function editModeOf(armed: boolean, crashed: boolean, prev: EditMode = 'e
     return modeStep(prev, armed, crashed).mode;
 }
 
+/**
+ * Lane editfix E2 (the owner's report of 2026-11-16: "I entered the editing and cannot move, cannot select a gate, Add and
+ * Exit do nothing, the menu bar hangs at the top"): Shift+B pressed while the drone flies opened the mode in its flight
+ * (modeStep: armed and no hold gives 'fly'), so the edit view never showed. The mode opens on the edit view: the hold is set
+ * as after a crash (flying again needs a fresh arm), and an armed drone goes back to the start so it does not fall while he
+ * edits. Measured (edit-mouse-probe fly-1536, 'final'): the motors do NOT stop by themselves at the start (game.ts landed
+ * needs Shift held), the drone stays armed at about 22 % throttle on the ground (docs/wip/editfix.md, E2.5).
+ */
+export interface OpenStep {
+    readonly hold: boolean;
+    readonly respawn: boolean;
+}
+
+export function openStep(armed: boolean): OpenStep {
+    return { hold: armed, respawn: armed };
+}
+
 /** What the edit mode's flight shows of the course: the next gate lights up, the lap time and the guide show (integration E),
  *  no best lap written. */
 export interface FlyShows {

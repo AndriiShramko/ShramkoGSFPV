@@ -45,14 +45,15 @@ import { EditView } from '../../course/editor/view-mouse';
 import { GateBar } from '../../course/editor/gate-bar';
 import { TopBar } from '../../course/editor/top-bar';
 import { ADD_RAY_M, addAction, addFacing, addLift, addPoint, facingFrom } from '../../course/editor/add-place';
-import { flyShows, modeStep, type EditMode } from '../../course/editor/fly-mode';
+import { flyShows, modeStep, openStep, type EditMode } from '../../course/editor/fly-mode';
+import { stopKeyboardArm } from '../../devices/keyboard';
 import type { Ray } from '../../course/editor/pick';
 import { camFrom } from '../../course/editor/fly-cam';
 import { gateFlownPose, placeGate, placeInState, type FlownPose } from '../../course/editor/drag';
 import type { CourseCheck, EditorState } from '@gsfpv/tracks';
 import { myTokens, myVotes, rememberToken, rememberVote, voterId } from '../../course/store';
 import { EditorPanel } from '../../course/editor/panel';
-import { editorKey, forwardOf, keyRoute } from '../../course/editor/keys';
+import { editorKey, forwardOf, keyOffLine, keyRoute } from '../../course/editor/keys';
 import type { EditorCommand, KeyPress } from '../../course/editor/keys';
 import { ACTION_KEYS, actionKey, gateLine, problemsLine, refusalText } from '../../course/editor/words';
 import { ADD_FIX_KEY, SAVE_FIX_KEY, firstWrong } from '../../course/editor/texts';
@@ -92,9 +93,12 @@ export const course: Feature = {
         // lane course4: the START / FINISH banners, the number plate, the lap's splash and the results card as drawn
         hook.look = () => ({ ...stage.look, roles: [...stage.look.roles] });
         hook.splash = () => ({ ...hud.splashState });
+        // lane race, L1: the room's course is built here as if this pilot made it (rooms/board.ts calls it via the hook)
+        hook.adopt = (c) => ('seed' in c ? generate(c.seed >>> 0) : void loadServer(0, true, c));
         hook.clockText = () => document.querySelector('[data-testid=course-hud]')?.textContent?.trim() ?? null;
         const stage = new CourseStage(ctx.renderer);
         const hud = new CourseHud(ctx.ui);
+        hud.setCloseLabel(t('course.hide'));
         const store = new CourseStore();
         let rows: CourseRow[] = [];
         let run: CourseRun | null = null;
@@ -703,6 +707,8 @@ export const course: Feature = {
 
         // lane review TR-7: the sound mode cannot fly a visual course yet (train 2), and Shift is its keyboard's 'down', so the
         // keys do nothing while the mode is on (ctx.sonic is set only then); the routing itself is the lead's (keymap.test.ts:160)
+        // lane uiaudit fault 4: the clock block's cross hides the course as Shift+T does
+        hud.onClose = () => { if (run && hook.on) toggle(); };
         ctx.keys.on('course.toggle', (e) => {
             if (e.repeat || ctx.sonic) return;
             toggle();
@@ -872,6 +878,8 @@ export const course: Feature = {
             edHook.problems = ed.problems.length;
             sync();
         };
+        /** lane editfix E4: the pressed key as the keymap writes it (event.code, so any layout): Shift+T, P, F3 */
+        const keyName = (e: KeyboardEvent): string => (e.shiftKey ? 'Shift+' : '') + e.code.replace(/^(Key|Digit)/, '');
         const openEdit = (): void => {
             if (ed || ctx.sonic) return;
             const col = ctx.session.collision;
@@ -903,8 +911,18 @@ export const course: Feature = {
             edHook.refused = null;
             // lane editor3 E3: no pause; the flight goes on in the mode (armed: the drone's view, disarmed: the edit view)
             mode = 'edit';
-            crashHold = false;
-            unblock = ctx.keys.block(() => ed !== null && mode === 'edit');
+            // lane editfix E2: opened in the air, the mode shows the edit view, not the flight (fly-mode.ts openStep)
+            const os = openStep(!!ctx.session.sim?.armed);
+            crashHold = os.hold;
+            if (os.respawn) ctx.session.respawnStart();
+            // lane editfix E4: a keyboard pilot's motors stop too, so one Space test-flies (keyboard.ts stopKeyboardArm)
+            if (os.respawn) stopKeyboardArm();
+            // lane editfix E4 (finding 2 of E3): a flight key the edit view swallows (P, Shift+T ...) says why and what to press
+            // review 1: Shift+B (this editor's own key) repeats the editor's line instead (course/editor/keys.ts keyOffLine)
+            unblock = ctx.keys.block(() => ed !== null && mode === 'edit', (a, e) => {
+                const l = keyOffLine(a, keyName(e));
+                say(t(l.key, l.vars), true);
+            });
             panel = new EditorPanel(ctx.ui, { key: (p) => applyKey(p), saveMine: (n, ti) => void saveMine(n, ti), saveAll: () => void saveAll(), saveAdmin: (ti) => void saveAdmin(ti), vote: (id, v) => void vote(id, v), open: (id) => openRow(id) });
             panel.defaults('', run.track.title);
             panel.adminOn(adminLive);
