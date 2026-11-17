@@ -179,8 +179,39 @@ moved each craft along race.path on the real scan's course g1.438779389 (9 gates
 then stayed at next 2 for 1645 frames over 3 rounds; no lap was reported (`sent` 0), 7 of 11 checks. The same stepping
 on the test scene threeRooms: 60 seeds, 0 stuck. Open: the probe's path or the gate's direction on the real scan.
 
+## Review
+
+Release check 1 (2026-11-17, head 299876a4 plus this status part; review file U:/Temp/gsfpv-train3/reviews/race-review-1.md).
+- Merge: origin/main has nothing the branch lacks (0 behind); no merge.
+- Diff read (apps, packages, deploy, tools against origin/main): the flight, its keys and pointer lock, the pause and the order of
+  Esc, the touch branch and the edit mode are not touched; course.ts gains one line (`hook.adopt` calls the feature's own
+  generate or loadServer: a room's course arrives with the course's own 'course soon' line while the drone flies, the drone is not
+  moved); Fly by Sound gets the lead line through Announcer with the course's quiet cue; packages/sonic-fpv is not changed.
+- Walk on a fresh release build of 299876a4 (sha256 e65a9c0d...), walls of U:/Temp/gsfpv-train3/walls/release in dist/walls, the
+  local rig (release + rooms.py, ports 5870-5879), two pages at 1536x730 at device scale 1.25 on Wroclaw 70b50d42 (script and log
+  U:/Temp/gsfpv-train3/reviews/race/walk.mts, walk.json): A opened the rooms panel by 9 and clicked its create button; B opened A's
+  link and joined (2 members); A's Shift+G on the ground made g1.61547034, B built it with the same gate places (to 1 mm); both
+  flew 2 rounds: both rows on A's board, ordered (0:19.72, 0:29.60), board at css (10,66)-(180,115), outside the middle third;
+  B's quick rounds: A showed 'Pilot-1955 leads, 0:08.97' at (668,82)-(868,109), outside the middle third, and an oscillator
+  started on A for each lead change (the short sound; not heard); Esc on A: pause menu, board and banner hidden; Esc again: board
+  back; B's Shift+G: A followed (g1.90687119), rows cleared on both; at 844x390 the board sits under the walls panel at
+  (10,112)-(178,161); B left: A alone has no board. Pictures looked at: w2-B-gates, w4-A-banner, w6-A-844 (in the review folder).
+  The lane adds no control (board and banner take no pointer).
+- Negative controls by mutants (each restored by git checkout): leadChange taking an equal time as the lead fails
+  rooms-lead.test.ts (1 failure); board.look sending the room's own course back fails rooms-board.test.ts (1 failure); clean 10 of 10.
+- Old live rooms service with the new page: rooms.py on origin/main counts an unknown message type by its rate gate and does not
+  answer it (`# review RV-2`), and its welcome has no `board`: the page then shows no board and no banner; rooms work as today.
+- deploy/live-checks.sh: not changed by the lane (no live check added).
+- Not run: accept-fly (no flight, key, input or session code changed; the lane ran it 10 of 10 in R2.6).
+- Not verified: pointer lock (headless Chrome does not grant it: the click into the scene left pointerLockElement null); the
+  owner's laptop, a real phone, touch, a second real person and real network lag took no part; the sound was counted, not heard.
+
 ## For the lead
 
+- Deploy order in one line each (release check 1): page yes; rooms service yes (apps/rooms/board.py new, apps/rooms/rooms.py
+  changed; deploy/release-rooms.sh FILES holds board.py); compose no (deploy/compose.yml unchanged); nginx no; API files no
+  (apps/api unchanged); sound package no (packages/sonic-fpv pin unchanged). Rooms service first, then the site; each works
+  with the other's old version.
 - Deploy order: (1) the rooms service: `bash deploy/release-rooms.sh` (no --compose: deploy/compose.yml is unchanged against
   origin/main). Changed in apps/rooms: board.py (new), rooms.py; tests/test_board.py (new, not deployed). The script's FILES
   list now holds board.py (commit a1ef3980); with the old list the service would fail at `import board`. Check after it:
