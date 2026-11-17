@@ -91,12 +91,12 @@ Stage R2-board:
   A next run with HEAD at the status commit after a246eedf (only this file changed) may serve it as it is; the local
   rooms service and the walls stand-in (dist/walls) are started as in R1.3 (rooms-board.ts).
   Not done in this run: the browser run at the stage start (the reply budget went to the build of L3 to L6).
-- [~] R2.4 Probe: extend tools/bench/src/rooms-board.ts (rendering on, holds of at most 10 min, on 70b50d42): both keyboard
+- [x] R2.4 Probe: extend tools/bench/src/rooms-board.ts (rendering on, holds of at most 10 min, on 70b50d42): both keyboard
   pilots fly laps; hook rooms.board.shown and the board's row order equal on both pages; B beats A's best: both pages show
   banner (hook rooms.board.banner with B's nick and time) within 1 s and the rows swap; rects of [data-testid=rooms-board]
   and [data-testid=rooms-lead] at 1920x1080, 1280x720, 844x390 against the middle third, the clock block, the lap time place
   (20 % of the height), the mode chip and the page's buttons; pause menu open: both hidden; one pilot alone: no board.
-  [~] Done so far (7b7caaa3, 0de288d2, c215b502, this commit): rooms-board.ts MODE=r2 (cd tools/bench; MODE=r2 npx tsx
+  [x] Done so far (7b7caaa3, 0de288d2, c215b502, this commit): rooms-board.ts MODE=r2 (cd tools/bench; MODE=r2 npx tsx
   src/rooms-board.ts; takes the lock itself; 120 to 170 s). Run 3 on the release of c215b502 (log
   U:/Temp/gsfpv-train3/race/rooms-board-r2-3.log, evidence/2026-11-17/rooms-board.json not committed): 7 of 8 checks pass:
   no board row before laps; both pages same order; B's takeover banner on both pages 53 ms after B's lap was sent ('You
@@ -109,7 +109,7 @@ Stage R2-board:
   offsetParent is null for a fixed panel (now computed style; narrower, or under the header).
   Left for R2.4: build the release of this commit, copy U:/Temp/gsfpv-train2/walls/release/70b50d42 to dist/walls, rerun
   MODE=r2 and see 8 of 8; if noOverlap still fails, read r2.overA/overB in the evidence.
-  [~] Runs 4 to 7 (27d80011, f512de3b, 73713f76; releases of each, walls stand-in in dist/walls; logs
+  [x] Runs 4 to 7 (27d80011, f512de3b, 73713f76; releases of each, walls stand-in in dist/walls; logs
   U:/Temp/gsfpv-train3/race/rooms-board-r2-4.log .. r2-7.log, build-r2b..e.log; evidence/2026-11-17/rooms-board.json not committed).
   Faults found and fixed in apps/fly/src/rooms/board-view.ts fit(): a selector list returned the whole voxel panel, not its header
   (run 4: board pushed to y 611 on 844x390); a fit every 30 frames left the board over the fold button after a resize (run 5);
@@ -127,7 +127,29 @@ Stage R2-board:
   place with dist/walls; HEAD after it changes only this file and the probe).
   Note for the lead: after run 4 this lane ran 'rmdir C:/dev/.gpu-lock' though rooms-board.ts takes and frees the lock itself;
   if another lane held it at that moment (03:5x on 2026-11-17) its hold was cut short. Not repeated.
-- [ ] R2.5 race-board.png, race-lead-change.png, race-844.png were written by run 7 (U:/Temp/gsfpv-train3/shots); not yet looked at.
+  [x] Runs 8 to 13 (b79f6313, 79811002, 27d7a9db, 24cceb42, fc982bb6, d49bb30d; logs U:/Temp/gsfpv-train3/race/rooms-board-r2-8..13.log,
+  builds build-r2f.log, build-r2g.log). Run 8: python was not on the shell's PATH (the probe spawns 'python' for apps/rooms):
+  run with PATH=/c/Users/andri/AppData/Local/Programs/Python/Python311:$PATH. Measured and fixed:
+  - probe: the service refuses a lap under 3 s (apps/rooms/board.py MIN_LAP_MS); with 2 points per gate A's laps were under 3 s
+    and all 9 were refused (run 8); the same points gave 5.9 s and 3.4 s in two runs. Now B's takeover flies 8 points per gate
+    and each try after the first scales the points per gate from its own last lap into [3.6 s, the others' best - 0.4 s]
+    (falls back to [3.1 s, best - 0.1 s]).
+  - board (apps/fly/src/rooms/board-view.ts fit()): run 9 passed 8 of 8 but race-844.png showed no board: at 844x390 the folded
+    'Walls 5 cm' button (16..107 x 62..105) sits on the board's place and fit() hid the board for the whole flight. Run 11 showed
+    why the old measure was wrong as well: the menu of the closed <details> keeps a layout box (16..278 x 105..604, nothing
+    drawn). Now the panel counts as its summary plus the menu only while open; a panel at the board's left edge moves the
+    board just under it (translateY) while that stays above 60 % of the height, only a taller open panel hides it.
+    New probe check boardSeenAt844. Probe skips buttons inside a closed <details> (run 12 counted the undrawn fold button).
+  Run 13 (release fc982bb6, HEAD d49bb30d changes only the probe): 9 of 9 pass (evidence/2026-11-17/rooms-board.json):
+  same order on both pages; B leads 0:05.07, banner on both pages 60 and 61 ms after the send; rows swap with the move; A at
+  844x390 leads 0:04.37 after 2 tries, banners 67 and 59 ms; board at 844 visible at 10..182 x 112..161 under the walls button
+  (16..108 x 61..105); overA {} overB {}; pause hides both; alone no board. Single frames: one of the pause menu's Continue
+  button in the frame Escape opens it (known since run 5, not counted).
+- [x] R2.5 Pictures looked at (U:/Temp/gsfpv-train3/shots): race-board.png (run 9, 1920x1080): the board at the top left under
+  the mode line, two rows in the slots' colours (orange first, blue second), the lap clock and the middle clear.
+  race-lead-change.png (run 9, 1920x1080): 'Pilot-0932 leads, 0:04.13' in a dark pill at the top centre above the course clock,
+  the board's rows swapped. race-844.png (run 13, 844x390): the board under the 'Walls 5 cm' button, two rows, own row marked,
+  nothing over the middle; the remote craft's name tag 'Pilot-1363' is in the middle (remote-stage, as on main).
 - [ ] R2.6 rooms-two-page.mjs, train1-live.ts rooms against local servers, accept-fly B6 B7 B9..B16, mouse-free-probe.
 - [ ] R2.7 Status: deploy order, a read-only live check for the lead, What the owner does, not verified.
 

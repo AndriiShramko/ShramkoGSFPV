@@ -7,8 +7,8 @@
       "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "why": "installed"
     },
-    "date": "2026-11-17T03:23:55.564Z",
-    "gitHead": "79811002",
+    "date": "2026-11-17T03:44:47.673Z",
+    "gitHead": "d49bb30d",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
@@ -22,8 +22,8 @@
     "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
     "why": "installed"
   },
-  "loadMs": 9358,
-  "joinMs": 15229,
+  "loadMs": 9381,
+  "joinMs": 15442,
   "meet": {
     "aIn": true,
     "bIn": true,
@@ -35,42 +35,42 @@
   "r2": {
     "aCourse": true,
     "bCourse": true,
-    "course": "g1.7886635",
+    "course": "g1.1296321243",
     "phase1": {
       "f1a": {
-        "pts": 1024,
+        "pts": 640,
         "laps": 0
       },
       "f1b": {
-        "pts": 1536,
+        "pts": 960,
         "laps": 0
       },
       "aSlot": 0,
       "aRows": [
         {
           "slot": 0,
-          "nick": "Pilot-2232",
-          "best": 15967,
+          "nick": "Pilot-5688",
+          "best": 9667,
           "laps": 2
         },
         {
           "slot": 1,
-          "nick": "Pilot-0932",
-          "best": 23999,
+          "nick": "Pilot-5691",
+          "best": 14467,
           "laps": 2
         }
       ],
       "bRows": [
         {
           "slot": 0,
-          "nick": "Pilot-2232",
-          "best": 15967,
+          "nick": "Pilot-5688",
+          "best": 9667,
           "laps": 2
         },
         {
           "slot": 1,
-          "nick": "Pilot-0932",
-          "best": 23999,
+          "nick": "Pilot-5691",
+          "best": 14467,
           "laps": 2
         }
       ],
@@ -86,92 +86,80 @@
     "takeovers": {
       "t2": {
         "fly": {
-          "pts": 384,
+          "pts": 480,
           "laps": 0,
           "nexts": {
-            "0": 12,
-            "1": 24,
-            "2": 12,
-            "3": 12,
-            "4": 12,
-            "5": 12,
-            "6": 12,
-            "7": 12,
-            "8": 12,
-            "9": 12,
-            "10": 12,
-            "11": 12,
-            "12": 12,
-            "13": 12,
-            "14": 12,
-            "15": 12,
-            "16": 12,
-            "17": 12,
-            "18": 12,
-            "19": 3,
-            "20": 12,
-            "21": 21,
-            "22": 3,
-            "23": 12,
-            "24": 12,
-            "25": 21,
-            "26": 12,
-            "27": 12,
-            "28": 12,
-            "29": 12,
-            "30": 12
+            "0": 24,
+            "1": 48,
+            "2": 24,
+            "3": 24,
+            "4": 24,
+            "5": 24,
+            "6": 24,
+            "7": 6,
+            "8": 24,
+            "9": 42,
+            "10": 6,
+            "11": 24,
+            "12": 24,
+            "13": 42,
+            "14": 24,
+            "15": 24,
+            "16": 24,
+            "17": 24,
+            "18": 24
           },
           "crashes": 0
         },
         "tries": 1,
         "plan": [
           {
-            "k": 4,
-            "last": 4133,
-            "best": 4133,
-            "top": 15967
+            "k": 8,
+            "last": 5065,
+            "best": 5065,
+            "top": 9667
           }
         ],
         "me": {
           "slot": 1,
-          "nick": "Pilot-0932",
+          "nick": "Pilot-5691",
           "row": {
             "slot": 1,
-            "nick": "Pilot-0932",
-            "best": 4133,
+            "nick": "Pilot-5691",
+            "best": 5065,
             "laps": 5
           },
-          "top": 15967,
-          "last": 4133
+          "top": 9667,
+          "last": 5065
         },
-        "time": "0:04.13",
+        "time": "0:05.07",
         "seen": true,
         "shotFile": "U:/Temp/gsfpv-train3/shots/race-lead-change.png",
         "sends": 3,
         "bannerWho": {
-          "t": 1794885811411,
+          "t": 1794887036408,
           "kind": "banner",
-          "text": "You lead, 0:04.13",
+          "text": "You lead, 0:05.07",
           "mine": "1",
           "W": 1280,
           "H": 720
         },
         "bannerOther": {
-          "t": 1794885811412,
+          "t": 1794887036409,
           "kind": "banner",
-          "text": "Pilot-0932 leads, 0:04.13",
+          "text": "Pilot-5691 leads, 0:05.07",
           "mine": "0",
           "W": 1920,
           "H": 1080
         },
-        "lagWhoMs": 61,
-        "lagOtherMs": 62,
+        "lagWhoMs": 60,
+        "lagOtherMs": 61,
         "whoMine": true,
         "otherNamed": true,
         "orderWho": "1,0",
         "orderOther": "1,0",
         "movedWho": {
-          "t": 1794885807145,
+          "t": 1794887031075,
           "kind": "order",
           "order": "1,0",
           "moving": true,
@@ -179,7 +167,7 @@
           "H": 720
         },
         "movedOther": {
-          "t": 1794885807145,
+          "t": 1794887031076,
           "kind": "order",
           "order": "1,0",
           "moving": true,
@@ -189,93 +177,94 @@
       },
       "t3": {
         "fly": {
-          "pts": 288,
-          "laps": 1,
+          "pts": 420,
+          "laps": 0,
           "nexts": {
-            "0": 9,
-            "1": 18,
-            "2": 9,
-            "3": 9,
-            "4": 9,
-            "5": 9,
-            "6": 9,
-            "7": 9,
-            "8": 9,
-            "9": 9,
-            "10": 9,
-            "11": 9,
-            "12": 9,
-            "13": 9,
-            "14": 9,
-            "15": 9,
-            "16": 9,
-            "17": 9,
-            "18": 9,
-            "19": 9,
-            "20": 9,
-            "21": 9,
-            "22": 9,
-            "23": 9,
-            "24": 9,
-            "25": 9,
-            "26": 9,
-            "27": 9,
-            "28": 9,
-            "29": 9,
-            "30": 9
+            "0": 21,
+            "1": 42,
+            "2": 21,
+            "3": 21,
+            "4": 21,
+            "5": 21,
+            "6": 21,
+            "7": 6,
+            "8": 21,
+            "9": 40,
+            "10": 7,
+            "11": 16,
+            "12": 21,
+            "13": 36,
+            "14": 21,
+            "15": 21,
+            "16": 21,
+            "17": 21,
+            "18": 21
           },
           "crashes": 0
         },
-        "tries": 1,
+        "tries": 2,
         "plan": [
           {
             "k": 3,
-            "last": 3100,
-            "best": 3100,
-            "top": 4133
+            "last": 1901,
+            "best": 9667,
+            "top": 5065
+          },
+          {
+            "k": 7,
+            "last": 4401,
+            "best": 4367,
+            "top": 5065
           }
         ],
         "me": {
           "slot": 0,
-          "nick": "Pilot-2232",
+          "nick": "Pilot-5688",
           "row": {
             "slot": 0,
-            "nick": "Pilot-2232",
-            "best": 3100,
-            "laps": 5
+            "nick": "Pilot-5688",
+            "best": 4367,
+            "laps": 6
           },
-          "top": 4133,
-          "last": 3100
+          "top": 5065,
+          "last": 4401
         },
-        "time": "0:03.10",
-        "seen": true,
+        "time": "0:04.37",
+        "seen": false,
         "shotFile": null,
-        "sends": 3,
+        "sends": 6,
         "bannerWho": {
-          "t": 1794885826578,
+          "t": 1794887057017,
           "kind": "banner",
-          "text": "You lead, 0:03.10",
+          "text": "You lead, 0:04.37",
           "mine": "1",
           "W": 844,
           "H": 390
         },
         "bannerOther": {
-          "t": 1794885826578,
+          "t": 1794887057009,
           "kind": "banner",
-          "text": "Pilot-2232 leads, 0:03.10",
+          "text": "Pilot-5688 leads, 0:04.37",
           "mine": "0",
           "W": 1280,
           "H": 720
         },
-        "lagWhoMs": 56,
-        "lagOtherMs": 56,
+        "lagWhoMs": 67,
+        "lagOtherMs": 59,
         "whoMine": true,
         "otherNamed": true,
-        "orderWho": "1,0",
+        "orderWho": "0,1",
         "orderOther": "0,1",
-        "movedWho": null,
+        "movedWho": {
+          "t": 1794887057017,
+          "kind": "order",
+          "order": "0,1",
+          "moving": true,
+          "W": 844,
+          "H": 390
+        },
         "movedOther": {
-          "t": 1794885826578,
+          "t": 1794887057009,
           "kind": "order",
           "order": "0,1",
           "moving": true,
@@ -283,7 +272,25 @@
           "H": 720
         }
       },
-      "smallShot": "U:/Temp/gsfpv-train3/shots/race-844.png"
+      "smallShot": "U:/Temp/gsfpv-train3/shots/race-844.png",
+      "small": {
+        "display": "block",
+        "visibility": "visible",
+        "rect": [
+          10,
+          112,
+          182,
+          161
+        ],
+        "walls": [
+          16,
+          61,
+          108,
+          105
+        ],
+        "rows": 2
+      },
+      "wallsWasOpen": false
     },
     "pause": {
       "paused": {
@@ -300,18 +307,18 @@
       "alone": true
     },
     "onceA": {
-      "board~btn:voxpanel-fold@844": {
+      "board~btn:pause.continue@844": {
         "a": [
           10,
-          66,
+          112,
           182,
-          115
+          161
         ],
         "b": [
-          179,
-          112,
-          223,
-          156
+          33,
+          151,
+          378,
+          192
         ],
         "W": 844,
         "H": 390
@@ -347,7 +354,7 @@
           256,
           37
         ],
-        "btns": 23
+        "btns": 11
       },
       "1920x1080+lap": {
         "board": [
@@ -376,7 +383,7 @@
           256,
           37
         ],
-        "btns": 22
+        "btns": 10
       },
       "1920x1080+banner+lap": {
         "board": [
@@ -410,7 +417,7 @@
           256,
           37
         ],
-        "btns": 22
+        "btns": 10
       },
       "1920x1080+banner": {
         "board": [
@@ -444,7 +451,7 @@
           256,
           37
         ],
-        "btns": 23
+        "btns": 11
       },
       "844x390": {
         "board": [
@@ -473,10 +480,44 @@
           256,
           37
         ],
-        "btns": 22
+        "btns": 10
+      },
+      "844x390+lap": {
+        "board": [
+          10,
+          112,
+          182,
+          161
+        ],
+        "banner": null,
+        "mid": [
+          281,
+          130,
+          563,
+          260
+        ],
+        "clock": null,
+        "lapTime": [
+          358,
+          291,
+          486,
+          350
+        ],
+        "mode": [
+          157,
+          9,
+          256,
+          37
+        ],
+        "btns": 9
       },
       "844x390+banner+lap": {
-        "board": null,
+        "board": [
+          10,
+          112,
+          182,
+          161
+        ],
         "banner": [
           348,
           82,
@@ -502,7 +543,7 @@
           256,
           37
         ],
-        "btns": 21
+        "btns": 9
       }
     },
     "overB": {},
@@ -529,7 +570,7 @@
           256,
           37
         ],
-        "btns": 22
+        "btns": 10
       },
       "1280x720+banner": {
         "board": [
@@ -563,7 +604,7 @@
           256,
           37
         ],
-        "btns": 23
+        "btns": 11
       },
       "1280x720+lap": {
         "board": [
@@ -592,7 +633,7 @@
           256,
           37
         ],
-        "btns": 22
+        "btns": 10
       },
       "1280x720+banner+lap": {
         "board": [
@@ -626,7 +667,7 @@
           256,
           37
         ],
-        "btns": 22
+        "btns": 10
       }
     },
     "err": [
@@ -640,10 +681,11 @@
     "bTakesLeadBannerBothWithin1s": true,
     "rowsSwapWithMove": true,
     "aTakesLeadBackAt844": true,
+    "boardSeenAt844": true,
     "noOverlap": true,
     "pauseHidesBoth": true,
     "aloneNoBoard": true
   },
   "pass": true,
-  "runMs": 129362
+  "runMs": 156697
 }
