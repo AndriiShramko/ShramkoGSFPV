@@ -18,8 +18,10 @@ Facts V1-a to V1-f, Design 1 to 7): the numbers there are the "before" of this l
   line, so no new sound for the narrator off (the count line fly.progress and the attempt's cue stay at once). Test
   packages/sonic-fpv test/speech-at-speed.test.ts, negative control against 5e04268 fails by assertion ("expected 3.4 to be
   less than 2"); package vitest 73 files 1362 passed, three tsc 0 errors.
-- [ ] W1.4 Design 4 (brake cue "slow" with a falling tone; the ear pilot brakes on it), unit test with negative control, table
-  again.
+- [~] W1.4 Design 4 built in package 2bea5d9 on train6 (src/cues/brake.ts; test/brake-cue.test.ts, negative control with the
+  old ear-pilot.ts fails by assertion "expected 8 to be less than 4"; three tsc 0 errors); the table runs (w1-d4-s1/s2).
+  Merge of origin/main 89c9c86e as 584f31bb (21 untracked older evidence files that main now tracks moved to
+  U:/Temp/gsfpv-train2/sonic5/untracked-before-merge-89c9c86e); pnpm -r typecheck 0 errors after it.
 - [ ] W1.5 Design 5 rest (the line's look shortened near a gate) only if the line still fails near a gate.
 - [ ] W1.6 Design 6 (lessons speed-5 to speed-8 at 6, 8, 10, 12 m/s, texts en/es/pl/ru, caps lift by passing), unit tests with
   negative controls.
