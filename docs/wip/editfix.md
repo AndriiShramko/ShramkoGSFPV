@@ -94,8 +94,10 @@ His laptop: Windows, RTX, 144 Hz, Chrome, keyboard and mouse, layouts ru/pl/en.
   lap1536 testfly 1 Space press to the test flight after Shift+B in the air (before: never), P and Shift+T say their line;
   every control has an effect. Chain (U:/Temp/gsfpv-train3/editfix/verify2/chain.log, evidence/2026-11-17/editfix-final):
   probe base-1920 exit 0 70s; probe fly-1536 exit 0 84s; probe fly-ru-1536 exit 0 79s; probe fly-tap-1536 exit 0 79s; probe nofly-lock-1920 exit 0 55s; probe nofly-nolock-1920 exit 0 75s; probe lap-1536 exit 0 72s; probe lap-1280 exit 0 75s; probe lap-1097 exit 0 82s; probe lap-1366 exit 0 74s; probe touch-1536 exit 0 72s; probe ru-1536 exit 0 75s; probe pl-1536 exit 0 76s; probe early-building-1536 exit 0 80s; probe early-controls-1536 exit 0 76s; probe weak-1536 exit 0 78s. a6-reference + editfix-e2 + editfix-e4: 15 passed; tsc apps/fly exit 0; origin/main has no commit the branch lacks. Chain end (chain.log): weak-1280 exit 0 89s; onespace-1536 exit 0 89s; smoke 70b50d42 exit 0; smoke 887f27aa exit 0; accept-fly B6 B7 B9-B16 all PASS exit 0, first line http://localhost:5822; no tracked file rewritten; server stopped. Evidence evidence/2026-11-17/editfix-final (18 json).
+- [x] E4.7 parts Verify 2, What the owner does, For the lead written; origin/main merged (134357ee, notes only).
+- [~] E4.8 gates.py without --only on the final head (result in the next commit).
 
-## Left after E4-rest run 2 (exact list; this run's budget spent)
+## Left after E4-rest run 2 (done in run 3: items 1-3) (exact list; this run's budget spent)
 
 1. Read U:/Temp/gsfpv-train3/editfix/verify2/chain.log: every probe case, the two smoke runs and accept-fly must say exit 0
    (accept-fly.log first line names http://localhost:5822); restore tracked evidence files accept-fly rewrote
@@ -181,13 +183,39 @@ api-unittest 228 s, architecture, i18n, catalog, b18, leaks), logs U:\Temp\gsfpv
 Not verified: the pause shown over the edit view (P is blocked there, so it could not be opened), a test flight inside
 the mode with a pad, a real touch screen, the owner's laptop. Pictures looked at: lap1536 02-open and 06-testfly only.
 
+## Verify 2 (stage E4-rest, release of 27151009, Wroclaw 70b50d42 with the local walls, port 5822)
+
+- Finding 1 repaired: after Shift+B in the air, one Space press starts the test flight (walk lap1536 step testfly: before
+  never, after 1 press; probe case onespace-1536 exit 0). The keyboard's motors stop when the edit view opens in the air
+  (before: fly-1536 final armed true, throttle 22 %). A pad keeps its hold and the line 'Arm your controller'.
+  a6-reference hash unchanged.
+- Finding 3 repaired: touch tap 2 on Exit leaves the editor (before: the click landed on SPAN.ce-tb-line because the line
+  shrank from 340 to 420 px wide between pointerdown and pointerup and Exit moved from x 771-815 to 730-775; after: line 420
+  px at pointerdown, pointerup and click, Exit at x 730-775 all three times, open false after tap 2).
+- Finding 2 repaired: P, Shift+T and every other routed flight key pressed in the edit view say one line '<key> works in
+  flight, not in the editor: press Esc to leave the editor, then <key>.' (en es pl ru). Keys listed in Status E4.3.
+- Courses flash: not a fault (1 '.course-editor' root at 0-1500 ms after the click).
+- Pass: walks touch1536, lap1536, lap1097ru exit 0, page errors 0; probe over 18 cases exit 0; editor3-smoke Wroclaw and
+  Tunis exit 0; accept-fly B6 B7 B9-B16 PASS; a6-reference, editfix-e2, editfix-e4 15 passed; tsc apps/fly exit 0.
+- Found, not repaired: at 1536x730 x1.25 the top bar covers about 6 CSS px of the top of the sound, full screen and Share
+  buttons (they stay clickable below). At max-height 500 px (1097x497) the bar's line is hidden by design, so the refusal
+  line for P etc. is not seen there.
+- Not verified: the owner's laptop, a real touch screen, a real pad in the edit view; the live check was not run.
+
 ## What the owner does
 
-1. Opens a scan (Wroclaw), clicks into the scene, flies with Space and W. 2. Presses Shift+B (any layout): the drone goes
-back to the start, the cursor is free, the bar at the top shows Add gate, Undo, Redo, Save, Courses, Keys, Exit.
-3. W A S D move the view (E up, Q down), the right mouse button held turns it, the wheel changes the speed. 4. A click on a
-gate selects it (its handles and the tool bar under it show). 5. Add gate, then a click in the scene: a new gate stands
-there. 6. Courses or Keys: the window shows that part with a green outline for a moment. 7. Exit or Esc: back to flying.
+1. Opens a scan (Wroclaw), clicks into the scene, flies with Space and W.
+2. Presses Shift+B (any layout), also in the air: the drone goes back to the start and its motors stop, the cursor is
+   free, the bar at the top shows Add gate, Undo, Redo, Save, Courses, Keys, Exit.
+3. W A S D move the view (E up, Q down), the right mouse button held turns it, the wheel changes the speed.
+4. A click on a gate selects it (its handles and the tool bar under it show).
+5. Add gate, then a click in the scene: a new gate stands there.
+6. Courses or Keys: the window shows that part with a green outline for a moment.
+7. Space once: the test flight of the course starts. A short Space press in the test flight goes back to editing.
+8. P, Shift+T or another flight key in the edit view: the line at the top says that key works in flight and to press Esc
+   first.
+9. Exit (a click, or a tap on a touch screen; the first tap with unsaved changes shows a line, the second leaves) or Esc:
+   back to flying.
 
 ## Not verified
 
@@ -196,6 +224,13 @@ emulated in headless Chrome. The live check edit-mouse-wroclaw was not run again
 
 ## For the lead
 
+Since efd17add (stage E4-rest): apps/fly/src/app/builtin/course.ts, apps/fly/src/app/keys.ts,
+apps/fly/src/devices/keyboard.ts, apps/fly/src/course/editor/editor.css, packages/i18n/locales/fly/course/{en,es,pl,ru}.json,
+tools/bench/scripts/edit-mouse-probe.mjs, tools/bench/test/editfix-e4.test.ts (new), tools/bench/test/editor3-flying.test.ts,
+deploy/live-checks.sh (edit-mouse-wroclaw also judges one Space after Shift+B in the air; read-only), this file, evidence
+2026-11-17/editfix-final. Page only: no server, API or sim-core change. keyboard.ts is input code: a6-reference unchanged.
+
+Earlier (E1-E2):
 Files changed on branch editfix (page only, plus the probe, a test and the live check): apps/fly/src/app/builtin/course.ts,
 apps/fly/src/course/editor/{fly-mode.ts, top-bar.ts, view-mouse.ts, editor.css, panel.ts, flash.ts (new)},
 locales of the flying line (en es pl ru), tools/bench/scripts/edit-mouse-probe.mjs, tools/bench/test/editfix-e2.test.ts, tools/bench/test/editor3-i2.test.ts,
