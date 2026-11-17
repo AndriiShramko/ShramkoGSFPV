@@ -32,8 +32,9 @@ Facts V1-a to V1-f, Design 1 to 7): the numbers there are the "before" of this l
   placeOf; src/lesson/runner.ts lineTarget); never behind the craft. Test test/line-gate-cap.test.ts (4 tests), negative
   control with the old src/cues/line.ts fails by assertion ("expected -10 to be close to -4"); line.test.ts and
   speed-lead.test.ts pass (18 tests in the three files); three tsc 0 errors. The line stays off by default.
-- [ ] W1.6 Design 6 (lessons speed-5 to speed-8 at 6, 8, 10, 12 m/s, texts en/es/pl/ru, caps lift by passing), unit tests with
-  negative controls.
+- [~] W1.6 Design 6: measured first (Facts W1-f): at cd37a57 the ear pilot's median top speed on the ring course is
+  6 m/s (8, 10, 12, 15 m/s fail on every seed), so by the package's shipping rule (test/speed-ladder.test.ts: cap at most
+  median top / 1.25) no cap above 4.8 m/s can ship yet; no lesson built.
 - [ ] W1.7 offline audio proofs for the new rules (streams at 8 m/s, hum lead, peak rule).
 - [~] W1.8 simulator typecheck, gates.py --only vitest,architecture,i18n,b18,leaks, a6-reference: all pass at pin da0ab7d
   (run 1 of 2026-11-16: pnpm -r typecheck 0 errors; a6-reference 1 passed; gates architecture, i18n, b18 PASS; vitest 385
@@ -50,7 +51,14 @@ Facts V1-a to V1-f, Design 1 to 7): the numbers there are the "before" of this l
    W1-d); course 1 counts 2 of 3, not 3 of 3, so Design 5's condition for the line as the guide is still not met.
 3. W1.6 Design 6: lessons speed-5 to speed-8 at 6, 8, 10, 12 m/s (estimates), texts in en, es, pl, ru with the word 'key'
    before a key's letter; each opens after a counted pass of the step before; scan-free and N courses take the highest
-   passed cap, at least 5 m/s; tests with negative controls.
+   passed cap, at least 5 m/s; tests with negative controls. Blocker measured (Facts W1-f): the ear pilot tops out at
+   6 m/s on the ring course, so the caps 6 to 12 m/s break the package's rule "cap at most median top / 1.25"
+   (test/speed-ladder.test.ts). Decision for the lead: either the ear pilot must fly faster first (the 8 m/s goal of
+   Design 7 needs that anyway), or the speed-5+ caps ship as estimates with that test's rule changed. What a new lesson
+   needs besides its JSON (from commits 9c40ed2, a466888 of the package): lessons/speed-N.json, src/lesson/library.ts,
+   src/i18n/catalog.ts LESSONS entry, locales en/es/pl/ru, test/helpers/new-lessons.ts SPEED_LESSONS, the lines measured
+   with the Windows voices (measure-tts.ps1; test/fixtures/tts-*.json) and the counts in test/lesson-schedule.test.ts,
+   evidence/ear-pilot/*speed-lessons* (tools/ear-pilot.ts exports main() only: run it through a two-line runner).
 4. W1.7 offline audio proofs (streams at 8 m/s, hum lead, peak rule); evidence/audio-proofs.json and demo-check.json of the
    package worktree are modified by an earlier hand: commit them only if these proofs rewrite them, and say so.
 5. W1.8 again; then the stage's commit of both repositories.
@@ -140,3 +148,11 @@ needed the speed layer, which scan-free and the courses do not have: table ident
   3 -> 2 of 3 (seed 2 fails at gate 6); 5, 8 and 12 m/s counted 0 of 6 as before (gates median at 8 m/s 2 -> 1). Kept by the
   lane's rule (counted at 8 m/s did not fall, 2 and 5 m/s not worse). The line-off table (default) is unchanged by
   construction: the cap is only in lineTarget, which the line-off flights never call.
+
+### W1-f: how fast the ear pilot flies the ring course at cd37a57 (Design 6's caps)
+Tool: packages/sonic-fpv tools/ear-pilot.ts main() through a two-line runner, `--lessons speed-4,rings-course --rungs
+4.5,6,8,10,12,15 --seeds 1,2,3 --attend-hum --line on --budget on`, output U:/Temp/gsfpv-train2/sonic5/w1-ladder-cd37a57.json.
+- speed-4 and rings-course alike, every seed: 4.5 pass, 6 pass, 8 fail, 10 fail, 12 fail or touch, 15 touch; median top
+  6 m/s (as on 2026-11-15 before this lane's rules: evidence/ear-pilot/2026-11-15-speed-lessons-hum.json, 6 m/s).
+- So the brake cue (design 4), the speech rule (design 3) and the line's cap (design 5) did not raise the top speed on the
+  ring course; a cap of 6 m/s or more fails the package's rule cap x 1.25 <= median top.
