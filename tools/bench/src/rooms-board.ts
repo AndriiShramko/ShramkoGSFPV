@@ -169,8 +169,11 @@ const BANNER_ON = "const e = document.querySelector('[data-testid=rooms-lead]');
 /** One takeover: `who` flies two quick rounds; both pages' logs say when who's banner showed and how the rows moved. */
 async function takeover(who: Page, other: Page, fw: Frames, offs: number[], shotName: string | null): Promise<Any> {
     const t0 = Date.now();
-    const fl = await fly(who, 3, offs, 1);
-    const me = await ev<Any>(who, 'return { slot: r.slot, nick: (r.members.find((m) => m.slot === r.slot) || {}).nick, row: b.rows.find((x) => x.slot === r.slot) };');
+    // the lap's time follows the page's frame rate, so who flies again (at most 3 times) until its best is the room's best
+    // (run 4: A at 844x390 flew 11.8 s against B's 3.07 s and took no lead)
+    const ME = 'return { slot: r.slot, nick: (r.members.find((m) => m.slot === r.slot) || {}).nick, row: b.rows.find((x) => x.slot === r.slot), top: Math.min(...b.rows.filter((x) => x.slot !== r.slot && x.best > 0).map((x) => x.best)) };';
+    let fl: Any = {}; let me: Any = {}; let tries = 0;
+    do { fl = await fly(who, 3, offs, 1); tries++; me = await ev<Any>(who, ME); } while (tries < 3 && !(me.row && me.row.best < me.top));
     const seen = await until(other, `${BANNER_ON}${JSON.stringify(me.nick ?? '?')});`, 15000);
     const shotFile = shotName ? await shot(other, shotName) : null;
     await other.waitForTimeout(2600);
@@ -182,7 +185,7 @@ async function takeover(who: Page, other: Page, fw: Frames, offs: number[], shot
     const sendT = (bt: number): number => Math.max(-Infinity, ...sends.filter((x) => x.t <= bt + 50).map((x) => x.t));
     const orderAfter = (l: Any): string => [...(l?.log ?? [])].reverse().find((x: Any) => x.kind === 'order' && x.order)?.order ?? '';
     const movedAt = (l: Any): Any => (l?.log ?? []).find((x: Any) => x.t >= t0 && x.kind === 'order' && String(x.order).startsWith(String(me.slot)));
-    return { fly: { pts: fl.pts, laps: fl.laps }, me, time, seen, shotFile, sends: sends.length,
+    return { fly: { pts: fl.pts, laps: fl.laps }, tries, me, time, seen, shotFile, sends: sends.length,
         bannerWho: bw ?? null, bannerOther: bo ?? null,
         lagWhoMs: bw ? bw.t - sendT(bw.t) : null, lagOtherMs: bo ? bo.t - sendT(bo.t) : null,
         whoMine: bw?.mine === '1', otherNamed: !!bo && bo.mine === '0' && String(bo.text).includes(me.nick ?? '?'),
@@ -214,10 +217,10 @@ async function r2(A: Page, B: Page, LB: Launched, fa: Frames, fb: Frames, out: A
     r.phase1 = { f1a: { pts: f1a.pts, laps: f1a.laps }, f1b: { pts: f1b.pts, laps: f1b.laps }, aSlot: a1.slot, aRows: a1.board?.rows, bRows: b1.board?.rows, oa1, ob1, boardShot, noLap };
     // phase 2: B beats A (half the points per gate); the picture on A at 1920x1080 at the moment of the takeover
     const t2 = await takeover(B, A, fb, [1.5, 0.5, -0.5, -1.5], 'race-lead-change.png');
-    // phase 3: A at 844x390 beats B again (three points per gate)
+    // phase 3: A at 844x390 beats B again (two points per gate, flown again until it leads)
     await A.setViewportSize({ width: 844, height: 390 });
     await A.waitForTimeout(800);
-    const t3 = await takeover(A, B, fa, [1.0, 0, -1.0], null);
+    const t3 = await takeover(A, B, fa, [0.6, -0.6], null);
     const smallShot = await shot(A, 'race-844.png');
     r.takeovers = { t2, t3, smallShot };
     const lbB = await r2log(B);

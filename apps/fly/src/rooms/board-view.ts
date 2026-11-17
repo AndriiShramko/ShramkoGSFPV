@@ -105,7 +105,8 @@ export class BoardView {
     private fit(): void {
         this.board.style.maxWidth = '';
         this.board.style.marginTop = '';
-        const w = this.doc.querySelector('.walls-menu .walls-head, .walls-menu') as HTMLElement | null;
+        // the header first: a selector list would return the whole menu (it comes first in document order)
+        const w = (this.doc.querySelector('.walls-menu .walls-head') ?? this.doc.querySelector('.walls-menu')) as HTMLElement | null;
         if (!w || w.closest('[hidden]') || getComputedStyle(w).display === 'none') return;
         const r = w.getBoundingClientRect();
         const b = this.board.getBoundingClientRect();
