@@ -62,7 +62,11 @@ Facts V1-a to V1-f, Design 1 to 7): the numbers there are the "before" of this l
 ### Left of W1-build (exact, in this order)
 1. W1.4 rest: a glossary entry for 'speed.brake' (src/i18n/catalog.ts CUE_IDS, cue.speed.brake.name/.glossary in the
    package's locales en/es/pl/ru) needs the package's recorded-voice fixtures and words check (test/events, lesson-schedule,
-   lessons, words failed without them); a planner-level test that the brake cue fires on a course at 8 m/s.
+   lessons, words failed without them). The planner-level test is done: package bd79c96 test/brake-planner.test.ts (the
+   ear pilot on rings-course at 8 m/s: the brake flag in some frames with the speed budget, none without), 2 passed;
+   negative control with src/cues/planner.ts of 5e04268 fails by assertion ("expected 0 to be greater than 0"); three tsc
+   0 errors; simulator pin bd79c96, pnpm -r typecheck 0 errors (tc6.log). The brake cue is a sound only, no spoken line,
+   so the narrator-off rule needs no QUIET_SOUNDS entry; the glossary entry is a text for the cue list, not a flight need.
 2. W1.5 done (cd37a57). Not chased: with the line on, course 2 seed 2 at 2 m/s now fails at gate 6 of 24 (it counted in
    W1-d); course 1 counts 2 of 3, not 3 of 3, so Design 5's condition for the line as the guide is still not met.
 3. W1.6 Design 6: lessons speed-5 to speed-8 at 6, 8, 10, 12 m/s (estimates), texts in en, es, pl, ru with the word 'key'
@@ -88,7 +92,7 @@ Facts V1-a to V1-f, Design 1 to 7): the numbers there are the "before" of this l
   da0ab7d; origin/main's pin is 293ebae. Deploy order later: the package's main first, then the pin.
 - Files changed outside apps/fly/src/sonic so far: docs/wip/sonic5.md, packages/sonic-fpv (pin).
 - Package branch train6 now also 2bea5d9, 26be7f8 (design 4), cd37a57 (design 5 rest), 4c8e4e1 (audio proofs streams-at-speed, brake-ceiling), 77185cd (audio proof hum-lead);
-  simulator pin (local) 77185cd.
+  bd79c96 (planner test of the brake cue); simulator pin (local) bd79c96.
 
 ### Stage W2-prove
 - [ ] not started.
