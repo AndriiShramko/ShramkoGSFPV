@@ -220,10 +220,11 @@ async function r2(A: Page, B: Page, LB: Launched, fa: Frames, fb: Frames, out: A
     r.phase1 = { f1a: { pts: f1a.pts, laps: f1a.laps }, f1b: { pts: f1b.pts, laps: f1b.laps }, aSlot: a1.slot, aRows: a1.board?.rows, bRows: b1.board?.rows, oa1, ob1, boardShot, noLap };
     // phase 2: B beats A (half the points per gate); the picture on A at 1920x1080 at the moment of the takeover
     const t2 = await takeover(B, A, fb, [1.5, 0.5, -0.5, -1.5], 'race-lead-change.png');
-    // phase 3: A at 844x390 beats B again (three points per gate, flown again until it leads)
+    // phase 3: A at 844x390 beats B again (two points per gate, none on the gate's plane, flown again until it leads;
+    // run 7: three points [1, 0, -1] gave A 5.33 s against B's 3.43 s in 3 tries)
     await A.setViewportSize({ width: 844, height: 390 });
     await A.waitForTimeout(800);
-    const t3 = await takeover(A, B, fa, [1.0, 0, -1.0], null);
+    const t3 = await takeover(A, B, fa, [0.75, -0.75], null);
     const smallShot = await shot(A, 'race-844.png');
     r.takeovers = { t2, t3, smallShot };
     const lbB = await r2log(B);
