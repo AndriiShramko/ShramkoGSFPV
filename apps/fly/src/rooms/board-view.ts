@@ -2,9 +2,10 @@
 // at the top centre under the place of the lap's own time. Neither takes a pointer (nothing to close: they come and go by
 // themselves) and neither reaches the middle third of the screen: the board is at most 30 % of the width wide and starts
 // at the left edge under the top row (66 px: the scene author's line ends at 60 px at 844x390); the banner sits at the top
-// centre between the top row and the course clock (64 px; the clock starts at 120 px, course/hud.css). Under the lap's time
-// it would cover the clock block at 1280x720 (142 to 239 px) and the middle third: measured by tools/bench/src/rooms-board.ts
-// MODE=r2, evidence/2026-11-17/rooms-board.json, run 1.
+// centre between the top row and the course clock (82 px: the top row's buttons end at 78 px at 1280x720, the clock starts
+// at 120 px, course/hud.css); while the lap's own time (course splash) lies over that place, the banner sits just under it
+// (the clock is hidden then). The board gives way to the voxel panel's header (.walls-menu) by narrowing, so long nicks
+// end in an ellipsis. Places measured by tools/bench/src/rooms-board.ts MODE=r2 (evidence/2026-11-17/rooms-board.json).
 // The rows change places with a short move (MOVE_MS), so the eye sees who went up.
 import { MOVE_MS } from './lead';
 import type { ViewRow } from './lead';
@@ -16,9 +17,9 @@ const BOARD_CSS = 'position:absolute;left:max(10px,env(safe-area-inset-left));' 
     'font:600 13px/1.25 system-ui,sans-serif;color:#fff;background:rgba(0,0,0,.5);border-radius:8px;padding:4px 6px;';
 const ROW_CSS = 'display:grid;grid-template-columns:1.4em minmax(0,1fr) auto auto;gap:0 8px;align-items:baseline;' +
     'padding:2px 4px;border-radius:5px;white-space:nowrap;will-change:transform;';
-const BANNER_CSS = 'position:absolute;left:50%;top:calc(max(14px,env(safe-area-inset-top)) + var(--banner-h,0px) + 50px);' +
+const BANNER_CSS = 'position:absolute;left:50%;top:calc(max(14px,env(safe-area-inset-top)) + var(--banner-h,0px) + 68px);' +
     'transform:translateX(-50%);pointer-events:none;max-width:min(44vw,640px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;' +
-    'font:700 clamp(13px,3vh,26px)/1.25 system-ui,sans-serif;color:#fff;background:rgba(0,0,0,.55);' +
+    'font:700 clamp(13px,2.4vh,20px)/1.25 system-ui,sans-serif;color:#fff;background:rgba(0,0,0,.55);' +
     'padding:4px 14px;border-radius:999px;';
 
 export class BoardView {
@@ -26,6 +27,7 @@ export class BoardView {
     readonly banner: HTMLElement;
     private readonly rows = new Map<number, HTMLElement>();
     private key = '';
+    private fits = 0;
 
     constructor(parent: HTMLElement, private readonly doc: Document = document) {
         this.board = doc.createElement('div');
@@ -47,7 +49,10 @@ export class BoardView {
         this.board.style.display = shown && list.length > 0 ? '' : 'none';
         if (!shown) return;
         const key = JSON.stringify(list);
-        if (key === this.key) return;
+        if (key === this.key) {
+            if (++this.fits % 30 === 0) this.fit();
+            return;
+        }
         this.key = key;
         const before = new Map<number, number>();
         for (const [slot, el] of this.rows) before.set(slot, el.offsetTop);
@@ -92,6 +97,17 @@ export class BoardView {
             el.style.transition = `transform ${MOVE_MS}ms ease-out`;
             el.style.transform = '';
         }
+        this.fit();
+    }
+
+    /** The board narrows when the voxel panel's header lies over its place (844x390: header at x 179, y 112). */
+    private fit(): void {
+        this.board.style.maxWidth = '';
+        const w = this.doc.querySelector('.walls-menu') as HTMLElement | null;
+        if (!w || w.offsetParent === null) return;
+        const r = w.getBoundingClientRect();
+        const b = this.board.getBoundingClientRect();
+        if (r.top < b.bottom && r.bottom > b.top && r.left < b.right && r.right > b.left && r.left > b.left + 80) this.board.style.maxWidth = `${Math.floor(r.left - b.left - 6)}px`;
     }
 
     /** The banner's text of this frame, null hides it; the pilot's own takeover is green. */
@@ -104,6 +120,13 @@ export class BoardView {
         this.banner.style.color = mine ? '#5dff7a' : '#fff';
         this.banner.dataset.mine = mine ? '1' : '0';
         this.banner.style.display = '';
+        // the lap's own time shows at the same moment on the page whose lap took the lead: the banner goes just under it
+        this.banner.style.top = '';
+        const sp = this.doc.querySelector('[data-testid=course-splash]') as HTMLElement | null;
+        if (!sp || sp.hidden) return;
+        const r = sp.getBoundingClientRect();
+        const b = this.banner.getBoundingClientRect();
+        if (r.height > 0 && r.top < b.bottom && r.bottom > b.top) this.banner.style.top = `${Math.round(r.bottom + 6)}px`;
     }
 
     dispose(): void {
