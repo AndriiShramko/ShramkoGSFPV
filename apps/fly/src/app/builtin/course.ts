@@ -876,6 +876,8 @@ export const course: Feature = {
             edHook.problems = ed.problems.length;
             sync();
         };
+        /** lane editfix E4: the pressed key as the keymap writes it (event.code, so any layout): Shift+T, P, F3 */
+        const keyName = (e: KeyboardEvent): string => (e.shiftKey ? 'Shift+' : '') + e.code.replace(/^(Key|Digit)/, '');
         const openEdit = (): void => {
             if (ed || ctx.sonic) return;
             const col = ctx.session.collision;
@@ -913,7 +915,8 @@ export const course: Feature = {
             if (os.respawn) ctx.session.respawnStart();
             // lane editfix E4: a keyboard pilot's motors stop too, so one Space test-flies (keyboard.ts stopKeyboardArm)
             if (os.respawn) stopKeyboardArm();
-            unblock = ctx.keys.block(() => ed !== null && mode === 'edit');
+            // lane editfix E4 (finding 2 of E3): a flight key the edit view swallows (P, Shift+T ...) says why and what to press
+            unblock = ctx.keys.block(() => ed !== null && mode === 'edit', (_a, e) => say(t('course.edit.keyOff', { key: keyName(e) }), true));
             panel = new EditorPanel(ctx.ui, { key: (p) => applyKey(p), saveMine: (n, ti) => void saveMine(n, ti), saveAll: () => void saveAll(), saveAdmin: (ti) => void saveAdmin(ti), vote: (id, v) => void vote(id, v), open: (id) => openRow(id) });
             panel.defaults('', run.track.title);
             panel.adminOn(adminLive);

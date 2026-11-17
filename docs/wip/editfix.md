@@ -58,7 +58,15 @@ His laptop: Windows, RTX, 144 Hz, Chrome, keyboard and mouse, layouts ru/pl/en.
   passed; a6-reference + editfix-e2: 9 passed (hash unchanged); tsc apps/fly exit 0. NOT walked in a browser yet.
 - [ ] E4.1b the line shown when a flight key is pressed in the edit view (what to press to test-fly), en es pl ru.
 - [ ] E4.2 finding 3 (second Exit tap on touch): measure the Exit box at pointerup and at click, repair, touch1536 walk.
-- [ ] E4.3 finding 2: P, Shift+T and every other silent flight key in the edit view say one line (keymap read once).
+- [x] E4.3 finding 2 (commit of this line): app/keys.ts block(blocked, refused?) tells a block the routed action of a key it
+  swallowed (not Esc, a repeat, a key a screen took, text); course.ts openEdit's block says 'course.edit.keyOff' (en es pl
+  ru: '<key> works in flight, not in the editor: press Esc to leave the editor, then <key>.', the key by event.code, so any
+  layout). Keys covered (keymap read once, packages/prefs/src/keymap.ts, every shipped routed binding with a handler on the
+  page): P (pause), R, Y, Enter, N, Shift+N, Shift+F, V, C, H, [ ], F9, F3, O, B, L, 9, 0, K, F, J, Shift+T, Shift+G when
+  routed, Backslash and the Fly by Sound letters on its pages. Keys the editor takes itself (Esc, M, R, T as tools, Shift+G,
+  Ctrl+Z, Tab, F6: its capture listener stops them) never reach the router, so they keep the editor's own words. W A S D E
+  Q Space are flying keys (not routed): the view or the test flight. Test editfix-e4.test.ts 5 passed (+ app-keys 22);
+  NEG: keys.ts, course.ts, en.json of HEAD 6e2d507d: the 2 new tests fail by assertion; tsc apps/fly exit 0. NOT walked.
 - [ ] E4.4 count '.course-editor' roots and '.ce-shown' right after the Courses click.
 - [ ] E4.5 look at up to 10 pictures (editfix-after-*, verify-*), one sentence each.
 - [ ] E4.6 release build, walls in dist/walls; walk.mjs lap1536 lap1097ru touch1536; probe over all cases; editor3-smoke

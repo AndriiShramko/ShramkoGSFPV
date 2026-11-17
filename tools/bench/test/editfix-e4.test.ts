@@ -61,3 +61,40 @@ describe('editfix E4: the editor opened in the air stops the keyboard pilot', ()
         expect(src).toMatch(/if \(os\.respawn\) ctx\.session\.respawnStart\(\);[\s\S]{0,200}if \(os\.respawn\) stopKeyboardArm\(\);/);
     });
 });
+
+// Finding 2 of the check E3: P and Shift+T did nothing and said nothing in the edit view (course.ts blocks the app's keys).
+// A block now hears the routed key it swallowed, and the editor says one line: why, and what to press.
+describe('editfix E4: a key the edit view swallows says why', () => {
+    const press = (p: { code: string; shiftKey?: boolean; repeat?: boolean; defaultPrevented?: boolean }): KeyboardEvent =>
+        ({ shiftKey: false, ctrlKey: false, altKey: false, metaKey: false, repeat: false, target: null, defaultPrevented: false, preventDefault() { /* */ }, ...p }) as unknown as KeyboardEvent;
+
+    it('P and Shift+T reach the refusal with their action; Esc, a repeat and a key a screen took do not', async () => {
+        class Dummy {}
+        for (const n of ['HTMLInputElement', 'HTMLTextAreaElement', 'HTMLSelectElement', 'HTMLElement', 'Element']) vi.stubGlobal(n, Dummy);
+        const { KeyRouter } = await import('../../../apps/fly/src/app/keys');
+        const r = new KeyRouter();
+        const ran = vi.fn();
+        r.on('pause.toggle', ran);
+        r.on('course.toggle', ran);
+        const heard: string[] = [];
+        (r.block as (b: () => boolean, f: (a: string) => void) => () => void)(() => true, (a) => { heard.push(a); });
+        expect(r.route(press({ code: 'KeyP' }))).toBeNull();
+        expect(r.route(press({ code: 'KeyT', shiftKey: true }))).toBeNull();
+        r.route(press({ code: 'Escape' }));
+        r.route(press({ code: 'KeyP', repeat: true }));
+        r.route(press({ code: 'KeyP', defaultPrevented: true }));
+        expect(ran).not.toHaveBeenCalled();
+        expect(heard).toEqual(['pause.toggle', 'course.toggle']);
+        vi.unstubAllGlobals();
+    });
+
+    it('course.ts gives the edit view its line, in all four languages', () => {
+        const src = readFileSync(join(__dirname, '../../../apps/fly/src/app/builtin/course.ts'), 'utf8');
+        expect(src).toMatch(/ctx\.keys\.block\(\(\) => ed !== null && mode === 'edit', \(_a, e\) => say\(t\('course\.edit\.keyOff'/);
+        for (const lang of ['en', 'es', 'pl', 'ru']) {
+            const j = JSON.parse(readFileSync(join(__dirname, `../../../packages/i18n/locales/fly/course/${lang}.json`), 'utf8')) as Record<string, string>;
+            expect(j['course.edit.keyOff'], lang).toContain('{key}');
+            expect(j['course.edit.keyOff'], lang).toContain('Esc');
+        }
+    });
+});

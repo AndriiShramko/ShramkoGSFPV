@@ -35,6 +35,7 @@
   "course.edit.menu": "Tor: edytuj przeszkody",
   "course.edit.title": "Edytor toru",
   "course.edit.opened": "Edytor otwarty. W A S D przesuwają widok, E w górę, Q w dół, przytrzymaj prawy przycisk myszy, by się rozejrzeć, kółko zmienia prędkość. Kliknij bramkę: ma naraz jeden zestaw uchwytów, wybierany przez Przesuń, Obróć lub Rozmiar na pasku pod nią (albo M, R, T); ciągnij je myszą. Spacja lub przełącznik uzbrojenia kontrolera uruchamia lot po trasie (przytrzymaj Spację, by się wznieść); krótkie naciśnięcie Spacji lub ponownie przełącznik wraca do edycji. Esc wychodzi",
+  "course.edit.keyOff": "{key} działa w locie, nie w edytorze: naciśnij Esc, aby wyjść z edytora, potem {key}.",
   "course.edit.gate": "Bramka {n} z {of}: {shape}, {size} m",
   "course.edit.shape.ring": "obręcz",
   "course.edit.shape.square": "kwadrat",

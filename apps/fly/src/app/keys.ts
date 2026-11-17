@@ -70,6 +70,8 @@ export class KeyRouter {
     private handlers = new Map<ActionId, Handler[]>();
     private labels = new Map<ActionId, string[]>();
     private blocks = new Set<() => boolean>();
+    /** lane editfix E4: a block's words for a routed key it swallowed (block's `refused`) */
+    private refusals = new Map<() => boolean, (action: ActionId, e: KeyboardEvent) => void>();
     private readonly map: readonly KeyBinding[];
     private readonly isText: (target: EventTarget | null) => boolean;
     private readonly state: () => KeyState;
@@ -146,10 +148,25 @@ export class KeyRouter {
         return list?.[list.length - 1] ?? b.labelKey;
     }
 
-    /** While `blocked()` is true nothing is routed (a screen with keys of its own, like Controls). */
-    block(blocked: () => boolean): () => void {
+    /**
+     * While `blocked()` is true nothing is routed (a screen with keys of its own, like Controls). Lane editfix E4 (the owner's
+     * rule: no key that does nothing): `refused` is told the action of a routed key it swallowed, so the screen can say why
+     * and what to press instead. Not for Esc (the screen's own way out), a repeat, a key a screen took (defaultPrevented) or text.
+     */
+    block(blocked: () => boolean, refused?: (action: ActionId, e: KeyboardEvent) => void): () => void {
         this.blocks.add(blocked);
-        return () => this.blocks.delete(blocked);
+        if (refused) this.refusals.set(blocked, refused);
+        return () => {
+            this.blocks.delete(blocked);
+            this.refusals.delete(blocked);
+        };
+    }
+
+    private refuse(b: () => boolean, e: KeyboardEvent): void {
+        const r = this.refusals.get(b);
+        if (!r || e.repeat || e.defaultPrevented || e.code === 'Escape' || this.isText(e.target)) return;
+        const a = actionFor(e, this.state(), this.page);
+        if (a !== null && this.routes(a) && (this.handlers.get(a)?.length ?? 0) > 0) r(a, e);
     }
 
     /** The key-caps of an action, for a menu item or a hint (keysFor over this router's table). */
@@ -159,7 +176,10 @@ export class KeyRouter {
 
     /** Route one key press: the action whose handler ran, or null. */
     route(e: KeyboardEvent): ActionId | null {
-        for (const b of this.blocks) if (b()) return null;
+        for (const b of this.blocks) if (b()) {
+            this.refuse(b, e);
+            return null;
+        }
         // a text field takes R and P as letters; Esc is never text, so it still closes the panel around it
         if (this.isText(e.target) && !THROUGH_TEXT.has(e.code)) return null;
         // Shift held as a flying key (the descent) is a modifier only where a binding says so: the real chord
