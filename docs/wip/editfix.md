@@ -88,12 +88,12 @@ His laptop: Windows, RTX, 144 Hz, Chrome, keyboard and mouse, layouts ru/pl/en.
   verify-lap1097ru-02-open (opened in the air, no gate in the view, the start gate's arrow at the bottom left edge).
   Finding (listed, not repaired): at 1536x730 x1.25 the top bar (bottom about 46 CSS px) covers about 6 CSS px of the top
   edge of the sound, full screen and Share buttons (top row starts about 40 px); they stay clickable below that.
-- [~] E4.6 release of 27151009 (exit 0, sha256 2fabfbc9...), walls in dist/walls, serve-csp 5822. walk2.mjs (walk.mjs plus an
+- [x] E4.6 release of 27151009 (exit 0, sha256 2fabfbc9...), walls in dist/walls, serve-csp 5822. walk2.mjs (walk.mjs plus an
   event log of the Exit box and the Courses flash count): touch1536, lap1536, lap1097ru all exit 0, page errors 0: touch Exit
   tap 2 leaves (tap 1 the unsaved line, tap 2 open false; Exit at x 730-775, line 420 px at pointerdown, pointerup and click);
   lap1536 testfly 1 Space press to the test flight after Shift+B in the air (before: never), P and Shift+T say their line;
   every control has an effect. Chain (U:/Temp/gsfpv-train3/editfix/verify2/chain.log, evidence/2026-11-17/editfix-final):
-  probe base-1920 exit 0 70s; probe fly-1536 exit 0 84s; probe fly-ru-1536 exit 0 79s; probe fly-tap-1536 exit 0 79s; probe nofly-lock-1920 exit 0 55s; probe nofly-nolock-1920 exit 0 75s; probe lap-1536 exit 0 72s; probe lap-1280 exit 0 75s; probe lap-1097 exit 0 82s; probe lap-1366 exit 0 74s; probe touch-1536 exit 0 72s; probe ru-1536 exit 0 75s; probe pl-1536 exit 0 76s; probe early-building-1536 exit 0 80s; probe early-controls-1536 exit 0 76s; probe weak-1536 exit 0 78s. a6-reference + editfix-e2 + editfix-e4: 15 passed; tsc apps/fly exit 0; origin/main has no commit the branch lacks.
+  probe base-1920 exit 0 70s; probe fly-1536 exit 0 84s; probe fly-ru-1536 exit 0 79s; probe fly-tap-1536 exit 0 79s; probe nofly-lock-1920 exit 0 55s; probe nofly-nolock-1920 exit 0 75s; probe lap-1536 exit 0 72s; probe lap-1280 exit 0 75s; probe lap-1097 exit 0 82s; probe lap-1366 exit 0 74s; probe touch-1536 exit 0 72s; probe ru-1536 exit 0 75s; probe pl-1536 exit 0 76s; probe early-building-1536 exit 0 80s; probe early-controls-1536 exit 0 76s; probe weak-1536 exit 0 78s. a6-reference + editfix-e2 + editfix-e4: 15 passed; tsc apps/fly exit 0; origin/main has no commit the branch lacks. Chain end (chain.log): weak-1280 exit 0 89s; onespace-1536 exit 0 89s; smoke 70b50d42 exit 0; smoke 887f27aa exit 0; accept-fly B6 B7 B9-B16 all PASS exit 0, first line http://localhost:5822; no tracked file rewritten; server stopped. Evidence evidence/2026-11-17/editfix-final (18 json).
 
 ## Left after E4-rest run 2 (exact list; this run's budget spent)
 
