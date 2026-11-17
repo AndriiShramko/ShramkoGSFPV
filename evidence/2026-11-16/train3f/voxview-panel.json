@@ -1,0 +1,472 @@
+{
+ "base": "http://localhost:5880/en",
+ "id": "70b50d42",
+ "tag": "int3f-panel",
+ "steps": [
+  "controls screen: Enter on \"keyboard\"",
+  "panel 1366x768: {\"menu\":{\"l\":16,\"t\":164,\"r\":296,\"b\":680,\"w\":280,\"h\":516},\"inView\":true,\"close\":{\"l\":245,\"t\":171,\"r\":289,\"b\":215,\"w\":44,\"h\":44},\"closeInView\":true,\"closeOnTop\":true,\"scroll\":[514,514,\"auto\"],\"after\":{\"closeBtn\":true,\"esc\":true,\"chipOpened\":true,\"chip\":true,\"edit\":{\"editOpen\":true,\"closeOnTop\":true,\"closeInView\":true,\"menuInView\":true,\"open\":true,\"menu\":{\"l\":16,\"t\":164,\"r\":296,\"b\":680,\"w\":280,\"h\":516},\"chip\":{\"l\":16,\"t\":684,\"r\":394,\"b\":728,\"w\":378,\"h\":44},\"close\":{\"l\":245,\"t\":171,\"r\":289,\"b\":215,\"w\":44,\"h\":44},\"parts\":{\"window\":{\"box\":{\"l\":978,\"t\":86,\"r\":1358,\"b\":129.25},\"overPanel\":false,\"onTop\":null,\"overLegend\":false},\"topBar\":{\"box\":{\"l\":243.484375,\"t\":8,\"r\":1122.515625,\"b\":48},\"overPanel\":false,\"onTop\":null,\"overLegend\":false},\"gateBar\":{\"box\":{\"l\":478,\"t\":594,\"r\":888,\"b\":636},\"overPanel\":false,\"onTop\":null,\"overLegend\":false}},\"legendShown\":false}}}",
+  "controls screen: Enter on \"keyboard\"",
+  "panel 1280x720: {\"menu\":{\"l\":16,\"t\":116,\"r\":296,\"b\":632,\"w\":280,\"h\":516},\"inView\":true,\"close\":{\"l\":245,\"t\":123,\"r\":289,\"b\":167,\"w\":44,\"h\":44},\"closeInView\":true,\"closeOnTop\":true,\"scroll\":[514,514,\"auto\"],\"after\":{\"closeBtn\":true,\"esc\":true,\"chipOpened\":true,\"chip\":true,\"edit\":{\"editOpen\":true,\"closeOnTop\":true,\"closeInView\":true,\"menuInView\":true,\"open\":true,\"menu\":{\"l\":16,\"t\":116,\"r\":296,\"b\":632,\"w\":280,\"h\":516},\"chip\":{\"l\":16,\"t\":636,\"r\":394,\"b\":680,\"w\":378,\"h\":44},\"close\":{\"l\":245,\"t\":123,\"r\":289,\"b\":167,\"w\":44,\"h\":44},\"parts\":{\"window\":{\"box\":{\"l\":892,\"t\":86,\"r\":1272,\"b\":129.25},\"overPanel\":false,\"onTop\":null,\"overLegend\":false},\"topBar\":{\"box\":{\"l\":200.484375,\"t\":8,\"r\":1079.515625,\"b\":48},\"overPanel\":false,\"onTop\":null,\"overLegend\":false},\"gateBar\":{\"box\":{\"l\":435,\"t\":570,\"r\":845,\"b\":612},\"overPanel\":false,\"onTop\":null,\"overLegend\":false}},\"legendShown\":false}}}",
+  "no controls screen",
+  "panel 844x390: {\"menu\":{\"l\":16,\"t\":109,\"r\":296,\"b\":382,\"w\":280,\"h\":273},\"inView\":true,\"close\":{\"l\":245,\"t\":116,\"r\":289,\"b\":160,\"w\":44,\"h\":44},\"closeInView\":true,\"closeOnTop\":true,\"scroll\":[514,271,\"auto\"],\"after\":{\"closeBtn\":true,\"esc\":true,\"chipOpened\":true,\"chip\":true,\"edit\":{\"editOpen\":true,\"closeOnTop\":false,\"closeInView\":false,\"menuInView\":false,\"open\":true,\"menu\":null,\"chip\":{\"l\":16,\"t\":61,\"r\":394,\"b\":105,\"w\":378,\"h\":44},\"close\":null,\"parts\":{\"window\":{\"box\":{\"l\":400,\"t\":86,\"r\":780,\"b\":121.25},\"overPanel\":false,\"onTop\":null,\"overLegend\":false},\"topBar\":{\"box\":{\"l\":8,\"t\":109,\"r\":389.015625,\"b\":161},\"overPanel\":false,\"onTop\":null,\"overLegend\":false},\"gateBar\":{\"box\":{\"l\":151,\"t\":328,\"r\":693,\"b\":382},\"overPanel\":false,\"onTop\":null,\"overLegend\":false}},\"legendShown\":false}}}",
+  "no controls screen",
+  "panel 390x844: {\"menu\":{\"l\":16,\"t\":221,\"r\":296,\"b\":737,\"w\":280,\"h\":516},\"inView\":true,\"close\":{\"l\":245,\"t\":228,\"r\":289,\"b\":272,\"w\":44,\"h\":44},\"closeInView\":true,\"closeOnTop\":true,\"scroll\":[514,514,\"auto\"],\"after\":{\"closeBtn\":true,\"esc\":true,\"chipOpened\":true,\"chip\":true,\"edit\":{\"editOpen\":true,\"closeOnTop\":true,\"closeInView\":true,\"menuInView\":true,\"open\":true,\"menu\":{\"l\":16,\"t\":221,\"r\":296,\"b\":737,\"w\":280,\"h\":516},\"chip\":{\"l\":16,\"t\":173,\"r\":374,\"b\":217,\"w\":358,\"h\":44},\"close\":{\"l\":245,\"t\":228,\"r\":289,\"b\":272,\"w\":44,\"h\":44},\"parts\":{\"window\":{\"box\":{\"l\":138.8125,\"t\":138,\"r\":326,\"b\":181.25},\"overPanel\":false,\"onTop\":null,\"overLegend\":false},\"topBar\":{\"box\":{\"l\":8,\"t\":82,\"r\":382,\"b\":134},\"overPanel\":false,\"onTop\":null,\"overLegend\":false},\"gateBar\":{\"box\":{\"l\":8,\"t\":632,\"r\":382,\"b\":734},\"overPanel\":true,\"onTop\":\"panel\",\"overLegend\":false}},\"legendShown\":false}}}"
+ ],
+ "panel": {
+  "1366x768": {
+   "vw": 1366,
+   "vh": 768,
+   "open": true,
+   "menu": {
+    "l": 16,
+    "t": 164,
+    "r": 296,
+    "b": 680,
+    "w": 280,
+    "h": 516
+   },
+   "menuInView": true,
+   "scrollH": 514,
+   "clientH": 514,
+   "overflowY": "auto",
+   "close": {
+    "l": 245,
+    "t": 171,
+    "r": 289,
+    "b": 215,
+    "w": 44,
+    "h": 44
+   },
+   "closeInView": true,
+   "closeOnTop": true,
+   "fold": {
+    "l": 197,
+    "t": 171,
+    "r": 241,
+    "b": 215,
+    "w": 44,
+    "h": 44
+   },
+   "title": null,
+   "chip": {
+    "l": 16,
+    "t": 684,
+    "r": 394,
+    "b": 728,
+    "w": 378,
+    "h": 44
+   },
+   "after": {
+    "closeBtn": true,
+    "esc": true,
+    "chipOpened": true,
+    "chip": true,
+    "edit": {
+     "editOpen": true,
+     "closeOnTop": true,
+     "closeInView": true,
+     "menuInView": true,
+     "open": true,
+     "menu": {
+      "l": 16,
+      "t": 164,
+      "r": 296,
+      "b": 680,
+      "w": 280,
+      "h": 516
+     },
+     "chip": {
+      "l": 16,
+      "t": 684,
+      "r": 394,
+      "b": 728,
+      "w": 378,
+      "h": 44
+     },
+     "close": {
+      "l": 245,
+      "t": 171,
+      "r": 289,
+      "b": 215,
+      "w": 44,
+      "h": 44
+     },
+     "parts": {
+      "window": {
+       "box": {
+        "l": 978,
+        "t": 86,
+        "r": 1358,
+        "b": 129.25
+       },
+       "overPanel": false,
+       "onTop": null,
+       "overLegend": false
+      },
+      "topBar": {
+       "box": {
+        "l": 243.484375,
+        "t": 8,
+        "r": 1122.515625,
+        "b": 48
+       },
+       "overPanel": false,
+       "onTop": null,
+       "overLegend": false
+      },
+      "gateBar": {
+       "box": {
+        "l": 478,
+        "t": 594,
+        "r": 888,
+        "b": 636
+       },
+       "overPanel": false,
+       "onTop": null,
+       "overLegend": false
+      }
+     },
+     "legendShown": false
+    }
+   }
+  },
+  "1280x720": {
+   "vw": 1280,
+   "vh": 720,
+   "open": true,
+   "menu": {
+    "l": 16,
+    "t": 116,
+    "r": 296,
+    "b": 632,
+    "w": 280,
+    "h": 516
+   },
+   "menuInView": true,
+   "scrollH": 514,
+   "clientH": 514,
+   "overflowY": "auto",
+   "close": {
+    "l": 245,
+    "t": 123,
+    "r": 289,
+    "b": 167,
+    "w": 44,
+    "h": 44
+   },
+   "closeInView": true,
+   "closeOnTop": true,
+   "fold": {
+    "l": 197,
+    "t": 123,
+    "r": 241,
+    "b": 167,
+    "w": 44,
+    "h": 44
+   },
+   "title": null,
+   "chip": {
+    "l": 16,
+    "t": 636,
+    "r": 394,
+    "b": 680,
+    "w": 378,
+    "h": 44
+   },
+   "after": {
+    "closeBtn": true,
+    "esc": true,
+    "chipOpened": true,
+    "chip": true,
+    "edit": {
+     "editOpen": true,
+     "closeOnTop": true,
+     "closeInView": true,
+     "menuInView": true,
+     "open": true,
+     "menu": {
+      "l": 16,
+      "t": 116,
+      "r": 296,
+      "b": 632,
+      "w": 280,
+      "h": 516
+     },
+     "chip": {
+      "l": 16,
+      "t": 636,
+      "r": 394,
+      "b": 680,
+      "w": 378,
+      "h": 44
+     },
+     "close": {
+      "l": 245,
+      "t": 123,
+      "r": 289,
+      "b": 167,
+      "w": 44,
+      "h": 44
+     },
+     "parts": {
+      "window": {
+       "box": {
+        "l": 892,
+        "t": 86,
+        "r": 1272,
+        "b": 129.25
+       },
+       "overPanel": false,
+       "onTop": null,
+       "overLegend": false
+      },
+      "topBar": {
+       "box": {
+        "l": 200.484375,
+        "t": 8,
+        "r": 1079.515625,
+        "b": 48
+       },
+       "overPanel": false,
+       "onTop": null,
+       "overLegend": false
+      },
+      "gateBar": {
+       "box": {
+        "l": 435,
+        "t": 570,
+        "r": 845,
+        "b": 612
+       },
+       "overPanel": false,
+       "onTop": null,
+       "overLegend": false
+      }
+     },
+     "legendShown": false
+    }
+   }
+  },
+  "844x390": {
+   "vw": 844,
+   "vh": 390,
+   "open": true,
+   "menu": {
+    "l": 16,
+    "t": 109,
+    "r": 296,
+    "b": 382,
+    "w": 280,
+    "h": 273
+   },
+   "menuInView": true,
+   "scrollH": 514,
+   "clientH": 271,
+   "overflowY": "auto",
+   "close": {
+    "l": 245,
+    "t": 116,
+    "r": 289,
+    "b": 160,
+    "w": 44,
+    "h": 44
+   },
+   "closeInView": true,
+   "closeOnTop": true,
+   "fold": {
+    "l": 197,
+    "t": 116,
+    "r": 241,
+    "b": 160,
+    "w": 44,
+    "h": 44
+   },
+   "title": null,
+   "chip": {
+    "l": 16,
+    "t": 61,
+    "r": 394,
+    "b": 105,
+    "w": 378,
+    "h": 44
+   },
+   "after": {
+    "closeBtn": true,
+    "esc": true,
+    "chipOpened": true,
+    "chip": true,
+    "edit": {
+     "editOpen": true,
+     "closeOnTop": false,
+     "closeInView": false,
+     "menuInView": false,
+     "open": true,
+     "menu": null,
+     "chip": {
+      "l": 16,
+      "t": 61,
+      "r": 394,
+      "b": 105,
+      "w": 378,
+      "h": 44
+     },
+     "close": null,
+     "parts": {
+      "window": {
+       "box": {
+        "l": 400,
+        "t": 86,
+        "r": 780,
+        "b": 121.25
+       },
+       "overPanel": false,
+       "onTop": null,
+       "overLegend": false
+      },
+      "topBar": {
+       "box": {
+        "l": 8,
+        "t": 109,
+        "r": 389.015625,
+        "b": 161
+       },
+       "overPanel": false,
+       "onTop": null,
+       "overLegend": false
+      },
+      "gateBar": {
+       "box": {
+        "l": 151,
+        "t": 328,
+        "r": 693,
+        "b": 382
+       },
+       "overPanel": false,
+       "onTop": null,
+       "overLegend": false
+      }
+     },
+     "legendShown": false
+    }
+   }
+  },
+  "390x844": {
+   "vw": 390,
+   "vh": 844,
+   "open": true,
+   "menu": {
+    "l": 16,
+    "t": 221,
+    "r": 296,
+    "b": 737,
+    "w": 280,
+    "h": 516
+   },
+   "menuInView": true,
+   "scrollH": 514,
+   "clientH": 514,
+   "overflowY": "auto",
+   "close": {
+    "l": 245,
+    "t": 228,
+    "r": 289,
+    "b": 272,
+    "w": 44,
+    "h": 44
+   },
+   "closeInView": true,
+   "closeOnTop": true,
+   "fold": {
+    "l": 197,
+    "t": 228,
+    "r": 241,
+    "b": 272,
+    "w": 44,
+    "h": 44
+   },
+   "title": null,
+   "chip": {
+    "l": 16,
+    "t": 173,
+    "r": 374,
+    "b": 217,
+    "w": 358,
+    "h": 44
+   },
+   "after": {
+    "closeBtn": true,
+    "esc": true,
+    "chipOpened": true,
+    "chip": true,
+    "edit": {
+     "editOpen": true,
+     "closeOnTop": true,
+     "closeInView": true,
+     "menuInView": true,
+     "open": true,
+     "menu": {
+      "l": 16,
+      "t": 221,
+      "r": 296,
+      "b": 737,
+      "w": 280,
+      "h": 516
+     },
+     "chip": {
+      "l": 16,
+      "t": 173,
+      "r": 374,
+      "b": 217,
+      "w": 358,
+      "h": 44
+     },
+     "close": {
+      "l": 245,
+      "t": 228,
+      "r": 289,
+      "b": 272,
+      "w": 44,
+      "h": 44
+     },
+     "parts": {
+      "window": {
+       "box": {
+        "l": 138.8125,
+        "t": 138,
+        "r": 326,
+        "b": 181.25
+       },
+       "overPanel": false,
+       "onTop": null,
+       "overLegend": false
+      },
+      "topBar": {
+       "box": {
+        "l": 8,
+        "t": 82,
+        "r": 382,
+        "b": 134
+       },
+       "overPanel": false,
+       "onTop": null,
+       "overLegend": false
+      },
+      "gateBar": {
+       "box": {
+        "l": 8,
+        "t": 632,
+        "r": 382,
+        "b": 734
+       },
+       "overPanel": true,
+       "onTop": "panel",
+       "overLegend": false
+      }
+     },
+     "legendShown": false
+    }
+   }
+  }
+ },
+ "seconds": 90
+}

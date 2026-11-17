@@ -45,7 +45,7 @@ import { EditView } from '../../course/editor/view-mouse';
 import { GateBar } from '../../course/editor/gate-bar';
 import { TopBar } from '../../course/editor/top-bar';
 import { ADD_RAY_M, addAction, addFacing, addLift, addPoint, facingFrom } from '../../course/editor/add-place';
-import { flyShows, modeStep, type EditMode } from '../../course/editor/fly-mode';
+import { flyShows, modeStep, openStep, type EditMode } from '../../course/editor/fly-mode';
 import type { Ray } from '../../course/editor/pick';
 import { camFrom } from '../../course/editor/fly-cam';
 import { gateFlownPose, placeGate, placeInState, type FlownPose } from '../../course/editor/drag';
@@ -97,6 +97,7 @@ export const course: Feature = {
         hook.clockText = () => document.querySelector('[data-testid=course-hud]')?.textContent?.trim() ?? null;
         const stage = new CourseStage(ctx.renderer);
         const hud = new CourseHud(ctx.ui);
+        hud.setCloseLabel(t('course.hide'));
         const store = new CourseStore();
         let rows: CourseRow[] = [];
         let run: CourseRun | null = null;
@@ -705,6 +706,8 @@ export const course: Feature = {
 
         // lane review TR-7: the sound mode cannot fly a visual course yet (train 2), and Shift is its keyboard's 'down', so the
         // keys do nothing while the mode is on (ctx.sonic is set only then); the routing itself is the lead's (keymap.test.ts:160)
+        // lane uiaudit fault 4: the clock block's cross hides the course as Shift+T does
+        hud.onClose = () => { if (run && hook.on) toggle(); };
         ctx.keys.on('course.toggle', (e) => {
             if (e.repeat || ctx.sonic) return;
             toggle();
@@ -905,7 +908,10 @@ export const course: Feature = {
             edHook.refused = null;
             // lane editor3 E3: no pause; the flight goes on in the mode (armed: the drone's view, disarmed: the edit view)
             mode = 'edit';
-            crashHold = false;
+            // lane editfix E2: opened in the air, the mode shows the edit view, not the flight (fly-mode.ts openStep)
+            const os = openStep(!!ctx.session.sim?.armed);
+            crashHold = os.hold;
+            if (os.respawn) ctx.session.respawnStart();
             unblock = ctx.keys.block(() => ed !== null && mode === 'edit');
             panel = new EditorPanel(ctx.ui, { key: (p) => applyKey(p), saveMine: (n, ti) => void saveMine(n, ti), saveAll: () => void saveAll(), saveAdmin: (ti) => void saveAdmin(ti), vote: (id, v) => void vote(id, v), open: (id) => openRow(id) });
             panel.defaults('', run.track.title);

@@ -172,7 +172,7 @@ export function mountStage(host: HTMLElement, o: StageOptions): Stage {
             const anchor = model.anchors.find((a) => a.id === r.id);
             const num = anchor && !card ? String(++n) : '';
             if (anchor && !card) {
-                const el = h('button', { type: 'button', class: 'd3-pin back', 'data-callout': r.id, 'aria-label': t('d3.pinFor', { part: r.label }), onclick: () => focusRow(r.id) }, num);
+                const el = h('button', { type: 'button', class: 'd3-pin back', 'data-callout': r.id, 'aria-label': t('d3.pinFor', { part: r.label }), title: t('d3.pinFor', { part: r.label }), onclick: () => focusRow(r.id) }, num);
                 pinLayer.append(el);
                 pins.push({ id: r.id, el, anchor });
             }

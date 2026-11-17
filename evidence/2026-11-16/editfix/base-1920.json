@@ -1,0 +1,473 @@
+{
+ "address": "http://localhost:5820/en",
+ "scan": "70b50d42",
+ "size": [
+  1920,
+  1080
+ ],
+ "dsf": 1,
+ "touch": false,
+ "layout": "en",
+ "name": "base-1920",
+ "lockAsked": true,
+ "early": "",
+ "fly": true,
+ "query": "",
+ "live": false,
+ "date": "2026-11-16T10:18:46.461Z",
+ "steps": {
+  "open": {
+   "ok": true,
+   "mode": "fly",
+   "lock": null
+  },
+  "a.view": {
+   "ok": false,
+   "moves": [
+    {
+     "by": "KeyW",
+     "moved": 0
+    },
+    {
+     "by": "KeyS",
+     "moved": 0
+    },
+    {
+     "by": "KeyD",
+     "moved": 0
+    },
+    {
+     "by": "KeyA",
+     "moved": 0
+    },
+    {
+     "by": "KeyE",
+     "moved": 0
+    },
+    {
+     "by": "KeyQ",
+     "moved": 0
+    },
+    {
+     "by": "rightDrag",
+     "moved": 0
+    },
+    {
+     "by": "leftDragEmpty",
+     "moved": 0
+    },
+    {
+     "by": "wheel",
+     "speed": [
+      4,
+      4
+     ],
+     "moved": 0
+    }
+   ]
+  },
+  "b.select": {
+   "ok": false,
+   "candidates": 14,
+   "from": 0,
+   "picked": null,
+   "gatesOnScreen": 15
+  },
+  "c.add": {
+   "ok": false,
+   "why": "no Add button on screen"
+  },
+  "d.controls": {
+   "ok": false,
+   "top": [
+    {
+     "id": "undo",
+     "ok": false,
+     "why": "not on screen"
+    },
+    {
+     "id": "redo",
+     "ok": false,
+     "why": "not on screen"
+    },
+    {
+     "id": "save",
+     "ok": false,
+     "why": "not on screen"
+    },
+    {
+     "id": "courses",
+     "ok": false,
+     "why": "not on screen"
+    },
+    {
+     "id": "keys",
+     "ok": false,
+     "why": "not on screen"
+    }
+   ],
+   "window": []
+  },
+  "e.exit": {
+   "ok": false,
+   "presses": [
+    {
+     "n": 0,
+     "why": "no Exit on screen"
+    }
+   ],
+   "override": false,
+   "paused": false,
+   "windows": []
+  }
+ },
+ "clicks": [
+  {
+   "label": "controls.keyboard",
+   "at": [
+    690,
+    687
+   ],
+   "lockBefore": null,
+   "under": "BUTTON.btn",
+   "peChain": [
+    [
+     "BUTTON.btn",
+     "auto"
+    ],
+    [
+     "DIV#ui",
+     "none"
+    ]
+   ],
+   "windowSaw": [
+    "pointerdown>BUTTON.btn",
+    "click>BUTTON.btn"
+   ],
+   "clickBubbled": [
+    "BUTTON.btn"
+   ]
+  },
+  {
+   "label": "scene.toFly",
+   "at": [
+    960,
+    540
+   ],
+   "lockBefore": null,
+   "under": "CANVAS#view",
+   "peChain": [
+    [
+     "CANVAS#view",
+     "auto"
+    ]
+   ],
+   "windowSaw": [
+    "pointerdown>CANVAS#view",
+    "click>CANVAS#view"
+   ],
+   "clickBubbled": [
+    "CANVAS#view"
+   ]
+  },
+  {
+   "label": "view.rightDrag",
+   "at": [
+    960,
+    540
+   ],
+   "lockBefore": null,
+   "under": "CANVAS#view",
+   "peChain": [
+    [
+     "CANVAS#view",
+     "auto"
+    ]
+   ]
+  },
+  {
+   "label": "view.leftDragEmpty",
+   "at": [
+    384,
+    670
+   ],
+   "lockBefore": null,
+   "under": "CANVAS#view",
+   "peChain": [
+    [
+     "CANVAS#view",
+     "auto"
+    ]
+   ]
+  },
+  {
+   "label": "gate.1",
+   "at": [
+    1506,
+    853
+   ],
+   "lockBefore": null,
+   "under": "CANVAS#view",
+   "peChain": [
+    [
+     "CANVAS#view",
+     "auto"
+    ]
+   ],
+   "windowSaw": [
+    "pointerdown>CANVAS#view",
+    "click>CANVAS#view"
+   ],
+   "clickBubbled": [
+    "CANVAS#view"
+   ],
+   "effect": {
+    "selected": 0,
+    "want": 1
+   }
+  },
+  {
+   "label": "gate.2",
+   "at": [
+    1589,
+    761
+   ],
+   "lockBefore": null,
+   "under": "CANVAS#view",
+   "peChain": [
+    [
+     "CANVAS#view",
+     "auto"
+    ]
+   ],
+   "windowSaw": [
+    "pointerdown>CANVAS#view",
+    "click>CANVAS#view"
+   ],
+   "clickBubbled": [
+    "CANVAS#view"
+   ],
+   "effect": {
+    "selected": 0,
+    "want": 2
+   }
+  },
+  {
+   "label": "gate.3",
+   "at": [
+    1596,
+    693
+   ],
+   "lockBefore": null,
+   "under": "CANVAS#view",
+   "peChain": [
+    [
+     "CANVAS#view",
+     "auto"
+    ]
+   ],
+   "windowSaw": [
+    "pointerdown>CANVAS#view",
+    "click>CANVAS#view"
+   ],
+   "clickBubbled": [
+    "CANVAS#view"
+   ],
+   "effect": {
+    "selected": 0,
+    "want": 3
+   }
+  }
+ ],
+ "ready": {
+  "status": "ready",
+  "ms": 7141
+ },
+ "afterControls": {
+  "open": false,
+  "selected": 0,
+  "changed": false,
+  "said": "",
+  "flying": false,
+  "refused": null,
+  "mode": null,
+  "gatesN": null,
+  "courseGates": 0,
+  "courseOn": false,
+  "problem": null,
+  "cam": null,
+  "view": null,
+  "handles": null,
+  "stand": null,
+  "gates": null,
+  "override": false,
+  "lock": null,
+  "topLine": null,
+  "topClass": null,
+  "panelClass": null,
+  "panelBox": null,
+  "canvas": [
+   1920,
+   1080,
+   1920,
+   1080
+  ],
+  "dpr": 1,
+  "maxTouch": 0,
+  "status": "ready",
+  "paused": false,
+  "windows": [],
+  "hud": {
+   "armed": false,
+   "crashed": false,
+   "throttlePct": 0,
+   "speed": 0,
+   "altitude": 0,
+   "crashes": 0
+  },
+  "active": "BODY.flying"
+ },
+ "lockAfterClick": "CANVAS#view",
+ "takeoff": {
+  "hudBefore": {
+   "armed": false,
+   "crashed": false,
+   "throttlePct": 0,
+   "speed": 0,
+   "altitude": 0,
+   "crashes": 0
+  },
+  "hudAfter": {
+   "armed": true,
+   "crashed": false,
+   "throttlePct": 29,
+   "speed": 0.1447184543737336,
+   "altitude": 7.8988110593054195,
+   "crashes": 0
+  },
+  "lock": "CANVAS#view"
+ },
+ "course": {
+  "ok": true,
+  "ms": 12065,
+  "gates": 39,
+  "problem": null
+ },
+ "open": {
+  "ok": true,
+  "ms": 5,
+  "mode": "fly",
+  "flying": true,
+  "lock": null,
+  "handles": false,
+  "topClass": "ce-topbar interactive flying",
+  "topLine": "Flying your course with the changes. Disarm to edit again",
+  "canvas": [
+   1920,
+   1080,
+   1920,
+   1080
+  ],
+  "dpr": 1,
+  "maxTouch": 0,
+  "hud": {
+   "armed": true,
+   "crashed": false,
+   "throttlePct": 28,
+   "speed": 0.07864591985665896,
+   "altitude": 7.370298801068689,
+   "crashes": 0
+  },
+  "windows": [],
+  "gatesN": 39,
+  "selected": 0,
+  "override": false
+ },
+ "final": {
+  "open": true,
+  "selected": 0,
+  "changed": false,
+  "said": "Editor open. W A S D move the view, E up, Q down, hold the right mouse button to look around, the wheel sets the speed. Click a gate: it carries one set of hand",
+  "flying": true,
+  "refused": null,
+  "mode": "fly",
+  "gatesN": 39,
+  "courseGates": 39,
+  "courseOn": true,
+  "problem": null,
+  "cam": {
+   "pos": [
+    -10.629134178161621,
+    10.812469482421875,
+    -16.76626205444336
+   ],
+   "speed": 4
+  },
+  "view": {
+   "eye": [
+    -10.629134178161621,
+    10.812469482421875,
+    -16.76626205444336
+   ],
+   "at": [
+    -9.629243200769361,
+    10.812469482421875,
+    -16.781028006141465
+   ]
+  },
+  "handles": false,
+  "stand": [
+   1242,
+   1142,
+   8.46
+  ],
+  "override": false,
+  "lock": null,
+  "topLine": "Flying your course with the changes. Disarm to edit again",
+  "topClass": "ce-topbar interactive flying",
+  "panelClass": "course-editor interactive ce-flying",
+  "panelBox": [
+   0,
+   0,
+   0,
+   0
+  ],
+  "canvas": [
+   1920,
+   1080,
+   1920,
+   1080
+  ],
+  "dpr": 1,
+  "maxTouch": 0,
+  "status": "ready",
+  "paused": false,
+  "windows": [],
+  "hud": {
+   "armed": true,
+   "crashed": false,
+   "throttlePct": 29,
+   "speed": 8.136211971460559e-7,
+   "altitude": 7.422559796268839,
+   "crashes": 0
+  },
+  "active": "BODY.flying"
+ },
+ "fails": [
+  "a.view",
+  "b.select",
+  "c.add",
+  "d.controls",
+  "e.exit"
+ ],
+ "log": [
+  "console: Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "console: Failed to load resource: the server responded with a status of 403 ()",
+  "console: Failed to load resource: the server responded with a status of 403 ()",
+  "console: Failed to load resource: the server responded with a status of 403 ()",
+  "console: Failed to load resource: the server responded with a status of 403 ()",
+  "console: Failed to load resource: the server responded with a status of 403 ()",
+  "console: Failed to load resource: the server responded with a status of 403 ()",
+  "console: Failed to load resource: the server responded with a status of 404 (Not Found)"
+ ]
+}

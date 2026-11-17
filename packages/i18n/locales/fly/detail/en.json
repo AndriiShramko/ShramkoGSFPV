@@ -1,0 +1,16 @@
+{
+  "detail.comingStart": "Detail: {drawn} of {top} M, files to go: {files}",
+  "detail.coming": "Detail: {drawn} of {top} M, files to go: {files}, about {secs} s",
+  "detail.full": "Detail: full for your setting",
+  "detail.nofiner": "Detail: full. This scan has no finer level here",
+  "detail.kept": "Detail: kept at your setting. The picture is slower than your screen",
+  "detail.release": "Let the page choose",
+  "detail.lowered": "Detail: {drawn} of {top} M, lowered to keep the flight smooth",
+  "detail.network": "Detail: files that did not arrive: {files}. Trying again",
+  "detail.givenup": "Detail: files that did not arrive: {files}. Check the connection and try again",
+  "detail.retry": "Try again",
+  "detail.still": "Detail: sharper while paused ({drawn} M)",
+  "set.display.stillDetail": "More detail at rest",
+  "set.display.stillDetail.help": "While the flight is paused, the scan loads more detail step by step, as long as the picture stays smooth enough to look at. Back in flight, the flight's detail returns within a second or two; on a slow computer those first moments can be less smooth. Switch it off if that gets in your way.",
+  "detail.stilloff": "Detail: back to the flight's detail. The graphics card ran short of memory, so \"More detail at rest\" is now off on this device"
+}

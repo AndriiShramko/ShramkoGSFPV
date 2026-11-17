@@ -8,7 +8,10 @@
 // it draws, so the voxels show through the scan like an x-ray (the point of an alignment check)
 // whichever way the splats are drawn: sorted splats write no depth, but SuperSplat's stochastic
 // drawing (drawing.ts, engine 2.23) writes it, and without the clear the scan hid the voxels behind
-// its surfaces. The voxels still depth-test among themselves. Styles are StandardMaterials (no custom shaders: the
+// its surfaces. The voxels still depth-test among themselves. Lane voxview V1: the clear also took the gates'
+// depth, so a second layer right before this one ("GSFPV Voxel depth", it does the clear now) draws a
+// depth-only copy of every render item of the World layer (voxel-depth.ts); the voxels then depth-test
+// against the gates, the arrows and other drones: one space, a gate before a wall hides the wall. Styles are StandardMaterials (no custom shaders: the
 // same code runs on WebGPU and WebGL2); a small repeating texture in cell units draws each voxel's
 // edges. Each chunk arrives as one interleaved vertex buffer packed off the main thread
 // (voxel-colors.ts packChunk, in the app's worker; the engine's per-attribute path cost 3.4 ms per
@@ -18,12 +21,13 @@
 
 import {
     Layer, Mesh, MeshInstance, GraphNode, Entity, StandardMaterial, Texture, Color, BoundingBox, Vec3,
-    VertexFormat, VertexBuffer, IndexBuffer,
+    VertexFormat, VertexBuffer, IndexBuffer, RenderComponent,
     PRIMITIVE_TRIANGLES, BLEND_NORMAL, BLEND_NONE, PIXELFORMAT_RGBA8, ADDRESS_REPEAT, FILTER_LINEAR, FILTER_LINEAR_MIPMAP_LINEAR,
     SEMANTIC_POSITION, SEMANTIC_NORMAL, SEMANTIC_TEXCOORD0, SEMANTIC_COLOR, TYPE_FLOAT32, TYPE_UINT8,
     BUFFER_STATIC, INDEXFORMAT_UINT16, INDEXFORMAT_UINT32, CULLFACE_NONE
 } from 'playcanvas';
 import type { SplatRenderer } from './renderer';
+import { depthSyncDue, diffDepthCopies, joinsVoxelDepth } from './voxel-depth';
 import { VOXEL_STYLES, writeColors } from './voxel-colors';
 import type { VoxelStyle, VoxelLayout, PackedChunk } from './voxel-colors';
 
@@ -72,10 +76,20 @@ export interface VoxelOverlayStats {
     uploadMs: number;
     uploadMaxMs: number;
     uploadQuads: number;
+    /** V1: depth-only copies of the World items (gates, arrows, drones) drawn before the voxels */
+    depthItems: number;
 }
 
 export class VoxelOverlay {
     readonly layer: Layer;
+    /** V1: cleared depth plus the World items' depth-only copies, drawn right before the voxels */
+    readonly depthLayer: Layer;
+    private depthMat: StandardMaterial;
+    private depthCopies = new Map<MeshInstance, MeshInstance>();
+    private depthTick = 0;
+    /** wire with opaque faces: the voxels-only view at full opacity (a gate behind a wall is hidden by it) */
+    private wireBack: StandardMaterial;
+    private aloneNow = false;
     private r: SplatRenderer;
     private root = new GraphNode('gsfpv-voxels');
     private entries = new Map<string, Entry>();
@@ -108,12 +122,30 @@ export class VoxelOverlay {
         this.r = r;
         const layers = r.app.scene.layers;
         // clearDepthBuffer: the x-ray over a scan that writes depth (stochastic drawing), see the header
-        this.layer = new Layer({ name: 'GSFPV Voxels', clearDepthBuffer: true });
+        this.depthLayer = new Layer({ name: 'GSFPV Voxel depth', clearDepthBuffer: true });
+        this.layer = new Layer({ name: 'GSFPV Voxels', clearDepthBuffer: false });
         const world = layers.getLayerByName('World');
-        layers.insert(this.layer, world ? layers.getTransparentIndex(world) + 1 : layers.layerList.length);
+        const at = world ? layers.getTransparentIndex(world) + 1 : layers.layerList.length;
+        layers.insert(this.depthLayer, at);
+        layers.insert(this.layer, at + 1);
         const cam = r.camera.camera!;
-        cam.layers = [...cam.layers, this.layer.id];
+        cam.layers = [...cam.layers, this.depthLayer.id, this.layer.id];
         this.layer.enabled = false;
+        this.depthLayer.enabled = false;
+        const dm = new StandardMaterial();
+        dm.name = 'gsfpv-voxel-depth';
+        dm.useLighting = false;
+        dm.useFog = false;
+        dm.useSkybox = false;
+        dm.redWrite = false;
+        dm.greenWrite = false;
+        dm.blueWrite = false;
+        dm.alphaWrite = false;
+        dm.depthWrite = true;
+        dm.depthTest = true;
+        dm.cull = CULLFACE_NONE;
+        dm.update();
+        this.depthMat = dm;
         // key light from above, a weaker fill from the other side: the three face directions of a cube read apart
         for (const [name, pitch, yaw, k] of [['key', 55, 35, 0.95], ['fill', 20, 215, 0.35]] as const) {
             const e = new Entity(`gsfpv-voxel-${name}`, r.app);
@@ -141,12 +173,13 @@ export class VoxelOverlay {
             height: this.material('height'),
             floaters: this.material('floaters')
         };
+        this.wireBack = this.material('wire', true);
         this.applyOpacity();
     }
 
-    private material(style: VoxelStyle): StandardMaterial {
+    private material(style: VoxelStyle, back = false): StandardMaterial {
         const m = new StandardMaterial();
-        m.name = `gsfpv-voxels-${style}`;
+        m.name = `gsfpv-voxels-${style}${back ? '-back' : ''}`;
         m.useFog = false;
         m.useSkybox = false;
         m.useTonemap = false;
@@ -164,6 +197,17 @@ export class VoxelOverlay {
             const e = style === 'floaters' ? 0.3 : 0.12;
             m.emissive = new Color(e, e, e);
             m.emissiveVertexColor = true;
+        } else if (style === 'wire' && back) {
+            // V1: the wire's look with faces: bright edges (the mask as emissive) on dim lit faces, opaque
+            m.useLighting = true;
+            m.diffuse = new Color(0.22, 0.22, 0.22);
+            m.diffuseVertexColor = true;
+            m.specular = new Color(0, 0, 0);
+            m.emissive = new Color(1, 1, 1);
+            m.emissiveVertexColor = true;
+            m.emissiveMap = this.tex;
+            m.emissiveMapChannel = 'a';
+            m.blendType = BLEND_NONE;
         } else if (style === 'wire') {
             // only the cell edges: the texture's mask cuts the rest away
             m.useLighting = false;
@@ -208,6 +252,55 @@ export class VoxelOverlay {
 
     setVisible(on: boolean): void {
         this.layer.enabled = on;
+        this.depthLayer.enabled = on;
+        if (on) this.syncDepth();
+        else this.dropDepth();
+    }
+
+    /** The material for the style now: the wire gets faces in the voxels-only view at full opacity (V1). */
+    private matNow(): StandardMaterial {
+        return this.styleNow === 'wire' && this.aloneNow && this.opacityNow >= 0.999 ? this.wireBack : this.mats[this.styleNow];
+    }
+
+    /**
+     * V1: one depth-only copy per render item of the World layer, in the depth layer (same mesh, same
+     * node, so it follows a moving gate or drone). Called when shown and every few frames after.
+     */
+    private syncDepth(): void {
+        const world = this.r.app.scene.layers.getLayerByName('World');
+        if (!world) return;
+        const own = [this.layer.id, this.depthLayer.id];
+        const want = new Map<MeshInstance, boolean>();
+        for (const rc of this.r.app.root.findComponents('render') as RenderComponent[]) {
+            if (!joinsVoxelDepth({ layers: rc.layers, enabled: rc.enabled && rc.entity.enabled }, world.id, own)) continue;
+            for (const mi of rc.meshInstances) want.set(mi, mi.visible);
+        }
+        const d = diffDepthCopies(this.depthCopies.keys(), want.keys());
+        for (const src of d.drop) {
+            const c = this.depthCopies.get(src);
+            if (c) this.depthLayer.removeMeshInstances([c]);
+            this.depthCopies.delete(src);
+        }
+        const added: MeshInstance[] = [];
+        for (const src of d.add) {
+            if (!src.mesh) continue;
+            const c = new MeshInstance(src.mesh, this.depthMat, src.node);
+            c.castShadow = false;
+            this.depthCopies.set(src, c);
+            added.push(c);
+        }
+        if (added.length) this.depthLayer.addMeshInstances(added);
+        for (const [src, c] of this.depthCopies) c.visible = want.get(src) ?? false;
+    }
+
+    private dropDepth(): void {
+        if (this.depthCopies.size) this.depthLayer.removeMeshInstances([...this.depthCopies.values()]);
+        this.depthCopies.clear();
+    }
+
+    /** the depth copies now (the probe reads it) */
+    get depthItems(): number {
+        return this.depthCopies.size;
     }
 
     get visible(): boolean {
@@ -215,17 +308,18 @@ export class VoxelOverlay {
     }
 
     /** Style and opacity (0.05..1). A style change recolours the chunks a few per frame. */
-    setLook(style: VoxelStyle, opacity: number): void {
+    /** Style and opacity (0.05..1); alone: the scan is hidden (the voxels-only view). */
+    setLook(style: VoxelStyle, opacity: number, alone = false): void {
         const a = Math.max(0.05, Math.min(1, opacity));
+        const before = this.matNow();
         if (a !== this.opacityNow) {
             this.opacityNow = a;
             this.applyOpacity();
         }
-        if (style !== this.styleNow) {
-            this.styleNow = style;
-            const m = this.mats[style];
-            for (const e of this.entries.values()) e.mi.material = m;
-        }
+        this.styleNow = style;
+        this.aloneNow = alone;
+        const m = this.matNow();
+        if (m !== before) for (const e of this.entries.values()) e.mi.material = m;
     }
 
     /**
@@ -293,6 +387,11 @@ export class VoxelOverlay {
         return this.entries.has(key);
     }
 
+    /** A mesh for this key waits in the upload queue (what is on screen for it, if anything, is older). */
+    pending(key: string): boolean {
+        return this.queue.has(key);
+    }
+
     remove(key: string): void {
         this.queue.delete(key);
         const e = this.entries.get(key);
@@ -314,6 +413,10 @@ export class VoxelOverlay {
 
     /** Per frame: upload queued chunks and recolour stale ones within the per-frame budgets. Returns keys uploaded. */
     update(): string[] {
+        if (this.layer.enabled && depthSyncDue(++this.depthTick)) {
+            this.depthTick = 0;
+            this.syncDepth();
+        }
         const done: string[] = [];
         let quads = 0;
         for (const [key, c] of this.queue) {
@@ -363,7 +466,7 @@ export class VoxelOverlay {
         prim.indexed = true;
         const a = c.aabb;
         mesh.aabb = new BoundingBox(new Vec3((a[0] + a[3]) / 2, (a[1] + a[4]) / 2, (a[2] + a[5]) / 2), new Vec3((a[3] - a[0]) / 2, (a[4] - a[1]) / 2, (a[5] - a[2]) / 2));
-        const mi = new MeshInstance(mesh, this.mats[this.styleNow], this.root);
+        const mi = new MeshInstance(mesh, this.matNow(), this.root);
         mi.castShadow = false;
         this.layer.addMeshInstances([mi]);
         this.entries.set(key, { mi, vb, floater: c.floater, quads: c.quads, colored: c.style, lo: c.lo, hi: c.hi });
@@ -373,16 +476,20 @@ export class VoxelOverlay {
     stats(): VoxelOverlayStats {
         let recolorPending = 0;
         for (const e of this.entries.values()) if (this.stale(e)) recolorPending++;
-        return { chunks: this.entries.size, quads: this.quadsNow, triangles: this.quadsNow * 2, pendingUploads: this.queue.size, recolorPending, uploads: this.up.n, uploadMs: this.up.ms, uploadMaxMs: this.up.max, uploadQuads: this.up.quads };
+        return { chunks: this.entries.size, quads: this.quadsNow, triangles: this.quadsNow * 2, pendingUploads: this.queue.size, recolorPending, uploads: this.up.n, uploadMs: this.up.ms, uploadMaxMs: this.up.max, uploadQuads: this.up.quads, depthItems: this.depthCopies.size };
     }
 
     dispose(): void {
         this.clear();
+        this.dropDepth();
         const layers = this.r.app.scene.layers;
         const cam = this.r.camera.camera;
-        if (cam) cam.layers = cam.layers.filter((id) => id !== this.layer.id);
+        if (cam) cam.layers = cam.layers.filter((id) => id !== this.layer.id && id !== this.depthLayer.id);
         layers.remove(this.layer);
+        layers.remove(this.depthLayer);
         for (const s of VOXEL_STYLES) this.mats[s].destroy();
+        this.wireBack.destroy();
+        this.depthMat.destroy();
         for (const e of this.lights) e.destroy();
         this.plane?.destroy();
         this.planeMat?.destroy();

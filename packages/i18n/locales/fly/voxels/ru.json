@@ -4,5 +4,10 @@
   "voxels.dropFloaters.on": "Убрано летающих кусков меньше {n} блоков: {pieces}",
   "voxels.dropFloaters.off": "Летающие куски оставлены: каждый снова считается стеной",
   "voxels.dropped": "убрано из стен летающих кусков меньше {n} блоков: {pieces}",
-  "voxels.dropHint": "мелкие можно убрать из стен в Настройках → Стены и воксельная сетка"
+  "voxels.dropHint": "мелкие можно убрать из стен в Настройках → Стены и воксельная сетка",
+  "voxels.panel.title": "Стены и воксели",
+  "voxels.panel.fold": "Свернуть панель",
+  "voxels.panel.unfold": "Развернуть панель",
+  "voxels.panel.close": "Закрыть",
+  "voxels.legendOff": "Скрыть сетку вокселей"
 }

@@ -29,6 +29,8 @@ import type { GpuInfo } from './device-class';
 import { BrokenFileError, lodMetaProblem, lodMode } from './lod';
 import type { LodState } from './lod';
 import { ENGINE_RULE, ViewLod, lodRule, viewLodParamsOf } from './view-lod';
+import { StreamKeeper } from './stream-keeper';
+import type { StreamLoaderView, StreamStats } from './stream-keeper';
 import type { ViewLodStats } from './view-lod';
 
 /**
@@ -176,7 +178,7 @@ interface OctreeView {
     nodes?: { lods?: { fileIndex: number; count: number }[] }[];
     environmentUrl?: string | null;
     /** the loader of the streamed files (internal): how many it downloads at a time (2 in engine 2.23.2) */
-    assetLoader?: { maxConcurrentLoads?: number } | null;
+    assetLoader?: ({ maxConcurrentLoads?: number } & StreamLoaderView) | null;
 }
 
 const dirOf = (u: string): string => {
@@ -273,6 +275,10 @@ export class SplatRenderer {
     private viewLodActive = false;
     /** downloads of a streamed scan's files at a time (setParallelLoads); null: the engine's own number */
     private parallelLoads: number | null = null;
+    /** lane loadq G3: asks failed files again with a growing pause, frees the slots of files that never answer */
+    private keeper = new StreamKeeper();
+    /** the keeper's last look, ms */
+    private keeperAt = 0;
 
     private constructor(canvas: HTMLCanvasElement, device: GraphicsDevice, opts: RendererOptions) {
         this.canvas = canvas;
@@ -709,6 +715,41 @@ export class SplatRenderer {
         if (loader && typeof loader.maxConcurrentLoads === 'number') loader.maxConcurrentLoads = this.parallelLoads;
     }
 
+    private streamLoader(): StreamLoaderView | null {
+        const comp = this.splat?.gsplat as GSplatComponent | undefined;
+        return (comp?.resource as unknown as { octree?: OctreeView } | null | undefined)?.octree?.assetLoader ?? null;
+    }
+
+    /** The streamed files now: to come, waiting to be asked again, given up, arrived (stream-keeper.ts). */
+    streamStats(): StreamStats {
+        return this.keeper.stats();
+    }
+
+    /** Ask every given-up file again (the detail line's Try again press); how many. */
+    /**
+     * loadq2 R3: calls back when the graphics device is lost (the engine's 'devicelost', WebGPU's device.lost) or reports
+     * that it ran out of memory (WebGPU 'uncapturederror' with a GPUOutOfMemoryError). Returns the remover.
+     */
+    onGpuTrouble(cb: (kind: 'lost' | 'memory') => void): () => void {
+        let live = true;
+        const fire = (k: 'lost' | 'memory'): void => { if (live) cb(k); };
+        const onLost = (): void => fire('lost');
+        this.device.on('devicelost', onLost);
+        type ErrorTarget = { lost?: Promise<unknown>; addEventListener?: (n: string, f: (e: Event) => void) => void; removeEventListener?: (n: string, f: (e: Event) => void) => void };
+        const w = (this.device as unknown as { wgpu?: ErrorTarget }).wgpu;
+        void w?.lost?.then(() => fire('lost'));
+        const onError = (ev: Event): void => {
+            const e = (ev as Event & { error?: { constructor?: { name?: string }; message?: string } }).error;
+            if (e && (e.constructor?.name === 'GPUOutOfMemoryError' || /out of memory/i.test(e.message ?? ''))) fire('memory');
+        };
+        w?.addEventListener?.('uncapturederror', onError);
+        return () => { live = false; this.device.off('devicelost', onLost); w?.removeEventListener?.('uncapturederror', onError); };
+    }
+
+    retryFailedFiles(): number {
+        return this.keeper.retryAll();
+    }
+
     /** Open the full LOD range after the coarse level has been shown. */
     revealFullDetail(): void {
         this.count.frozen = true;
@@ -773,6 +814,7 @@ export class SplatRenderer {
         this.splatAsset = null;
         this.contentKind = null;
         this.sceneAssets.clear();
+        this.keeper = new StreamKeeper();
         this.count = { base: '', listed: false, expected: new Map(), images: new Map(), lastByteAt: 0, frozen: false };
         this.loadStartedAt = 0;
         this.firstFrameAt = 0;
@@ -954,6 +996,8 @@ export class SplatRenderer {
         // inside the rAF callback the document timeline's time is this frame's rAF timestamp
         const ct = document.timeline?.currentTime;
         const t = typeof ct === 'number' ? ct : performance.now();
+        // the streamed files that failed or hang: four looks a second are enough for pauses of 0.5 s and more
+        if (t - this.keeperAt >= 250) { this.keeperAt = t; this.keeper.tick(t, this.streamLoader()); }
         const a = this.latencyGuard.onFrame(t, performance.now());
         if (a?.kind === 'measure') this.measurePresentation(t);
     };

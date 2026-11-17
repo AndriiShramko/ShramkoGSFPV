@@ -1,0 +1,1151 @@
+{
+  "name": "train3f/tracks-page",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "157.0.8103.52",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-11-16T06:52:47.059Z",
+    "gitHead": "809bf376",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "step": "tracks T3: the courses page probe",
+  "pass": false,
+  "checks": [
+    {
+      "name": "hintClearOfTimer: the course hint and the lap block never meet (1920x1080, 1366x768, 844x390; en, es, pl, ru; tallest hint en)",
+      "pass": true,
+      "value": [
+        "en 1920x1080 clear noteH 50",
+        "en 1366x768 clear noteH 50",
+        "en 844x390 clear noteH 50",
+        "es 1920x1080 clear noteH 50",
+        "es 1366x768 clear noteH 50",
+        "es 844x390 clear noteH 50",
+        "pl 1920x1080 clear noteH 50",
+        "pl 1366x768 clear noteH 50",
+        "pl 844x390 clear noteH 50",
+        "ru 1920x1080 clear noteH 50",
+        "ru 1366x768 clear noteH 50",
+        "ru 844x390 clear noteH 50"
+      ]
+    },
+    {
+      "name": "A look (link seed 1, 36 gates): >= 200 more pixels of the course's paint than with Shift+T, or the guide points to gate 1 on its side",
+      "pass": true,
+      "value": {
+        "drawn": 183,
+        "painted": false,
+        "guide": {
+          "guide": {
+            "shown": true,
+            "gate": 0,
+            "metres": 20,
+            "side": "right",
+            "behind": true,
+            "inFrame": false,
+            "bearingDeg": 93,
+            "x": 1200,
+            "y": 400
+          },
+          "cx": 1199.625,
+          "vw": 1280,
+          "bearing": 93.13246519856806
+        },
+        "on": {
+          "next": 100,
+          "later": 8,
+          "arrow": 251
+        },
+        "off": {
+          "next": 0,
+          "later": 8,
+          "arrow": 208
+        },
+        "diff": {
+          "px": 21709,
+          "mean": [
+            89,
+            96,
+            100
+          ]
+        },
+        "drawnOff": 0
+      }
+    },
+    {
+      "name": "A Shift+T: drawn 0",
+      "pass": true,
+      "value": 0
+    },
+    {
+      "name": "A Shift+G: source generated",
+      "pass": true,
+      "value": {
+        "source": "generated",
+        "problem": null,
+        "ms": 4167
+      }
+    },
+    {
+      "name": "A gates > 0",
+      "pass": true,
+      "value": 41
+    },
+    {
+      "name": "A drawn > 0",
+      "pass": true,
+      "value": 155
+    },
+    {
+      "name": "A beacon points > 0",
+      "pass": true,
+      "value": 104
+    },
+    {
+      "name": "A menu: Save for everyone enabled",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "A saved: hook.saved is the server id",
+      "pass": true,
+      "value": {
+        "saved": "887f27aa-cf184a92",
+        "problem": null
+      }
+    },
+    {
+      "name": "B fresh profile: serverTracks > 0",
+      "pass": true,
+      "value": 1
+    },
+    {
+      "name": "B Shift+T: source server",
+      "pass": true,
+      "value": {
+        "source": "server",
+        "problem": null,
+        "ms": 261
+      }
+    },
+    {
+      "name": "B track id == A's saved id",
+      "pass": true,
+      "value": {
+        "b": "887f27aa-cf184a92",
+        "a": "887f27aa-cf184a92"
+      }
+    },
+    {
+      "name": "B drawn > 0",
+      "pass": true,
+      "value": 155
+    },
+    {
+      "name": "C1 another scene: serverTracks 0",
+      "pass": true,
+      "value": 0
+    },
+    {
+      "name": "C1 another scene: source none",
+      "pass": true,
+      "value": "none"
+    },
+    {
+      "name": "C1 menu: Load disabled",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "C2 setup: Node proves the original, refuses the moved one; the server stores it (201)",
+      "pass": true,
+      "value": {
+        "gate": 20,
+        "transform": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "centre": [
+          -95.9,
+          2.05,
+          44.7
+        ],
+        "into": [
+          -95.9,
+          0.24999999999999906,
+          44.7
+        ],
+        "wallM": 1.6,
+        "nodeOriginalOk": true,
+        "nodeMovedOk": false,
+        "nodeIssues": [
+          "leg g20 to g21: a sphere of 0.5 m touches a wall (free radius along it 6 m at -86.9, 2.4, 38.7)",
+          "leg g21 to g22: a sphere of 0.5 m touches a wall (free radius along it 6 m at -95.9, 0.25, 44.7)"
+        ],
+        "post": 201,
+        "id": "887f27aa-6ebdc9a1",
+        "page": {
+          "on": true,
+          "source": "server",
+          "track": {
+            "id": "887f27aa-cf184a92",
+            "version": 1
+          },
+          "seed": 1909901805,
+          "gates": 41,
+          "next": 0,
+          "drawn": 155,
+          "laps": 0,
+          "lastLapMs": null,
+          "bestLapMs": null,
+          "beaconPoints": 104,
+          "problem": null,
+          "serverTracks": 2,
+          "saved": null,
+          "editor": {
+            "open": false,
+            "selected": 0,
+            "changed": false,
+            "problems": 0,
+            "refused": null,
+            "said": "",
+            "votes": {},
+            "paints": [],
+            "admin": false,
+            "lapped": []
+          },
+          "sound": {},
+          "progress": null
+        }
+      }
+    },
+    {
+      "name": "C2 the moved course is refused in the page (refused, or skipped to the next saved row)",
+      "pass": true,
+      "value": {
+        "serverTracks": 2,
+        "source": "server",
+        "loaded": "887f27aa-cf184a92",
+        "moved": "887f27aa-6ebdc9a1",
+        "saved": "887f27aa-cf184a92",
+        "problem": null,
+        "refused": false,
+        "skipped": true
+      }
+    },
+    {
+      "name": "C3 control: script patched, hook drawn > 0, the pixel check fails",
+      "pass": true,
+      "value": {
+        "patched": true,
+        "drawn": 183,
+        "on": {
+          "next": 100,
+          "later": 8,
+          "arrow": 251
+        },
+        "off": {
+          "next": 0,
+          "later": 8,
+          "arrow": 208
+        },
+        "diff": {
+          "px": 21836,
+          "mean": [
+            89,
+            96,
+            100
+          ]
+        },
+        "drawnOff": 0
+      }
+    },
+    {
+      "name": "E a generated course",
+      "pass": true,
+      "value": {
+        "source": "generated",
+        "gates": 36,
+        "problem": null
+      }
+    },
+    {
+      "name": "E Shift+B: the editor is open (hook and window)",
+      "pass": true,
+      "value": {
+        "hook": {
+          "open": true,
+          "selected": 0,
+          "changed": false,
+          "problems": 0,
+          "refused": null,
+          "said": "Editor open. W A S D move the view, E up, Q down, hold the right mouse button to look around, the wheel sets the speed. Click a gate: it carries one set of handles at a time, chosen by Move, Turn or Size on the bar under it (or M, R, T); pull them with the mouse. Space or your controller's arm switch flies the course (hold Space to climb); a short Space or the switch again goes back to editing. Esc leaves",
+          "votes": {},
+          "paints": [
+            "selected",
+            "later",
+            "later",
+            "later",
+            "later",
+            "later",
+            "later",
+            "later",
+            "later",
+            "later",
+            "later",
+            "later",
+            "later",
+            "later",
+            "later",
+            "later",
+            "later",
+            "later",
+            "later",
+            "later",
+            "later",
+            "later",
+            "later",
+            "later",
+            "later",
+            "later",
+            "later",
+            "later",
+            "later",
+            "later",
+            "later",
+            "later",
+            "later",
+            "later",
+            "later",
+            "later"
+          ],
+          "admin": false,
+          "lapped": [],
+          "view": {
+            "eye": [
+              -0.00009802787510159853,
+              1.9998478049374333,
+              0.01649042087264806
+            ],
+            "at": [
+              0.9999000715942277,
+              1.9995397816977423,
+              0.018415564870674295
+            ],
+            "look": [
+              0.9999000715942277,
+              1.9995397816977423,
+              0.018415564870674295
+            ],
+            "free": 1
+          },
+          "pose": {
+            "pos": [
+              -1.1,
+              1.2,
+              20.1
+            ],
+            "quat": [
+              0,
+              0,
+              -1,
+              0
+            ]
+          },
+          "frame": {
+            "side": 35,
+            "dist": 1.83,
+            "skipped": 0
+          },
+          "flying": false
+        },
+        "window": true
+      }
+    },
+    {
+      "name": "E no take-off prompt under the editor (.gate-msg empty)",
+      "pass": false,
+      "value": {
+        "prompt": "Click to fly, or press W or Space to take off"
+      }
+    },
+    {
+      "name": "E paint: exactly the selected gate is painted selected",
+      "pass": true,
+      "value": {
+        "paints": [
+          "selected",
+          "later",
+          "later",
+          "later",
+          "later",
+          "later",
+          "later",
+          "later",
+          "later",
+          "later",
+          "later",
+          "later",
+          "later",
+          "later",
+          "later",
+          "later",
+          "later",
+          "later",
+          "later",
+          "later",
+          "later",
+          "later",
+          "later",
+          "later",
+          "later",
+          "later",
+          "later",
+          "later",
+          "later",
+          "later",
+          "later",
+          "later",
+          "later",
+          "later",
+          "later",
+          "later"
+        ],
+        "selected": 0
+      }
+    },
+    {
+      "name": "E camera: the selected gate in view on opening (hook view, yellow outline pixels on screen)",
+      "pass": true,
+      "value": {
+        "view": {
+          "eye": [
+            -0.11108961479131274,
+            1.827525682300512,
+            18.687689604517637
+          ],
+          "at": [
+            -0.6500751594870684,
+            1.4855055389748433,
+            19.457440735837693
+          ],
+          "look": [
+            -0.6500751594870684,
+            1.4855055389748433,
+            19.457440735837693
+          ],
+          "free": 1
+        },
+        "px": 21250,
+        "min": 200
+      }
+    },
+    {
+      "name": "E camera: after Tab the newly selected gate is in view (yellow outline on screen)",
+      "pass": true,
+      "value": {
+        "selected": 1,
+        "view": {
+          "eye": [
+            3.473166718511882,
+            1.577525682300512,
+            34.016755809944314
+          ],
+          "at": [
+            3.269779768543701,
+            1.2355055389748437,
+            34.93417390990863
+          ],
+          "look": [
+            3.269779768543701,
+            1.2355055389748437,
+            34.93417390990863
+          ],
+          "free": 1
+        },
+        "moved": true,
+        "px": 66513
+      }
+    },
+    {
+      "name": "the run finished",
+      "pass": false,
+      "value": "TimeoutError: page.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.ce-save-all')\u001b[22m\n\u001b[2m    - locator resolved to <button type=\"button\" class=\"ce-save-all\">Save for everyone</button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 \u00d7 waiting for element to be visible, e"
+    }
+  ],
+  "shots": [
+    {
+      "file": "U:\\Temp\\gsfpv-train3\\shots\\train3f-raw-tracks\\look-course-1920.png",
+      "sha256": "9fe6eb908033ce8914d4fb385a569e3ec523f2e902bcd07d0c32d385180486c0",
+      "what": "hint and lap block, en, 1920x1080"
+    },
+    {
+      "file": "U:\\Temp\\gsfpv-train3\\shots\\train3f-raw-tracks\\look-course-1366.png",
+      "sha256": "cfafc829f5122ab3e5dd55cabe3fbddbb339e1c0310ad60b9456299954ae7e7c",
+      "what": "hint and lap block, en, 1366x768"
+    },
+    {
+      "file": "U:\\Temp\\gsfpv-train3\\shots\\train3f-raw-tracks\\look-course-844.png",
+      "sha256": "34bf54b1e749f8d49724ef628816e29af6f18a81b04128e6f685540b8f7b4271",
+      "what": "hint and lap block, en, 844x390"
+    },
+    {
+      "file": "U:\\Temp\\gsfpv-train3\\shots\\train3f-raw-tracks\\a-seed1-on.png",
+      "sha256": "c3987d3fff4edecbc83575db32d95143e4611a17fa7c75f097d8ad0bc583bd09",
+      "what": "a-seed1: course on"
+    },
+    {
+      "file": "U:\\Temp\\gsfpv-train3\\shots\\train3f-raw-tracks\\a-seed1-off.png",
+      "sha256": "f447611ac4aaa545af1734e5344f262e7ef4fcbd5e60ca877dcacde4ba190173",
+      "what": "a-seed1: course off"
+    },
+    {
+      "file": "U:\\Temp\\gsfpv-train3\\shots\\train3f-raw-tracks\\a-random-on.png",
+      "sha256": "351f268f36e74b942942f1da76a89afe9fa309c253211649c590e186e3a7ca72",
+      "what": "a-random: course on"
+    },
+    {
+      "file": "U:\\Temp\\gsfpv-train3\\shots\\train3f-raw-tracks\\a-random-off.png",
+      "sha256": "1f42f0e779d27d994c96a8b2b0e02200f875c919d5cf0f7d07c909d7924a8adf",
+      "what": "a-random: course off"
+    },
+    {
+      "file": "U:\\Temp\\gsfpv-train3\\shots\\train3f-raw-tracks\\c3-seed1-on.png",
+      "sha256": "c5c23b3f0b3cf6287626c9bea857232aee70151c87c8b167e819ad3c1dd448d3",
+      "what": "c3-seed1: course on"
+    },
+    {
+      "file": "U:\\Temp\\gsfpv-train3\\shots\\train3f-raw-tracks\\c3-seed1-off.png",
+      "sha256": "536414e719b237fe172d1cf2e2e0577c883b8e63603b962e99bf98019991fcd0",
+      "what": "c3-seed1: course off"
+    }
+  ],
+  "site": "http://127.0.0.1:59536",
+  "scene": "887f27aa",
+  "other": "39e63ce9",
+  "minPx": 200,
+  "tol": 24,
+  "browser": {
+    "kind": "system-chrome",
+    "version": "157.0.8103.52",
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "why": "installed"
+  },
+  "hint": {
+    "longest": "en",
+    "rows": [
+      {
+        "lang": "en",
+        "size": "1920x1080",
+        "phone": false,
+        "gen": true,
+        "hintUp": true,
+        "clear": true,
+        "hStill": true,
+        "topAfterHH": 120,
+        "noteH": 50,
+        "note": {
+          "left": 750,
+          "top": 44,
+          "right": 1170,
+          "bottom": 93.6875
+        },
+        "block": {
+          "left": 856.3203125,
+          "top": 120,
+          "right": 1063.6796875,
+          "bottom": 136.5625
+        },
+        "text": "Gates: 24. Fly through START to start the clock. Shift+T hides the course",
+        "vw": 1920,
+        "vh": 1080
+      },
+      {
+        "lang": "en",
+        "size": "1366x768",
+        "phone": false,
+        "gen": true,
+        "hintUp": true,
+        "clear": true,
+        "hStill": true,
+        "topAfterHH": 142,
+        "noteH": 50,
+        "note": {
+          "left": 473,
+          "top": 86,
+          "right": 893,
+          "bottom": 135.6875
+        },
+        "block": {
+          "left": 579.3203125,
+          "top": 142,
+          "right": 786.6796875,
+          "bottom": 158.5625
+        },
+        "text": "Gates: 29. Fly through START to start the clock. Shift+T hides the course",
+        "vw": 1366,
+        "vh": 768
+      },
+      {
+        "lang": "en",
+        "size": "844x390",
+        "phone": true,
+        "gen": true,
+        "hintUp": true,
+        "clear": true,
+        "hStill": true,
+        "topAfterHH": 287,
+        "noteH": 50,
+        "note": {
+          "left": 212,
+          "top": 86,
+          "right": 632,
+          "bottom": 135.6875
+        },
+        "block": {
+          "left": 632.84375,
+          "top": 287,
+          "right": 828,
+          "bottom": 302
+        },
+        "text": "Gates: 48. Fly through START to start the clock. Shift+T hides the course",
+        "vw": 844,
+        "vh": 390
+      },
+      {
+        "lang": "es",
+        "size": "1920x1080",
+        "phone": false,
+        "gen": true,
+        "hintUp": true,
+        "clear": true,
+        "hStill": true,
+        "topAfterHH": 120,
+        "noteH": 50,
+        "note": {
+          "left": 750,
+          "top": 44,
+          "right": 1170,
+          "bottom": 93.6875
+        },
+        "block": {
+          "left": 865.3671875,
+          "top": 120,
+          "right": 1054.6328125,
+          "bottom": 136.5625
+        },
+        "text": "Puertas: 35. Cruza SALIDA para iniciar el reloj. Shift+T oculta el circuito",
+        "vw": 1920,
+        "vh": 1080
+      },
+      {
+        "lang": "es",
+        "size": "1366x768",
+        "phone": false,
+        "gen": true,
+        "hintUp": true,
+        "clear": true,
+        "hStill": true,
+        "topAfterHH": 142,
+        "noteH": 50,
+        "note": {
+          "left": 473,
+          "top": 86,
+          "right": 893,
+          "bottom": 135.6875
+        },
+        "block": {
+          "left": 588.3671875,
+          "top": 142,
+          "right": 777.6328125,
+          "bottom": 158.5625
+        },
+        "text": "Puertas: 35. Cruza SALIDA para iniciar el reloj. Shift+T oculta el circuito",
+        "vw": 1366,
+        "vh": 768
+      },
+      {
+        "lang": "es",
+        "size": "844x390",
+        "phone": true,
+        "gen": true,
+        "hintUp": true,
+        "clear": true,
+        "hStill": true,
+        "topAfterHH": 287,
+        "noteH": 50,
+        "note": {
+          "left": 212,
+          "top": 86,
+          "right": 632,
+          "bottom": 135.6875
+        },
+        "block": {
+          "left": 649.875,
+          "top": 287,
+          "right": 828,
+          "bottom": 302
+        },
+        "text": "Puertas: 38. Cruza SALIDA para iniciar el reloj. Shift+T oculta el circuito",
+        "vw": 844,
+        "vh": 390
+      },
+      {
+        "lang": "pl",
+        "size": "1920x1080",
+        "phone": false,
+        "gen": true,
+        "hintUp": true,
+        "clear": true,
+        "hStill": true,
+        "topAfterHH": 120,
+        "noteH": 50,
+        "note": {
+          "left": 750,
+          "top": 44,
+          "right": 1170,
+          "bottom": 93.6875
+        },
+        "block": {
+          "left": 847.2734375,
+          "top": 120,
+          "right": 1072.7265625,
+          "bottom": 136.5625
+        },
+        "text": "Bramki: 39. Przele\u0107 przez START, aby w\u0142\u0105czy\u0107 zegar. Shift+T ukrywa tras\u0119",
+        "vw": 1920,
+        "vh": 1080
+      },
+      {
+        "lang": "pl",
+        "size": "1366x768",
+        "phone": false,
+        "gen": true,
+        "hintUp": true,
+        "clear": true,
+        "hStill": true,
+        "topAfterHH": 142,
+        "noteH": 50,
+        "note": {
+          "left": 473,
+          "top": 86,
+          "right": 893,
+          "bottom": 135.6875
+        },
+        "block": {
+          "left": 570.2734375,
+          "top": 142,
+          "right": 795.7265625,
+          "bottom": 158.5625
+        },
+        "text": "Bramki: 38. Przele\u0107 przez START, aby w\u0142\u0105czy\u0107 zegar. Shift+T ukrywa tras\u0119",
+        "vw": 1366,
+        "vh": 768
+      },
+      {
+        "lang": "pl",
+        "size": "844x390",
+        "phone": true,
+        "gen": true,
+        "hintUp": true,
+        "clear": true,
+        "hStill": true,
+        "topAfterHH": 287,
+        "noteH": 50,
+        "note": {
+          "left": 212,
+          "top": 86,
+          "right": 632,
+          "bottom": 135.6875
+        },
+        "block": {
+          "left": 615.8125,
+          "top": 287,
+          "right": 828,
+          "bottom": 302
+        },
+        "text": "Bramki: 41. Przele\u0107 przez START, aby w\u0142\u0105czy\u0107 zegar. Shift+T ukrywa tras\u0119",
+        "vw": 844,
+        "vh": 390
+      },
+      {
+        "lang": "ru",
+        "size": "1920x1080",
+        "phone": false,
+        "gen": true,
+        "hintUp": true,
+        "clear": true,
+        "hStill": true,
+        "topAfterHH": 120,
+        "noteH": 50,
+        "note": {
+          "left": 750,
+          "top": 44,
+          "right": 1170,
+          "bottom": 93.6875
+        },
+        "block": {
+          "left": 820.890625,
+          "top": 120,
+          "right": 1099.109375,
+          "bottom": 136.5625
+        },
+        "text": "\u0422\u0440\u0430\u0441\u0441\u0430: \u0432\u043e\u0440\u043e\u0442 39. \u041f\u0440\u043e\u043b\u0435\u0442\u0438\u0442\u0435 \u0432\u043e\u0440\u043e\u0442\u0430 \u0421\u0422\u0410\u0420\u0422, \u0447\u0442\u043e\u0431\u044b \u043f\u043e\u0448\u0451\u043b \u043e\u0442\u0441\u0447\u0451\u0442. Shift+T \u0441\u043a\u0440\u044b\u0432\u0430\u0435\u0442 \u0435\u0451",
+        "vw": 1920,
+        "vh": 1080
+      },
+      {
+        "lang": "ru",
+        "size": "1366x768",
+        "phone": false,
+        "gen": true,
+        "hintUp": true,
+        "clear": true,
+        "hStill": true,
+        "topAfterHH": 142,
+        "noteH": 50,
+        "note": {
+          "left": 473,
+          "top": 86,
+          "right": 893,
+          "bottom": 135.6875
+        },
+        "block": {
+          "left": 543.890625,
+          "top": 142,
+          "right": 822.109375,
+          "bottom": 158.5625
+        },
+        "text": "\u0422\u0440\u0430\u0441\u0441\u0430: \u0432\u043e\u0440\u043e\u0442 49. \u041f\u0440\u043e\u043b\u0435\u0442\u0438\u0442\u0435 \u0432\u043e\u0440\u043e\u0442\u0430 \u0421\u0422\u0410\u0420\u0422, \u0447\u0442\u043e\u0431\u044b \u043f\u043e\u0448\u0451\u043b \u043e\u0442\u0441\u0447\u0451\u0442. Shift+T \u0441\u043a\u0440\u044b\u0432\u0430\u0435\u0442 \u0435\u0451",
+        "vw": 1366,
+        "vh": 768
+      },
+      {
+        "lang": "ru",
+        "size": "844x390",
+        "phone": true,
+        "gen": true,
+        "hintUp": true,
+        "clear": true,
+        "hStill": true,
+        "topAfterHH": 287,
+        "noteH": 50,
+        "note": {
+          "left": 212,
+          "top": 86,
+          "right": 632,
+          "bottom": 135.6875
+        },
+        "block": {
+          "left": 566.15625,
+          "top": 287,
+          "right": 828,
+          "bottom": 302
+        },
+        "text": "\u0422\u0440\u0430\u0441\u0441\u0430: \u0432\u043e\u0440\u043e\u0442 40. \u041f\u0440\u043e\u043b\u0435\u0442\u0438\u0442\u0435 \u0432\u043e\u0440\u043e\u0442\u0430 \u0421\u0422\u0410\u0420\u0422, \u0447\u0442\u043e\u0431\u044b \u043f\u043e\u0448\u0451\u043b \u043e\u0442\u0441\u0447\u0451\u0442. Shift+T \u0441\u043a\u0440\u044b\u0432\u0430\u0435\u0442 \u0435\u0451",
+        "vw": 844,
+        "vh": 390
+      }
+    ]
+  },
+  "a": {
+    "link": {
+      "on": true,
+      "source": "generated",
+      "track": {
+        "id": "g1.1",
+        "version": 1
+      },
+      "seed": 1,
+      "gates": 36,
+      "next": 0,
+      "drawn": 183,
+      "laps": 0,
+      "lastLapMs": null,
+      "bestLapMs": null,
+      "beaconPoints": 100,
+      "problem": null,
+      "serverTracks": 0,
+      "saved": null,
+      "editor": {
+        "open": false,
+        "selected": 0,
+        "changed": false,
+        "problems": 0,
+        "refused": null,
+        "said": "",
+        "votes": {},
+        "paints": [],
+        "admin": false,
+        "lapped": []
+      },
+      "sound": {},
+      "progress": null
+    },
+    "look": {
+      "on": {
+        "next": 100,
+        "later": 8,
+        "arrow": 251
+      },
+      "off": {
+        "next": 0,
+        "later": 8,
+        "arrow": 208
+      },
+      "diff": {
+        "px": 21709,
+        "mean": [
+          89,
+          96,
+          100
+        ]
+      },
+      "drawnOff": 0
+    },
+    "generated": {
+      "on": true,
+      "source": "generated",
+      "track": {
+        "id": "g1.vl3tnx",
+        "version": 1
+      },
+      "seed": 1909901805,
+      "gates": 41,
+      "next": 0,
+      "drawn": 155,
+      "laps": 0,
+      "lastLapMs": null,
+      "bestLapMs": null,
+      "beaconPoints": 104,
+      "problem": null,
+      "serverTracks": 0,
+      "saved": null,
+      "editor": {
+        "open": false,
+        "selected": 0,
+        "changed": false,
+        "problems": 0,
+        "refused": null,
+        "said": "",
+        "votes": {},
+        "paints": [],
+        "admin": false,
+        "lapped": []
+      },
+      "sound": {},
+      "progress": null
+    },
+    "lookRandom": {
+      "on": {
+        "next": 95,
+        "later": 8,
+        "arrow": 208
+      },
+      "off": {
+        "next": 0,
+        "later": 8,
+        "arrow": 208
+      },
+      "diff": {
+        "px": 18866,
+        "mean": [
+          89,
+          96,
+          102
+        ]
+      },
+      "drawnOff": 0
+    },
+    "saved": "887f27aa-cf184a92"
+  },
+  "b": {
+    "on": true,
+    "source": "server",
+    "track": {
+      "id": "887f27aa-cf184a92",
+      "version": 1
+    },
+    "seed": 1909901805,
+    "gates": 41,
+    "next": 0,
+    "drawn": 155,
+    "laps": 0,
+    "lastLapMs": null,
+    "bestLapMs": null,
+    "beaconPoints": 104,
+    "problem": null,
+    "serverTracks": 1,
+    "saved": null,
+    "editor": {
+      "open": false,
+      "selected": 0,
+      "changed": false,
+      "problems": 0,
+      "refused": null,
+      "said": "",
+      "votes": {},
+      "paints": [],
+      "admin": false,
+      "lapped": []
+    },
+    "sound": {},
+    "progress": null
+  },
+  "c1": {
+    "on": false,
+    "source": "none",
+    "track": null,
+    "seed": null,
+    "gates": 0,
+    "next": -1,
+    "drawn": 0,
+    "laps": 0,
+    "lastLapMs": null,
+    "bestLapMs": null,
+    "beaconPoints": 0,
+    "problem": null,
+    "serverTracks": 0,
+    "saved": null,
+    "editor": {
+      "open": false,
+      "selected": 0,
+      "changed": false,
+      "problems": 0,
+      "refused": null,
+      "said": "",
+      "votes": {},
+      "paints": [],
+      "admin": false,
+      "lapped": []
+    },
+    "sound": {}
+  },
+  "c2": {
+    "gate": 20,
+    "transform": [
+      1,
+      0,
+      0,
+      0
+    ],
+    "centre": [
+      -95.9,
+      2.05,
+      44.7
+    ],
+    "into": [
+      -95.9,
+      0.24999999999999906,
+      44.7
+    ],
+    "wallM": 1.6,
+    "nodeOriginalOk": true,
+    "nodeMovedOk": false,
+    "nodeIssues": [
+      "leg g20 to g21: a sphere of 0.5 m touches a wall (free radius along it 6 m at -86.9, 2.4, 38.7)",
+      "leg g21 to g22: a sphere of 0.5 m touches a wall (free radius along it 6 m at -95.9, 0.25, 44.7)"
+    ],
+    "post": 201,
+    "id": "887f27aa-6ebdc9a1",
+    "page": {
+      "on": true,
+      "source": "server",
+      "track": {
+        "id": "887f27aa-cf184a92",
+        "version": 1
+      },
+      "seed": 1909901805,
+      "gates": 41,
+      "next": 0,
+      "drawn": 155,
+      "laps": 0,
+      "lastLapMs": null,
+      "bestLapMs": null,
+      "beaconPoints": 104,
+      "problem": null,
+      "serverTracks": 2,
+      "saved": null,
+      "editor": {
+        "open": false,
+        "selected": 0,
+        "changed": false,
+        "problems": 0,
+        "refused": null,
+        "said": "",
+        "votes": {},
+        "paints": [],
+        "admin": false,
+        "lapped": []
+      },
+      "sound": {},
+      "progress": null
+    }
+  },
+  "c3": {
+    "patched": true,
+    "hook": {
+      "on": true,
+      "source": "generated",
+      "track": {
+        "id": "g1.1",
+        "version": 1
+      },
+      "seed": 1,
+      "gates": 36,
+      "next": 0,
+      "drawn": 183,
+      "laps": 0,
+      "lastLapMs": null,
+      "bestLapMs": null,
+      "beaconPoints": 100,
+      "problem": null,
+      "serverTracks": 2,
+      "saved": null,
+      "editor": {
+        "open": false,
+        "selected": 0,
+        "changed": false,
+        "problems": 0,
+        "refused": null,
+        "said": "",
+        "votes": {},
+        "paints": [],
+        "admin": false,
+        "lapped": []
+      },
+      "sound": {},
+      "progress": null
+    },
+    "look": {
+      "on": {
+        "next": 100,
+        "later": 8,
+        "arrow": 251
+      },
+      "off": {
+        "next": 0,
+        "later": 8,
+        "arrow": 208
+      },
+      "diff": {
+        "px": 21836,
+        "mean": [
+          89,
+          96,
+          100
+        ]
+      },
+      "drawnOff": 0
+    }
+  },
+  "log": []
+}

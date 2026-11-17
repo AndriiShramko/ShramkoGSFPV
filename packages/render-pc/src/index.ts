@@ -12,3 +12,5 @@ export type { ViewLodParams, ViewLodStats, ViewRamp } from './view-lod';
 export * from './frame-timing';
 export * from './voxel-overlay';
 export { heightColor, voxelColor, writeColors, packChunk } from './voxel-colors';
+export { StreamKeeper, STREAM_RETRY_PAUSES_MS, STREAM_STALL_MS, STREAM_RATE_WINDOW_MS, streamKeeperMissing } from './stream-keeper';
+export type { StreamLoaderView, StreamStats } from './stream-keeper';

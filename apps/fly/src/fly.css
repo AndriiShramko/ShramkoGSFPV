@@ -14,7 +14,7 @@ h1 { font-size: 22px; margin: 0 0 12px; } h2 { font-size: 18px; margin: 0 0 10px
 .btn[disabled] { opacity: .45; cursor: not-allowed; }
 .btn[hidden] { display: none; } /* .btn sets display, which would beat the hidden attribute (Record outside cinema) */
 .btn.block { display: flex; width: 100%; margin: 6px 0; }
-.pill { font-size: 11px; background: var(--accent); color: var(--accent-ink); border-radius: 999px; padding: 1px 8px; margin-left: 8px; vertical-align: middle; }
+.pill { font-size: 12px; background: var(--accent); color: var(--accent-ink); border-radius: 999px; padding: 1px 8px; margin-left: 8px; vertical-align: middle; }
 /* screens */
 .screen { position: absolute; inset: 0; overflow: auto; padding: max(16px, env(safe-area-inset-top)) 16px 96px; background: linear-gradient(180deg, rgba(7,8,10,.94), rgba(7,8,10,.98)); }
 .screen > * { max-width: 1100px; margin-left: auto; margin-right: auto; }
@@ -50,7 +50,7 @@ h1 { font-size: 22px; margin: 0 0 12px; } h2 { font-size: 18px; margin: 0 0 10px
 .drone-head h1 { margin: 0; }
 .drone-head .panel-x { flex: none; margin-right: -8px; }
 .spec-row { display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; font-size: 14px; padding: 3px 0; border-bottom: 1px dashed var(--line); }
-.spec-row .src { grid-column: 1 / -1; font-size: 11px; color: var(--muted); }
+.spec-row .src { grid-column: 1 / -1; font-size: 12px; color: var(--muted); }
 .src-estimate { color: var(--warn) !important; }
 .rate-curve { display: block; margin: 8px 0; width: 100%; max-width: 220px; }
 .choice { display: flex; flex-direction: column; gap: 4px; margin: 10px 0; max-width: 560px; }
@@ -226,6 +226,10 @@ body.touch-on .attribution { top: calc(max(10px, env(safe-area-inset-top)) + 128
 @media (max-height: 500px) {
     /* ...and ends 16 px before the row of buttons, however wide the row is (ui/top-row.ts --top-row-left) */
     .attribution, body.touch-on .attribution { top: calc(max(10px, env(safe-area-inset-top)) + 34px + var(--banner-h, 0px)); bottom: auto; left: 16px; max-width: calc(var(--top-row-left, calc(100vw - 244px)) - 32px); }
+    /* the Detail line (app/builtin/detail.ts) rides on the walls line's row, so the credit stays two rows high and
+       does not reach the telemetry over the left pad (loadq2 LR-8) */
+    .attribution > [data-testid="walls-more"]:not([open]) { display: inline-block; vertical-align: top; }
+    .attribution > [data-testid="detail-line"]:not([hidden]) { display: inline-block; vertical-align: top; margin: 0 0 0 12px !important; max-width: calc(100% - 120px); }
 }
 body.clean .top-actions, body.clean .attribution, body.clean .osd.br, body.clean .crash-overlay, body.clean .gate-msg, body.clean .banner { display: none; }
 /* cinema mode: clean picture, only the record control and its note */
@@ -245,12 +249,17 @@ body.cinema .osd, body.cinema .attribution, body.cinema .badge-nowalls, body.cin
 .import-warnings { margin: 6px 0 0 18px; font-size: 12px; color: var(--warn); }
 /* walls switch and voxel grid (ui/voxels.ts): the same block in the walls menu and in Settings */
 .osd .walls-off { color: var(--warn); }
+[data-testid="walls-summary"] { box-sizing: border-box; min-height: 44px; padding: 0 10px; border: 1px solid var(--line); border-radius: 10px; background: rgba(255,255,255,.08); }
 [data-testid="walls-summary"].walls-off { color: var(--warn); }
+/* V4 (lane voxview): the panel's header stays at the top while its body scrolls; 44 px targets */
+.walls-head { position: sticky; top: 0; z-index: 1; display: flex; align-items: center; gap: 4px; margin: 0 -10px 6px; padding: 6px 6px 6px 12px; background: rgba(8,11,16,.97); border-bottom: 1px solid var(--line); }
+.walls-body { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+.walls-body[hidden] { display: none; }
 .wv { display: flex; flex-direction: column; gap: 8px; width: 100%; min-width: min(236px, 66vw); font-size: 13px; }
 .wv-row { display: flex; align-items: center; gap: 8px; min-height: 32px; }
 .wv-row.wv-head { margin-top: 4px; padding-top: 8px; border-top: 1px solid var(--line); }
 .wv-label { flex: 1; min-width: 0; color: var(--fg); font-weight: 600; }
-.wv kbd { font: 600 11px/1 ui-monospace, Consolas, monospace; padding: 3px 6px; border-radius: 5px; border: 1px solid #3a4654; color: var(--muted); background: rgba(255,255,255,.04); }
+.wv kbd { font: 600 12px/1 ui-monospace, Consolas, monospace; padding: 3px 6px; border-radius: 5px; border: 1px solid #3a4654; color: var(--muted); background: rgba(255,255,255,.04); }
 .wv-note { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.35; }
 .wv-note[hidden] { display: none; }
 .wv-switch { position: relative; display: inline-flex; align-items: center; gap: 8px; min-height: 32px; padding: 4px 10px 4px 4px; border-radius: 999px; border: 1px solid var(--line); background: rgba(255,255,255,.05); color: var(--muted); font: inherit; font-size: 12px; cursor: pointer; }
@@ -272,18 +281,25 @@ body.cinema .osd, body.cinema .attribution, body.cinema .badge-nowalls, body.cin
 .set-section { margin: 12px 0; padding: 12px; border-radius: 12px; border: 1px solid var(--line); background: rgba(255,255,255,.02); }
 .set-section h3 { margin-bottom: 8px; }
 /* walls menu on the credit line: a card, so the controls read over any scan */
-.walls-menu { padding: 10px; border-radius: 12px; background: rgba(8,11,16,.86); border: 1px solid var(--line); backdrop-filter: blur(6px); color: var(--fg); text-shadow: none; }
+.walls-menu { position: fixed; z-index: 40; box-sizing: border-box; font-size: 12px; overflow-y: auto; overscroll-behavior: contain; padding: 0 10px 10px; border-radius: 12px; background: rgba(8,11,16,.86); border: 1px solid var(--line); backdrop-filter: blur(6px); color: var(--fg); text-shadow: none; }
 /* legend chip while the voxel grid is shown: under the top buttons, right */
 .voxel-legend { position: absolute; top: calc(max(10px, env(safe-area-inset-top)) + 84px + var(--banner-h, 0px)); right: 16px; display: flex; align-items: flex-start; gap: 8px; max-width: min(360px, calc(100vw - 32px)); padding: 7px 12px 7px 10px; border-radius: 12px; background: rgba(8,11,16,.72); border: 1px solid rgba(125,211,252,.28); backdrop-filter: blur(6px); pointer-events: none; }
 .voxel-legend[hidden] { display: none; }
+.voxel-legend .vl-text { flex: 1; min-width: 0; }
+.voxel-legend .vl-x { pointer-events: auto; margin: -3px -6px -3px 0; }
 .vl-dot { flex: none; width: 10px; height: 10px; margin-top: 3px; border-radius: 3px; background: #4df2ff; box-shadow: 0 0 8px rgba(77,242,255,.8); }
 .voxel-legend[data-style="solid"] .vl-dot { background: #a8dbf2; box-shadow: none; }
 .voxel-legend[data-style="height"] .vl-dot { background: linear-gradient(135deg, #4d38cc, #00d9eb, #ffdb33, #ff6626); box-shadow: 0 0 8px rgba(0,217,235,.6); }
 .voxel-legend[data-style="floaters"] .vl-dot { background: #ff2933; box-shadow: 0 0 8px rgba(255,41,51,.7); }
 .vl-main { font: 600 12px/1.35 ui-monospace, "Cascadia Mono", Consolas, monospace; color: #e6fbff; }
-.vl-sub { font-size: 11px; line-height: 1.35; color: #9fb4c3; }
+.vl-sub { font-size: 12px; line-height: 1.35; color: #9fb4c3; }
 body.cinema .voxel-legend, body.clean .voxel-legend, #ui.hud-off .voxel-legend { display: none; }
 #ui:has(> .screen.radio) > .voxel-legend { visibility: hidden; }
+/* On a narrow or short view the speaker stands alone under the top row at the right (rule above): the legend goes below it, so nothing lies over the legend's cross (integration F, seam c, measured by ui-audit-probe at 844x390 and 390x844). */
+@media (max-width: 640px), (max-height: 500px) { .voxel-legend { top: calc(var(--top-row-bottom, 78px) + 56px); } }
+/* voxview2 VR-6: the edit mode's window (course/editor/editor.css .course-editor, top right) lies over the chip; the chip goes
+   with the rest of the flight's HUD while the edit view is open (editor.css D5) and comes back in the test flight and after Exit */
+body:has(.course-editor:not(.ce-flying)) .voxel-legend { display: none; }
 @media (prefers-reduced-motion: reduce) { .wv-knob, .wv-knob::after { transition: none; } }
 
 /* "Clean floating voxels" (ui/floaters.ts): beside the flight view, so the scan and its red pieces stay in sight */

@@ -1,0 +1,2166 @@
+{
+ "what": "panel inventory (ui-audit-probe.mjs)",
+ "base": "http://localhost:5880/en",
+ "size": "390x844",
+ "scene": "70b50d42",
+ "render": false,
+ "phone": true,
+ "panels": {
+  "controls-first": {
+   "open": "first visit",
+   "m": {
+    "rect": {
+     "x": 0,
+     "y": 0,
+     "w": 390,
+     "h": 844
+    },
+    "inView": true,
+    "panelH": 844,
+    "vh": 844,
+    "scrolls": true,
+    "scrollEl": "div.screen",
+    "clipped": false,
+    "text": "ControlsThe scan is ready. How will you fly?×Connect my controllerPlug the controller in with a data cable and switch it on, press the butto",
+    "title": "Controls",
+    "closers": [
+     {
+      "text": "×",
+      "name": "Close",
+      "action": "radio-close",
+      "tag": "button",
+      "rect": {
+       "x": 338,
+       "y": 10,
+       "w": 44,
+       "h": 44
+      },
+      "inView": true,
+      "big": true,
+      "shape": true,
+      "font": 24,
+      "covered": false,
+      "coveredBy": null
+     },
+     {
+      "text": "My controller is not in the list",
+      "name": "My controller is not in the list",
+      "action": null,
+      "tag": "summary",
+      "rect": {
+       "x": 16,
+       "y": 934,
+       "w": 358,
+       "h": 40
+      },
+      "inView": false,
+      "big": false,
+      "shape": false,
+      "font": 15,
+      "covered": "off-view",
+      "coveredBy": null
+     }
+    ],
+    "minFont": 13,
+    "smallTexts": 0,
+    "smallText": "",
+    "noName": [],
+    "symbolOnly": [
+     "button[radio-close]\"×\""
+    ],
+    "tinyTargets": [],
+    "coversOthersClose": []
+   },
+   "ways": {}
+  },
+  "credit": {
+   "open": "always",
+   "m": {
+    "rect": {
+     "x": 16,
+     "y": 725,
+     "w": 234,
+     "h": 79
+    },
+    "inView": true,
+    "panelH": 79,
+    "vh": 844,
+    "scrolls": false,
+    "scrollEl": null,
+    "clipped": false,
+    "text": "Scene by its author — see the original on SuperSplat · Report this sceneWalls 10 cm ▾Walls and voxels▾×Walls (collisions)onCVoxel gridVOffOv",
+    "title": "Walls 10 cm ▾",
+    "closers": [
+     {
+      "text": "Walls 10 cm ▾",
+      "name": "Walls 10 cm ▾",
+      "action": null,
+      "tag": "summary",
+      "rect": {
+       "x": 16,
+       "y": 760,
+       "w": 234,
+       "h": 44
+      },
+      "inView": true,
+      "big": true,
+      "shape": true,
+      "font": 12,
+      "covered": false,
+      "coveredBy": null
+     },
+     {
+      "text": "×",
+      "name": "Close",
+      "action": "voxpanel-close",
+      "tag": "button",
+      "rect": {
+       "x": 227,
+       "y": 811,
+       "w": 44,
+       "h": 44
+      },
+      "inView": false,
+      "big": true,
+      "shape": true,
+      "font": 24,
+      "covered": true,
+      "coveredBy": "canvas."
+     }
+    ],
+    "minFont": 12,
+    "smallTexts": 0,
+    "smallText": "",
+    "noName": [],
+    "symbolOnly": [
+     "button[voxpanel-fold]\"▾\"",
+     "button[voxpanel-close]\"×\""
+    ],
+    "tinyTargets": [
+     "a91x16",
+     "input[voxels-opacity]87x16"
+    ],
+    "coversOthersClose": []
+   }
+  },
+  "hud": {
+   "open": "always",
+   "m": {
+    "rect": {
+     "x": 0,
+     "y": 0,
+     "w": 390,
+     "h": 844
+    },
+    "inView": true,
+    "panelH": 844,
+    "vh": 844,
+    "scrolls": false,
+    "scrollEl": null,
+    "clipped": false,
+    "text": "DISARMED · ANGLE12.6 V 2.1 sTHR 0% 0.0 m/s ALT 0.0 mcrashes 0Click to fly, or press W or Space to take offARMTo armARMYour throttle stick is",
+    "title": "To arm",
+    "closers": [],
+    "minFont": 12,
+    "smallTexts": 0,
+    "smallText": "",
+    "noName": [],
+    "symbolOnly": [],
+    "tinyTargets": [],
+    "coversOthersClose": []
+   }
+  },
+  "mode-chip": {
+   "open": "always",
+   "m": {
+    "rect": {
+     "x": 16,
+     "y": 82,
+     "w": 103,
+     "h": 36
+    },
+    "inView": true,
+    "panelH": 36,
+    "vh": 844,
+    "scrolls": false,
+    "scrollEl": null,
+    "clipped": false,
+    "text": "ANGLEMACRONo self-levelling: the drone holds its attitudeANGLESelf-levelling: let go of the sticks and it levels outHORIZONLevels near centr",
+    "title": "",
+    "closers": [],
+    "minFont": 14,
+    "smallTexts": 0,
+    "smallText": "",
+    "noName": [],
+    "symbolOnly": [],
+    "tinyTargets": [],
+    "coversOthersClose": []
+   }
+  },
+  "howto": {
+   "open": "always",
+   "missing": true
+  },
+  "walls-box": {
+   "open": "always",
+   "m": {
+    "rect": {
+     "x": 195,
+     "y": 110,
+     "w": 0,
+     "h": 8
+    },
+    "inView": true,
+    "panelH": 8,
+    "vh": 844,
+    "scrolls": false,
+    "scrollEl": null,
+    "clipped": false,
+    "text": "",
+    "title": "",
+    "closers": [],
+    "minFont": null,
+    "smallTexts": 0,
+    "smallText": "",
+    "noName": [],
+    "symbolOnly": [],
+    "tinyTargets": [],
+    "coversOthersClose": []
+   }
+  },
+  "consent-now": {
+   "open": "always",
+   "missing": true
+  },
+  "walls-menu": {
+   "open": "click the walls line (bottom left credit)",
+   "ways": {
+    "esc": true,
+    "again": true,
+    "outside": false,
+    "control:Walls 10 cm ▾": false
+   },
+   "found": {
+    "root": "div.walls-menu#walls-panel",
+    "fresh": []
+   },
+   "m": {
+    "rect": {
+     "x": 16,
+     "y": 240,
+     "w": 280,
+     "h": 516
+    },
+    "inView": true,
+    "panelH": 516,
+    "vh": 844,
+    "scrolls": false,
+    "scrollEl": null,
+    "clipped": false,
+    "text": "Walls and voxels▾×Walls (collisions)onCVoxel gridVOffOver the scanVoxels onlyStyleSolid cubesWireframeHeight coloursFloaters in redOpacity55",
+    "title": "Walls and voxels",
+    "closers": [
+     {
+      "text": "Walls 10 cm ▾",
+      "name": "Walls 10 cm ▾",
+      "action": null,
+      "tag": "summary",
+      "rect": {
+       "x": 16,
+       "y": 760,
+       "w": 234,
+       "h": 44
+      },
+      "inView": true,
+      "big": true,
+      "shape": true,
+      "font": 12,
+      "covered": false,
+      "coveredBy": null
+     },
+     {
+      "text": "×",
+      "name": "Close",
+      "action": "voxpanel-close",
+      "tag": "button",
+      "rect": {
+       "x": 245,
+       "y": 247,
+       "w": 44,
+       "h": 44
+      },
+      "inView": true,
+      "big": true,
+      "shape": true,
+      "font": 24,
+      "covered": false,
+      "coveredBy": null
+     }
+    ],
+    "minFont": 12,
+    "smallTexts": 0,
+    "smallText": "",
+    "noName": [],
+    "symbolOnly": [
+     "button[voxpanel-fold]\"▾\"",
+     "button[voxpanel-close]\"×\""
+    ],
+    "tinyTargets": [
+     "input[voxels-opacity]96x16"
+    ],
+    "coversOthersClose": []
+   }
+  },
+  "voxel-legend": {
+   "open": "V",
+   "ways": {
+    "esc": false,
+    "again": false,
+    "outside": false
+   },
+   "found": {
+    "root": "div.voxel-legend#voxel-legend",
+    "fresh": []
+   },
+   "m": {
+    "rect": {
+     "x": 16,
+     "y": 94,
+     "w": 358,
+     "h": 81
+    },
+    "inView": true,
+    "panelH": 81,
+    "vh": 844,
+    "scrolls": false,
+    "scrollEl": null,
+    "clipped": false,
+    "text": "Voxels · Wireframe · 55 % · V10 cm voxels within 20 m · 1k faces · 855 floating pieces highlighted · Settings → Walls and voxel grid can dro",
+    "title": "",
+    "closers": [
+     {
+      "text": "×",
+      "name": "Hide the voxel grid",
+      "action": "voxel-legend-off",
+      "tag": "button",
+      "rect": {
+       "x": 323,
+       "y": 99,
+       "w": 44,
+       "h": 44
+      },
+      "inView": true,
+      "big": true,
+      "shape": true,
+      "font": 24,
+      "covered": true,
+      "coveredBy": "button.btn"
+     }
+    ],
+    "minFont": 12,
+    "smallTexts": 0,
+    "smallText": "",
+    "noName": [],
+    "symbolOnly": [
+     "button[voxel-legend-off]\"×\""
+    ],
+    "tinyTargets": [],
+    "coversOthersClose": []
+   },
+   "noOutsidePoint": true
+  },
+  "pause": {
+   "open": "P or Esc",
+   "ways": {
+    "esc": true,
+    "again": true,
+    "outside": false,
+    "control:Close": true
+   },
+   "found": {
+    "root": "div.panel.interactive",
+    "fresh": [
+     "div.panel.interactive",
+     "span.disarmed",
+     "kbd",
+     "span"
+    ]
+   },
+   "m": {
+    "rect": {
+     "x": 16,
+     "y": 90,
+     "w": 358,
+     "h": 742
+    },
+    "inView": true,
+    "panelH": 742,
+    "vh": 844,
+    "scrolls": true,
+    "scrollEl": "div.panel",
+    "clipped": false,
+    "text": "PausedMode: ANGLE×Loading the 3D model...Your droneBetaFPV Pavo20 Pro class, 3S2.2-inch brushless cinewhoopAll-up weight: 151 g · Thrust / w",
+    "title": "Paused",
+    "closers": [
+     {
+      "text": "×",
+      "name": "Close",
+      "action": null,
+      "tag": "button",
+      "rect": {
+       "x": 313,
+       "y": 107,
+       "w": 44,
+       "h": 44
+      },
+      "inView": true,
+      "big": true,
+      "shape": true,
+      "font": 24,
+      "covered": false,
+      "coveredBy": null
+     },
+     {
+      "text": "Reset",
+      "name": "Back to the scan's own size, around the ",
+      "action": "scale-reset",
+      "tag": "button",
+      "rect": {
+       "x": 288,
+       "y": 3270,
+       "w": 58,
+       "h": 32
+      },
+      "inView": false,
+      "big": false,
+      "shape": true,
+      "font": 15,
+      "covered": "off-view",
+      "coveredBy": null
+     },
+     {
+      "text": "ContinueEscP",
+      "name": "ContinueEscP",
+      "action": "pause.continue",
+      "tag": "button",
+      "rect": {
+       "x": 33,
+       "y": 151,
+       "w": 324,
+       "h": 41
+      },
+      "inView": true,
+      "big": false,
+      "shape": true,
+      "font": 15,
+      "covered": false,
+      "coveredBy": null
+     }
+    ],
+    "minFont": 12,
+    "smallTexts": 0,
+    "smallText": "",
+    "noName": [],
+    "symbolOnly": [
+     "button\"×\"",
+     "button[scale-down]\"−\"",
+     "button[scale-up]\"+\""
+    ],
+    "tinyTargets": [
+     "input144x16"
+    ],
+    "coversOthersClose": []
+   },
+   "noOutsidePoint": true
+  },
+  "keys": {
+   "open": "K",
+   "ways": {
+    "esc": false,
+    "again": true,
+    "outside": false,
+    "control:Close": true
+   },
+   "found": {
+    "root": "div.panel.interactive#how-to-fly",
+    "fresh": [
+     "div.panel.interactive#how-to-fly",
+     "span.disarmed",
+     "kbd"
+    ]
+   },
+   "m": {
+    "rect": {
+     "x": 12,
+     "y": 12,
+     "w": 366,
+     "h": 820
+    },
+    "inView": true,
+    "panelH": 820,
+    "vh": 844,
+    "scrolls": true,
+    "scrollEl": "div.panel",
+    "clipped": false,
+    "text": "How to fly×Keyboard and mouseSpace↑Uphold to climbShift↓Downhold to descend, and to landMouselook and turn (up and down tilts the camera)WAS",
+    "title": "How to fly",
+    "closers": [
+     {
+      "text": "×",
+      "name": "Close",
+      "action": "htf-close",
+      "tag": "button",
+      "rect": {
+       "x": 319,
+       "y": 25,
+       "w": 44,
+       "h": 44
+      },
+      "inView": true,
+      "big": true,
+      "shape": true,
+      "font": 24,
+      "covered": false,
+      "coveredBy": null
+     }
+    ],
+    "minFont": 12,
+    "smallTexts": 0,
+    "smallText": "",
+    "noName": [],
+    "symbolOnly": [
+     "button[htf-close]\"×\""
+    ],
+    "tinyTargets": [
+     "input22x22"
+    ],
+    "coversOthersClose": []
+   },
+   "noOutsidePoint": true
+  },
+  "settings": {
+   "open": "O",
+   "ways": {
+    "esc": false,
+    "again": true,
+    "outside": false,
+    "control:Close": true
+   },
+   "found": {
+    "root": "div.panel.interactive#settings",
+    "fresh": [
+     "div.panel.interactive#settings",
+     "span.disarmed",
+     "kbd"
+    ]
+   },
+   "m": {
+    "rect": {
+     "x": 0,
+     "y": 0,
+     "w": 390,
+     "h": 844
+    },
+    "inView": true,
+    "panelH": 844,
+    "vh": 844,
+    "scrolls": true,
+    "scrollEl": "div.set-pane",
+    "clipped": false,
+    "text": "SettingsO×FlightCrashes & respawnCameraDisplaySoundControlsDrone & physicsTuneScenesWalls and voxel gridRecordingDataFlightFlightFlight mode",
+    "title": "SettingsO",
+    "closers": [
+     {
+      "text": "×",
+      "name": "Close",
+      "action": "settings-close",
+      "tag": "button",
+      "rect": {
+       "x": 338,
+       "y": 10,
+       "w": 44,
+       "h": 44
+      },
+      "inView": true,
+      "big": true,
+      "shape": true,
+      "font": 24,
+      "covered": false,
+      "coveredBy": null
+     }
+    ],
+    "minFont": 12,
+    "smallTexts": 0,
+    "smallText": "",
+    "noName": [],
+    "symbolOnly": [
+     "button[settings-close]\"×\"",
+     "button[help]\"?\"",
+     "button[help]\"?\"",
+     "button[help]\"?\"",
+     "button[help]\"?\""
+    ],
+    "tinyTargets": [],
+    "coversOthersClose": [
+     "voxpanel-close"
+    ]
+   },
+   "noOutsidePoint": true
+  },
+  "feedback": {
+   "open": "B",
+   "ways": {
+    "esc": false,
+    "again": true,
+    "outside": false,
+    "control:Close": true
+   },
+   "found": {
+    "root": "div.panel.interactive#feedback",
+    "fresh": [
+     "div.panel.interactive#feedback",
+     "span.disarmed",
+     "kbd"
+    ]
+   },
+   "m": {
+    "rect": {
+     "x": 16,
+     "y": 16,
+     "w": 358,
+     "h": 812
+    },
+    "inView": true,
+    "panelH": 812,
+    "vh": 844,
+    "scrolls": true,
+    "scrollEl": "div.panel",
+    "clipped": false,
+    "text": "Feedback×Found a bug, have an idea, or want to work together? Andrii reads every message.BugIdeaDrone physicsCooperationWhat went wrong?Your",
+    "title": "Feedback",
+    "closers": [
+     {
+      "text": "×",
+      "name": "Close",
+      "action": null,
+      "tag": "button",
+      "rect": {
+       "x": 313,
+       "y": 33,
+       "w": 44,
+       "h": 44
+      },
+      "inView": true,
+      "big": true,
+      "shape": true,
+      "font": 24,
+      "covered": false,
+      "coveredBy": null
+     }
+    ],
+    "minFont": 13,
+    "smallTexts": 0,
+    "smallText": "",
+    "noName": [],
+    "symbolOnly": [
+     "button\"×\""
+    ],
+    "tinyTargets": [
+     "input22x22",
+     "input22x22"
+    ],
+    "coversOthersClose": []
+   },
+   "noOutsidePoint": true
+  },
+  "share": {
+   "open": "L",
+   "ways": {
+    "esc": true,
+    "again": true,
+    "outside": false,
+    "control:Close": true
+   },
+   "found": {
+    "root": "div.panel.interactive#share",
+    "fresh": [
+     "div.panel.interactive#share",
+     "span.disarmed",
+     "kbd"
+    ]
+   },
+   "m": {
+    "rect": {
+     "x": 16,
+     "y": 101,
+     "w": 358,
+     "h": 643
+    },
+    "inView": true,
+    "panelH": 643,
+    "vh": 844,
+    "scrolls": false,
+    "scrollEl": null,
+    "clipped": false,
+    "text": "Share this scene×The picture link could not be made right now: the buttons share this scene's page, and you can still save the picture.Share",
+    "title": "Share this scene",
+    "closers": [
+     {
+      "text": "×",
+      "name": "Close",
+      "action": null,
+      "tag": "button",
+      "rect": {
+       "x": 313,
+       "y": 118,
+       "w": 44,
+       "h": 44
+      },
+      "inView": true,
+      "big": true,
+      "shape": true,
+      "font": 24,
+      "covered": false,
+      "coveredBy": null
+     }
+    ],
+    "minFont": 13,
+    "smallTexts": 0,
+    "smallText": "",
+    "noName": [],
+    "symbolOnly": [
+     "button\"×\"",
+     "a\"X\""
+    ],
+    "tinyTargets": [],
+    "coversOthersClose": []
+   }
+  },
+  "rooms": {
+   "open": "9",
+   "ways": {
+    "esc": false,
+    "again": false,
+    "outside": false,
+    "control:Close": true
+   },
+   "found": {
+    "root": "div.panel.interactive#rooms-panel",
+    "fresh": [
+     "div.panel.interactive#rooms-panel",
+     "span.disarmed",
+     "kbd"
+    ]
+   },
+   "m": {
+    "rect": {
+     "x": 16,
+     "y": 218,
+     "w": 358,
+     "h": 408
+    },
+    "inView": true,
+    "panelH": 408,
+    "vh": 844,
+    "scrolls": false,
+    "scrollEl": null,
+    "clipped": false,
+    "text": "Fly with others×Your name in rooms Save name2 to 20 letters or digits; spaces and - _ . ' are allowed. Others in the room see it while you f",
+    "title": "Fly with others",
+    "closers": [
+     {
+      "text": "×",
+      "name": "Close",
+      "action": null,
+      "tag": "button",
+      "rect": {
+       "x": 313,
+       "y": 235,
+       "w": 44,
+       "h": 44
+      },
+      "inView": true,
+      "big": true,
+      "shape": true,
+      "font": 24,
+      "covered": false,
+      "coveredBy": null
+     }
+    ],
+    "minFont": 13,
+    "smallTexts": 0,
+    "smallText": "",
+    "noName": [],
+    "symbolOnly": [
+     "button\"×\""
+    ],
+    "tinyTargets": [
+     "input177x21",
+     "input177x21",
+     "input13x13"
+    ],
+    "coversOthersClose": []
+   }
+  },
+  "frame-stats": {
+   "open": "F3",
+   "ways": {
+    "esc": false,
+    "again": true,
+    "outside": false,
+    "control:Hide the frame line": true
+   },
+   "found": {
+    "root": "div.osd-col",
+    "fresh": [
+     "div.osd-col",
+     "span.disarmed"
+    ]
+   },
+   "m": {
+    "rect": {
+     "x": 44,
+     "y": 44,
+     "w": 346,
+     "h": 94
+    },
+    "inView": true,
+    "panelH": 94,
+    "vh": 844,
+    "scrolls": false,
+    "scrollEl": null,
+    "clipped": false,
+    "text": "×screen 30 Hz · input → screen ≈ 87 ms · physics 1000 HzYour screen runs at 30 Hz, so every frame adds 33 ms of delay. Connect it by Display",
+    "title": "",
+    "closers": [
+     {
+      "text": "×",
+      "name": "Hide the frame line",
+      "action": "frame-stats-close",
+      "tag": "button",
+      "rect": {
+       "x": 44,
+       "y": 44,
+       "w": 44,
+       "h": 44
+      },
+      "inView": true,
+      "big": true,
+      "shape": true,
+      "font": 24,
+      "covered": false,
+      "coveredBy": null
+     }
+    ],
+    "minFont": 12,
+    "smallTexts": 0,
+    "smallText": "",
+    "noName": [],
+    "symbolOnly": [
+     "button[frame-stats-close]\"×\""
+    ],
+    "tinyTargets": [],
+    "coversOthersClose": []
+   },
+   "noOutsidePoint": true
+  },
+  "recording": {
+   "open": "F9",
+   "ways": {
+    "esc": false,
+    "again": true,
+    "outside": true,
+    "control:Don't show again": false
+   },
+   "found": {
+    "root": "div.rec-notice.interactive#rec-notice",
+    "fresh": [
+     "div.rec-notice.interactive#rec-notice",
+     "div.cinema-note#cinema-note",
+     "span.disarmed",
+     "button.btn.rec-dot#rec-dot"
+    ]
+   },
+   "m": {
+    "rect": {
+     "x": 16,
+     "y": 94,
+     "w": 358,
+     "h": 125
+    },
+    "inView": true,
+    "panelH": 125,
+    "vh": 844,
+    "scrolls": false,
+    "scrollEl": null,
+    "clipped": false,
+    "text": "This scan belongs to its author on SuperSplat. The video is yours, and so is the responsibility for how you use it: credit the author when y",
+    "title": "",
+    "closers": [
+     {
+      "text": "Don't show again",
+      "name": "Don't show again",
+      "action": "rec-notice-hide",
+      "tag": "button",
+      "rect": {
+       "x": 108,
+       "y": 170,
+       "w": 122,
+       "h": 36
+      },
+      "inView": true,
+      "big": false,
+      "shape": true,
+      "font": 13,
+      "covered": false,
+      "coveredBy": null
+     },
+     {
+      "text": "×",
+      "name": "Close",
+      "action": "rec-notice-close",
+      "tag": "button",
+      "rect": {
+       "x": 240,
+       "y": 166,
+       "w": 44,
+       "h": 44
+      },
+      "inView": true,
+      "big": true,
+      "shape": true,
+      "font": 20,
+      "covered": false,
+      "coveredBy": null
+     }
+    ],
+    "minFont": 13,
+    "smallTexts": 0,
+    "smallText": "",
+    "noName": [],
+    "symbolOnly": [
+     "button[rec-notice-close]\"×\""
+    ],
+    "tinyTargets": [
+     "a67x19"
+    ],
+    "coversOthersClose": []
+   }
+  },
+  "course": {
+   "open": "Shift+G builds, Shift+T shows or hides",
+   "ways": {},
+   "found": {
+    "root": null,
+    "fresh": []
+   },
+   "missing": true
+  },
+  "course-editor": {
+   "open": "Shift+B",
+   "ways": {
+    "esc": true,
+    "again": false,
+    "outside": false
+   },
+   "found": {
+    "root": "span.disarmed",
+    "fresh": [
+     "span.disarmed"
+    ]
+   },
+   "m": {
+    "rect": {
+     "x": 44,
+     "y": 14,
+     "w": 70,
+     "h": 18
+    },
+    "inView": true,
+    "panelH": 18,
+    "vh": 844,
+    "scrolls": false,
+    "scrollEl": null,
+    "clipped": false,
+    "text": "DISARMED",
+    "title": "",
+    "closers": [],
+    "minFont": 15,
+    "smallTexts": 0,
+    "smallText": "",
+    "noName": [],
+    "symbolOnly": [],
+    "tinyTargets": [],
+    "coversOthersClose": []
+   },
+   "noOutsidePoint": true
+  },
+  "menu:pause.scene": {
+   "open": "P, Change scan",
+   "ways": {
+    "esc": true,
+    "outside": false,
+    "control:Close": true
+   },
+   "found": {
+    "root": "div.screen.scenes#scenes-in-flight",
+    "fresh": [
+     "div.screen.scenes#scenes-in-flight",
+     "button.btn.primary",
+     "span.disarmed",
+     "a.rec-offer#rec-offer"
+    ]
+   },
+   "m": {
+    "rect": {
+     "x": 0,
+     "y": 0,
+     "w": 390,
+     "h": 844
+    },
+    "inView": true,
+    "panelH": 844,
+    "vh": 844,
+    "scrolls": true,
+    "scrollEl": "div.screen",
+    "clipped": false,
+    "text": "×Choose a scanOpenContinue: 70b50d42CatalogueRecentFavouritesSuperSplat With walls onlyAllInteriorExteriorAllFlownNot flown yetModlinek Vill",
+    "title": "Choose a scan",
+    "closers": [
+     {
+      "text": "×",
+      "name": "Close",
+      "action": "scenes-close",
+      "tag": "button",
+      "rect": {
+       "x": 330,
+       "y": 16,
+       "w": 44,
+       "h": 44
+      },
+      "inView": true,
+      "big": true,
+      "shape": true,
+      "font": 24,
+      "covered": false,
+      "coveredBy": null
+     },
+     {
+      "text": "Continue: 70b50d42",
+      "name": "Continue: 70b50d42",
+      "action": null,
+      "tag": "button",
+      "rect": {
+       "x": 16,
+       "y": 130,
+       "w": 358,
+       "h": 92
+      },
+      "inView": true,
+      "big": true,
+      "shape": true,
+      "font": 15,
+      "covered": false,
+      "coveredBy": null
+     }
+    ],
+    "minFont": 12,
+    "smallTexts": 0,
+    "smallText": "",
+    "noName": [],
+    "symbolOnly": [
+     "button[scenes-close]\"×\"",
+     "button\"★\"",
+     "button\"★\"",
+     "button\"★\""
+    ],
+    "tinyTargets": [],
+    "coversOthersClose": [
+     "voxpanel-close",
+     "course-hud-close"
+    ]
+   },
+   "noOutsidePoint": true
+  },
+  "menu:pause.share": {
+   "open": "P, Share this scene",
+   "ways": {
+    "esc": true,
+    "outside": false,
+    "control:Close": true
+   },
+   "found": {
+    "root": "div.panel.interactive#share",
+    "fresh": [
+     "div.panel.interactive#share",
+     "button.btn.primary",
+     "span.disarmed",
+     "a.rec-offer#rec-offer"
+    ]
+   },
+   "m": {
+    "rect": {
+     "x": 16,
+     "y": 101,
+     "w": 358,
+     "h": 643
+    },
+    "inView": true,
+    "panelH": 643,
+    "vh": 844,
+    "scrolls": false,
+    "scrollEl": null,
+    "clipped": false,
+    "text": "Share this scene×The picture link could not be made right now: the buttons share this scene's page, and you can still save the picture.Share",
+    "title": "Share this scene",
+    "closers": [
+     {
+      "text": "×",
+      "name": "Close",
+      "action": null,
+      "tag": "button",
+      "rect": {
+       "x": 313,
+       "y": 118,
+       "w": 44,
+       "h": 44
+      },
+      "inView": true,
+      "big": true,
+      "shape": true,
+      "font": 24,
+      "covered": false,
+      "coveredBy": null
+     }
+    ],
+    "minFont": 13,
+    "smallTexts": 0,
+    "smallText": "",
+    "noName": [],
+    "symbolOnly": [
+     "button\"×\"",
+     "a\"X\""
+    ],
+    "tinyTargets": [],
+    "coversOthersClose": []
+   }
+  },
+  "menu:pause.drone": {
+   "open": "P, Drone",
+   "ways": {
+    "esc": true,
+    "outside": false,
+    "control:Close": true
+   },
+   "found": {
+    "root": "div.screen.drones",
+    "fresh": [
+     "div.screen.drones",
+     "button.btn.primary",
+     "span.disarmed",
+     "a.rec-offer#rec-offer"
+    ]
+   },
+   "m": {
+    "rect": {
+     "x": 0,
+     "y": 86,
+     "w": 390,
+     "h": 758
+    },
+    "inView": true,
+    "panelH": 758,
+    "vh": 844,
+    "scrolls": true,
+    "scrollEl": "div.screen",
+    "clipped": false,
+    "text": "Your drone×Every number shows where it comes from.These drones are built from published numbers and estimates. Fly one of them for real and ",
+    "title": "Your drone",
+    "closers": [
+     {
+      "text": "×",
+      "name": "Close",
+      "action": "drone-close",
+      "tag": "button",
+      "rect": {
+       "x": 338,
+       "y": 96,
+       "w": 44,
+       "h": 44
+      },
+      "inView": true,
+      "big": true,
+      "shape": true,
+      "font": 24,
+      "covered": false,
+      "coveredBy": null
+     },
+     {
+      "text": "1",
+      "name": "Show the Frame on the model",
+      "action": null,
+      "tag": "button",
+      "rect": {
+       "x": 265,
+       "y": 518,
+       "w": 24,
+       "h": 24
+      },
+      "inView": true,
+      "big": false,
+      "shape": true,
+      "font": 12,
+      "covered": true,
+      "coveredBy": "button.d3-pin"
+     }
+    ],
+    "minFont": 11,
+    "smallTexts": 11,
+    "smallText": "span.d3-basis 11px: maker's spec",
+    "noName": [],
+    "symbolOnly": [
+     "button[drone-close]\"×\"",
+     "button\"1\"",
+     "button\"2\"",
+     "button\"3\"",
+     "button\"4\"",
+     "button\"5\""
+    ],
+    "tinyTargets": [
+     "a33x16",
+     "a33x16",
+     "a33x16",
+     "a33x16",
+     "a33x16"
+    ],
+    "coversOthersClose": [
+     "voxpanel-close"
+    ]
+   },
+   "noOutsidePoint": true
+  },
+  "menu:pause.radio": {
+   "open": "P, Controls",
+   "ways": {
+    "esc": true,
+    "outside": false,
+    "control:Close": true
+   },
+   "found": {
+    "root": "div.screen.radio",
+    "fresh": [
+     "div.screen.radio"
+    ]
+   },
+   "m": {
+    "rect": {
+     "x": 0,
+     "y": 0,
+     "w": 390,
+     "h": 844
+    },
+    "inView": true,
+    "panelH": 844,
+    "vh": 844,
+    "scrolls": true,
+    "scrollEl": "div.screen",
+    "clipped": false,
+    "text": "Controls×Connect my controllerPlug the controller in with a data cable and switch it on, press the button and pick it in Chrome's list. A ga",
+    "title": "Controls",
+    "closers": [
+     {
+      "text": "×",
+      "name": "Close",
+      "action": "radio-close",
+      "tag": "button",
+      "rect": {
+       "x": 338,
+       "y": 10,
+       "w": 44,
+       "h": 44
+      },
+      "inView": true,
+      "big": true,
+      "shape": true,
+      "font": 24,
+      "covered": false,
+      "coveredBy": null
+     },
+     {
+      "text": "My controller is not in the list",
+      "name": "My controller is not in the list",
+      "action": null,
+      "tag": "summary",
+      "rect": {
+       "x": 16,
+       "y": 910,
+       "w": 358,
+       "h": 40
+      },
+      "inView": false,
+      "big": false,
+      "shape": false,
+      "font": 15,
+      "covered": "off-view",
+      "coveredBy": null
+     }
+    ],
+    "minFont": 13,
+    "smallTexts": 0,
+    "smallText": "",
+    "noName": [],
+    "symbolOnly": [
+     "button[radio-close]\"×\""
+    ],
+    "tinyTargets": [],
+    "coversOthersClose": []
+   },
+   "noOutsidePoint": true
+  },
+  "menu:pause.howtofly": {
+   "open": "P, How to fly",
+   "ways": {
+    "esc": false,
+    "outside": false,
+    "control:Close": true
+   },
+   "found": {
+    "root": "div.panel.interactive#how-to-fly",
+    "fresh": [
+     "div.panel.interactive#how-to-fly",
+     "button.btn.primary",
+     "span.disarmed",
+     "a.rec-offer#rec-offer"
+    ]
+   },
+   "m": {
+    "rect": {
+     "x": 12,
+     "y": 12,
+     "w": 366,
+     "h": 820
+    },
+    "inView": true,
+    "panelH": 820,
+    "vh": 844,
+    "scrolls": true,
+    "scrollEl": "div.panel",
+    "clipped": false,
+    "text": "How to fly×Keyboard and mouseSpace↑Uphold to climbShift↓Downhold to descend, and to landMouselook and turn (up and down tilts the camera)WAS",
+    "title": "How to fly",
+    "closers": [
+     {
+      "text": "×",
+      "name": "Close",
+      "action": "htf-close",
+      "tag": "button",
+      "rect": {
+       "x": 319,
+       "y": 25,
+       "w": 44,
+       "h": 44
+      },
+      "inView": true,
+      "big": true,
+      "shape": true,
+      "font": 24,
+      "covered": false,
+      "coveredBy": null
+     }
+    ],
+    "minFont": 12,
+    "smallTexts": 0,
+    "smallText": "",
+    "noName": [],
+    "symbolOnly": [
+     "button[htf-close]\"×\""
+    ],
+    "tinyTargets": [
+     "input22x22"
+    ],
+    "coversOthersClose": []
+   },
+   "noOutsidePoint": true
+  },
+  "menu:pause.settings": {
+   "open": "P, Settings",
+   "ways": {
+    "esc": false,
+    "outside": false,
+    "control:Close": true
+   },
+   "found": {
+    "root": "div.panel.interactive#settings",
+    "fresh": [
+     "div.panel.interactive#settings",
+     "button.btn.primary",
+     "span.disarmed",
+     "a.rec-offer#rec-offer"
+    ]
+   },
+   "m": {
+    "rect": {
+     "x": 0,
+     "y": 0,
+     "w": 390,
+     "h": 844
+    },
+    "inView": true,
+    "panelH": 844,
+    "vh": 844,
+    "scrolls": true,
+    "scrollEl": "div.set-pane",
+    "clipped": false,
+    "text": "SettingsO×FlightCrashes & respawnCameraDisplaySoundControlsDrone & physicsTuneScenesWalls and voxel gridRecordingDataFlightFlightFlight mode",
+    "title": "SettingsO",
+    "closers": [
+     {
+      "text": "×",
+      "name": "Close",
+      "action": "settings-close",
+      "tag": "button",
+      "rect": {
+       "x": 338,
+       "y": 10,
+       "w": 44,
+       "h": 44
+      },
+      "inView": true,
+      "big": true,
+      "shape": true,
+      "font": 24,
+      "covered": false,
+      "coveredBy": null
+     }
+    ],
+    "minFont": 12,
+    "smallTexts": 0,
+    "smallText": "",
+    "noName": [],
+    "symbolOnly": [
+     "button[settings-close]\"×\"",
+     "button[help]\"?\"",
+     "button[help]\"?\"",
+     "button[help]\"?\"",
+     "button[help]\"?\""
+    ],
+    "tinyTargets": [],
+    "coversOthersClose": [
+     "voxpanel-close"
+    ]
+   },
+   "noOutsidePoint": true
+  },
+  "menu:pause.replays": {
+   "open": "P, Replays",
+   "ways": {
+    "esc": false,
+    "outside": false,
+    "control:Close": true
+   },
+   "found": {
+    "root": "div.panel.interactive",
+    "fresh": [
+     "div.panel.interactive",
+     "button.btn.primary",
+     "span.disarmed",
+     "a.rec-offer#rec-offer"
+    ]
+   },
+   "m": {
+    "rect": {
+     "x": 16,
+     "y": 357,
+     "w": 358,
+     "h": 130
+    },
+    "inView": true,
+    "panelH": 130,
+    "vh": 844,
+    "scrolls": false,
+    "scrollEl": null,
+    "clipped": false,
+    "text": "Replays×Crashes and saved flights appear here.",
+    "title": "Replays",
+    "closers": [
+     {
+      "text": "×",
+      "name": "Close",
+      "action": null,
+      "tag": "button",
+      "rect": {
+       "x": 313,
+       "y": 374,
+       "w": 44,
+       "h": 44
+      },
+      "inView": true,
+      "big": true,
+      "shape": true,
+      "font": 24,
+      "covered": false,
+      "coveredBy": null
+     }
+    ],
+    "minFont": 15,
+    "smallTexts": 0,
+    "smallText": "",
+    "noName": [],
+    "symbolOnly": [
+     "button\"×\""
+    ],
+    "tinyTargets": [],
+    "coversOthersClose": []
+   }
+  },
+  "menu:pause.rooms": {
+   "open": "P, Fly with others",
+   "ways": {
+    "esc": false,
+    "outside": false,
+    "control:Close": true
+   },
+   "found": {
+    "root": "div.panel.interactive#rooms-panel",
+    "fresh": [
+     "div.panel.interactive#rooms-panel",
+     "button.btn.primary",
+     "span.disarmed",
+     "a.rec-offer#rec-offer"
+    ]
+   },
+   "m": {
+    "rect": {
+     "x": 16,
+     "y": 218,
+     "w": 358,
+     "h": 408
+    },
+    "inView": true,
+    "panelH": 408,
+    "vh": 844,
+    "scrolls": false,
+    "scrollEl": null,
+    "clipped": false,
+    "text": "Fly with others×Your name in rooms Save name2 to 20 letters or digits; spaces and - _ . ' are allowed. Others in the room see it while you f",
+    "title": "Fly with others",
+    "closers": [
+     {
+      "text": "×",
+      "name": "Close",
+      "action": null,
+      "tag": "button",
+      "rect": {
+       "x": 313,
+       "y": 235,
+       "w": 44,
+       "h": 44
+      },
+      "inView": true,
+      "big": true,
+      "shape": true,
+      "font": 24,
+      "covered": false,
+      "coveredBy": null
+     }
+    ],
+    "minFont": 13,
+    "smallTexts": 0,
+    "smallText": "",
+    "noName": [],
+    "symbolOnly": [
+     "button\"×\""
+    ],
+    "tinyTargets": [
+     "input177x21",
+     "input177x21",
+     "input13x13"
+    ],
+    "coversOthersClose": []
+   }
+  },
+  "menu:pause.course": {
+   "open": "P, Course: a new random course",
+   "ways": {
+    "esc": false,
+    "outside": false
+   },
+   "found": {
+    "root": "div.hud-note",
+    "fresh": [
+     "div.hud-note",
+     "button.btn.primary",
+     "span.disarmed",
+     "a.rec-offer#rec-offer"
+    ]
+   },
+   "m": {
+    "rect": {
+     "x": 98,
+     "y": 44,
+     "w": 195,
+     "h": 69
+    },
+    "inView": true,
+    "panelH": 69,
+    "vh": 844,
+    "scrolls": false,
+    "scrollEl": null,
+    "clipped": false,
+    "text": "Course: finding the free space. Step 1 of 2, 12 %. 0:01 so far, about 0:10 left.",
+    "title": "",
+    "closers": [],
+    "minFont": 13,
+    "smallTexts": 0,
+    "smallText": "",
+    "noName": [],
+    "symbolOnly": [],
+    "tinyTargets": [],
+    "coversOthersClose": []
+   },
+   "noOutsidePoint": true
+  },
+  "menu:pause.course.save": {
+   "open": "P, Course: save for everyone",
+   "ways": {},
+   "error": "locator.click: Timeout 3000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-action=\"pause.course.save\"]').first()\u001b[22m\n\u001b[2m    - locator resolved to <button disabled type=\"button\" class=\"btn "
+  },
+  "menu:pause.course.edit": {
+   "open": "P, Course: edit the obstacles",
+   "ways": {},
+   "error": "locator.click: Timeout 3000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-action=\"pause.course.edit\"]').first()\u001b[22m\n\u001b[2m    - locator resolved to <button disabled type=\"button\" class=\"btn "
+  },
+  "menu:pause.measure": {
+   "open": "P, Measurements",
+   "ways": {
+    "esc": false,
+    "outside": false,
+    "control:Close": true
+   },
+   "found": {
+    "root": "div.panel.interactive",
+    "fresh": [
+     "div.panel.interactive",
+     "span.disarmed",
+     "kbd"
+    ]
+   },
+   "m": {
+    "rect": {
+     "x": 16,
+     "y": 60,
+     "w": 358,
+     "h": 723
+    },
+    "inView": true,
+    "panelH": 723,
+    "vh": 844,
+    "scrolls": false,
+    "scrollEl": null,
+    "clipped": false,
+    "text": "Measurements×RendererWebGPU, GPU sortDisplay refresh30.0 HzFrame p50 / p9933.3 / 133.4 msPhysics rate1000 HzInput reportskeyboard · — HzInte",
+    "title": "Measurements",
+    "closers": [
+     {
+      "text": "×",
+      "name": "Close",
+      "action": null,
+      "tag": "button",
+      "rect": {
+       "x": 313,
+       "y": 77,
+       "w": 44,
+       "h": 44
+      },
+      "inView": true,
+      "big": true,
+      "shape": true,
+      "font": 24,
+      "covered": false,
+      "coveredBy": null
+     }
+    ],
+    "minFont": 13,
+    "smallTexts": 0,
+    "smallText": "",
+    "noName": [],
+    "symbolOnly": [
+     "button\"×\""
+    ],
+    "tinyTargets": [],
+    "coversOthersClose": []
+   }
+  },
+  "menu:pause.import": {
+   "open": "P, Import rates from Betaflight",
+   "ways": {
+    "esc": false,
+    "outside": false,
+    "control:Close": true
+   },
+   "found": {
+    "root": "div.panel.interactive",
+    "fresh": [
+     "div.panel.interactive",
+     "span.disarmed",
+     "kbd",
+     "span"
+    ]
+   },
+   "m": {
+    "rect": {
+     "x": 16,
+     "y": 198,
+     "w": 358,
+     "h": 449
+    },
+    "inView": true,
+    "panelH": 449,
+    "vh": 844,
+    "scrolls": false,
+    "scrollEl": null,
+    "clipped": false,
+    "text": "Import from Betaflight×Paste the output of \"diff\" or \"diff all\" from the Betaflight CLI. Rates and PID of the active profiles are applied to",
+    "title": "Import from Betaflight",
+    "closers": [
+     {
+      "text": "×",
+      "name": "Close",
+      "action": null,
+      "tag": "button",
+      "rect": {
+       "x": 313,
+       "y": 215,
+       "w": 44,
+       "h": 44
+      },
+      "inView": true,
+      "big": true,
+      "shape": true,
+      "font": 24,
+      "covered": false,
+      "coveredBy": null
+     }
+    ],
+    "minFont": 15,
+    "smallTexts": 0,
+    "smallText": "",
+    "noName": [],
+    "symbolOnly": [
+     "button\"×\""
+    ],
+    "tinyTargets": [],
+    "coversOthersClose": []
+   }
+  },
+  "menu:pause.cinema": {
+   "open": "P, Cinema mode (on / off)",
+   "ways": {
+    "esc": false,
+    "outside": false
+   },
+   "found": {
+    "root": "div.cinema-note#cinema-note",
+    "fresh": [
+     "div.cinema-note#cinema-note",
+     "kbd"
+    ]
+   },
+   "m": {
+    "rect": {
+     "x": 98,
+     "y": 747,
+     "w": 195,
+     "h": 81
+    },
+    "inView": true,
+    "panelH": 81,
+    "vh": 844,
+    "scrolls": false,
+    "scrollEl": null,
+    "clipped": false,
+    "text": "Cinema mode: full detail, no automatic quality. The scene credit is burned into the video.",
+    "title": "",
+    "closers": [],
+    "minFont": 13,
+    "smallTexts": 0,
+    "smallText": "",
+    "noName": [],
+    "symbolOnly": [],
+    "tinyTargets": [],
+    "coversOthersClose": []
+   },
+   "noOutsidePoint": true
+  },
+  "menu:pause.sound": {
+   "open": "P, Motor sound: on — turn off",
+   "ways": {
+    "esc": true
+   },
+   "found": {
+    "root": "span.disarmed",
+    "fresh": [
+     "span.disarmed",
+     "kbd",
+     "svg"
+    ]
+   },
+   "m": {
+    "rect": {
+     "x": 44,
+     "y": 14,
+     "w": 70,
+     "h": 18
+    },
+    "inView": true,
+    "panelH": 18,
+    "vh": 844,
+    "scrolls": false,
+    "scrollEl": null,
+    "clipped": false,
+    "text": "DISARMED",
+    "title": "",
+    "closers": [],
+    "minFont": 15,
+    "smallTexts": 0,
+    "smallText": "",
+    "noName": [],
+    "symbolOnly": [],
+    "tinyTargets": [],
+    "coversOthersClose": []
+   },
+   "error": "page.waitForSelector: Timeout 5000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-action=\"pause.continue\"]') to be visible\u001b[22m\n"
+  },
+  "menu:pause.feedback": {
+   "open": "P, Report a bug or an idea",
+   "ways": {
+    "esc": false,
+    "outside": false,
+    "control:Close": true
+   },
+   "found": {
+    "root": "div.panel.interactive#feedback",
+    "fresh": [
+     "div.panel.interactive#feedback",
+     "div.interactive#detail-line",
+     "span.disarmed",
+     "kbd"
+    ]
+   },
+   "m": {
+    "rect": {
+     "x": 16,
+     "y": 16,
+     "w": 358,
+     "h": 812
+    },
+    "inView": true,
+    "panelH": 812,
+    "vh": 844,
+    "scrolls": true,
+    "scrollEl": "div.panel",
+    "clipped": false,
+    "text": "Feedback×Found a bug, have an idea, or want to work together? Andrii reads every message.BugIdeaDrone physicsCooperationWhat went wrong?Your",
+    "title": "Feedback",
+    "closers": [
+     {
+      "text": "×",
+      "name": "Close",
+      "action": null,
+      "tag": "button",
+      "rect": {
+       "x": 313,
+       "y": 33,
+       "w": 44,
+       "h": 44
+      },
+      "inView": true,
+      "big": true,
+      "shape": true,
+      "font": 24,
+      "covered": false,
+      "coveredBy": null
+     }
+    ],
+    "minFont": 13,
+    "smallTexts": 0,
+    "smallText": "",
+    "noName": [],
+    "symbolOnly": [
+     "button\"×\""
+    ],
+    "tinyTargets": [
+     "input22x22",
+     "input22x22"
+    ],
+    "coversOthersClose": [
+     "voxpanel-close"
+    ]
+   },
+   "noOutsidePoint": true
+  },
+  "menu:pause.flyBySound": {
+   "open": "P, Fly by Sound here",
+   "ways": {
+    "esc": false,
+    "outside": false
+   },
+   "found": {
+    "root": "div.sonic-captions#sonic-captions",
+    "fresh": [
+     "div.sonic-captions#sonic-captions",
+     "div.sonic-attitude#sonic-attitude",
+     "section.sonic-progress#sonic-progress",
+     "div.sonic-sounds#sonic-sounds"
+    ]
+   },
+   "m": {
+    "rect": {
+     "x": 16,
+     "y": 150,
+     "w": 359,
+     "h": 60
+    },
+    "inView": true,
+    "panelH": 60,
+    "vh": 844,
+    "scrolls": false,
+    "scrollEl": null,
+    "clipped": false,
+    "text": "You hear the walls as you come near them, and your height. \\ switches Fly by Sound off, Shift and key G makes a course of gates here, K says",
+    "title": "",
+    "closers": [],
+    "minFont": 17,
+    "smallTexts": 0,
+    "smallText": "",
+    "noName": [],
+    "symbolOnly": [],
+    "tinyTargets": [],
+    "coversOthersClose": []
+   },
+   "noOutsidePoint": true
+  },
+  "helper": {
+   "open": "P, Controls, My controller is not in the list",
+   "ways": {},
+   "error": "locator.click: Timeout 3000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-action=usb-look], [data-action*=missing]').first()\u001b[22m\n\u001b[2m    - locator resolved to <button class=\"btn\" type=\"but"
+  },
+  "sonic-start": {
+   "open": "?sonic=start",
+   "m": {
+    "rect": {
+     "x": 0,
+     "y": 0,
+     "w": 390,
+     "h": 844
+    },
+    "inView": true,
+    "panelH": 844,
+    "vh": 844,
+    "scrolls": true,
+    "scrollEl": "div.sonic-start",
+    "clipped": false,
+    "text": "Fly by SoundLearn to fly a drone by ear. Everything is said and played as sound, so no screen is needed. A helper can set up your radio, key",
+    "title": "Fly by Sound",
+    "closers": [
+     {
+      "text": "Volume and pitch of each sound",
+      "name": "Volume and pitch of each sound",
+      "action": null,
+      "tag": "summary",
+      "rect": {
+       "x": 18,
+       "y": 6177,
+       "w": 354,
+       "h": 44
+      },
+      "inView": false,
+      "big": true,
+      "shape": false,
+      "font": 17,
+      "covered": "off-view",
+      "coveredBy": null
+     }
+    ],
+    "minFont": 13.6,
+    "smallTexts": 0,
+    "smallText": "",
+    "noName": [],
+    "symbolOnly": [],
+    "tinyTargets": [
+     "a35x22",
+     "a95x22",
+     "a58x22",
+     "a60x22",
+     "input13x26",
+     "input23x26",
+     "input23x26",
+     "input13x26"
+    ],
+    "coversOthersClose": []
+   },
+   "ways": {
+    "esc": false
+   }
+  }
+ },
+ "errors": [],
+ "clicks": [
+  {
+   "sel": "[data-testid=walls-summary]",
+   "top": true,
+   "at": "summary.",
+   "rect": [
+    16,
+    760,
+    234,
+    44
+   ]
+  },
+  {
+   "sel": "[data-testid=walls-summary]",
+   "top": true,
+   "at": "summary.",
+   "rect": [
+    16,
+    760,
+    234,
+    44
+   ]
+  },
+  {
+   "sel": "[data-testid=walls-summary]",
+   "top": true,
+   "at": "summary.",
+   "rect": [
+    16,
+    760,
+    234,
+    44
+   ]
+  },
+  {
+   "sel": "[data-testid=walls-summary]",
+   "top": true,
+   "at": "summary.",
+   "rect": [
+    16,
+    760,
+    234,
+    44
+   ]
+  }
+ ],
+ "pauseItems": [
+  {
+   "action": "pause.continue",
+   "label": "Continue"
+  },
+  {
+   "action": "pause.restart",
+   "label": "Restart"
+  },
+  {
+   "action": "pause.rewind",
+   "label": "Rewind along the path"
+  },
+  {
+   "action": "pause.scene",
+   "label": "Change scan"
+  },
+  {
+   "action": "pause.scene.next",
+   "label": "Next scene"
+  },
+  {
+   "action": "pause.scene.random",
+   "label": "Random scene"
+  },
+  {
+   "action": "pause.scene.favourite",
+   "label": "Next favourite scene"
+  },
+  {
+   "action": "pause.share",
+   "label": "Share this scene"
+  },
+  {
+   "action": "pause.drone",
+   "label": "Drone"
+  },
+  {
+   "action": "pause.radio",
+   "label": "Controls"
+  },
+  {
+   "action": "pause.howtofly",
+   "label": "How to fly"
+  },
+  {
+   "action": "pause.settings",
+   "label": "Settings"
+  },
+  {
+   "action": "pause.replays",
+   "label": "Replays"
+  },
+  {
+   "action": "pause.rooms",
+   "label": "Fly with others"
+  },
+  {
+   "action": "pause.course",
+   "label": "Course: a new random course"
+  },
+  {
+   "action": "pause.course.toggle",
+   "label": "Course: hide"
+  },
+  {
+   "action": "pause.course.save",
+   "label": "Course: save for everyone"
+  },
+  {
+   "action": "pause.course.edit",
+   "label": "Course: edit the obstacles"
+  },
+  {
+   "action": "pause.measure",
+   "label": "Measurements"
+  },
+  {
+   "action": "pause.import",
+   "label": "Import rates from Betaflight"
+  },
+  {
+   "action": "pause.cinema",
+   "label": "Cinema mode (on / off)"
+  },
+  {
+   "action": "pause.record",
+   "label": "Start recording"
+  },
+  {
+   "action": "pause.sound",
+   "label": "Motor sound: on — turn off"
+  },
+  {
+   "action": "pause.feedback",
+   "label": "Report a bug or an idea"
+  },
+  {
+   "action": "pause.flyBySound",
+   "label": "Fly by Sound here"
+  }
+ ],
+ "skipped": [
+  "pause.continue",
+  "pause.restart",
+  "pause.rewind",
+  "pause.scene.next",
+  "pause.scene.random",
+  "pause.scene.favourite",
+  "pause.course.toggle",
+  "pause.record"
+ ]
+}

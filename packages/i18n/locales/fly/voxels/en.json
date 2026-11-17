@@ -4,5 +4,10 @@
   "voxels.dropFloaters.on": "Floating pieces under {n} blocks dropped: {pieces}",
   "voxels.dropFloaters.off": "Floating pieces kept: every piece counts as a wall again",
   "voxels.dropped": "{pieces} floating pieces under {n} blocks dropped from the walls",
-  "voxels.dropHint": "Settings → Walls and voxel grid can drop the small ones from the walls"
+  "voxels.dropHint": "Settings → Walls and voxel grid can drop the small ones from the walls",
+  "voxels.panel.title": "Walls and voxels",
+  "voxels.panel.fold": "Fold the panel",
+  "voxels.panel.unfold": "Unfold the panel",
+  "voxels.panel.close": "Close",
+  "voxels.legendOff": "Hide the voxel grid"
 }

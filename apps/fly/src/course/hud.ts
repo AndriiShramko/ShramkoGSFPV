@@ -21,6 +21,9 @@ export interface GuideState { shown: boolean; gate: number; metres: number; side
 
 export class CourseHud {
     readonly el: HTMLDivElement;
+    /** the block's cross (U1): runs onClose; its words come from setCloseLabel */
+    readonly closeBtn: HTMLButtonElement;
+    onClose: (() => void) | null = null;
     private readonly time: HTMLDivElement;
     private readonly lines: HTMLDivElement;
     private shown = '';
@@ -48,6 +51,12 @@ export class CourseHud {
     readonly splashState: SplashState = { kind: 'none', text: '', delta: '', tone: '', mode: '', at: 0, alpha: 0 };
     private splashHold = SPLASH_HOLD_MS;
 
+    /** the cross's accessible name and title in the page's language (the HUD has no dictionary of its own) */
+    setCloseLabel(words: string): void {
+        this.closeBtn.setAttribute('aria-label', words);
+        this.closeBtn.title = words + ' (Shift+T)';
+    }
+
     constructor(private readonly parent: HTMLElement) {
         this.splashEl = document.createElement('div');
         this.splashEl.className = 'course-splash';
@@ -63,7 +72,15 @@ export class CourseHud {
         this.time.className = 'course-time';
         this.lines = document.createElement('div');
         this.lines.className = 'course-lines';
-        this.el.append(this.time, this.lines);
+        // lane uiaudit fault 4 (U1): a cross hides the course, the same as Shift+T; the cross is drawn by CSS
+        // (.course-hud-x::before) so the block's text (hook.clockText) stays the clock's alone
+        this.closeBtn = document.createElement('button');
+        this.closeBtn.type = 'button';
+        this.closeBtn.className = 'panel-x course-hud-x interactive';
+        this.closeBtn.dataset.action = 'course-hud-close';
+        this.closeBtn.setAttribute('aria-keyshortcuts', 'Shift+T');
+        this.closeBtn.addEventListener('click', () => this.onClose?.());
+        this.el.append(this.time, this.lines, this.closeBtn);
         parent.appendChild(this.el);
         this.guideEl = document.createElement('div');
         this.guideEl.className = 'course-guide';

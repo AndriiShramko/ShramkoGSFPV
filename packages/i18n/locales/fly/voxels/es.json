@@ -4,5 +4,10 @@
   "voxels.dropFloaters.on": "Piezas flotantes de menos de {n} bloques quitadas: {pieces}",
   "voxels.dropFloaters.off": "Piezas flotantes conservadas: todas vuelven a contar como paredes",
   "voxels.dropped": "{pieces} piezas flotantes de menos de {n} bloques quitadas de las paredes",
-  "voxels.dropHint": "en Ajustes → Paredes y rejilla de vóxeles puedes quitar las pequeñas"
+  "voxels.dropHint": "en Ajustes → Paredes y rejilla de vóxeles puedes quitar las pequeñas",
+  "voxels.panel.title": "Paredes y vóxeles",
+  "voxels.panel.fold": "Plegar el panel",
+  "voxels.panel.unfold": "Desplegar el panel",
+  "voxels.panel.close": "Cerrar",
+  "voxels.legendOff": "Ocultar la cuadrícula de vóxeles"
 }

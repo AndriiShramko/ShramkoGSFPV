@@ -82,6 +82,10 @@
     font: inherit;
 }
 .ce-list { list-style: none; margin: 0; padding: 0; }
+/* editfix E2.4: Courses and Keys on the top bar light their part (flash.ts takes the class off after SHOWN_MS) */
+.course-editor .ce-shown { outline: 2px solid #a6ff1a; outline-offset: 2px; border-radius: 4px; animation: ce-shown 1.2s ease-out; }
+@keyframes ce-shown { from { background: rgba(166, 255, 26, 0.28); } to { background: transparent; } }
+@media (prefers-reduced-motion: reduce) { .course-editor .ce-shown { animation: none; } }
 .ce-row { padding: 5px 0; border-top: 1px solid #2a3442; }
 .ce-row.current b { color: #a6ff1a; }
 .ce-marks { display: flex; flex-wrap: wrap; gap: 0 8px; color: #b8c2cf; font-size: 0.8rem; }
@@ -163,8 +167,10 @@
     text-overflow: ellipsis;
 }
 .ce-topbar .ce-tb-line.refused { color: #ffb347; }
-.ce-topbar.flying .ce-tb { display: none; }
+/* lane editfix E2: while the course is flown in the mode, Exit stays on the bar and takes a click (no dead end) */
+.ce-topbar.flying .ce-tb:not([data-top='exit']) { display: none; }
 .ce-topbar.flying { pointer-events: none; }
+.ce-topbar.flying .ce-tb[data-top='exit'] { pointer-events: auto; }
 
 /* lane editor3 E4.6: the window's title is a button that only does something on a phone (a drawer, below) */
 .course-editor .ce-drawer {
@@ -231,6 +237,17 @@ body:has(.course-editor:not(.ce-flying)) :is(.mode-chip, .hud .osd.bl, .hud .osd
    chip's summary line ('Walls 5 cm') stays; back in the test flight and after Exit */
 @media (max-height: 500px) {
     body:has(.course-editor:not(.ce-flying)) [data-testid='walls-more'] > :not(summary) { display: none !important; }
+    /* integration F (voxview2 VR-7, the owner's rule 'no control that does nothing'): the line stays as words, not as a
+       button: no click, no button shape, no triangle */
+    body:has(.course-editor:not(.ce-flying)) [data-testid='walls-summary'] { pointer-events: none; border-color: transparent; background: none; list-style: none; }
+    body:has(.course-editor:not(.ce-flying)) [data-testid='walls-summary']::-webkit-details-marker { display: none; }
+}
+/* lane uiaudit (fault c of A2 run 2), a phone held upright (390 px): the gate bar wraps inside the view (gate-bar.ts
+   barPlace reads its offsetWidth and keeps it in), and the window starts under the top bar (52 px: a 44 px button,
+   its padding and border) instead of over Undo, Redo and Exit */
+@media (max-width: 520px) {
+    .ce-gatebar { max-width: calc(100vw - 16px); flex-wrap: wrap; box-sizing: border-box; }
+    .course-editor { top: calc(var(--top-row-bottom, 78px) + 60px); }
 }
 @media (max-height: 480px) {
     .course-editor { font-size: 0.75rem; padding: 6px 8px; }

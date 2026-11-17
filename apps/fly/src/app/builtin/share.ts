@@ -98,7 +98,11 @@ export const share: Feature = {
         // the crash on screen now (its speed), so L over a crash shares it with the crash's words
         let crashSpeed: number | null = null;
         ctx.keys.on('share.open', (e) => {
-            if (e.repeat || dialogOpen()) return;
+            if (e.repeat) return;
+            // a second L closes the share window it opened (U1)
+            const x = document.querySelector<HTMLButtonElement>('.panel.share .panel-x');
+            if (x) { e.preventDefault(); x.click(); return; }
+            if (dialogOpen()) return;
             e.preventDefault();
             if (crashSpeed !== null && ctx.crash.active) openFlightShare(ctx, 'crash', { speed: crashSpeed });
             else openFlightShare(ctx, 'key');

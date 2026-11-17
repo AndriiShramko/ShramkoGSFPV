@@ -42,7 +42,25 @@ body.touch-on .sum-keys { display: none; } /* flying with touch sticks: no keybo
     .panel.summary.has-stats .sum-keys { grid-area: keys; }
 }
 @media (max-width: 760px) {
-    .panel.summary.has-stats .sum-grid { grid-template-columns: minmax(0, 1fr); grid-template-areas: "stats" "menu" "keys"; }
+    .panel.summary.has-stats .sum-grid { grid-template-columns: minmax(0, 1fr); grid-template-areas: "menu" "stats" "keys"; }
+}
+/* a short view (a phone on its side, 844x390) or a narrow one (a phone held upright, 390x844; lane uiaudit
+   fault 6): the menu first, Continue in view without a scroll; the stats, the scene size row and the
+   cookie link after it */
+@media (max-height: 500px), (max-width: 760px) {
+    .pause-menu .panel-body { display: flex; flex-direction: column; }
+    .pause-menu .sum-grid { order: 1; margin-top: 0; }
+    .pause-menu .sum-rows { order: 2; margin: 10px 0 0; }
+    .pause-menu .pm-cookies { order: 3; }
+}
+@media (max-height: 500px) {
+    .panel.summary.has-stats .sum-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); grid-template-areas: "menu stats" "keys stats"; }
+    .panel.summary.has-stats .sum-stats { grid-area: stats; }
+    .panel.summary.has-stats .sum-menu { grid-area: menu; }
+    .panel.summary.has-stats .sum-keys { grid-area: keys; }
+}
+@media (max-height: 500px) and (max-width: 760px) {
+    .panel.summary.has-stats .sum-grid { grid-template-columns: minmax(0, 1fr); grid-template-areas: "menu" "stats" "keys"; }
 }
 @media (max-width: 479px) {
     .sum-table tbody tr:not(.core) { display: none; }

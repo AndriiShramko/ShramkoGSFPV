@@ -9,7 +9,7 @@ const DTS = join(REPO, 'apps', 'fly', 'node_modules', 'playcanvas', 'build', 'pl
 export const USED: Record<string, string[]> = {
     AppBase: ['init', 'setCanvasFillMode', 'setCanvasResolution', 'start', 'destroy', 'root', 'scene', 'systems', 'assets', 'graphicsDevice'],
     AppOptions: ['graphicsDevice', 'componentSystems', 'resourceHandlers'],
-    Entity: ['addComponent', 'camera', 'render', 'gsplat'],
+    Entity: ['addComponent', 'camera', 'render', 'gsplat', 'findComponents'],
     GraphNode: ['setPosition', 'setRotation', 'setLocalPosition', 'setLocalEulerAngles', 'setLocalScale', 'setEulerAngles', 'addChild', 'getPosition', 'children', 'destroy'],
     Scene: ['gsplat', 'ambientLight', 'layers'],
     // engine 2.23.2 (v0.7 lane R): lodMode is deprecated and no longer set; splatBudgetMode and stochastic are new
@@ -20,7 +20,7 @@ export const USED: Record<string, string[]> = {
     CameraComponent: ['fov', 'horizontalFov', 'nearClip', 'farClip', 'clearColor', 'toneMapping'],
     RenderComponent: ['material', 'type', 'layers'],
     StandardMaterial: ['useLighting', 'diffuse', 'emissive', 'useTonemap'],
-    Material: ['depthTest', 'depthWrite', 'update'],
+    Material: ['depthTest', 'depthWrite', 'update', 'redWrite', 'greenWrite', 'blueWrite', 'alphaWrite'],
     LayerComposition: ['getLayerByName'],
     GraphicsDevice: ['isWebGPU', 'maxPixelRatio'],
     Quat: ['set', 'setFromEulerAngles', 'mul'],
