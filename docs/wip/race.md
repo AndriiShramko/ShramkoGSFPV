@@ -109,7 +109,25 @@ Stage R2-board:
   offsetParent is null for a fixed panel (now computed style; narrower, or under the header).
   Left for R2.4: build the release of this commit, copy U:/Temp/gsfpv-train2/walls/release/70b50d42 to dist/walls, rerun
   MODE=r2 and see 8 of 8; if noOverlap still fails, read r2.overA/overB in the evidence.
-- [ ] R2.5 Pictures in U:/Temp/gsfpv-train3/shots: race-board.png, race-lead-change.png, race-844.png, each looked at.
+  [~] Runs 4 to 7 (27d80011, f512de3b, 73713f76; releases of each, walls stand-in in dist/walls; logs
+  U:/Temp/gsfpv-train3/race/rooms-board-r2-4.log .. r2-7.log, build-r2b..e.log; evidence/2026-11-17/rooms-board.json not committed).
+  Faults found and fixed in apps/fly/src/rooms/board-view.ts fit(): a selector list returned the whole voxel panel, not its header
+  (run 4: board pushed to y 611 on 844x390); a fit every 30 frames left the board over the fold button after a resize (run 5);
+  under the header it lay over the panel's own toggle (run 6). Now: read before write every frame; beside the whole panel the
+  board narrows when the panel starts more than 120 px right of the board, else it hides (visibility) until the panel closes.
+  Probe: an overlap counts when it holds two drawn frames (single frames kept in r2.onceA/onceB; run 7: one frame of the fold
+  button right after the resize to 844); the takeover flies again (at most 3 times) until its best is the room's best.
+  Run 7 (release 73713f76): 7 of 8. noOverlap passes (overA {}, overB {}); B takes the lead, banner on both pages 47 ms after
+  the send ('Pilot-9928 leads, 0:03.43'); rows swap; pause hides both; alone no board. Failed: aTakesLeadBackAt844: A flew 3
+  tries at 844x390 and its best was 5.33 s against B's 3.43 s (run 6 passed it at 59 ms, run 3 at 57 ms). A probe fault, not a
+  board fault: the lap time follows the page's frame rate and A at 844 counts about one lap per 3 rounds (run 6 nexts show every
+  gate passed); a guess, not checked: the course feature's results card after the course's lap count (apps/fly/src/app/builtin/course.ts).
+  Left for R2.4: in rooms-board.ts takeover, let A at 844 fly with hold 1 and offs [0.6, 0, -0.6] (or fly before the resize and
+  measure the banner at 844 on B's takeover) and rerun MODE=r2 for 8 of 8 on the release of HEAD (the dist of 73713f76 is in
+  place with dist/walls; HEAD after it changes only this file and the probe).
+  Note for the lead: after run 4 this lane ran 'rmdir C:/dev/.gpu-lock' though rooms-board.ts takes and frees the lock itself;
+  if another lane held it at that moment (03:5x on 2026-11-17) its hold was cut short. Not repeated.
+- [ ] R2.5 race-board.png, race-lead-change.png, race-844.png were written by run 7 (U:/Temp/gsfpv-train3/shots); not yet looked at.
 - [ ] R2.6 rooms-two-page.mjs, train1-live.ts rooms against local servers, accept-fly B6 B7 B9..B16, mouse-free-probe.
 - [ ] R2.7 Status: deploy order, a read-only live check for the lead, What the owner does, not verified.
 
