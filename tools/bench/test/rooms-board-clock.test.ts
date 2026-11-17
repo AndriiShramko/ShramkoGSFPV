@@ -24,10 +24,10 @@ class El {
     getBoundingClientRect(): Rect { return this.rect; }
 }
 
-function rig(vw: number, vh: number, clock: El | null): { view: BoardView; doc: unknown } {
+function rig(vw: number, vh: number, clock: El | null, osd: El | null = null): { view: BoardView; doc: unknown } {
     const doc = {
         createElement: () => new El(),
-        querySelector: (s: string) => (s === '[data-testid=course-hud]' ? clock : null),
+        querySelector: (s: string) => (s === '[data-testid=course-hud]' ? clock : s === '.osd.bl' ? osd : null),
         defaultView: { innerWidth: vw, innerHeight: vh },
     };
     const view = new BoardView(new El() as unknown as HTMLElement, doc as unknown as Document);
@@ -64,6 +64,23 @@ describe('the live board and the course clock (lane race, release check 2)', () 
         view.update(rows, true);
         expect(view.board.style.visibility).toBe('');
         expect(view.board.style.display).toBe('');
+    });
+
+    it('on touch goes just under the telemetry line over the stick pads (667x375: line 99..115), hides when no room is left', () => {
+        const osd = new El();
+        osd.rect = box(16, 99, 300, 115);
+        const clock = new El();
+        clock.rect = box(266, 257, 401, 351); // touch: the clock at the bottom middle
+        const { view } = rig(667, 375, clock, osd);
+        (view.board as unknown as El).rect = box(10, 66, 167, 135);
+        view.update(rows, true);
+        expect(view.board.style.transform).toBe('translateY(55px)');
+        expect(view.board.style.visibility).toBe('');
+        // a board too tall to fit above 60 % of the height under the line hides
+        const tall = rig(667, 375, null, osd).view;
+        (tall.board as unknown as El).rect = box(10, 66, 167, 186);
+        tall.update(rows, true);
+        expect(tall.board.style.visibility).toBe('hidden');
     });
 
     it('keeps the board with no course clock at all', () => {

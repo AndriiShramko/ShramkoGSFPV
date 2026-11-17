@@ -137,14 +137,22 @@ export class BoardView {
         // release check 2 of lane race: on a short keyboard view the course clock (course/hud.css, lane clockfix) stands in the
         // same left column (16..150 x 112..206 at 844x390 and 667x375), so the board gives way to it: hidden while the clock is
         // drawn there, back when the clock hides (the lap's own time) or moves (a taller view: the clock is at the top centre)
-        const ck = this.doc.querySelector('[data-testid=course-hud]') as HTMLElement | null;
-        if (vis === '' && ck && !ck.closest('[hidden]')) {
-            const cs = getComputedStyle(ck);
-            const c = ck.getBoundingClientRect();
-            if (boardMeetsClock(now.left, now.top - this.dy + dy, right, now.bottom - this.dy + dy, cs.display !== 'none' && cs.visibility !== 'hidden' ? c : null)) {
-                vis = 'hidden';
-            }
+        // Touch (fly.css: the telemetry line 16 px over the stick pads, 114..130 at 844x390 and 99..115 at 667x375) lies across
+        // the board's place too: the board goes just under that line while it fits above 60 % of the height, else it hides.
+        const drawn = (s: string): DOMRect | null => {
+            const e = this.doc.querySelector(s) as HTMLElement | null;
+            if (!e || e.closest('[hidden]')) return null;
+            const cs = getComputedStyle(e);
+            return cs.display !== 'none' && cs.visibility !== 'hidden' ? e.getBoundingClientRect() : null;
+        };
+        const top0 = now.top - this.dy; const h = now.bottom - now.top;
+        const osd = vis === '' ? drawn('.osd.bl') : null;
+        if (osd && boardMeetsClock(now.left, top0 + dy, right, top0 + dy + h, osd)) {
+            if (osd.bottom + 6 + h <= 0.6 * vh) dy = Math.ceil(osd.bottom + 6 - top0);
+            else vis = 'hidden';
         }
+        const ck = vis === '' ? drawn('[data-testid=course-hud]') : null;
+        if (ck && boardMeetsClock(now.left, top0 + dy, right, top0 + dy + h, ck)) vis = 'hidden';
         if (dy !== this.dy) {
             this.dy = dy;
             this.board.style.transform = dy ? `translateY(${dy}px)` : '';
@@ -185,7 +193,7 @@ export class BoardView {
     }
 }
 
-/** Whether the board's place (left, top, right, bottom in css px) meets the drawn course clock (null: not drawn). */
+/** Whether the board's place (left, top, right, bottom in css px) meets a drawn box: the course clock or the touch telemetry line (null: not drawn). */
 export function boardMeetsClock(left: number, top: number, right: number, bottom: number,
     clock: { left: number; top: number; right: number; bottom: number; width: number; height: number } | null): boolean {
     if (!clock || clock.width <= 0 || clock.height <= 0) return false;
