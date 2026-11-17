@@ -18,10 +18,15 @@ Facts V1-a to V1-f, Design 1 to 7): the numbers there are the "before" of this l
   line, so no new sound for the narrator off (the count line fly.progress and the attempt's cue stay at once). Test
   packages/sonic-fpv test/speech-at-speed.test.ts, negative control against 5e04268 fails by assertion ("expected 3.4 to be
   less than 2"); package vitest 73 files 1362 passed, three tsc 0 errors.
-- [~] W1.4 Design 4 built in package 2bea5d9 on train6 (src/cues/brake.ts; test/brake-cue.test.ts, negative control with the
-  old ear-pilot.ts fails by assertion "expected 8 to be less than 4"; three tsc 0 errors); the table runs (w1-d4-s1/s2).
-  Merge of origin/main 89c9c86e as 584f31bb (21 untracked older evidence files that main now tracks moved to
-  U:/Temp/gsfpv-train2/sonic5/untracked-before-merge-89c9c86e); pnpm -r typecheck 0 errors after it.
+- [x] W1.4 Design 4, package 2bea5d9 + 26be7f8 on train6, simulator pin 26be7f8: kept by the lane's rule (Facts W1-c).
+  src/cues/brake.ts (estimates: 45 deg aside, turn radius at 120 deg/s plus 1 s of travel, from 4.5 m/s, the tier edge);
+  the speed layer plays two falling notes (a fourth down) as 'speed.brake'; the ear pilot keeps 0.3 of its set point while
+  it hears it. A sound only, no spoken line (no QUIET_SOUNDS entry needed). Test test/brake-cue.test.ts, negative control
+  with the old src/pilot/ear-pilot.ts fails by assertion ("expected 8 to be less than 4"); test/budget-wired.test.ts now
+  allows the brake cue at tier 2 (the speed ticks stay off). Package vitest after the change: 74 files, the 6 touched files 72
+  passed (a full run with a glossary entry for the cue failed 4 files that need recorded voices: the entry was taken out);
+  three tsc 0 errors. Merge of origin/main 89c9c86e as 584f31bb (21 untracked older evidence files that main now tracks
+  moved to U:/Temp/gsfpv-train2/sonic5/untracked-before-merge-89c9c86e); pnpm -r typecheck 0 errors after it and at 26be7f8.
 - [ ] W1.5 Design 5 rest (the line's look shortened near a gate) only if the line still fails near a gate.
 - [ ] W1.6 Design 6 (lessons speed-5 to speed-8 at 6, 8, 10, 12 m/s, texts en/es/pl/ru, caps lift by passing), unit tests with
   negative controls.
@@ -34,11 +39,9 @@ Facts V1-a to V1-f, Design 1 to 7): the numbers there are the "before" of this l
   PASS). Run again at the end of the stage, after W1.4 to W1.7.
 
 ### Left of W1-build (exact, in this order)
-1. W1.4 Design 4: a brake cue when the next gate's hum is more than 45 deg aside and nearer than the turn radius plus 1 s x v
-   (package: a cue event on the speed layer with a falling tone in src/cues and the theme; the ear pilot src/pilot/ear-pilot.ts
-   brakes on it), test with negative control, table again (keep only if counted at 8 m/s does not fall and 2 and 5 m/s
-   stay). A sound only adds no spoken line; if a line is added it needs its sound in apps/fly/src/sonic/quiet-cues.ts
-   QUIET_SOUNDS and its text in packages/i18n/locales (en, es, pl, ru) and the package's locales.
+1. W1.4 rest: a glossary entry for 'speed.brake' (src/i18n/catalog.ts CUE_IDS, cue.speed.brake.name/.glossary in the
+   package's locales en/es/pl/ru) needs the package's recorded-voice fixtures and words check (test/events, lesson-schedule,
+   lessons, words failed without them); a planner-level test that the brake cue fires on a course at 8 m/s.
 2. W1.5 Design 5 rest, only if the line still fails near a gate (line on, --line on, same courses).
 3. W1.6 Design 6: lessons speed-5 to speed-8 at 6, 8, 10, 12 m/s (estimates), texts in en, es, pl, ru with the word 'key'
    before a key's letter; each opens after a counted pass of the step before; scan-free and N courses take the highest
@@ -55,6 +58,7 @@ Facts V1-a to V1-f, Design 1 to 7): the numbers there are the "before" of this l
 - Package branch train6 (local only, not pushed): 5e04268 (7678880 cherry-picked), e28399f, da0ab7d. Simulator pin (local):
   da0ab7d; origin/main's pin is 293ebae. Deploy order later: the package's main first, then the pin.
 - Files changed outside apps/fly/src/sonic so far: docs/wip/sonic5.md, packages/sonic-fpv (pin).
+- Package branch train6 now also 2bea5d9, 26be7f8 (design 4); simulator pin (local) 26be7f8.
 
 ### Stage W2-prove
 - [ ] not started.
@@ -95,3 +99,16 @@ pilot, craft model and walls as in sonic4 Facts. 6 flights per row (2 courses x 
 - Limit of the measure: the tool ends a flight at its first failed attempt, so the waiting lines are not in the flight's words
   at all; in the simulator they are said once the craft is under 2 m/s. What is left per 10 s at 8 m/s is the in-flight
   speech: fly.stage at gates, fly.gate-behind, fly.progress.
+
+### W1-c: Design 4, the brake cue (package 26be7f8), outputs w1-d4b-s1/s2.json and .log (w1-d4-*: the first try, the cue
+needed the speed layer, which scan-free and the courses do not have: table identical to W1-b)
+| m/s | counted | gates med | v50 | streams median / worst / max | onsets/s | words/10 s | wall lead med / p10 s | hum spare med / min s | brake need max m/s2 |
+|---|---|---|---|---|---|---|---|---|---|
+| 2 | 6 of 6 | 24 | 2.0 | 4 / 6.91 / 7 | 9.97 | 2.71 | 1.92 / 0.43 | 9.55 / 1.77 | 22 |
+| 5 | 0 of 6 | 2 | 3.68 | 6 / 7.0 / 7 | 29.05 | 7.37 | 1.48 / 0.32 | 2.60 / 1.78 | 37 |
+| 8 | 0 of 6 | 3 | 4.14 | 4 / 6.93 / 7 | 27.09 | 10.66 | 1.48 / 0.33 | 1.89 / 0.99 | 120 |
+| 12 | 0 of 6 | 2 | 4.49 | 3 / 5.33 / 8 | 22.09 | 12.96 | 0.93 / 0.16 | 0.55 / 0.49 | 96 |
+- Against W1-b: 2 and 5 m/s identical; at 8 m/s counted 0 of 6 as before, gates median 2 -> 3, wall lead median 1.29 ->
+  1.48 s, hum spare median 1.31 -> 1.89 s, but streams median 3 -> 4 and onsets 24.8 -> 27.1 a second (Design 2 moves
+  away); at 12 m/s the worst second 6.21 -> 5.33, onsets 23.8 -> 22.1. Kept by the rule (counted at 8 m/s did not fall, 2 and
+  5 m/s as they were); the extra stream is the brake cue itself, a candidate for the budget's count in W1.7.
