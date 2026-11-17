@@ -153,8 +153,9 @@ const WATCH = `(() => { if (window.__r2) return; const w = window.__r2 = { log: 
         if (order !== lo) { w.log.push({ t: now, kind: 'order', order, moving: rows.some((e) => /transform/.test(e.style.transition)), W, H }); lo = order; }
         if (rb || rd) {
             const root = (bd || bn).parentElement;
+            // run 12: a button inside a closed <details> keeps a layout box but is not drawn (the walls panel fold button at 844x390)
             const o = { mid: [W / 3, H / 3, 2 * W / 3, 2 * H / 3].map(Math.round), clock: R(document.querySelector('[data-testid=course-hud]')), lapTime: R(document.querySelector('[data-testid=course-splash]')), mode: R(document.querySelector('[data-testid=mode-chip]')) };
-            const btns = [...root.querySelectorAll('button, a[href], [role=button], [data-action]')].filter((e) => getComputedStyle(e).pointerEvents !== 'none').map((e) => [e.dataset.action || e.getAttribute('aria-label') || e.textContent.trim().slice(0, 24), R(e)]).filter((x) => x[1]);
+            const btns = [...root.querySelectorAll('button, a[href], [role=button], [data-action]')].filter((e) => getComputedStyle(e).pointerEvents !== 'none').filter((e) => { const d = e.closest('details:not([open])'); return !d || (e.closest('summary') && e.closest('summary').parentElement === d); }).map((e) => [e.dataset.action || e.getAttribute('aria-label') || e.textContent.trim().slice(0, 24), R(e)]).filter((x) => x[1]);
             for (const [n, a] of [['board', rd], ['banner', rb]]) { if (!a) continue;
                 for (const k in o) if (hit(a, o[k])) put(n + '~' + k + '@' + W, { a, b: o[k], W, H });
                 for (const [lab, b] of btns) if (hit(a, b)) put(n + '~btn:' + lab + '@' + W, { a, b, W, H }); }
