@@ -28,6 +28,8 @@ export class BoardView {
     readonly banner: HTMLElement;
     private readonly rows = new Map<number, HTMLElement>();
     private key = '';
+    /** px the board is moved down to stay clear of the voxel panel (fit) */
+    private dy = 0;
 
     constructor(parent: HTMLElement, private readonly doc: Document = document) {
         this.board = doc.createElement('div');
@@ -106,17 +108,27 @@ export class BoardView {
         // board over the fold button for up to half a second after a resize). The whole panel counts, not only its header: run 6
         // put the board under the header and so over the panel's own toggle (844x390); a panel that starts too far left hides the
         // board until it closes (the board takes no pointer, the panel is what the pilot opened).
-        let mw = ''; let vis = '';
+        // A panel that starts at the board's own left edge (the folded 'Walls' panel at 844x390 lies at 16..107 x 62..105, run 9
+        // hid the board there for the whole flight) moves the board just under the whole panel while that stays above 60 % of
+        // the height (the left edge is clear down to the throttle line); only a taller, unfolded panel hides it.
+        let mw = ''; let vis = ''; let dy = 0;
         const w = this.doc.querySelector('.walls-menu') as HTMLElement | null;
         if (w && !w.closest('[hidden]') && getComputedStyle(w).display !== 'none') {
             const r = w.getBoundingClientRect();
-            const b = this.board.getBoundingClientRect();
+            const now = this.board.getBoundingClientRect();
+            const top = now.top - this.dy; const bottom = now.bottom - this.dy;
             const vw = this.doc.defaultView?.innerWidth ?? 0;
-            const right = b.left + Math.max(b.width, Math.min(230, 0.3 * vw));
-            if (r.width > 0 && r.top < b.bottom && r.bottom > b.top && r.left < right && r.right > b.left) {
-                if (r.left > b.left + 120) mw = `${Math.floor(r.left - b.left - 6)}px`;
+            const vh = this.doc.defaultView?.innerHeight ?? 0;
+            const right = now.left + Math.max(now.width, Math.min(230, 0.3 * vw));
+            if (r.width > 0 && r.top < bottom && r.bottom > top && r.left < right && r.right > now.left) {
+                if (r.left > now.left + 120) mw = `${Math.floor(r.left - now.left - 6)}px`;
+                else if (r.bottom + 6 + now.height <= 0.6 * vh) dy = Math.ceil(r.bottom + 6 - top);
                 else vis = 'hidden';
             }
+        }
+        if (dy !== this.dy) {
+            this.dy = dy;
+            this.board.style.transform = dy ? `translateY(${dy}px)` : '';
         }
         if (this.board.style.maxWidth !== mw) this.board.style.maxWidth = mw;
         if (this.board.style.visibility !== vis) this.board.style.visibility = vis;

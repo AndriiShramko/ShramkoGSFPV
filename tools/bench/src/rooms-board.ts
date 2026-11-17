@@ -236,7 +236,9 @@ async function r2(A: Page, B: Page, LB: Launched, fa: Frames, fb: Frames, out: A
     await A.waitForTimeout(800);
     const t3 = await takeover(A, B, fa, [1.05, 0.05, -0.95], null);
     const smallShot = await shot(A, 'race-844.png');
-    r.takeovers = { t2, t3, smallShot };
+    // run 9 passed 8 of 8 while the board hid behind the folded walls panel at 844x390 for the whole flight
+    const small = await ev<Any>(A, "const e = document.querySelector('[data-testid=rooms-board]'); const s = getComputedStyle(e); const q = e.getBoundingClientRect(); const w = document.querySelector('.walls-menu'); const p = w ? w.getBoundingClientRect() : null; return { display: s.display, visibility: s.visibility, rect: [q.left, q.top, q.right, q.bottom].map(Math.round), walls: p ? [p.left, p.top, p.right, p.bottom].map(Math.round) : null, rows: e.querySelectorAll('[data-slot]').length };");
+    r.takeovers = { t2, t3, smallShot, small };
     const lbB = await r2log(B);
     // the pause menu: Escape on A hides the board and the banner
     const vis = "const v = (s) => { const e = document.querySelector(s); return !!e && getComputedStyle(e).display !== 'none'; };";
@@ -260,6 +262,8 @@ async function r2(A: Page, B: Page, LB: Launched, fa: Frames, fb: Frames, out: A
         bTakesLeadBannerBothWithin1s: quick(t2) && t2.whoMine && t2.otherNamed,
         rowsSwapWithMove: t2.orderWho.startsWith(String(t2.me.slot)) && t2.orderOther.startsWith(String(t2.me.slot)) && !!t2.movedOther?.moving,
         aTakesLeadBackAt844: quick(t3) && t3.whoMine && t3.otherNamed && t3.orderOther.startsWith(String(t3.me.slot)),
+        boardSeenAt844: r.takeovers.small.display !== 'none' && r.takeovers.small.visibility !== 'hidden' && r.takeovers.small.rows === 2 &&
+            r.takeovers.small.rect[3] <= 0.6 * 390 && (!r.takeovers.small.walls || r.takeovers.small.rect[1] >= r.takeovers.small.walls[3] || r.takeovers.small.rect[0] >= r.takeovers.small.walls[2] || r.takeovers.small.rect[2] <= r.takeovers.small.walls[0]),
         noOverlap: Object.keys(la?.over ?? {}).length === 0 && Object.keys(lbB?.over ?? {}).length === 0,
         pauseHidesBoth: paused.menu && !paused.board && !paused.banner && resumed.board,
         aloneNoBoard: alone
