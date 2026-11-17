@@ -226,6 +226,30 @@ the mode with a pad, a real touch screen, the owner's laptop. Pictures looked at
 - Not verified: the owner's laptop, a real phone or touch screen, a real pad, and a person took no part; the live check
   edit-mouse-wroclaw was not run against the live site.
 
+## Review 2 (release check 2, 2026-11-17, after merging origin/main 015daf1b = clockfix, the live release)
+
+- Merge: origin/main had 8 commits (clockfix); merged with no conflict (an untracked copy of evidence/2026-11-17/b-repo-b18.json
+  was moved to U:/Temp/gsfpv-train3/reviews/editfix/). Both sides touch editor.css in different rules (ours: the line's
+  width; theirs: the walls caption inert in the short edit view). tsc apps/fly exit 0. Release build of 4e157d6c exit 0
+  (sha256 238edade...), walls stand-ins in dist/walls, serve-csp port 5832.
+- Own walk (U:/Temp/gsfpv-train3/reviews/editfix/walk.mjs, now also measuring the course clock, the walls caption and the
+  top bar), Wroclaw 70b50d42, lock by a click first, Shift+B in the air (7.8 m): lap1536c (1536x730 x1.25, keyboard),
+  short844k (844x390 x1, keyboard), phone844t (844x390 x3, touch): all exit 0, page errors 0. In each: one Space starts the
+  test flight (1 press), a short Space back (1 press), Exit leaves (keyboard 1 click; touch 2 taps, the first says the
+  unsaved line), the flight after Exit takes the lock and flies. 1536: bar [328,8,1208,48], the clock hidden in the edit
+  view, in the test flight [664,120,872,137] under the bar. 844: walls caption as words, bar [8,109,389,161], clock hidden.
+  Courses and Keys light their part at 1536x730 and at 844x390, also Courses right after Save (sampled every 100 ms,
+  flash3.mjs, flash844.mjs, render off). Pictures looked at: lap1536c open and testfly, short844k open and testfly.
+- Pre-existing, also live (not from this lane, not changed): at 844x390 in the test flight the clock chip [16,142,265,198]
+  begins 19 px above the bottom of Exit [8,109,62,161]; Exit's centre stays clear and clickable. The refusal line said in
+  the edit view still shows for a few seconds in the test flight.
+- NEG with the old files (a36280e1, the lane's base): 'E4.2 keeps its width' with editor.css fails; 'a key the edit view
+  swallows says why' with app/keys.ts, course.ts and the four locales fails (2 of 2 NEG OK).
+- accept-fly B6 B7 B9-B16 all PASS, exit 0, target http://localhost:5832. gates.py: on the commit of this line (numbers in
+  U:/Temp/gsfpv-train3/reviews/editfix-review-1.md).
+- Repaired: nothing (no PROVEN finding worse than the live release).
+- Not verified: the owner's laptop, a real phone or touch screen, a real pad; a person took no part.
+
 ## What the owner does
 
 1. Opens a scan (Wroclaw), clicks into the scene, flies with Space and W.
@@ -247,6 +271,9 @@ The owner's laptop was not used. A real touch screen, a real 144 Hz panel and a 
 emulated in headless Chrome. The live check edit-mouse-wroclaw was not run against the live site (by the task).
 
 ## For the lead
+
+Deploy order (review 2, after the merge of origin/main 015daf1b, which is live already): the page only. nginx: no. API
+files (apps/api): no. Rooms service: no. Sound package (packages/sonic-fpv pin): no (the merge moved no pin).
 
 Deploy order (review 1): the page only. nginx: no. API files (apps/api): no. Rooms service: no. Sound package
 (packages/sonic-fpv pin): no. Page files since origin/main: apps/fly/src/app/builtin/course.ts, apps/fly/src/app/keys.ts,
