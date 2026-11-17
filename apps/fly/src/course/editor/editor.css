@@ -238,8 +238,9 @@ body:has(.course-editor:not(.ce-flying)) :is(.mode-chip, .hud .osd.bl, .hud .osd
 @media (max-height: 500px) {
     body:has(.course-editor:not(.ce-flying)) [data-testid='walls-more'] > :not(summary) { display: none !important; }
     /* integration F (voxview2 VR-7, the owner's rule 'no control that does nothing'): the line stays as words, not as a
-       button: no click, no button shape, no triangle */
-    body:has(.course-editor:not(.ce-flying)) [data-testid='walls-summary'] { pointer-events: none; border-color: transparent; background: none; list-style: none; }
+       button: no click, no button shape, no triangle; lane clockfix (review F2): and no keyboard focus (interactivity: inert;
+       a browser without it keeps the focus, as before) */
+    body:has(.course-editor:not(.ce-flying)) [data-testid='walls-summary'] { pointer-events: none; interactivity: inert; border-color: transparent; background: none; list-style: none; }
     body:has(.course-editor:not(.ce-flying)) [data-testid='walls-summary']::-webkit-details-marker { display: none; }
 }
 /* lane uiaudit (fault c of A2 run 2), a phone held upright (390 px): the gate bar wraps inside the view (gate-bar.ts
