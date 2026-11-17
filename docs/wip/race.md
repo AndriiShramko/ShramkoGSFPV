@@ -150,8 +150,20 @@ Stage R2-board:
   race-lead-change.png (run 9, 1920x1080): 'Pilot-0932 leads, 0:04.13' in a dark pill at the top centre above the course clock,
   the board's rows swapped. race-844.png (run 13, 844x390): the board under the 'Walls 5 cm' button, two rows, own row marked,
   nothing over the middle; the remote craft's name tag 'Pilot-1363' is in the middle (remote-stage, as on main).
-- [ ] R2.6 rooms-two-page.mjs, train1-live.ts rooms against local servers, accept-fly B6 B7 B9..B16, mouse-free-probe.
-- [ ] R2.7 Status: deploy order, a read-only live check for the lead, What the owner does, not verified.
+- [x] R2.5b Checks of the board-view.ts change at a124b56a: tsc of apps/fly clean; rooms-lead.test.ts and sonic-int-lazy.test.ts
+  14 of 14; gates.py --only vitest,api-unittest,architecture,i18n,b18,leaks all PASS (vitest 151 s, api-unittest 228 s; log
+  U:/Temp/gsfpv-train3/race/gates-r2b.log); a6-reference 1 OK (a6-r2b.log). The release in dist is fc982bb6 (the app code of
+  HEAD; later commits change only the probe and this file) with the walls stand-in in dist/walls/70b50d42.
+- [ ] R2.6 (left, next run) rooms-two-page.mjs, train1-live.ts rooms against local servers, accept-fly B6 B7 B9..B16, mouse-free-probe.
+- [ ] R2.7 (left, next run) Status: deploy order, a read-only live check for the lead, What the owner does, not verified.
+  Exact left list for the next run: (1) R2.6 against the release fc982bb6 in dist (rebuild only if apps/ or packages/ changed):
+  rooms-two-page.mjs, train1-live.ts rooms against local servers (ports 5860-5879), accept-fly B6 B7 B9 B10 B11 B12 B13 B14 B15
+  B16 with SITE=http://localhost:<port>/en, mouse-free-probe; python must be on PATH (Python311 folder above). (2) R2.7 status:
+  deploy order for the lead (apps/rooms changed in R1: board.py, rooms.py, protocol; compose: check with git diff origin/main --
+  deploy/), the read-only live check (two pages, a room in memory, as train1-live rooms), 'What the owner does', not verified
+  (no second real person in a room). (3) One line for the lead, not fixed here (not this lane's file): in run 10 the walls panel
+  .walls-menu reported an open-sized box with its <details> closed; apps/fly/src/walls.ts placeMenu() reads the summary only
+  while open, so a guess: Chrome keeps the closed details' content laid out; harmless for the walls panel itself.
 
 Why train 2 left the race off (docs/wip/rooms2.md, Q2 runs 2 and 3; not re-run here: the race is off in the build): rooms-race.ts
 moved each craft along race.path on the real scan's course g1.438779389 (9 gates) and both pages passed gates 0 and 1,
