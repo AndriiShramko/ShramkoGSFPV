@@ -247,8 +247,14 @@ the mode with a pad, a real touch screen, the owner's laptop. Pictures looked at
   swallows says why' with app/keys.ts, course.ts and the four locales fails (2 of 2 NEG OK).
 - accept-fly B6 B7 B9-B16 all PASS, exit 0, target http://localhost:5832. gates.py: on the commit of this line (numbers in
   U:/Temp/gsfpv-train3/reviews/editfix-review-1.md).
+- origin/main moved during this check (44 commits of lane race, eb10835e, not live yet): merged with no conflict
+  (course.ts auto-merged: race adds only hook.adopt). tsc apps/fly exit 0; release build of d0b8ebd3 exit 0 (sha256
+  dc5c106e...), port 5833: walk lap1536d exit 0, page errors 0 (Shift+B at 7.8 m, edit mode, pointer lock null, a gate
+  selected, Add gate 16 -> 17, P says its line, 1 Space to the test flight, 1 back, Exit 1 click, the flight after it, Fly
+  by Sound starts); picture lap1536d select looked at. accept-fly B6 B7 B9-B16 all PASS, exit 0, target localhost:5833.
 - Repaired: nothing (no PROVEN finding worse than the live release).
-- Not verified: the owner's laptop, a real phone or touch screen, a real pad; a person took no part.
+- Not verified: the owner's laptop, a real phone or touch screen, a real pad; a person took no part. Lane race's room board
+  was not walked here (its own release check did it).
 
 ## What the owner does
 
@@ -272,8 +278,12 @@ emulated in headless Chrome. The live check edit-mouse-wroclaw was not run again
 
 ## For the lead
 
-Deploy order (review 2, after the merge of origin/main 015daf1b, which is live already): the page only. nginx: no. API
-files (apps/api): no. Rooms service: no. Sound package (packages/sonic-fpv pin): no (the merge moved no pin).
+Deploy order (review 2, final head; it holds origin/main eb10835e with lane race, which is NOT live yet; live is 015daf1b):
+(1) rooms service YES first: apps/rooms/board.py (new), apps/rooms/rooms.py; `bash deploy/release-rooms.sh` (its FILES
+list holds board.py), no --compose (deploy/compose.yml unchanged), then /api/rooms/health 200 (lane race, For the lead:
+each side works with the other's old version). (2) page YES: this lane's files below plus lane race's apps/fly/src/rooms/*,
+app/builtin/rooms.ts, course/hook.ts, locales fly/rooms. nginx: no. API files (apps/api): no. Sound package
+(packages/sonic-fpv pin): no (no pin moved).
 
 Deploy order (review 1): the page only. nginx: no. API files (apps/api): no. Rooms service: no. Sound package
 (packages/sonic-fpv pin): no. Page files since origin/main: apps/fly/src/app/builtin/course.ts, apps/fly/src/app/keys.ts,
