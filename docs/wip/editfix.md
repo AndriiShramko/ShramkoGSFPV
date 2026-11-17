@@ -56,14 +56,20 @@ His laptop: Windows, RTX, 144 Hz, Chrome, keyboard and mouse, layouts ru/pl/en.
   flies, is left alone), course.ts openEdit calls it when os.respawn (opened armed). Test tools/bench/test/editfix-e4.test.ts
   3 passed; NEG: keyboard.ts and course.ts of HEAD efd17add in place: 3 failed by assertion (exit 1); editor3-i2-space 3
   passed; a6-reference + editfix-e2: 9 passed (hash unchanged); tsc apps/fly exit 0. NOT walked in a browser yet.
-- [ ] E4.1b the line shown when a flight key is pressed in the edit view (what to press to test-fly), en es pl ru.
+- [~] E4.1b the line when a flight key is pressed in the edit view: after E4.1 a keyboard pilot has no hold left (Space
+  arms and flies at once, W A S D E Q move the view), and a pad pilot keeps the E2 line 'Arm your controller to fly the
+  course at once'. Reasoned from the code, NOT measured in a browser; no new words added.
+- [x] E4.3b gates.py --only vitest,architecture,i18n,b18 on 115d0a21: architecture, i18n, b18 PASS; vitest 1 fail of mine
+  (editor3-flying.test.ts matched the old block call; its regex now takes the new second argument, 13 passed, commit of this
+  line) and 4 files failed only because this run's shell has no 'python' on PATH (rooms-open-vote, rooms-race,
+  rooms-socket, scene-default): with Python 3.11 on PATH 4 files, 26 tests passed. Logs U:/Temp/gsfpv-gates-20261117-011121.
 - [ ] E4.2 finding 3 (second Exit tap on touch): measure the Exit box at pointerup and at click, repair, touch1536 walk.
 - [x] E4.3 finding 2 (commit of this line): app/keys.ts block(blocked, refused?) tells a block the routed action of a key it
   swallowed (not Esc, a repeat, a key a screen took, text); course.ts openEdit's block says 'course.edit.keyOff' (en es pl
   ru: '<key> works in flight, not in the editor: press Esc to leave the editor, then <key>.', the key by event.code, so any
   layout). Keys covered (keymap read once, packages/prefs/src/keymap.ts, every shipped routed binding with a handler on the
-  page): P (pause), R, Y, Enter, N, Shift+N, Shift+F, V, C, H, [ ], F9, F3, O, B, L, 9, 0, K, F, J, Shift+T, Shift+G when
-  routed, Backslash and the Fly by Sound letters on its pages. Keys the editor takes itself (Esc, M, R, T as tools, Shift+G,
+  page): P (pause), Y, Enter, N, Shift+N, Shift+F, V, C, H, [ ], F9, F3, O, B, L, 9, 0, K, F, J, Shift+T, Shift+G when
+  routed, Backslash and the Fly by Sound letters on its pages. Keys the editor takes itself (Esc, M R T as its tools, Shift+G,
   Ctrl+Z, Tab, F6: its capture listener stops them) never reach the router, so they keep the editor's own words. W A S D E
   Q Space are flying keys (not routed): the view or the test flight. Test editfix-e4.test.ts 5 passed (+ app-keys 22);
   NEG: keys.ts, course.ts, en.json of HEAD 6e2d507d: the 2 new tests fail by assertion; tsc apps/fly exit 0. NOT walked.
@@ -72,6 +78,18 @@ His laptop: Windows, RTX, 144 Hz, Chrome, keyboard and mouse, layouts ru/pl/en.
 - [ ] E4.6 release build, walls in dist/walls; walk.mjs lap1536 lap1097ru touch1536; probe over all cases; editor3-smoke
   70b50d42 887f27aa; accept-fly B6-B16; a6; typecheck; gates.py full; live-checks.sh edit-mouse-wroclaw extended if needed;
   parts 'Verify 2', 'What the owner does', 'For the lead'.
+
+## Left after E4 (exact list for the next run; reply budget of this run spent)
+
+1. E4.2 touch Exit: measure the Exit box at pointerup and at click in a touch tap (walk.mjs touch1536), then the repair
+   (top-bar.ts 64 clears the held line on pointerup: a fixed width for the line, or clear on click), touch1536 again.
+2. E4.4 Courses flash: count '.course-editor' roots and '.ce-shown' right after the Courses click; PROVEN or not a fault.
+3. E4.5 look at up to 10 pictures of 1536x730, 1097x497 and touch (shots editfix-after-*, verify-*), one sentence each.
+4. E4.6 the whole browser pass on a fresh release of the final head (list in Status E4.6), the gates in full (put Python
+   3.11 on PATH: C:/Users/andri/AppData/Local/Programs/Python/Python311), deploy/live-checks.sh edit-mouse-wroclaw:
+   extend it with 'one Space after Shift+B in the air flies' (read-only), parts 'Verify 2', 'What the owner does',
+   'For the lead'. Before the final gates: git fetch and merge origin/main if it moved.
+5. Not walked in a browser: E4.1 (one Space test-flies after Shift+B in the air) and E4.3 (the line for P, Shift+T).
 
 ## Left after E2
 
