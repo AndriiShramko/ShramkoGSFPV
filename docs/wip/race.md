@@ -91,7 +91,7 @@ Stage R2-board:
   A next run with HEAD at the status commit after a246eedf (only this file changed) may serve it as it is; the local
   rooms service and the walls stand-in (dist/walls) are started as in R1.3 (rooms-board.ts).
   Not done in this run: the browser run at the stage start (the reply budget went to the build of L3 to L6).
-- [ ] R2.4 Probe: extend tools/bench/src/rooms-board.ts (rendering on, holds of at most 10 min, on 70b50d42): both keyboard
+- [~] R2.4 Probe: extend tools/bench/src/rooms-board.ts (rendering on, holds of at most 10 min, on 70b50d42): both keyboard
   pilots fly laps; hook rooms.board.shown and the board's row order equal on both pages; B beats A's best: both pages show
   banner (hook rooms.board.banner with B's nick and time) within 1 s and the rows swap; rects of [data-testid=rooms-board]
   and [data-testid=rooms-lead] at 1920x1080, 1280x720, 844x390 against the middle third, the clock block, the lap time place

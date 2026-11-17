@@ -49,13 +49,13 @@ const look = (p: Page): Promise<Any> => ev<Any>(p, `return { slot: r.slot, room:
     course: c ? { on: c.on, source: c.source, seed: c.seed, gates: c.gates, next: c.next, laps: c.laps, lastLapMs: c.lastLapMs, problem: c.problem, poses: c.gatePoses ? c.gatePoses().map((g) => g.pos.map((v) => Math.round(v * 1000) / 1000)) : [] } : null };`);
 
 /** The craft put through the course's gates `rounds` times, +Z side to -Z side, one point per drawn frame. */
-function fly(p: Page, rounds: number): Promise<Any> {
+function fly(p: Page, rounds: number, offs: number[] = [1.5, 1.5, 1.0, 0.5, 0, -0.5, -1.0, -1.5], hold = 1): Promise<Any> {
     return p.evaluate(`new Promise((done) => {
         const h = window.__gsfpv; const G = h.course.gatePoses(); const pts = [];
         const zOf = (q) => { const [w, x, y, z] = q; return [2 * (x * z + w * y), 2 * (y * z - w * x), 1 - 2 * (x * x + y * y)]; };
         for (let k = 0; k < rounds; k++) for (let i = 0; i <= G.length; i++) {
             const g = G[i % G.length]; const n = zOf(g.quat);
-            for (const s of [1.5, 1.5, 1.0, 0.5, 0, -0.5, -1.0, -1.5]) pts.push([g.pos[0] + n[0] * s, g.pos[1] + n[1] * s, g.pos[2] + n[2] * s]);
+            for (const s of OFFS) for (let k2 = 0; k2 < HOLD; k2++) pts.push([g.pos[0] + n[0] * s, g.pos[1] + n[1] * s, g.pos[2] + n[2] * s]);
         }
         const d = { nexts: {}, crashes: 0 }; let i = 0;
         const step = () => {
@@ -66,7 +66,7 @@ function fly(p: Page, rounds: number): Promise<Any> {
             if (i < pts.length) requestAnimationFrame(step); else done({ pts: pts.length, laps: h.course.laps, ...d });
         };
         requestAnimationFrame(step);
-    })`.replace('rounds', String(rounds))) as Promise<Any>;
+    })`.replace('rounds', String(rounds)).replace('OFFS', JSON.stringify(offs)).replace('HOLD', String(hold))) as Promise<Any>;
 }
 
 interface Frame { type: string; bytes: number; t: number; slot?: number; n?: number }
@@ -130,6 +130,125 @@ async function byLink(L: Launched, link: string, members: number): Promise<{ pag
     return { page: L.page, joined };
 }
 
+// ---- Stage R2-board (docs/wip/race.md R2.4, R2.5): the board and the lead banner on the screen, rendering on.
+const SHOTS = 'U:/Temp/gsfpv-train3/shots';
+/** In-page watcher: every drawn frame it logs when the banner's text or the board's row order changes (page clock = this
+ *  PC's clock, as Date.now() in Node) and, while the board or the banner shows, every overlap of their rectangles with the
+ *  middle third, the clock block, the lap's time, the mode chip and the page's buttons. */
+const WATCH = `(() => { if (window.__r2) return; const w = window.__r2 = { log: [], over: {}, snaps: {} };
+    const R = (el) => { if (!el || el.hidden) return null; const cs = getComputedStyle(el); if (cs.display === 'none' || cs.visibility === 'hidden' || +cs.opacity === 0) return null;
+        const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0 ? [r.left, r.top, r.right, r.bottom].map(Math.round) : null; };
+    const hit = (a, b) => !!a && !!b && a[0] < b[2] && b[0] < a[2] && a[1] < b[3] && b[1] < a[3];
+    let lb = null, lo = '';
+    const tick = () => { try {
+        const bn = document.querySelector('[data-testid=rooms-lead]'); const bd = document.querySelector('[data-testid=rooms-board]');
+        const rb = R(bn), rd = R(bd); const now = Date.now(); const W = innerWidth, H = innerHeight;
+        const bt = rb ? bn.textContent : null;
+        const rows = rd ? [...bd.querySelectorAll('[data-slot]')] : [];
+        const order = rows.map((e) => e.dataset.slot).join(',');
+        if (bt !== lb) { w.log.push({ t: now, kind: 'banner', text: bt, mine: bn ? bn.dataset.mine : null, W, H }); lb = bt; }
+        if (order !== lo) { w.log.push({ t: now, kind: 'order', order, moving: rows.some((e) => /transform/.test(e.style.transition)), W, H }); lo = order; }
+        if (rb || rd) {
+            const root = (bd || bn).parentElement;
+            const o = { mid: [W / 3, H / 3, 2 * W / 3, 2 * H / 3].map(Math.round), clock: R(document.querySelector('[data-testid=course-hud]')), lapTime: R(document.querySelector('[data-testid=course-splash]')), mode: R(document.querySelector('[data-testid=mode-chip]')) };
+            const btns = [...root.querySelectorAll('button, a[href], [role=button], [data-action]')].filter((e) => getComputedStyle(e).pointerEvents !== 'none').map((e) => [e.dataset.action || e.getAttribute('aria-label') || e.textContent.trim().slice(0, 24), R(e)]).filter((x) => x[1]);
+            for (const [n, a] of [['board', rd], ['banner', rb]]) { if (!a) continue;
+                for (const k in o) if (hit(a, o[k])) w.over[n + '~' + k + '@' + W] = { a, b: o[k], W, H };
+                for (const [lab, b] of btns) if (hit(a, b)) w.over[n + '~btn:' + lab + '@' + W] = { a, b, W, H }; }
+            const key = W + 'x' + H + (rb ? '+banner' : '') + (o.lapTime ? '+lap' : '');
+            if (!w.snaps[key]) w.snaps[key] = { board: rd, banner: rb, ...o, btns: btns.length };
+        }
+    } catch (e) { w.err = String(e); } requestAnimationFrame(tick); };
+    requestAnimationFrame(tick); })()`;
+
+const r2log = (p: Page): Promise<Any> => p.evaluate('window.__r2 ? JSON.parse(JSON.stringify(window.__r2)) : null') as Promise<Any>;
+const fmt = (ms: number): string => { const cs = Math.round(ms / 10); return `${Math.floor(cs / 6000)}:${String(Math.floor((cs % 6000) / 100)).padStart(2, '0')}.${String(cs % 100).padStart(2, '0')}`; };
+const shot = async (p: Page, name: string): Promise<string> => { const f = `${SHOTS}/${name}`; await p.screenshot({ path: f }).catch((e) => console.log('shot', name, String(e).slice(0, 120))); return f; };
+const BANNER_ON = "const e = document.querySelector('[data-testid=rooms-lead]'); return !!e && e.style.display !== 'none' && e.textContent.includes(";
+
+/** One takeover: `who` flies two quick rounds; both pages' logs say when who's banner showed and how the rows moved. */
+async function takeover(who: Page, other: Page, fw: Frames, offs: number[], shotName: string | null): Promise<Any> {
+    const t0 = Date.now();
+    const fl = await fly(who, 2, offs, 1);
+    const me = await ev<Any>(who, 'return { slot: r.slot, nick: (r.members.find((m) => m.slot === r.slot) || {}).nick, row: b.rows.find((x) => x.slot === r.slot) };');
+    const seen = await until(other, `${BANNER_ON}${JSON.stringify(me.nick ?? '?')});`, 15000);
+    const shotFile = shotName ? await shot(other, shotName) : null;
+    await other.waitForTimeout(2600);
+    const [lw, lo] = await Promise.all([r2log(who), r2log(other)]);
+    const time = me.row ? fmt(me.row.best) : '?';
+    const firstBanner = (l: Any): Any => (l?.log ?? []).find((x: Any) => x.t >= t0 && x.kind === 'banner' && x.text && String(x.text).includes(time));
+    const bw = firstBanner(lw); const bo = firstBanner(lo);
+    const sends = fw.sent.filter((x) => x.type === 'blap' && x.t >= t0);
+    const sendT = (bt: number): number => Math.max(-Infinity, ...sends.filter((x) => x.t <= bt + 50).map((x) => x.t));
+    const orderAfter = (l: Any): string => [...(l?.log ?? [])].reverse().find((x: Any) => x.kind === 'order' && x.order)?.order ?? '';
+    const movedAt = (l: Any): Any => (l?.log ?? []).find((x: Any) => x.t >= t0 && x.kind === 'order' && String(x.order).startsWith(String(me.slot)));
+    return { fly: { pts: fl.pts, laps: fl.laps }, me, time, seen, shotFile, sends: sends.length,
+        bannerWho: bw ?? null, bannerOther: bo ?? null,
+        lagWhoMs: bw ? bw.t - sendT(bw.t) : null, lagOtherMs: bo ? bo.t - sendT(bo.t) : null,
+        whoMine: bw?.mine === '1', otherNamed: !!bo && bo.mine === '0' && String(bo.text).includes(me.nick ?? '?'),
+        orderWho: orderAfter(lw), orderOther: orderAfter(lo), movedWho: movedAt(lw) ?? null, movedOther: movedAt(lo) ?? null };
+}
+
+async function r2(A: Page, B: Page, LB: Launched, fa: Frames, fb: Frames, out: Any): Promise<void> {
+    await A.setViewportSize({ width: 1920, height: 1080 });
+    await B.setViewportSize({ width: 1280, height: 720 });
+    await Promise.all([A.evaluate(WATCH), B.evaluate(WATCH)]);
+    await A.keyboard.press('Shift+KeyG');
+    const aCourse = await until(A, 'return !!c && c.on && c.gates > 0 && !!b && !!b.course;', BUILD_MS);
+    const course = (await look(A)).board?.course ?? null;
+    const bCourse = await until(B, `return !!c && c.on && c.gates > 0 && !!b && b.course === ${JSON.stringify(course)} && b.adopting === null;`, BUILD_MS);
+    const r: Any = { aCourse, bCourse, course };
+    out.r2 = r;
+    if (!aCourse || !bCourse) throw new Error('no shared course: ' + JSON.stringify(r));
+    const noLap = await ev<Any>(A, "return { shown: b.shown, withLap: b.rows.filter((x) => x.laps > 0).length, shownDom: getComputedStyle(document.querySelector('[data-testid=rooms-board]')).display !== 'none' };");
+    // phase 1: both fly; B slower (each point held 2 frames), so A leads
+    const [f1a, f1b] = await Promise.all([fly(A, 2), fly(B, 2, undefined, 2)]);
+    const both = 'return !!b && b.rows.length === 2 && b.rows.every((x) => x.laps > 0 && x.best > 0) && b.shown === true;';
+    const [aBoth, bBoth] = await Promise.all([until(A, both, 15000), until(B, both, 15000)]);
+    await A.waitForTimeout(2600);
+    const [a1, b1] = await Promise.all([look(A), look(B)]);
+    const domOrder = (p: Page): Promise<string> => p.evaluate("[...document.querySelectorAll('[data-testid=rooms-board] [data-slot]')].map((e) => e.dataset.slot).join(',')") as Promise<string>;
+    const [oa1, ob1] = await Promise.all([domOrder(A), domOrder(B)]);
+    const boardShot = await shot(A, 'race-board.png');
+    r.phase1 = { f1a: { pts: f1a.pts, laps: f1a.laps }, f1b: { pts: f1b.pts, laps: f1b.laps }, aSlot: a1.slot, aRows: a1.board?.rows, bRows: b1.board?.rows, oa1, ob1, boardShot, noLap };
+    // phase 2: B beats A (half the points per gate); the picture on A at 1920x1080 at the moment of the takeover
+    const t2 = await takeover(B, A, fb, [1.5, 0.5, -0.5, -1.5], 'race-lead-change.png');
+    // phase 3: A at 844x390 beats B again (three points per gate)
+    await A.setViewportSize({ width: 844, height: 390 });
+    await A.waitForTimeout(800);
+    const t3 = await takeover(A, B, fa, [1.0, 0, -1.0], null);
+    const smallShot = await shot(A, 'race-844.png');
+    r.takeovers = { t2, t3, smallShot };
+    const lbB = await r2log(B);
+    // the pause menu: Escape on A hides the board and the banner
+    const vis = "const v = (s) => { const e = document.querySelector(s); return !!e && getComputedStyle(e).display !== 'none'; };";
+    await A.keyboard.press('Escape');
+    await A.waitForTimeout(800);
+    const paused = await ev<Any>(A, `${vis} return { menu: v('.pause-menu'), board: v('[data-testid=rooms-board]'), banner: v('[data-testid=rooms-lead]'), shown: b.shown };`);
+    await A.keyboard.press('Escape');
+    await A.waitForTimeout(800);
+    const resumed = await ev<Any>(A, `${vis} return { menu: v('.pause-menu'), board: v('[data-testid=rooms-board]'), shown: b.shown };`);
+    // one pilot alone: B leaves, A must see no board
+    await LB.browser.close().catch(() => undefined);
+    const alone = await until(A, "return r.members.length === 1 && b.shown === false && getComputedStyle(document.querySelector('[data-testid=rooms-board]')).display === 'none';", 30000);
+    const la = await r2log(A);
+    r.pause = { paused, resumed, alone };
+    r.overA = la?.over; r.snapsA = la?.snaps; r.overB = lbB?.over; r.snapsB = lbB?.snaps; r.err = [la?.err ?? null, lbB?.err ?? null];
+    const sameBoard1 = JSON.stringify(a1.board?.rows) === JSON.stringify(b1.board?.rows) && oa1 === ob1 && oa1.startsWith(String(a1.slot));
+    const quick = (t: Any): boolean => t.lagWhoMs !== null && t.lagOtherMs !== null && t.lagWhoMs <= 1000 && t.lagOtherMs <= 1000;
+    out.checks = {
+        controlNoBoardBeforeLaps: noLap.withLap === 0,
+        boardSameOrderBothPages: aBoth && bBoth && sameBoard1,
+        bTakesLeadBannerBothWithin1s: quick(t2) && t2.whoMine && t2.otherNamed,
+        rowsSwapWithMove: t2.orderWho.startsWith(String(t2.me.slot)) && t2.orderOther.startsWith(String(t2.me.slot)) && !!t2.movedOther?.moving,
+        aTakesLeadBackAt844: quick(t3) && t3.whoMine && t3.otherNamed && t3.orderOther.startsWith(String(t3.me.slot)),
+        noOverlap: Object.keys(la?.over ?? {}).length === 0 && Object.keys(lbB?.over ?? {}).length === 0,
+        pauseHidesBoth: paused.menu && !paused.board && !paused.banner && resumed.board,
+        aloneNoBoard: alone
+    };
+    out.pass = Object.values(out.checks as Any).every(Boolean);
+}
+
 async function main(): Promise<void> {
     // R1.3: two runs ended with exit 0 and no line after the lock was taken: say where the process left
     process.on('beforeExit', () => console.log('beforeExit: the event loop emptied', Date.now()));
@@ -167,6 +286,7 @@ async function main(): Promise<void> {
         out.meet = { aIn, bIn, how: made.how, sameRoom: (await look(A)).room === (await look(B)).room, aMembers: (await look(A)).members, bMembers: (await look(B)).members };
         step('met ' + JSON.stringify(out.meet));
         if (process.env.JOIN_ONLY) { pass = aIn && bIn && out.meet.sameRoom; out.pass = pass; return; }
+        if (process.env.MODE === 'r2') { await r2(A, B, LB, fa, fb, out); pass = out.pass; return; }
 
         // ---- R1.3 / R1.4: A makes a course, B follows
         await A.keyboard.press('Shift+KeyG');
