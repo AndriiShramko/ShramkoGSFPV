@@ -35,7 +35,14 @@ Facts V1-a to V1-f, Design 1 to 7): the numbers there are the "before" of this l
 - [~] W1.6 Design 6: measured first (Facts W1-f): at cd37a57 the ear pilot's median top speed on the ring course is
   6 m/s (8, 10, 12, 15 m/s fail on every seed), so by the package's shipping rule (test/speed-ladder.test.ts: cap at most
   median top / 1.25) no cap above 4.8 m/s can ship yet; no lesson built.
-- [ ] W1.7 offline audio proofs for the new rules (streams at 8 m/s, hum lead, peak rule).
+- [~] W1.7 offline audio proofs, package 4c8e4e1 on train6, simulator pin 4c8e4e1 (commit 57340ae3; test-audio/page/proofs.ts,
+  run 'PROOFS=streams-at-speed,brake-ceiling PROOFS_OUT=evidence/audio-proofs-speed.json pnpm proof:audio', no GPU lock,
+  49 s; package tsc -p tsconfig.json 0 errors). streams-at-speed: 8 m/s among pillars, every layer on, streams at any 0.1 s
+  median 2, worst 2 (bound 3); control with the stream budget off median 4, worst 4 (fails, as it must). brake-ceiling:
+  8 m/s, gate 56 deg aside: the brake cue sounds on the speed layer (rms 0.065 against 0 with the gate ahead), peak
+  -6.46 dBFS under the -6 dBFS ceiling; control without the limiter -4.8 dBFS (fails, as it must). The full
+  evidence/audio-proofs.json is not rewritten (PROOFS_OUT); the run rewrote the submodule's evidence/demo-check.json as a
+  side effect: reverted, not committed. Left: the hum-lead proof (see Left 4).
 - [~] W1.8 run 2 of 2026-11-17 at pin cd37a57: pnpm -r typecheck 0 errors; a6-reference 1 passed; gates.py --only
   vitest,architecture,i18n,b18,leaks all PASS (vitest 129 s; python from U:/Temp/gsfpv-train2/sonic5/pybin in front of PATH,
   logs tc3.log, a6-3.log, gates3.log there). Run again at the end of the stage, after W1.6 and W1.7.
@@ -56,8 +63,12 @@ Facts V1-a to V1-f, Design 1 to 7): the numbers there are the "before" of this l
    src/i18n/catalog.ts LESSONS entry, locales en/es/pl/ru, test/helpers/new-lessons.ts SPEED_LESSONS, the lines measured
    with the Windows voices (measure-tts.ps1; test/fixtures/tts-*.json) and the counts in test/lesson-schedule.test.ts,
    evidence/ear-pilot/*speed-lessons* (tools/ear-pilot.ts exports main() only: run it through a two-line runner).
-4. W1.7 offline audio proofs (streams at 8 m/s, hum lead, peak rule); evidence/audio-proofs.json and demo-check.json of the
-   package worktree are modified by an earlier hand: commit them only if these proofs rewrite them, and say so.
+4. W1.7 rest: the hum-lead proof. The lead is not in the engine: approachM (src/cues/lead.ts) is applied by the runner's
+   gate aim (src/lesson/gate-aim.ts:44) and the line (src/lesson/runner.ts:2083, 2138), so the proof page
+   (test-audio/page/proofs.ts) needs a LessonRunner driving the engine at 8 m/s; claim: the gate's hum turns to the
+   approach point at least LEAD_APPROACH_S + turn radius before the gate; control: approachM at the metres of today.
+   C:/dev/ShramkoSonicFPV still has evidence/audio-proofs.json and demo-check.json modified by an earlier hand: not
+   committed.
 5. W1.8 again; then the stage's commit of both repositories.
 - Design 2 targets are not met yet (W1-b at 8 m/s: streams median 3 against 2, worst second 6.76 against 3, onsets 24.8 a
   second against under 15); counted at 5, 8 and 12 m/s is 0 of 6 (the goal needs 4 of 6 at 8 m/s). Noticed, not chased: at
