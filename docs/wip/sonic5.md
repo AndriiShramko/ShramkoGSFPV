@@ -42,7 +42,16 @@ Facts V1-a to V1-f, Design 1 to 7): the numbers there are the "before" of this l
   8 m/s, gate 56 deg aside: the brake cue sounds on the speed layer (rms 0.065 against 0 with the gate ahead), peak
   -6.46 dBFS under the -6 dBFS ceiling; control without the limiter -4.8 dBFS (fails, as it must). The full
   evidence/audio-proofs.json is not rewritten (PROOFS_OUT); the run rewrote the submodule's evidence/demo-check.json as a
-  side effect: reverted, not committed. Left: the hum-lead proof (see Left 4).
+  side effect: reverted, not committed.
+- [x] W1.7 hum-lead, package 77185cd on train6, simulator pin 77185cd (run 'PROOFS=hum-lead
+  PROOFS_OUT=evidence/audio-proofs-humlead.json pnpm proof:audio', no GPU lock, 49 s; package tsc -p tsconfig.json 0 errors;
+  simulator pnpm -r typecheck 0 errors, log tc5.log). The proof feeds the engine the runner's own gate aim
+  (src/lesson/gate-aim.ts gateAim at the craft's speed) instead of driving a LessonRunner. At 8 m/s a craft beside a ring's
+  axis (out of the approach cone, 24 m out) heading at the approach point 11.82 m out (turn radius 3.82 m plus 1.0 s of
+  flight: 1.0 s of lead) hears the hum on course: 169 Hz against 84.7 Hz 30 deg off its nose, ratio 1.996 (bounds 1.8 to
+  2.2). Control, the approach point at the metres of today (3 m): ratio 1.005, fails as it must. Every layer at maximum
+  gain: peak -17.37 dBFS (ceiling -6). The submodule's evidence/audio-proofs.json and demo-check.json were copied before the
+  run and put back after it (U:/Temp/gsfpv-train2/sonic5/*.before-humlead.json): not committed.
 - [~] W1.8 run 2 of 2026-11-17 at pin cd37a57: pnpm -r typecheck 0 errors; a6-reference 1 passed; gates.py --only
   vitest,architecture,i18n,b18,leaks all PASS (vitest 129 s; python from U:/Temp/gsfpv-train2/sonic5/pybin in front of PATH,
   logs tc3.log, a6-3.log, gates3.log there). Run 3 of 2026-11-17 at pin 4c8e4e1 (only the package's test-audio changed):
@@ -66,13 +75,9 @@ Facts V1-a to V1-f, Design 1 to 7): the numbers there are the "before" of this l
    src/i18n/catalog.ts LESSONS entry, locales en/es/pl/ru, test/helpers/new-lessons.ts SPEED_LESSONS, the lines measured
    with the Windows voices (measure-tts.ps1; test/fixtures/tts-*.json) and the counts in test/lesson-schedule.test.ts,
    evidence/ear-pilot/*speed-lessons* (tools/ear-pilot.ts exports main() only: run it through a two-line runner).
-4. W1.7 rest: the hum-lead proof. The lead is not in the engine: approachM (src/cues/lead.ts) is applied by the runner's
-   gate aim (src/lesson/gate-aim.ts:44) and the line (src/lesson/runner.ts:2083, 2138), so the proof page
-   (test-audio/page/proofs.ts) needs a LessonRunner driving the engine at 8 m/s; claim: the gate's hum turns to the
-   approach point at least LEAD_APPROACH_S + turn radius before the gate; control: approachM at the metres of today.
-   C:/dev/ShramkoSonicFPV still has evidence/audio-proofs.json and demo-check.json modified by an earlier hand: not
-   committed.
-5. W1.8 again; then the stage's commit of both repositories.
+4. W1.7 done (77185cd). C:/dev/ShramkoSonicFPV still has evidence/audio-proofs.json and demo-check.json modified by an
+   earlier hand: not committed.
+5. W1.8 again (pin 77185cd: only the package's test-audio changed since run 3); then the stage's commit of both repositories.
 - Design 2 targets are not met yet (W1-b at 8 m/s: streams median 3 against 2, worst second 6.76 against 3, onsets 24.8 a
   second against under 15); counted at 5, 8 and 12 m/s is 0 of 6 (the goal needs 4 of 6 at 8 m/s). Noticed, not chased: at
   5 m/s the brought commit has streams median 6 against 5 in V1-a (file suspected: packages/sonic-fpv src/cues/budget.ts, the
@@ -82,7 +87,8 @@ Facts V1-a to V1-f, Design 1 to 7): the numbers there are the "before" of this l
 - Package branch train6 (local only, not pushed): 5e04268 (7678880 cherry-picked), e28399f, da0ab7d. Simulator pin (local):
   da0ab7d; origin/main's pin is 293ebae. Deploy order later: the package's main first, then the pin.
 - Files changed outside apps/fly/src/sonic so far: docs/wip/sonic5.md, packages/sonic-fpv (pin).
-- Package branch train6 now also 2bea5d9, 26be7f8 (design 4), cd37a57 (design 5 rest); simulator pin (local) cd37a57.
+- Package branch train6 now also 2bea5d9, 26be7f8 (design 4), cd37a57 (design 5 rest), 4c8e4e1 (audio proofs streams-at-speed, brake-ceiling), 77185cd (audio proof hum-lead);
+  simulator pin (local) 77185cd.
 
 ### Stage W2-prove
 - [ ] not started.
