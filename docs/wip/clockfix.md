@@ -6,9 +6,9 @@
 - [x] change: hud.css short view = one chip (backdrop, cross inside); key left column, touch bottom middle; no --cinema-top lift
 - [x] F2: editor.css walls-summary `interactivity: inert` (Chrome 157 checked: Tab skips it); tests int3f-clock.test.ts (5, each with a negative control)
 - [x] probe AFTER: key 0, touch 0 overlaps at 932x430, 844x390, 740x360, 667x375 (before, flight, finish); after-*.json
-- LEFT (budget ran out):
-  - look at the 5 pictures in U:/Temp/gsfpv-train3/shots/clockfix-*.png (copied, not yet looked at)
-  - touch tall sizes differ before/after: most likely the probe's touch take-off (flying true after, false before), not the CSS (all rules are in max-height 500px); check the rows
+- [x] pictures looked at (run 2); tall sizes 1366x768, 1280x720, 390x844: clock and cross rectangles identical before and after (key and touch); only the probe field `flying` differs on touch (its take-off), not the place
+- [x] typecheck apps/fly: exit 0 (run 2)
+- LEFT:
   - course-finish-probe.mjs run, typecheck apps/fly, gates (vitest, architecture, i18n, b18, leaks), a6-reference hash
   - What the owner sees / Not verified / For the lead texts
 
