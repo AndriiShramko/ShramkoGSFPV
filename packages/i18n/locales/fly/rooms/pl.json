@@ -82,5 +82,7 @@
   "rooms.race.col.laps": "Okrążenia",
   "rooms.race.col.total": "Razem, s",
   "rooms.race.col.best": "Najlepsze okrążenie, s",
-  "rooms.race.col.gap": "Strata, s"
+  "rooms.race.col.gap": "Strata, s",
+  "rooms.lead.other": "{nick} prowadzi, {time}",
+  "rooms.lead.mine": "Prowadzisz, {time}"
 }

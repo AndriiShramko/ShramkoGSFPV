@@ -35,6 +35,10 @@ import { PoseClock, simPose } from '../../rooms/pose';
 import { RemoteStage } from '../../rooms/remote-stage';
 import type { RemoteDraw } from '../../rooms/remote-stage';
 import { RoomSocket } from '../../rooms/socket';
+import { RoomBoard, type CourseLook } from '../../rooms/board';
+import { BoardView, leadBlip } from '../../rooms/board-view';
+import { LeadBanner, boardShown, leadChange, leadLine, viewRows } from '../../rooms/lead';
+import { parseCourse } from '../../rooms/race';
 import { roomKeys, welcomeLine } from '../../rooms/keys';
 import { dialogOpen } from '../../devices/keyboard';
 import { NameTags } from '../../rooms/tags';
@@ -80,6 +84,8 @@ const sameRender = (a: RoomInfo['scene']['render'], b: RoomInfo['scene']['render
 const HOST_KEY = (id: string): string => `gsfpv.rooms.host.${id}`;
 /** Near calls are checked this often, ms (estimate: a drone at 10 m/s moves 2.5 m in that time). */
 const NEAR_EVERY_MS = 250;
+/** Lane race (L6): a lead change with the narrator off in Fly by Sound is the course's short chime (sonic/quiet-cues.ts). */
+const LEAD_QUIET_CUE = Object.freeze({ kind: 'checkpoint' as const });
 
 function storage(kind: 'localStorage' | 'sessionStorage'): Storage | null {
     try {
@@ -208,6 +214,21 @@ export const rooms: Feature = {
                 ctx.hud.flash(text, 6000);
             };
             let race: RacePage | null = null;
+            // lane race, L1 and L2: the room's course and its board of best laps (rooms/board.ts)
+            const board = new RoomBoard(() => sock.slot);
+            let asked: string | null = null;
+            // lane race, L3 and L4: the live board and the lead banner (rooms/lead.ts, rooms/board-view.ts)
+            const banner = new LeadBanner();
+            let bannerText: string | null = null;
+            let leads = 0;
+            let boardOn = false;
+            const showBoard = (): void => {
+                h.board = {
+                    course: board.course, rows: board.rows.map((r) => ({ ...r })), sent: board.sent, adopting: board.adopting,
+                    shown: boardOn, banner: bannerText, leads
+                };
+            };
+            const view = new BoardView(ctx.ui);
             const sock = new RoomSocket({ url: socketUrl(location), room, nick, hostKey: hk }, {
                 state: (s) => {
                     h.state = s;
@@ -233,6 +254,27 @@ export const rooms: Feature = {
                     void enter(w.room);
                     if (w.vote) onVote(w.vote);
                     if (w.race) race?.onMsg(w.race);
+                    board.onBoard(w.board ?? { type: 'board', course: null, rows: [] });
+                    showBoard();
+                },
+                board: (m) => {
+                    board.onBoard(m);
+                    showBoard();
+                },
+                blap: (m) => {
+                    const before = m.course === board.course ? board.rows.map((r) => ({ ...r })) : null;
+                    board.onLap(m);
+                    const lead = before ? leadChange(before, m, sock.slot) : null;
+                    if (lead) {
+                        // L4 and L6: the banner, and a short sound (in Fly by Sound one spoken line, a chime with the narrator off)
+                        leads += 1;
+                        banner.show(lead, performance.now());
+                        const line = leadLine(lead);
+                        const text = t(line.key, line.vars);
+                        if (ctx.sonic) announcer.announce(line.key, text, false, LEAD_QUIET_CUE);
+                        else leadBlip(lead.mine);
+                    }
+                    showBoard();
                 },
                 vote: onVote,
                 race: (m) => race?.onMsg(m),
@@ -299,6 +341,34 @@ export const rooms: Feature = {
                     }
                 }
                 if (inRoom) race?.frame(now);
+                if (sock.state === 'joined') {
+                    const look = ctx.hook.course as (CourseLook & { adopt?: (c: { seed: number } | { id: string; version: number }) => void }) | undefined;
+                    // the room's course is built here once the course feature is there to build it
+                    const want = board.adopting;
+                    if (want && asked !== want && look?.adopt) {
+                        asked = want;
+                        const ref = parseCourse(want);
+                        if (ref) look.adopt(ref.kind === 'seed' ? { seed: ref.seed } : { id: ref.id, version: ref.version });
+                    }
+                    const wanted = board.adopting;
+                    const step = board.look(look);
+                    if (step?.kind === 'course') sock.course(step.course);
+                    else if (step?.kind === 'lap') sock.blap(step.course, step.n, step.ms);
+                    // the room's course showing here clears adopting without a step: the hook must see that too
+                    if (step || board.adopting !== wanted) showBoard();
+                }
+                // L3: the board while two or more pilots are in the room with a course, never under the pause menu
+                const hudOn = ctx.hud.visible && ctx.hud.root.style.display !== 'none';
+                const on = inRoom && hudOn && boardShown(board.course, sock.members.size, ses.paused);
+                view.update(on ? viewRows(board.rows, h.members, sock.slot) : [], on);
+                const ld = inRoom ? banner.at(now) : null;
+                const bt = ld && hudOn && !ses.paused ? t(leadLine(ld).key, leadLine(ld).vars) : null;
+                view.lead(bt, ld?.mine ?? false, bt !== null);
+                if (on !== boardOn || bt !== bannerText) {
+                    boardOn = on;
+                    bannerText = bt;
+                    showBoard();
+                }
                 stage.show(draw);
                 others = named;
                 h.remotes = seen;
@@ -321,7 +391,9 @@ export const rooms: Feature = {
                     offFrame();
                     unalign();
                     race?.dispose();
+                    view.dispose();
                     h.race = null;
+                    h.board = null;
                     sock.leave();
                     stage.show([]);
                     tags.update([], false);

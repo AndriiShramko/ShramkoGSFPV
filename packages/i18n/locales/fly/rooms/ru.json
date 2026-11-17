@@ -82,5 +82,7 @@
   "rooms.race.col.laps": "Круги",
   "rooms.race.col.total": "Всего, с",
   "rooms.race.col.best": "Лучший круг, с",
-  "rooms.race.col.gap": "Отставание, с"
+  "rooms.race.col.gap": "Отставание, с",
+  "rooms.lead.other": "{nick} лидирует, {time}",
+  "rooms.lead.mine": "Вы лидируете, {time}"
 }
