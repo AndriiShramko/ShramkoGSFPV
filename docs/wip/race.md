@@ -154,16 +154,25 @@ Stage R2-board:
   14 of 14; gates.py --only vitest,api-unittest,architecture,i18n,b18,leaks all PASS (vitest 151 s, api-unittest 228 s; log
   U:/Temp/gsfpv-train3/race/gates-r2b.log); a6-reference 1 OK (a6-r2b.log). The release in dist is fc982bb6 (the app code of
   HEAD; later commits change only the probe and this file) with the walls stand-in in dist/walls/70b50d42.
-- [ ] R2.6 (left, next run) rooms-two-page.mjs, train1-live.ts rooms against local servers, accept-fly B6 B7 B9..B16, mouse-free-probe.
-- [ ] R2.7 (left, next run) Status: deploy order, a read-only live check for the lead, What the owner does, not verified.
-  Exact left list for the next run: (1) R2.6 against the release fc982bb6 in dist (rebuild only if apps/ or packages/ changed):
-  rooms-two-page.mjs, train1-live.ts rooms against local servers (ports 5860-5879), accept-fly B6 B7 B9 B10 B11 B12 B13 B14 B15
-  B16 with SITE=http://localhost:<port>/en, mouse-free-probe; python must be on PATH (Python311 folder above). (2) R2.7 status:
-  deploy order for the lead (apps/rooms changed in R1: board.py, rooms.py, protocol; compose: check with git diff origin/main --
-  deploy/), the read-only live check (two pages, a room in memory, as train1-live rooms), 'What the owner does', not verified
-  (no second real person in a room). (3) One line for the lead, not fixed here (not this lane's file): in run 10 the walls panel
-  .walls-menu reported an open-sized box with its <details> closed; apps/fly/src/walls.ts placeMenu() reads the summary only
-  while open, so a guess: Chrome keeps the closed details' content laid out; harmless for the walls panel itself.
+- [x] R2.6 (f2d3a633 merge of origin/main a36280e1, docs only; tsc of apps/fly clean after it) Regression probes against the
+  release fc982bb6 in dist (no app code changed since), logs in U:/Temp/gsfpv-train3/race/:
+  - rooms-two-page.ts (its own rig, SONIC_PORTS=5860-5869): PASS 17 of 17 (evidence/2026-11-17/rooms-two-page.json; r26-two-page.log).
+  - Local rig held up by U:/Temp/gsfpv-train3/race/rig.mts (startRoomsRig on dist, front http://127.0.0.1:5871, rooms.py 5870):
+    train1-live.ts rooms with SITE=http://127.0.0.1:5871: PASS 9 of 9 (evidence/2026-11-17/train1-live.json; r26-live.log).
+  - accept-fly B6 B7 B9 B10 B11 B12 B13 B14 B15 B16 (first line 'accept-fly target: http://127.0.0.1:5871'): 9 of 10 in the
+    chained run, B10 FAIL: profile and mapping right (step 6), but throttleUpClimbs armed false, climbed 0 (copy
+    U:/Temp/gsfpv-train3/race/b-fly-b10-run1.json). B10 alone right after: PASS (armed, climbed 0.98 m; r26-b10b.log).
+    Not this lane's code (no input or flight file changed); one fail in two runs, under the load of the chained run. A guess,
+    not checked: the arm switch of the SimRadio wizard races the page's start under load (tools/bench/src/accept-fly.ts B10).
+  - mouse-free-probe.mjs http://127.0.0.1:5871/en (render off, no lock): pass true, 84 PASS, 0 FAIL (r26-mouse.log).
+  - gates.py --only architecture,i18n,b18 PASS (gates-r2c.log) for the files changed after gates-r2b (deploy script, docs);
+    vitest, api-unittest and leaks passed at a124b56a (gates-r2b.log) and their inputs did not change since.
+- [x] R2.7 (a1ef3980 and this commit) deploy/release-rooms.sh uploads board.py: its FILES list had only
+  ws, protocol, votes, race and rooms.py, while rooms.py imports board since R1, so a release would have started a service
+  that fails at import. Status for the lead below. Stage R2-board done; every stage of lane race is done.
+  Line for the lead, not fixed here (not this lane's file): in run 10 the walls panel .walls-menu reported an open-sized box
+  with its <details> closed; apps/fly/src/walls.ts placeMenu() reads the summary only while open; a guess: Chrome keeps the
+  closed details' content laid out; harmless for the walls panel itself (the board measures the summary only while closed).
 
 Why train 2 left the race off (docs/wip/rooms2.md, Q2 runs 2 and 3; not re-run here: the race is off in the build): rooms-race.ts
 moved each craft along race.path on the real scan's course g1.438779389 (9 gates) and both pages passed gates 0 and 1,
@@ -172,9 +181,26 @@ on the test scene threeRooms: 60 seeds, 0 stuck. Open: the probe's path or the g
 
 ## For the lead
 
-- Deploy order of the rooms service: apps/rooms/board.py (new) and apps/rooms/rooms.py changed; compose unchanged.
-  The rooms service goes out before the site (an old service ignores `course` and `blap`; the page then just has no
-  board).
+- Deploy order: (1) the rooms service: `bash deploy/release-rooms.sh` (no --compose: deploy/compose.yml is unchanged against
+  origin/main). Changed in apps/rooms: board.py (new), rooms.py; tests/test_board.py (new, not deployed). The script's FILES
+  list now holds board.py (commit a1ef3980); with the old list the service would fail at `import board`. Check after it:
+  /api/rooms/health 200. (2) Then the site. An old service with the new site: rooms work, there is just no board (it
+  ignores `course` and `blap`). The new service with the old site: nothing changes for the old pages.
+- Read-only live check the lead can add after both are out: `cd tools/bench && SITE=https://gsfpv.flyreelstudio.eu npx tsx
+  src/train1-live.ts rooms` (two pages make a room in the service's memory only, gone when they leave; it saves no course and sends nothing to the
+  site's API; passed 9 of 9 against the local rig in R2.6). The board itself on two pages: `MODE=r2 npx tsx src/rooms-board.ts`
+  runs only against the local rig (it starts rooms.py itself); a live variant of it is not written.
+- What the owner does: open a scan (Wroclaw), press 9 and send the link to a friend (or the friend presses 9 on the
+  same scan). One of you presses Shift+G: the same gates appear for both. Fly through the gates. From the first
+  finished lap a small board at the top left shows both names in your colours, ordered by the best lap, your own row
+  marked. When someone's lap becomes the room's best, the top centre says 'NAME leads, 0:41.27' for 2 s with a short
+  sound (green 'You lead' for your own), and the rows slide to their new places. A new Shift+G by anyone gives everyone
+  the new course and clears the board. P (pause) hides the board; alone in a room there is no board.
+- Not verified: no second real person was ever in a room with this build (all runs are two or three headless pages in one
+  process on this PC, lap lag -2 to 4 ms there; the real network lag is not measured); not run on the live site (no
+  deploy from this lane); Fly by Sound's spoken takeover line and the narrator-off chime were checked by
+  code reading only, not heard in a browser; Tunis 887f27aa was used only for the train 2 race check (R1.3), the board
+  runs were on Wroclaw 70b50d42; the countdown race of train 2 stays off (RACE_ON false), not re-run.
 - Files changed outside apps/fly/src/rooms and apps/rooms: apps/fly/src/course/hook.ts (optional field `adopt`),
   apps/fly/src/app/builtin/course.ts (one line: `hook.adopt` calls the feature's own generate or loadServer),
   apps/fly/src/app/builtin/rooms.ts (the board's wiring: welcome, board, blap, one look per frame; the hook shows
@@ -183,4 +209,5 @@ on the test scene threeRooms: 60 seeds, 0 stuck. Open: the probe's path or the g
 - R2 (lane race, stage R2-board): outside apps/fly/src/rooms and apps/rooms it changed apps/fly/src/app/builtin/rooms.ts
   (board and banner wiring), packages/i18n/locales/fly/rooms/{en,es,pl,ru}.json (rooms.lead.other, rooms.lead.mine) and
   the new test tools/bench/test/rooms-lead.test.ts. apps/rooms is unchanged by R2 (the server's `lead` flag of R1 is not
-  read: the page decides by the same rule, so an old service gives the same banners).
+  read: the page decides by the same rule, so an old service gives the same banners). R2 also changed
+  deploy/release-rooms.sh (board.py in FILES, a1ef3980) and the probe tools/bench/src/rooms-board.ts (MODE=r2).
