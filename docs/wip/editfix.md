@@ -221,7 +221,8 @@ the mode with a pad, a real touch screen, the owner's laptop. Pictures looked at
   seconds after the test flight starts (seen in the testfly picture).
 - NEG of the lane's own tests: editfix-e4 'E4' with keyboard.ts and app/keys.ts of origin/main: 3 failed (NEG OK).
 - Ran: tsc apps/fly exit 0; editfix-e4 + editfix-e2 + a6-reference 16 passed (a6 hash held); accept-fly B6 B7 B9-B16 all
-  PASS, exit 0, target http://localhost:5831; gates.py: see the line under it.
+  PASS, exit 0, target http://localhost:5831; gates.py on 247629bd: all 8 PASS, exit 0 (typecheck 36 s, vitest 120 s,
+  api-unittest 246 s; logs U:/Temp/gsfpv-gates-20261117-094649), run again on the commit of this line.
 - Not verified: the owner's laptop, a real phone or touch screen, a real pad, and a person took no part; the live check
   edit-mouse-wroclaw was not run against the live site.
 
