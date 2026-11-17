@@ -242,7 +242,7 @@ async function r2(A: Page, B: Page, LB: Launched, fa: Frames, fb: Frames, out: A
     await A.waitForTimeout(400);
     const smallShot = await shot(A, 'race-844.png');
     // run 9 passed 8 of 8 while the board hid behind the folded walls panel at 844x390 for the whole flight
-    const small = await ev<Any>(A, "const e = document.querySelector('[data-testid=rooms-board]'); const s = getComputedStyle(e); const q = e.getBoundingClientRect(); const w = document.querySelector('.walls-menu'); const p = w ? w.getBoundingClientRect() : null; return { display: s.display, visibility: s.visibility, rect: [q.left, q.top, q.right, q.bottom].map(Math.round), walls: p ? [p.left, p.top, p.right, p.bottom].map(Math.round) : null, rows: e.querySelectorAll('[data-slot]').length };");
+    const small = await ev<Any>(A, "const e = document.querySelector('[data-testid=rooms-board]'); const s = getComputedStyle(e); const q = e.getBoundingClientRect(); const w = document.querySelector('[data-testid=walls-more] > summary'); const p = w ? w.getBoundingClientRect() : null; return { display: s.display, visibility: s.visibility, rect: [q.left, q.top, q.right, q.bottom].map(Math.round), walls: p ? [p.left, p.top, p.right, p.bottom].map(Math.round) : null, rows: e.querySelectorAll('[data-slot]').length };");
     r.takeovers = { t2, t3, smallShot, small, wallsWasOpen };
     const lbB = await r2log(B);
     // the pause menu: Escape on A hides the board and the banner

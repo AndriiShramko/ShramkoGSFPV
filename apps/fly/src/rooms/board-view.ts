@@ -112,9 +112,17 @@ export class BoardView {
         // hid the board there for the whole flight) moves the board just under the whole panel while that stays above 60 % of
         // the height (the left edge is clear down to the throttle line); only a taller, unfolded panel hides it.
         let mw = ''; let vis = ''; let dy = 0;
+        // run 11: the menu of a closed <details> keeps a layout box (16..278 x 105..604 at 844x390, nothing drawn), so the panel
+        // counts as its folded button (the summary 'Walls 5 cm') plus the menu only while the details is open
         const w = this.doc.querySelector('.walls-menu') as HTMLElement | null;
-        if (w && !w.closest('[hidden]') && getComputedStyle(w).display !== 'none') {
-            const r = w.getBoundingClientRect();
+        const d = w?.closest('details') ?? null;
+        const sum = d?.querySelector('summary') ?? null;
+        if (w && sum && !d!.closest('[hidden]') && getComputedStyle(d!).display !== 'none') {
+            const a = sum.getBoundingClientRect();
+            const m = d!.open && getComputedStyle(w).display !== 'none' ? w.getBoundingClientRect() : null;
+            const r = m && m.width > 0
+                ? { left: Math.min(a.left, m.left), top: Math.min(a.top, m.top), right: Math.max(a.right, m.right), bottom: Math.max(a.bottom, m.bottom), width: 1 }
+                : a;
             const now = this.board.getBoundingClientRect();
             const top = now.top - this.dy; const bottom = now.bottom - this.dy;
             const vw = this.doc.defaultView?.innerWidth ?? 0;
