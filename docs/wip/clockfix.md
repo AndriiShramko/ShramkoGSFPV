@@ -49,3 +49,29 @@ nothing moved. In the course editor on a short view the Walls caption is no long
 Files changed: apps/fly/src/course/hud.css, apps/fly/src/course/editor/editor.css, tools/bench/test/int3f-clock.test.ts,
 tools/bench/scripts/clock-place-probe.mjs (new), evidence/2026-11-17/clockfix/{before,after}-{key,touch}.json and finish-after.json, this file.
 Only the page changed (CSS of the course clock and the editor caption); no API, nginx or rooms. No push, no deploy.
+
+Deploy order (review 1): the page only (dist of the release build). nginx: no (deploy/ untouched). API files (apps/api): no.
+Rooms service: no. Sound package (packages/sonic-fpv pin): no. deploy/live-checks.sh: unchanged by this lane.
+
+## Review
+Review 1 (release check, 2026-11-17), head after merging origin/main (a36280e1, STATE only):
+- Read the hunks (hud.css, editor.css): CSS inside `@media (max-height: 500px)` only; no script, key, pointer lock, pause,
+  Fly by Sound or session path changed. The release build keeps `interactivity:inert` (checked in dist/fly/assets CSS).
+- clock-place-probe on my own release build (port 5851): key 0, touch 0 overlaps on the four short views, before take-off,
+  flight, finish; 1366x768, 1280x720, 390x844 rectangles equal to the lane's before-*.json (390x844 touch overlaps the credit
+  line and the walls caption: the same 7 overlaps on origin/main, not new).
+- Drawn walk, keyboard at 1536x730 dpr 1.25 (click into the scene, lock taken, Shift+G, Space, Esc): the clock at 664,120 as
+  before; Esc pauses and the pause menu covers it (as on main). Keyboard 844x390 drawn: the chip at 16,142 under the walls
+  caption, lock held in the air. Touch 667x375 drawn: the chip between the pads.
+- The cross clicked with the mouse (keyboard 844x390, no lock) and tapped (touch 667x375 and 932x430) in a flight: the clock
+  hides, Shift+T brings it back; the cross is the top element at its centre (elementFromPoint).
+- Negative controls (neg_control.py against origin/main): 'one chip' test fails on the old hud.css, 'takes no keyboard focus'
+  fails on the old editor.css: both NEG OK.
+- Finding (DOUBT, not repaired, not worse than live): touch with the pilot profile (ARM button, ?set.input.play=pilot) before
+  arming, the REC row shows and the chip is lifted 64 px over ARM: its top lies on the REC row's lower edge (844x390: about
+  10 px over 'Choose a folder', the cross 6 px; 667x375 the wrapped 'Choose a folder' 3 to 10 px). The live release puts the
+  clock and its cross over the right stick pad in that state. In a flight the REC row hides, so the chip is free there.
+  The probe could not arm (render=off), so the armed flight in the pilot profile is not measured.
+- Not verified: the owner's laptop, a real phone, a real rotation and a person took no part; Tab in the course editor on a
+  short view was not walked by me (unit test and the built CSS only); accept-fly not run (the lane touches no flight, key or
+  session code).
