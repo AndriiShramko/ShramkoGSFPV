@@ -53,6 +53,8 @@ import { gateFlownPose, placeGate, placeInState, type FlownPose } from '../../co
 import type { CourseCheck, EditorState } from '@gsfpv/tracks';
 import { myTokens, myVotes, rememberToken, rememberVote, voterId } from '../../course/store';
 import { EditorPanel } from '../../course/editor/panel';
+import { DraftKeeper } from '../../course/editor/parts/keep';
+import { restoredState } from '../../course/editor/drafts';
 import { editorKey, forwardOf, keyOffLine, keyRoute } from '../../course/editor/keys';
 import type { EditorCommand, KeyPress } from '../../course/editor/keys';
 import { ACTION_KEYS, actionKey, gateLine, problemsLine, refusalText } from '../../course/editor/words';
@@ -188,6 +190,14 @@ export const course: Feature = {
         /** the course the editing started from or was last saved as (the base of a fork or of a new version) */
         let edSource: TrackFile | null = null;
         let edChanged = false;
+        /** lane edit4s (E6): the drafts of the edited course in this browser (course/editor/parts/keep.ts) */
+        let keeper: DraftKeeper | null = null;
+        let keepHook: Record<string, unknown> = {};
+        /** one accepted change of the gates: unsaved, and a draft follows (lane edit4s) */
+        const markChanged = (by: string): void => {
+            edChanged = true;
+            keeper?.changed(by);
+        };
         /** the step that dropping unsaved changes was asked for ('exit', 'regen', 'row:<id>'); doing it again goes on */
         let askedFor: string | null = null;
         let reopenAfter = false;
@@ -834,14 +844,20 @@ export const course: Feature = {
             edHook.lapped = [...lapped];
             panel?.list(rows, edHook.votes, hook.saved ?? hook.track?.id ?? null, lapped);
         };
+        /** the edited course as a file: review TK-6, the edited gates on the source's identity (after a save: the saved id,
+         *  version, author, title); null when the editor is closed */
+        const trackNow = (): TrackFile | null => {
+            if (!ed) return null;
+            const v1 = toTrackV1(ed.course);
+            return edSource
+                ? { ...v1, id: edSource.id, version: edSource.version, parent: edSource.parent, author: edSource.author, title: edSource.title, generator: edSource.generator }
+                : v1;
+        };
         const showEd = (): void => {
             // lane editor3 E3: while the drone flies the course stays as it was armed; the edit view comes back on disarm
             if (!ed || !panel || mode === 'fly') return;
-            // review TK-6: the edited gates on the source's identity (after a save: the saved id, version, author, title)
-            const v1 = toTrackV1(ed.course);
-            const track: TrackFile = edSource
-                ? { ...v1, id: edSource.id, version: edSource.version, parent: edSource.parent, author: edSource.author, title: edSource.title, generator: edSource.generator }
-                : v1;
+            const track = trackNow();
+            if (!track) return;
             run = new CourseRun(track, ctx.session.transform, null);
             provenOn = ctx.session.collision;
             hook.on = true;
@@ -923,7 +939,7 @@ export const course: Feature = {
                 const l = keyOffLine(a, keyName(e));
                 say(t(l.key, l.vars), true);
             });
-            panel = new EditorPanel(ctx.ui, { key: (p) => applyKey(p), saveMine: (n, ti) => void saveMine(n, ti), saveAll: () => void saveAll(), saveAdmin: (ti) => void saveAdmin(ti), vote: (id, v) => void vote(id, v), open: (id) => openRow(id) });
+            panel = new EditorPanel(ctx.ui, { key: (p) => applyKey(p), saveMine: (n, ti) => void saveMine(n, ti), saveAll: () => void saveAll(), saveAdmin: (ti) => void saveAdmin(ti), vote: (id, v) => void vote(id, v), open: (id) => openRow(id), back: (i) => keeper?.back(i) });
             panel.defaults('', run.track.title);
             panel.adminOn(adminLive);
             // lane editor3 E2: the edit camera starts where the flight camera is, looking its way
@@ -953,7 +969,7 @@ export const course: Feature = {
             bar = new GateBar(ctx.ui, { key: (p) => applyKey(p), where: () => view?.standScreen() ?? null, tool: () => view?.tool ?? 'move', setTool: (tl) => view?.setTool(tl), dragging: () => view?.isDragging() ?? false });
             top = new TopBar(ctx.ui, { key: (p) => applyKey(p), add: () => toggleAdd(), show: (part) => panel?.reveal(part) });
             // read only, for the page probes (tools/bench/src/editor3-smoke.ts)
-            (window as unknown as { __gsfpvEditView?: () => unknown }).__gsfpvEditView = () => (view ? { ...view.debug(), mode, bar: bar?.debug() ?? null, place: lastPlace, wrong: lastWrong, course: ed ? { gates: ed.course.gates, start: (ed.course as { start?: unknown }).start ?? null, problems: ed.problems } : null, camTaken, crashCleared, crashActive: ctx.crash.active, drone: [S.px, S.py, S.pz].map((i) => Math.round((ctx.session.runner.sim.s[i] ?? 0) * 100) / 100), override: ctx.session.cameraOverride } : null);
+            (window as unknown as { __gsfpvEditView?: () => unknown }).__gsfpvEditView = () => (view ? { ...view.debug(), mode, bar: bar?.debug() ?? null, place: lastPlace, wrong: lastWrong, course: ed ? { gates: ed.course.gates, start: (ed.course as { start?: unknown }).start ?? null, problems: ed.problems } : null, camTaken, crashCleared, crashActive: ctx.crash.active, drone: [S.px, S.py, S.pz].map((i) => Math.round((ctx.session.runner.sim.s[i] ?? 0) * 100) / 100), override: ctx.session.cameraOverride, edit4: { s: keepHook } } : null);
             // lane editor3 H1, read only: the shown handles' shape under a page point (the probe finds the ring it presses)
             (window as unknown as { __gsfpvEditHit?: (x: number, y: number, own?: boolean) => unknown }).__gsfpvEditHit = (x, y, own) => view?.hitAt(x, y, own === true) ?? null;
             // I1, read only: the eye's distance, the gate's height, the rings' minor axes and the handle parts' rectangles
@@ -979,12 +995,33 @@ export const course: Feature = {
             }
             showEd();
             say(t('course.edit.opened'));
+            // lane edit4s (E6): drafts from the first change on; an unsaved draft newer than this course comes back at once
+            keeper = new DraftKeeper({
+                sceneId: () => ctx.session.scene.id,
+                trackNow,
+                sourceId: () => hook.saved ?? (hook.source === 'server' ? edSource?.id ?? null : null),
+                restore: (tr) => {
+                    if (!ed) return;
+                    ed = restoredState(ed, upgradeTrack(tr), keepProblems);
+                    edChanged = true;
+                    askedFor = null;
+                    checks?.ask(ed.course, flownTransform(), edMargin);
+                    showEd();
+                },
+                say: (text, level) => say(text, level !== 'did'),
+                hook: (data) => { keepHook = data; },
+                versions: (list) => panel?.versions(list),
+            });
+            keeper.opened({ source: hook.source === 'server' ? 'server' : 'generated', track: edSource, madeAt: hook.source === 'server' ? Date.parse(edSource.created) || null : null });
             renderList();
             void refresh(true).then(renderList);
         };
         /** `quiet`: the course is replaced right after (no redraw for flight) */
         function closeEdit(quiet = false): void {
             if (!ed) return;
+            // lane edit4s: a waiting draft is written before the editor's course goes
+            keeper?.dispose();
+            keeper = null;
             ed = null;
             reopenAfter = false; // review TK-4: a generation or load asked from the editor does not reopen it after Esc
             panel?.destroy();
@@ -1056,7 +1093,7 @@ export const course: Feature = {
             }
             const st = out.state;
             ed = st;
-            edChanged = true;
+            markChanged('add');
             askedFor = null;
             edHook.refused = null;
             addedId = st.course.gates[st.selected]?.id ?? null;
@@ -1144,7 +1181,7 @@ export const course: Feature = {
             ed = st ?? base;
             askedFor = null;
             if (st) {
-                edChanged = true;
+                markChanged('drag');
                 checks?.ask(st.course, flownTransform(), edMargin);
             }
             showEd();
@@ -1181,7 +1218,7 @@ export const course: Feature = {
             ed = out.state;
             if (out.ok) {
                 if (k.edit.kind !== 'select' && k.edit.kind !== 'select-step') {
-                    edChanged = true;
+                    markChanged(k.edit.kind);
                     checks?.ask(ed.course, flownTransform(), edMargin);
                 }
                 edHook.refused = null;
@@ -1213,6 +1250,7 @@ export const course: Feature = {
             if (c === 'regen' || c === 'regen-same') {
                 // review TK-4: G drops the changes only when asked twice, like Esc
                 if (busy || ask('regen', t('course.edit.unsavedAgain'))) return;
+                keeper?.beforeLoss('generate');
                 reopenAfter = true;
                 return generate(c === 'regen-same' && hook.seed !== null ? hook.seed : randomSeed());
             }
@@ -1270,6 +1308,7 @@ export const course: Feature = {
                 return say(t('course.save.failed', { msg: r.problem.slice(0, 120) }), true);
             }
             if (r.token) rememberToken(r.id, r.token);
+            keeper?.saved(body);
             hook.saved = r.id;
             hook.source = 'server';
             hook.track = { id: r.id, version: r.version };
@@ -1315,6 +1354,7 @@ export const course: Feature = {
             } finally {
                 saving = false;
             }
+            keeper?.saved(body as unknown as TrackFile);
             hook.saved = serverId;
             hook.source = 'server';
             hook.track = { id: serverId, version: r.version };
@@ -1350,6 +1390,7 @@ export const course: Feature = {
             if (i < 0 || busy) return;
             // review TK-4: a row's Edit drops unsaved changes only when clicked twice; the clicked course or none (only)
             if (ask(`row:${id}`, t('course.edit.unsavedAgain'))) return;
+            keeper?.beforeLoss('open-other');
             reopenAfter = true;
             void loadServer(i, true);
         };

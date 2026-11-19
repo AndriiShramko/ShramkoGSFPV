@@ -1,0 +1,7 @@
+/* Lane edit4s (train 4): the Versions list of the course editor's window (panel.ts, parts/keep.ts). */
+.ce-versions { margin-top: 8px; }
+.ce-versions-title { margin: 6px 0 2px; font-size: 1em; }
+.ce-versions-note { margin: 0 0 4px; opacity: 0.8; font-size: 0.9em; }
+.ce-version-list { list-style: none; margin: 0; padding: 0; max-height: 220px; overflow-y: auto; }
+.ce-version { border-top: 1px solid #2a3442; }
+.ce-version-back { display: block; width: 100%; min-height: 44px; text-align: left; font-size: 15px; }

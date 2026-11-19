@@ -10,6 +10,9 @@ import { markText } from './words';
 import { mayVote } from './rules';
 import { flashPart } from './flash';
 import './editor.css';
+import './keep.css';
+import { clockOf, type DraftEntry } from './drafts';
+import { draftByKey } from './keep-texts';
 
 export interface PanelHost {
     key(press: KeyPress): void;
@@ -19,6 +22,8 @@ export interface PanelHost {
     saveAdmin(title: string): void;
     vote(id: string, v: 1 | -1): void;
     open(id: string): void;
+    /** lane edit4s: Versions, back to the kept draft at this index (newest first) */
+    back?(index: number): void;
 }
 
 const el = <K extends keyof HTMLElementTagNameMap>(tag: K, cls?: string, text?: string): HTMLElementTagNameMap[K] => {
@@ -42,6 +47,8 @@ export class EditorPanel {
     private readonly drawer: HTMLButtonElement;
     private readonly keys: HTMLElement;
     private readonly listTitle: HTMLElement;
+    private readonly versionsBox: HTMLElement;
+    private readonly versionRows: HTMLElement;
 
     constructor(ui: HTMLElement, private readonly host: PanelHost) {
         const root = el('section', 'course-editor interactive');
@@ -111,6 +118,14 @@ export class EditorPanel {
         save.append(this.name, this.title, this.mine, this.all, this.admin);
         root.append(save);
 
+        // lane edit4s (E6): the drafts this browser kept, each with a way back (parts/keep.ts)
+        this.versionsBox = el('div', 'ce-versions');
+        this.versionsBox.append(el('h3', 'ce-versions-title', t('course.keep.versions')), el('p', 'ce-versions-note', t('course.keep.versionsNote')));
+        this.versionRows = el('ul', 'ce-version-list');
+        this.versionsBox.append(this.versionRows);
+        root.append(this.versionsBox);
+        this.versions([]);
+
         this.listTitle = el('h3', 'ce-list-title', t('course.edit.list'));
         root.append(this.listTitle);
         this.rows = el('ul', 'ce-list');
@@ -159,6 +174,37 @@ export class EditorPanel {
     }
 
     /** review ED-7: the window opens (on a phone its drawer) and shows that part; the focus stays on the page */
+    /** lane edit4s (E6): the kept drafts, newest first: time, gates, what changed, and a button back to each */
+    versions(list: readonly Pick<DraftEntry, 't' | 'gates' | 'by' | 'saved'>[]): void {
+        this.versionRows.replaceChildren();
+        if (list.length === 0) {
+            this.versionRows.append(el('li', 'ce-empty', t('course.keep.versionsEmpty')));
+            return;
+        }
+        list.forEach((d, i) => {
+            const li = el('li', 'ce-version');
+            const what = t(draftByKey(d.by)) + (d.saved ? ` · ${t('course.keep.versionSaved')}` : '');
+            const b = el('button', 'ce-version-back', t('course.keep.version', { time: clockOf(d.t), n: d.gates, what }));
+            b.type = 'button';
+            b.title = t('course.keep.back');
+            b.setAttribute('aria-label', `${t('course.keep.back')}: ${b.textContent ?? ''}`);
+            b.addEventListener('click', () => {
+                this.host.back?.(i);
+                b.blur();
+            });
+            li.append(b);
+            this.versionRows.append(li);
+        });
+    }
+
+    /** lane edit4s: Course > Versions opens the window at the kept drafts */
+    revealVersions(): void {
+        this.root.classList.add('ce-open');
+        this.drawer.setAttribute('aria-expanded', 'true');
+        this.versionsBox.scrollIntoView({ block: 'nearest' });
+        flashPart(this.versionRows);
+    }
+
     reveal(part: 'save' | 'keys' | 'courses'): void {
         this.root.classList.add('ce-open');
         this.drawer.setAttribute('aria-expanded', 'true');
