@@ -42,6 +42,22 @@ describe('planCourse: the asked course in the scanned part, closed, at the craft
             expect(again.ok && JSON.stringify(again.track.gates)).toBe(JSON.stringify(r.track.gates));
         });
 
+    // gen4a A3 (Wroclaw beginner seed 1 closed at 1 gate): a walk under gatesMin is walked again with seeds derived from
+    // the asked one before the opening shrinks; the same link still lays the same course
+    for (const [name, make, seed] of [['a room', scannedRoom, 4], ['a room', scannedRoom, 12]] as const)
+        it(`${name}, beginner seed ${seed}: a short walk is walked again at the level's opening, not shrunk`, () => {
+            const walls = make();
+            const r = planCourse(input(walls, ask('beginner', seed)));
+            expect(r.ok).toBe(true);
+            if (!r.ok) return;
+            expect(r.track.gates.length).toBeGreaterThanOrEqual(LEVELS.beginner.gatesMin);
+            expect(r.shrunk).toBe(false);
+            expect(r.stats.closed).toBe(true);
+            expect(r.track.generator?.version).toMatch(/\.w[12]/);
+            const again = planCourse(input(walls, ask('beginner', seed)));
+            expect(again.ok && JSON.stringify(again.track.gates)).toBe(JSON.stringify(r.track.gates));
+        });
+
     it('a city filmed from above: gates between and over the roofs, none in the fuzzy ground; the old path fails', () => {
         const city = cityFromAbove();
         const r = planCourse(input(city, ask('medium')));

@@ -91,13 +91,13 @@ tools/bench/src/scan-kinds.json, evidence/2026-11-19/gen4/.
     never dropped for room, cityAbove and plants (topTier 1; Winter Garden's gates outside came from tier 2), and only a
     scan with no course at all under it is laid again with tier 2 (plan.test plant tray at x1 keeps its course). Tried
     and reverted: the most open start near the core (generate.ts): it shrank the room's beginner course. tracks 165 passed.
-  - [ ] LEFT 3a: Wroclaw 70b50d42 beginner seed 1 (compact and wide): 1 gate. Trace: tier 2 walks 8 gates and the close
-    keeps 1 (cutClose 7: no later gate has a straight clear leg to the start; legWell is always true in place mode); tiers
-    0-1 stop at 1-3 ('turn' refusals: the eye band at 0.4 m cells is sparse within 6 m of a gate). Run 1 (0.8-1.2 m cells,
-    no clip) gave 5 shrunk. Ideas: let the close accept a gate whose leg home has a free gateExit turn like the walk's legs;
-    or a beginner street zone band of one cell more.
-  - [ ] LEFT 3b: unit tests for (a) and (b) that fail on 5190a972 (a room world where tier 2 puts a gate over the ceiling;
-    a sheet zone); if none can be built cheaply, name the audit rows as the proof in Claims.
+  - [x] LEFT 3a: Wroclaw 70b50d42 beginner seed 1 closed at 1 gate (no late gate of a street walk sees the start). Fix
+    (plan.ts): at the loosest tier of an opening whose walk stayed under gatesMin, WALK_VARIANTS - 1 = 2 more walks with
+    seeds derived from the asked one (walkSeed; version '.w<v>'), before the opening shrinks; the same link lays the same
+    course. Wroclaw seed 1 focused audit: 6 of 6 PASS, beginner 3 gates (U:/Temp/gsfpv-train4/gen4a/wro-v.json).
+  - [x] LEFT 3b: plan.test 'a short walk is walked again' (room beginner seeds 4 and 12: shrunk before, not now): NEG OK
+    against 18aec1d6. The tier fallback and the kept kind rule (9076951a) keep the audit rows as proof (no cheap world).
+    tracks 167 passed, typecheck clean. Commit: the one after 18aec1d6.
   - [ ] LEFT 3c: Forest Floor detail (goodShare under 0.8 compact / 0.6 wide): read whether the plants zone or the
     quality map is the cause.
   - [ ] LEFT 3: re-run the audit after the fixes -> evidence/2026-11-19/gen4/place.json (all rules PASS, or each FAIL

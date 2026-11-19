@@ -35,6 +35,13 @@ export const ZONE_CANDS_PER_GATE = 8;
 export const COMPACT_LEGS = 3;
 /** the most a leg may be, flown m (server.ts / apps/api/tracks.py MAX_LEG_M) */
 const MAX_LEG_M = 60;
+/** gen4a A3: walks of other seeds derived from the asked one at the loosest tier of an opening whose walk stayed under
+ *  gatesMin (a street walk turns corners and no late gate sees the start: Wroclaw beginner seed 1 closed at 1 gate) */
+export const WALK_VARIANTS = 3;
+/** the walk seed of variant v (0: the asked seed itself); the same link always gives the same variants */
+export function walkSeed(seed: number, v: number): number {
+    return v === 0 ? seed >>> 0 : (seed ^ Math.imul(0x9e3779b1, v)) >>> 0;
+}
 /** the version of an asked course: '5.<b|m|p><c|w|v>' (the same letters as the link, request.ts) */
 export const GENERATOR_VERSION_PLAN = '5';
 
@@ -253,7 +260,9 @@ export function planCourse(input: PlanInput, hooks: PlanHooks = {}): PlanAnswer 
     }
     const version = `${GENERATOR_VERSION_PLAN}.${letters(request)}`;
     const elements = input.elements && rules.level.elements.length > 1;
-    let best: { track: TrackFile; opening: number } | null = null;
+    // set inside `lay` (a closure): the cast keeps TypeScript from narrowing it to null here
+    let best = null as { track: TrackFile; opening: number } | null;
+    const bestGates = (): number => best?.track.gates.length ?? 0;
     let lastMs = 0;
     /** the 4 D gate's room at this size (fitSize of a no-room answer) */
     let ratio = 0;
@@ -262,7 +271,7 @@ export function planCourse(input: PlanInput, hooks: PlanHooks = {}): PlanAnswer 
     // scan with no course at all under it is laid again without it (never a refusal: a plant tray flown at x1)
     const strictKind = a.kind === 'room' || a.kind === 'cityAbove' || a.kind === 'plants';
     for (const topTier of strictKind ? [1, 2] : [2]) {
-        if (best) break;
+        if (bestGates() > 0) break;
         for (let oi = 0; oi < rules.openings.length && !late(); oi++) {
             const opening = rules.openings[oi]!;
             const k = opening / RING_DIAMETER_M;
@@ -271,7 +280,7 @@ export function planCourse(input: PlanInput, hooks: PlanHooks = {}): PlanAnswer 
             const p = scaledParams(k, COURSE_DEFAULTS);
             const starts = startsOf(a, opening);
             for (const ask of asks) {
-                if (late() || (best && best.track.gates.length >= rules.level.gatesMin)) break;
+                if (late() || bestGates() >= rules.level.gatesMin) break;
                 const R = ask.rules;
                 const box = zoneBox(a, ask.req, R, opening);
                 if (!box) continue;
@@ -304,17 +313,19 @@ export function planCourse(input: PlanInput, hooks: PlanHooks = {}): PlanAnswer 
                 const params = { ...p, legMinM: R.legMinM * shrink, legMaxM: R.legMaxM * shrink, spacingM: R.legMinM * shrink, turnCosMin: R.level.turnCosMin, axisCosMin: R.level.axisCosMin, gatesMin: R.level.gatesMin, gatesMax: Math.max(R.gates, R.level.gatesMax) };
                 // a zone with enough cells can still be a broken sheet (Wroclaw's eye band over 7.2 m tiles at 0.4 m cells:
                 // every walk stopped at 1-2 gates): the looser tiers are walked at the same opening before the opening shrinks
-                for (; tier <= topTier && !late(); tier++) {
-                    const place: CoursePlace = { at: zoneAt(a, ask.req, R, opening, tier), start, reachM: Math.min(R.zoneR, loopR), gates: R.gates, maxGates: R.level.gatesMax, climbMax: R.level.climbMax, version };
+                const lay = (t: number, v: number): void => {
+                    const place: CoursePlace = { at: zoneAt(a, ask.req, R, opening, t), start, reachM: Math.min(R.zoneR, loopR), gates: R.gates, maxGates: R.level.gatesMax, climbMax: R.level.climbMax, version: v ? `${version}.w${v}` : version };
                     hooks.onStep?.('lay', lastMs);
                     const t0 = now ? now() : 0;
-                    const track = generateCourse(free, walls, { seed: request.seed, scene: input.scene, transform, created: input.created, spawn: start, params, place, elements, craftRadiusM: input.craftRadiusM });
+                    const track = generateCourse(free, walls, { seed: walkSeed(request.seed, v), scene: input.scene, transform, created: input.created, spawn: start, params, place, elements, craftRadiusM: input.craftRadiusM });
                     if (now) lastMs = now() - t0;
-                    if (track.gates.length > 0 && (!best || track.gates.length > best.track.gates.length)) best = { track, opening };
-                    if (best && best.track.gates.length >= rules.level.gatesMin) break;
-                }
+                    if (track.gates.length > 0 && track.gates.length > bestGates()) best = { track, opening };
+                };
+                const enough = (): boolean => bestGates() >= rules.level.gatesMin;
+                for (; tier <= topTier && !late() && !enough(); tier++) lay(tier, 0);
+                for (let v = 1; v < WALK_VARIANTS && !late() && !enough(); v++) lay(topTier, v);
             }
-            if (best && best.track.gates.length >= rules.level.gatesMin) break;
+            if (bestGates() >= rules.level.gatesMin) break;
         }
     }
     if (!best) return { ok: false, reason: 'no-room', kind: a.kind, fitSize: fitSizeFor(transform[0], ratio) };
