@@ -1,0 +1,479 @@
+{
+ "address": "http://localhost:5941/en",
+ "scan": "70b50d42",
+ "size": [
+  1536,
+  730
+ ],
+ "dsf": 1.25,
+ "name": "local",
+ "query": "",
+ "live": false,
+ "date": "2026-11-19T15:13:50.992Z",
+ "steps": {
+  "1.open": {
+   "ok": true,
+   "mode": "edit",
+   "lock": false,
+   "gates": 24,
+   "E0": [
+    -11.900656700134277,
+    3.1238160133361816,
+    -16.831905364990234
+   ]
+  },
+  "2.home": {
+   "ok": true,
+   "nav": {
+    "kind": "frame-all",
+    "at": [
+     1.706999999999999,
+     4.25,
+     23.887
+    ]
+   },
+   "eyeMoved": 84.342,
+   "outside": []
+  },
+  "3.select": {
+   "ok": true,
+   "gate": 3,
+   "selected": 3,
+   "eyeMoved": 0,
+   "line": "Selected. Gate 4 of 24: ring, 1.2 m"
+  },
+  "4.orbit": {
+   "ok": true,
+   "at": [
+    307,
+    548
+   ],
+   "nav": {
+    "kind": "orbit",
+    "at": [
+     20.4,
+     3.2,
+     18.4
+    ]
+   },
+   "distBefore": 102.256,
+   "distAfter": 102.256,
+   "eyeMoved": 89.003,
+   "pivotIsGate": true
+  },
+  "5.pan": {
+   "ok": true,
+   "nav": "pan",
+   "eyeMoved": 26.413,
+   "yaw": [
+    2.673,
+    2.673
+   ],
+   "pitch": [
+    -0.611,
+    -0.611
+   ]
+  },
+  "6.wheel": {
+   "ok": true,
+   "overGate": true,
+   "nav": {
+    "kind": "dolly",
+    "at": [
+     20.4,
+     3.2,
+     18.4
+    ]
+   },
+   "distBefore": 103.278,
+   "distAfter": 69.922,
+   "toGate": [
+    103.278,
+    69.922
+   ]
+  },
+  "7.hover": {
+   "ok": true,
+   "arrowX": {
+    "ok": true,
+    "hover": [
+     "move",
+     "x"
+    ],
+    "tag": "Move along X",
+    "cursor": "grab"
+   },
+   "box": {
+    "ok": true,
+    "hover": [
+     "size",
+     "xyz"
+    ],
+    "tag": "Size",
+    "cursor": "grab"
+   },
+   "ringY": {
+    "ok": true,
+    "hover": [
+     "turn",
+     "y"
+    ],
+    "tag": "Turn around Y",
+    "cursor": "grab"
+   }
+  },
+  "8.arrowX": {
+   "ok": true,
+   "along": 0.8,
+   "off": 0,
+   "eyeMoved": 0,
+   "line": "Moved. Gate 4 of 24: ring, 1.2 m"
+  },
+  "9.ringY": {
+   "ok": true,
+   "part": [
+    "turn",
+    "ring:y"
+   ],
+   "deg": 30,
+   "moved": 0,
+   "eyeMoved": 0,
+   "line": "Turned. Gate 4 of 24: ring, 1.2 m"
+  },
+  "10.box": {
+   "ok": true,
+   "part": [
+    "size",
+    "xyz"
+   ],
+   "opening": [
+    1.2,
+    1.613
+   ],
+   "scale": [
+    1,
+    1
+   ],
+   "eyeMoved": 0,
+   "line": "Size changed. Gate 4 of 24: ring, 1.6 m"
+  },
+  "cancel": {
+   "ok": true,
+   "movedMid": 0.5,
+   "after": 0,
+   "cancels": [
+    0,
+    1
+   ],
+   "tag": "Cancelled: the gate is back where it was"
+  },
+  "11.another": {
+   "ok": true,
+   "gate": 0,
+   "selected": 0,
+   "eyeAfterClick": 0,
+   "eyeAfterDrag": 0,
+   "gateMoved": 13.9
+  },
+  "12.double": {
+   "ok": true,
+   "gate": 23,
+   "selected": 23,
+   "screen": [
+    768,
+    365,
+    2.39
+   ],
+   "eyeMoved": 93.864
+  },
+  "13.laptop": {
+   "ok": false,
+   "selected": 23,
+   "hovered": [
+    "move",
+    "x"
+   ],
+   "rects": {
+    "topbar": [
+     [
+      8,
+      109,
+      381,
+      52
+     ]
+    ],
+    "gatebar": [
+     [
+      153,
+      328,
+      390,
+      54
+     ]
+    ],
+    "hoverTag": [
+     [
+      283,
+      240,
+      110,
+      28
+     ]
+    ],
+    "sizeTag": [],
+    "editor": [
+     [
+      400,
+      86,
+      380,
+      35
+     ]
+    ],
+    "panels": []
+   },
+   "over": [],
+   "outside": []
+  }
+ },
+ "lockBeforeEditor": true,
+ "course": {
+  "ok": true,
+  "ms": 14142,
+  "gates": 24
+ },
+ "parts": {
+  "centre": [
+   768,
+   365
+  ],
+  "box": {
+   "at": [
+    772,
+    365
+   ],
+   "r": 4,
+   "a": 0,
+   "part": [
+    "size",
+    "xyz"
+   ]
+  },
+  "ringY": {
+   "at": [
+    763,
+    356
+   ],
+   "r": 10,
+   "a": 240,
+   "part": [
+    "turn",
+    "ring:y"
+   ]
+  },
+  "arrowX": {
+   "at": [
+    822,
+    351
+   ],
+   "r": 56,
+   "a": 345,
+   "part": [
+    "move",
+    "x"
+   ]
+  },
+  "seen": {
+   "size/xyz": 146,
+   "turn/ring:y": 692,
+   "turn/y": 4,
+   "size/x": 21,
+   "turn/ring:x": 519,
+   "turn/x": 2,
+   "turn/ring:z": 459,
+   "move/z": 34,
+   "move/x": 23,
+   "move/y": 22
+  },
+  "tries": 1
+ },
+ "hit11": [
+  [
+   "move",
+   "x"
+  ],
+  [
+   "move",
+   "x"
+  ]
+ ],
+ "mid11": {
+  "dragging": true,
+  "grabbed": {
+   "handle": "move",
+   "axis": "x"
+  },
+  "sets": [
+   [
+    true,
+    1,
+    "x",
+    ""
+   ],
+   [
+    false,
+    1,
+    "",
+    ""
+   ],
+   [
+    false,
+    1,
+    "",
+    ""
+   ]
+  ],
+  "nav": {
+   "kind": "frame-all",
+   "at": [
+    1.706999999999999,
+    4.25,
+    23.887
+   ]
+  },
+  "muted": 2,
+  "lock": false
+ },
+ "parts11": {
+  "centre": [
+   726,
+   549
+  ],
+  "box": {
+   "at": [
+    730,
+    549
+   ],
+   "r": 4,
+   "a": 0,
+   "part": [
+    "size",
+    "xyz"
+   ]
+  },
+  "ringY": {
+   "at": [
+    700,
+    518
+   ],
+   "r": 40,
+   "a": 230,
+   "part": [
+    "turn",
+    "ring:y"
+   ]
+  },
+  "arrowX": {
+   "at": [
+    767,
+    500
+   ],
+   "r": 64,
+   "a": 310,
+   "part": [
+    "move",
+    "x"
+   ]
+  },
+  "seen": {
+   "size/xyz": 150,
+   "turn/ring:z": 678,
+   "turn/ring:x": 573,
+   "turn/z": 5,
+   "turn/x": 5,
+   "turn/ring:y": 491,
+   "move/y": 37,
+   "move/x": 16,
+   "turn/y": 6,
+   "move/z": 23
+  },
+  "tries": 1
+ },
+ "final": {
+  "open": true,
+  "selected": 23,
+  "said": "Selected. Gate 24 of 24: ring, 1.2 m",
+  "courseGates": 24,
+  "courseOn": true,
+  "mode": "edit",
+  "eye": [
+   -9.507335004384004,
+   49.47014997729921,
+   -33.71294427928262
+  ],
+  "yaw": 2.9670605082880064,
+  "pitch": -0.6108652381980153,
+  "nav": {
+   "kind": "frame-all",
+   "at": [
+    1.706999999999999,
+    4.25,
+    29.887
+   ]
+  },
+  "hover": [
+   "move",
+   "x"
+  ],
+  "cancels": 1,
+  "dragging": false,
+  "stand": {
+   "pos": [
+    24.399999618530273,
+    3.4000000953674316,
+    28.799999237060547
+   ],
+   "quat": [
+    0.9238796776713042,
+    0,
+    0.382683081917619,
+    0
+   ],
+   "scale": 1,
+   "opening": 1.2,
+   "screen": [
+    348,
+    192,
+    81.66
+   ]
+  },
+  "axes": {
+   "x": [
+    -0.961523947640823,
+    0.274721127897378
+   ],
+   "y": [
+    -0.16439898730535732,
+    -0.986393923832144
+   ],
+   "z": [
+    0.5812381937190965,
+    0.813733471206735
+   ]
+  },
+  "handles": true,
+  "lock": false,
+  "topLine": "Click a gate to change it. Arm your controller to fly the course at once, disarm to edit again",
+  "hoverTag": "Move along X",
+  "cursor": "grab"
+ },
+ "fails": [
+  "13.laptop"
+ ],
+ "log": [
+  "console: Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "console: Failed to load resource: the server responded with a status of 403 ()",
+  "console: Failed to load resource: the server responded with a status of 403 ()",
+  "console: Failed to load resource: the server responded with a status of 403 ()",
+  "console: Failed to load resource: the server responded with a status of 403 ()",
+  "console: Failed to load resource: the server responded with a status of 403 ()",
+  "console: Failed to load resource: the server responded with a status of 403 ()"
+ ]
+}

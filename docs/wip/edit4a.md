@@ -14,7 +14,11 @@ against the code as it is: EditView gets the walls ray through its own host (Edi
 - [x] A2 one gizmo: move arrows, size boxes and turn rings at once; nearest handle owns the press; hover tag; no tool buttons;
   Esc / right click cancels a drag (commit b74bd0a8)
   - the drawn check of the hover (design A2 page probe) is folded into A3 step 7: one build and one GPU run for both
-- [ ] A3 acceptance: tools/bench/scripts/edit4a-probe.mjs (mouse, 1536x730 dsf 1.25), the live run as the negative control
+- [x] A3 acceptance: tools/bench/scripts/edit4a-probe.mjs (mouse, 1536x730 dsf 1.25), the live run as the negative control
+  (commits 5e9d70f1, 3ef5816c, 205f115d; evidence and this file in the A3 status commit)
+  - drawn run on the local build: steps 1 to 12 and cancel PASS, 13 (laptop layout) FAIL by a probe fault, repaired in
+    205f115d (its gate could lie under the gate bar); 13 then PASS in a ?render=off run (layout and clicks need no drawing)
+  - drawn run on the live site: 2 to 7, 9, 10, cancel, 11 and 13 FAIL (the negative control)
 
 ## What the owner does
 
@@ -35,6 +39,8 @@ against the code as it is: EditView gets the walls ray through its own host (Edi
 9. Drag the part: the gate moves, turns or changes size; the top bar says what was done. Press key Esc or the right
    mouse button during the drag: the gate jumps back and the tag says 'Cancelled: the gate is back where it was'.
 10. The editor's opening line and the Keys window name the drag on empty space, the wheel, key F and key Home.
+(A3, the probe walks these steps with the mouse in a 1536x730 window at device scale 1.25)
+11. In a small laptop window (844x390) the top bar, the gate bar, the hover tag and the editor's window stand apart.
 
 ## Claims
 
@@ -50,21 +56,51 @@ against the code as it is: EditView gets the walls ray through its own host (Edi
 
 4. One handle owns a press: the one whose shape under the cursor is nearest the eye (press-owner.ts pressOwner with
    distances from view-mouse.ts shapeHit, the engine's own pick with its distance); a turn ring is taken by the edit view
-   unless an arrow or a box is nearer. Proof:  (3 files pass); NEG OK against origin/main
+   unless an arrow or a box is nearer. Proof: `npx vitest run tools/bench/test/edit4a-gizmo.test.ts
+   tools/bench/test/editor3-press.test.ts tools/bench/test/editor3-tools.test.ts` (3 files, 17 passed); NEG OK against origin/main
    (11 failed on the old press-owner, handle-look, view-mouse, gate-bar, bar-place, course.ts).
 5. The three handles are on the gate at once in bands that do not overlap (boxes to 35 px + half a box, rings 60 +- 8 px,
    arrows 75 to 115 px; handle-look.ts handleBands, bandGap >= 4 px; the old 85-90 px layout gives a negative gap). The
    gate bar has no tool buttons, TOOLS/toolOfKey/toolAfter are gone. Proof: the same test files.
 6. A drag sends start/move/end/cancel (drag.ts HandleDrag); Esc or a right click during it puts the gate back without an
    undo step (course.ts dragCancel). The opening line and the Keys rows no longer name M R T or the wheel as speed.
-   Proof:  (53 files, 577 passed);  exit 0.
+   Proof: `npx vitest run --changed origin/main` (53 files, 577 passed); `pnpm --filter ./apps/fly typecheck` exit 0.
+7. On the page, with the mouse (1536x730, device scale 1.25, the pointer lock taken first by a click into the scene, scan
+   Wroclaw 70b50d42, a generated course of 24 gates): Home shows every gate; a click selects gate 3 and the eye moves 0 m; a
+   drag on empty space orbits it (distance 71.17 m before and after); Shift+drag pans with the heading kept; three wheel
+   notches go from 103.3 m to 69.9 m of the point under the cursor; the x arrow, a size box and the y ring each name their
+   part with the tag ('Move along X', 'Size', 'Turn around Y') and a hand cursor; the arrow drag moves the gate 0.8 m along
+   its x, 0 m off it; the ring turns it 30 deg; the box makes the opening 1.2 -> 1.61 m; key Esc mid-drag puts it back; a
+   click and a drag on another gate leave the eye where it was; a double click frames a gate in the middle third. The eye
+   moved 0 m in every drag. Proof: `until mkdir C:/dev/.gpu-lock 2>/dev/null; do sleep 15; done; node
+   tools/bench/scripts/edit4a-probe.mjs http://localhost:5941/en 70b50d42 1536x730 1.25 local
+   evidence/2026-11-19/edit4a/accept-local.json; rmdir C:/dev/.gpu-lock` (release build, dist served by serve-csp.mjs):
+   steps 1-12 and cancel PASS, 13 FAIL by the probe fault named in Status.
+8. At 844x390, device scale 2, no touch, nothing lies over another thing: top bar, gate bar, hover tag and the editor's
+   window are disjoint and inside the window. Proof: `QUERY='&render=off' node tools/bench/scripts/edit4a-probe.mjs
+   http://localhost:5941/en 70b50d42 1536x730 1.25 off-local evidence/2026-11-19/edit4a/accept-local-renderoff.json`:
+   13.laptop PASS (over [], outside []); in that run 10.box and 11.another FAIL, see Not verified.
+9. Negative control: the same probe on the live site (`https://gsfpv.flyreelstudio.eu/en`, drawn, read-only: it never
+   presses Save, nothing is stored) FAILS the steps this lane repairs: 2 Home (no move), 3 the click glides the eye 30.4 m,
+   4 orbit and 5 pan (no move), 6 the wheel (no dolly), 7 hover (no part named, no tag), 9 and 10 (no ring, no box beside
+   the arrows), cancel (the gate stays 0.7 m away), 11 the click glides the eye 22.9 m, 13 the gate bar lies over the
+   editor's window. It PASSES 1, 8 and 12 (the old editor also opened, moved along x and framed on a click).
+   Proof: evidence/2026-11-19/edit4a/accept-live.json.
 
 ## Not verified
 
-- A2 was not run in a browser yet: the gizmo layout (bands), the hover tag and the cancel are proven by unit and source
-  tests only; A3 runs them on the page with the GPU (hover each part, drag arrow, ring and box, Esc).
-
-- A1 was not run in a browser yet (A3 does it). No person, phone, touch pad or real controller took part.
+- No person, phone, touch pad or real controller took part: the probe is a headless Chrome with a synthetic mouse. A touch
+  pad's two-finger scroll and pinch are proven only by unit tests (wheelNotches with deltaMode and ctrlKey).
+- With ?render=off the gizmo's parts are not kept up to date (the engine sizes them in the drawn frame), so a press can find
+  another part than the scan before it: the gizmo steps 7 to 11 are judged only in the drawn run. The render-off run is
+  used for the laptop layout (step 13) only.
+- The drawn run's step 13 was not repeated drawn after the probe fix: the GPU lock was held by other lanes for over 30
+  minutes; a second drawn run is queued and its JSON, when it ends, is U:/Temp/gsfpv-train4/edit4a/accept-local2.json.
+- Picture (U:/Temp/gsfpv-train4/shots/edit4a-hover-local.png, looked at once): the selected ring gate lit yellow with the
+  small gizmo inside it, the hovered y ring lit yellow, the red x arrow and the green y arrow out from the centre boxes, and
+  the tag 'Turn around Y' at the cursor; nothing else lies over the gizmo.
+- The local server answered some scan files 403 (the line 'files that did not arrive: 3. Trying again' in the picture): a
+  property of serve-csp.mjs and the local CDN cache, not of this lane.
 - Safari's pinch (gesture events) is not handled; Chrome's pinch (wheel with ctrlKey) is.
 
 ## For the lead
@@ -84,6 +120,10 @@ against the code as it is: EditView gets the walls ray through its own host (Edi
   HandleAxis live in handle-look.ts (no seam.ts). The Keys table (keys.ts CAM_ROWS, S0's file) got no Home row: Home is
   named in the F row's words instead.
 - Deploy order: page only.
+- A3: new tools/bench/scripts/edit4a-probe.mjs (no product file). Live checks after the deploy, by name: this probe against
+  the live address (`node tools/bench/scripts/edit4a-probe.mjs https://gsfpv.flyreelstudio.eu/en 70b50d42 1536x730 1.25
+  live <out.json>`, drawn, inside the GPU lock; read-only) must PASS all 14 steps; deploy/live-checks.sh edit-mouse-wroclaw.
+- The merged train's probe run (design section 6) should run this probe drawn, never with ?render=off for steps 7 to 11.
 
 ## Cost notes
 
@@ -91,3 +131,6 @@ against the code as it is: EditView gets the walls ray through its own host (Edi
   for test lines from the start would be cheaper.
 - A2: the most replies went to the old tests that pinned the one-tool layout (7 files) and to finding the stale opening
   line; a grep of the locales for the removed keys and words at the start would be cheaper.
+- A3: the most replies went to a gizmo press that went to the orbit in ?render=off runs (stale gizmo shapes without drawing)
+  and to waiting for the shared GPU lock; trusting the design's 'render=off cannot draw gizmos' and going drawn at once,
+  with the probe's clicks checked against the bars beforehand, would be cheaper.
