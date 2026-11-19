@@ -6,8 +6,10 @@
 // flying on the voxels is just flying. With a collision ceiling (v0.7) the voxels above it are drawn
 // in their own colour (no longer walls), and its panel's preview adds a translucent plane at the height.
 import { VoxelOverlay, VOXEL_STYLES } from '@gsfpv/render-pc';
-import type { VoxelStyle } from '@gsfpv/render-pc';
-import { FLOATER_MIN_BLOCKS_MAX, ceilingCut, chunkDims, overlapKeys, overlayChunkSize, planChunksAround, validCeiling } from '@gsfpv/collision';
+import type { VoxelFog, VoxelStyle } from '@gsfpv/render-pc';
+import { nearWalls } from './voxel-near';
+import type { NearChunkState, NearSummary } from './voxel-near';
+import { FLOATER_MIN_BLOCKS_MAX, ceilingCut, chunkDims, chunksNear, groupKey, overlapKeys, overlayChunkSize, planChunksAround, validCeiling } from '@gsfpv/collision';
 import type { CeilingCut, PlannedChunk, VoxelCollision } from '@gsfpv/collision';
 import { KEEPER_EVERY_MS, drawnShare, fillLeftS, keeperStep, trimFillSamples, type FillSample } from './voxel-keeper';
 import type { FlightSession } from './session';
@@ -70,6 +72,8 @@ export interface VoxelStats {
     triangles: number;
     /** V1: depth-only copies of the gates and other World items drawn before the voxels */
     depthItems: number;
+    /** voxux4 V3: the fog of the voxels-only view (m), null when the scene's own fog holds (not alone) */
+    fog: VoxelFog | null;
     /** the plan's reach: per voxel up to fineRadiusM, per block up to radiusM (m) */
     fineRadiusM: number;
     radiusM: number;
@@ -115,6 +119,10 @@ export interface VoxelStats {
     uploadMs: number;
     uploadMaxMs: number;
     error: string | null;
+    /** voxux4 V2: the chunks under and around the camera (collision chunksNear), null before the walls are ready */
+    near: NearChunkState[] | null;
+    /** voxux4 V2: what the walls hold there (voxel-near.ts nearWalls), null before the walls are ready */
+    nearWalls: NearSummary | null;
 }
 
 export class VoxelController {
@@ -578,6 +586,8 @@ export class VoxelController {
         const plan = planChunksAround(col, this.size, this.occupied, p.x, p.y, p.z, { radius, fineQuads: this.fineQuads * d, coarseQuads: this.coarseQuads * d, known: this.known, avgFine, avgCoarse, whole, groups: whole, farQuads: this.farQuads * d, knownFar: this.knownFar, avgFar });
         this.plan = { fineRadius: plan.fineRadius, radius: plan.radius };
         this.planFar = plan.chunks.reduce((f, c) => Math.max(f, c.farDist ?? c.dist), 0);
+        // V3 (voxux4): the voxels-only view fogs into the background where the farthest planned chunk ends
+        this.overlay?.setFogReach(Math.max(plan.radius, this.planFar));
         this.lastPlan = plan.chunks;
         this.planned = true;
         this.wanted = new Map(plan.chunks.map((c) => [c.key, c.lod]));
@@ -628,6 +638,7 @@ export class VoxelController {
             quads: o?.quads ?? 0,
             triangles: o?.triangles ?? 0,
             depthItems: o?.depthItems ?? 0,
+            fog: o?.fog ?? null,
             fineRadiusM: this.plan.fineRadius,
             radiusM: this.plan.radius,
             whole: this.whole,
@@ -656,8 +667,42 @@ export class VoxelController {
             uploads: o?.uploads ?? 0,
             uploadMs: o?.uploadMs ?? 0,
             uploadMaxMs: o?.uploadMaxMs ?? 0,
-            error: this.error
+            error: this.error,
+            ...this.nearState()
         };
+    }
+
+    /** VoxelStats.near and nearWalls: the plan and the drawing of the chunks under and around the camera. */
+    private nearState(): { near: NearChunkState[] | null; nearWalls: NearSummary | null } {
+        const col = this.col;
+        if (!col || !this.occupied) return { near: null, nearWalls: null };
+        const p = this.session.renderer.camera.getPosition();
+        const dims = chunkDims(col, this.size);
+        const inFlight = (k: number): boolean => [...this.inFlight].some((id) => id.startsWith(`${k}:`));
+        const found = chunksNear(col, this.size, p.x, p.y, p.z);
+        const columns = new Set(found.chunks.map((c) => c.z * dims[0] + c.x)).size;
+        const near = found.chunks.map((c): NearChunkState => {
+            let key = c.key;
+            let group: number | null = null;
+            if (!this.wanted.has(key) && !this.loaded.has(key)) {
+                for (const g of [2, 4, 8]) {
+                    const gk = groupKey(dims, g, Math.floor(c.x / g), Math.floor(c.y / g), Math.floor(c.z / g));
+                    if (this.wanted.has(gk) || this.loaded.has(gk)) { key = gk; group = gk; break; }
+                }
+            }
+            const loaded = this.loaded.get(key) ?? null;
+            const q = loaded === null ? undefined : loaded <= 1 ? this.known[loaded === 0 ? 'fine' : 'coarse'].get(c.key) : this.knownFar.get(loaded)?.get(c.key);
+            return {
+                key: c.key,
+                occupied: this.occupied!.has(c.key),
+                wanted: this.wanted.get(key) ?? null,
+                loaded,
+                pending: !!this.overlay?.pending(String(key)) || inFlight(key),
+                quads: group === null ? q ?? null : null,
+                group
+            };
+        });
+        return { near, nearWalls: nearWalls(found.inside, columns, this.size, near) };
     }
 
     /** Everything wanted is drawn (tests and screenshots wait for it). */

@@ -5,7 +5,7 @@ import { h } from './dom';
 import { t } from '../i18n';
 import { panelHead } from './panel-head';
 import { VOXEL_MODES, VOXEL_STYLES } from '../voxels';
-import type { VoxelController, VoxelMode, VoxelStyle } from '../voxels';
+import type { VoxelController, VoxelMode, VoxelStats, VoxelStyle } from '../voxels';
 
 /** The pilot's walls switch for this scan (main.ts owns the flight side of it). */
 export interface WallsSwitch {
@@ -33,8 +33,20 @@ export function voxelStatus(v: VoxelController): string {
         : t('voxels.status', { m: reach, k: Math.round(s.quads / 1000), cm: s.voxelCm ?? '—' });
     // the floater filter (G.3): what it dropped, or where to drop the pieces the grid highlights
     const dropped = s.dropped ? t('voxels.dropped', { pieces: s.dropped.pieces, n: s.dropped.minBlocks }) : '';
-    if (s.floaters > 0) return [line, t('voxels.floaters', { n: s.floaters }), dropped || t('voxels.dropHint')].join(' · ');
-    return dropped ? `${line} · ${dropped}` : line;
+    const parts = [line, ...nearLine(s)];
+    if (s.floaters > 0) return [...parts, t('voxels.floaters', { n: s.floaters }), dropped || t('voxels.dropHint')].join(' · ');
+    return [...parts, ...(dropped ? [dropped] : [])].join(' · ');
+}
+
+/**
+ * voxux4 V2: why the voxels show a hole where the craft is (the walls are thin there, or the craft is outside
+ * them), and in "voxels only" the way on: the mode that shows the scan. Nothing while the view still fills.
+ */
+export function nearLine(s: Pick<VoxelStats, 'mode' | 'nearWalls'>): string[] {
+    if (s.mode === 'off' || !s.nearWalls) return [];
+    if (s.nearWalls.walls === 'outside') return [t('voxels.outsideWalls')];
+    if (s.nearWalls.walls !== 'thin') return [];
+    return s.mode === 'only' ? [t('voxels.nearThin'), t('voxels.nearThinOnly', { mode: t('voxels.mode.overlay') })] : [t('voxels.nearThin')];
 }
 
 /**

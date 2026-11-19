@@ -4,6 +4,7 @@ export * from './drawing';
 export * from './device-class';
 export * from './presets';
 export * from './accum-policy';
+export * from './splat-load-guard';
 export { AccumDrawing, accumMissing, worldLayer, ACCUM_UPSTREAM } from './accum';
 export type { AccumStats } from './accum';
 export * from './lod';

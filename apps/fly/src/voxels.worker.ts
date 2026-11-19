@@ -5,6 +5,7 @@
 // collision ceiling (v0.7) comes as voxel rows: the walls stay whole here, the quads above are classed.
 import { VoxelCollision, FlippedVoxelCollision, blockComponents, floaterComponents, occupiedChunks, overlayChunk } from '@gsfpv/collision';
 import type { BlockComponents, CeilingCut, VoxelMetadata } from '@gsfpv/collision';
+import { chunkAo } from './voxel-ao';
 // the pure half of render-pc (no engine import: the engine stays out of the worker bundle)
 import { packChunk } from '../../../packages/render-pc/src/voxel-colors';
 import type { PackedChunk, VoxelLayout, VoxelStyle } from '../../../packages/render-pc/src/voxel-colors';
@@ -117,11 +118,11 @@ scope.onmessage = (e) => {
             if (m.gen !== gen || !col || !layout) return; // walls changed since the request
             const t0 = performance.now();
             const c = overlayChunk(col, { x: m.x, y: m.y, z: m.z }, size * (m.group ?? 1), m.lod, comp ?? undefined, floaters ?? undefined, cut);
-            const p = packChunk(c, layout, m.style, m.lo, m.hi);
-            scope.postMessage(
-                { t: 'chunk', gen, key: m.key, lod: m.lod, faces: c.faces, floaterQuads: c.floaterQuads, ms: performance.now() - t0, ...p },
-                [p.vertices, p.indices.buffer as ArrayBuffer, p.floater.buffer as ArrayBuffer]
-            );
+            const ao = (m.group ?? 1) === 1 ? chunkAo(col, { x: m.x, y: m.y, z: m.z }, size, c, m.lod) : null;
+            const p = packChunk(c, layout, m.style, m.lo, m.hi, ao ?? undefined);
+            const transfer: Transferable[] = [p.vertices, p.indices.buffer as ArrayBuffer, p.floater.buffer as ArrayBuffer];
+            if (p.ao) transfer.push(p.ao.buffer as ArrayBuffer);
+            scope.postMessage({ t: 'chunk', gen, key: m.key, lod: m.lod, faces: c.faces, floaterQuads: c.floaterQuads, ms: performance.now() - t0, ...p }, transfer);
         }
     } catch (err) {
         scope.postMessage({ t: 'error', gen: m.gen, message: String((err as Error)?.message ?? err) });

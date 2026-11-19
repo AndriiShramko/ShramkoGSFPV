@@ -22,7 +22,7 @@ export function parseImpl(text: string | null | undefined): StochasticImpl | und
 
 /** What draws the scan after a call to setStochastic. */
 export type DrawPlan =
-    | { draw: 'sorted'; why: 'not-asked' | 'no-gpu-sort' | 'loading' }
+    | { draw: 'sorted'; why: 'not-asked' | 'no-gpu-sort' | 'loading' | 'hidden' }
     | { draw: 'engine'; why: 'impl' | 'unsupported' | 'failed' }
     | { draw: 'accum'; why: 'ok' };
 
@@ -43,14 +43,22 @@ export interface PlanInput {
      * dropped command buffer), so the splats go to the sorted drawing until the new scan is ready. Only the accumulating renderer waits.
      */
     hold?: boolean;
+    /**
+     * the scan is hidden (renderer.ts setSplatVisible(false): the voxels-only view). The accumulating renderer must not stay on then:
+     * its compose pass is a full-screen quad in the World layer that keeps painting its last history (colour and depth) every frame, a
+     * frozen picture of the scan behind the voxels (owner's message 64, V1). Hidden beats every other reason: no splat work at all.
+     */
+    hidden?: boolean;
 }
 
 /**
  * The drawing for a request. Sorted unless stochastic is wanted and a GPU-sort renderer runs. Then the accumulating renderer
  * if it is asked for, can run on this engine and has not failed; else the engine's own dither (v0.10 behaviour). While a scene switch is
- * under way (`hold`) the accumulating renderer waits and the splats are drawn sorted.
+ * under way (`hold`) the accumulating renderer waits and the splats are drawn sorted. A hidden scan (`hidden`) is always 'sorted': the
+ * disabled entity then draws nothing and the accumulating renderer's frozen history is switched off with it.
  */
 export function planStochastic(i: PlanInput): DrawPlan {
+    if (i.hidden) return { draw: 'sorted', why: 'hidden' };
     if (!i.on) return { draw: 'sorted', why: 'not-asked' };
     if (!i.gpuSort) return { draw: 'sorted', why: 'no-gpu-sort' };
     if (i.impl === 'engine') return { draw: 'engine', why: 'impl' };

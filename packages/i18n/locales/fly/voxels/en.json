@@ -9,5 +9,8 @@
   "voxels.panel.fold": "Fold the panel",
   "voxels.panel.unfold": "Unfold the panel",
   "voxels.panel.close": "Close",
-  "voxels.legendOff": "Hide the voxel grid"
+  "voxels.legendOff": "Hide the voxel grid",
+  "voxels.nearThin": "Under the craft the walls are almost empty (the scan is thin here): the voxels show a hole, and the craft will not hit the ground here.",
+  "voxels.nearThinOnly": "Pick “{mode}” to see the scan.",
+  "voxels.outsideWalls": "The craft is outside the walls of this scan: there are voxels only inside them."
 }

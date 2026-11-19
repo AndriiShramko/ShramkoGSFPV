@@ -9,5 +9,8 @@
   "voxels.panel.fold": "Plegar el panel",
   "voxels.panel.unfold": "Desplegar el panel",
   "voxels.panel.close": "Cerrar",
-  "voxels.legendOff": "Ocultar la cuadrícula de vóxeles"
+  "voxels.legendOff": "Ocultar la cuadrícula de vóxeles",
+  "voxels.nearThin": "Bajo el dron las paredes están casi vacías (el escaneo es pobre aquí): los vóxeles muestran un hueco y el dron no chocará con el suelo aquí.",
+  "voxels.nearThinOnly": "Elige «{mode}» para ver el escaneo.",
+  "voxels.outsideWalls": "El dron está fuera de las paredes de este escaneo: solo hay vóxeles dentro de ellas."
 }

@@ -8,7 +8,7 @@
 
 import type { VoxelCollision } from './vendor/voxel-collision';
 import type { BlockComponents } from './components';
-import { buildChunkBlockFaces, buildChunkFaces, chunkDims } from './mesh';
+import { buildChunkBlockFaces, buildChunkFaces, chunkAt, chunkDims } from './mesh';
 import { blockAboveCut, rowAboveCut } from './ceiling';
 import type { CeilingCut } from './ceiling';
 
@@ -52,6 +52,30 @@ export function chunkKey(dims: readonly number[], x: number, y: number, z: numbe
 export function chunkOfKey(dims: readonly number[], key: number): [number, number, number] {
     const x = key % dims[0], r = (key - x) / dims[0], y = r % dims[1];
     return [x, y, (r - y) / dims[1]];
+}
+
+/** A chunk of the grid next to a world point (chunksNear). */
+export interface NearChunk { key: number; x: number; y: number; z: number }
+
+/**
+ * The chunks under and around a world point (voxux4 V2: what is drawn where the craft is): the
+ * columns within `reach` chunks across, from the grid's floor up to `reach` chunks over the point.
+ * A craft flies over the top of the grid of a drone scan (Lublin 2f1ddf5f: 36 m over it), so the
+ * column under it is what the pilot sees, not a box around it. `inside`: the point is over or in
+ * the grid, not beside or under it. World y is up; format 1.0 (flipXY) stores it as file -y, so
+ * there the floor is the top index.
+ */
+export function chunksNear(col: VoxelCollision, size: number, x: number, y: number, z: number, reach = 1): { inside: boolean; chunks: NearChunk[] } {
+    const dims = chunkDims(col, size);
+    const a = chunkAt(col, x, y, z, size);
+    const c = [a.x, a.y, a.z];
+    const [y0, y1] = col.flipXY ? [Math.max(0, c[1] - reach), dims[1] - 1] : [0, Math.min(dims[1] - 1, c[1] + reach)];
+    const inside = c[0] >= 0 && c[0] < dims[0] && c[2] >= 0 && c[2] < dims[2] && (col.flipXY ? c[1] < dims[1] : c[1] >= 0);
+    const chunks: NearChunk[] = [];
+    for (let cz = Math.max(0, c[2] - reach); cz <= Math.min(dims[2] - 1, c[2] + reach); cz++)
+        for (let cy = y0; cy <= y1; cy++)
+            for (let cx = Math.max(0, c[0] - reach); cx <= Math.min(dims[0] - 1, c[0] + reach); cx++) chunks.push({ key: chunkKey(dims, cx, cy, cz), x: cx, y: cy, z: cz });
+    return { inside, chunks };
 }
 
 /** Keys of the chunks (of `size` voxels) holding at least one occupied block, ascending. */
