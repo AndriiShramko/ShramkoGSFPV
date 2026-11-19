@@ -35,9 +35,15 @@ export const ZONE_CANDS_PER_GATE = 8;
 export const COMPACT_LEGS = 3;
 /** the most a leg may be, flown m (server.ts / apps/api/tracks.py MAX_LEG_M) */
 const MAX_LEG_M = 60;
-/** gen4a A3: walks of other seeds derived from the asked one at the loosest tier of an opening whose walk stayed under
- *  gatesMin (a street walk turns corners and no late gate sees the start: Wroclaw beginner seed 1 closed at 1 gate) */
+/** gen4a A3: walks per zone tier (the asked seed, then seeds derived from it) while the course stays under gatesMin (a
+ *  street walk turns corners and no late gate sees the start: Wroclaw beginner seed 1 closed at 1 gate) */
 export const WALK_VARIANTS = 3;
+/** one walk down planCourse's opening ladder: the zone tiers tried at each opening; `always` false: a pass that drops a
+ *  rule (quality, or the kind rule of a room, cityAbove or plants), run only when no pass before laid a course at all */
+interface LadderPass {
+    readonly tiers: readonly number[];
+    readonly always: boolean;
+}
 /** the walk seed of variant v (0: the asked seed itself); the same link always gives the same variants */
 export function walkSeed(seed: number, v: number): number {
     return v === 0 ? seed >>> 0 : (seed ^ Math.imul(0x9e3779b1, v)) >>> 0;
@@ -92,7 +98,12 @@ function insideAt(a: ScanAnalysis, p: Vec3, half: number, openingM: number): boo
     return !Number.isFinite(r) || p[1] <= r + 2 * openingM;
 }
 
-/** the zone's rules, strictest first; `tier` 0 all, 1 without the quality rule, 2 without the kind rule */
+/** the loosest zone tier: the territory only (zoneAt) */
+export const LOOSEST_TIER = 3;
+
+/** the zone's rules, strictest first; `tier` 0 all, 1 without the quality rule, 2 without the kind rule (the quality rule
+ *  kept: Forest Floor at x1 has no whoop gate under its leaves, and its courses then left the good tiles: goodShare
+ *  0.4-0.6), 3 (LOOSEST_TIER) without both */
 export function zoneAt(a: ScanAnalysis, request: CourseRequest, rules: PlanRules, openingM: number, tier: number): (p: Vec3) => boolean {
     const k = openingM / RING_DIAMETER_M;
     const half = (SQUARE_SIDE_M / 2 + SQUARE_BAR_M) * k;
@@ -104,7 +115,7 @@ export function zoneAt(a: ScanAnalysis, request: CourseRequest, rules: PlanRules
         if (!insideAt(a, p, half, openingM)) return false;
         if (compact && flat2(p, a.core) > r2) return false;
         const t = scanTile(a, p);
-        if (tier < 1 && !request.anyQuality && a.quality[t]! < GOOD_Q) return false;
+        if ((tier === 0 || tier === 2) && !request.anyQuality && a.quality[t]! < GOOD_Q) return false;
         if (tier >= 2) return true;
         const g = a.groundTop[t]!;
         switch (a.kind) {
@@ -270,8 +281,21 @@ export function planCourse(input: PlanInput, hooks: PlanHooks = {}): PlanAnswer 
     // plants (G6: between the leaves): the ladder keeps it there (Winter Garden pro laid gates outside the glass), and only a
     // scan with no course at all under it is laid again without it (never a refusal: a plant tray flown at x1)
     const strictKind = a.kind === 'room' || a.kind === 'cityAbove' || a.kind === 'plants';
-    for (const topTier of strictKind ? [1, 2] : [2]) {
-        if (bestGates() > 0) break;
+    const enough = (): boolean => bestGates() >= rules.level.gatesMin;
+    // the quality rule is a zone rule too (G3: the course in the best scanned part): every opening of the ladder is tried
+    // with it, and a short course in the good part is kept over a full one beside it (Forest Floor beginner: 5 gates at
+    // 10 D with 0.4-0.6 of them on good tiles before; 2 gates on good tiles at the ladder's floor now)
+    // A room and an object are the exception: their kind rule (a ceiling over the cell; within 3 core radii of the object)
+    // already bounds the scanned part, while a bare room's floor or the table under a skull reads as poor detail, so there
+    // the quality rule is dropped at the same opening (the room's beginner course shrank, the skull's pro course kept 1
+    // gate over the skull instead of 3 round it)
+    const passes: readonly LadderPass[] = a.kind === 'room' || a.kind === 'object'
+        ? [{ tiers: [0, 1], always: true }, { tiers: [2, LOOSEST_TIER], always: false }]
+        : strictKind
+          ? [{ tiers: [0], always: true }, { tiers: [1], always: false }, { tiers: [2], always: false }, { tiers: [LOOSEST_TIER], always: false }]
+          : [{ tiers: [0, 2], always: true }, { tiers: [1, LOOSEST_TIER], always: false }];
+    for (const pass of passes) {
+        if (enough() || late() || (!pass.always && bestGates() > 0)) break;
         for (let oi = 0; oi < rules.openings.length && !late(); oi++) {
             const opening = rules.openings[oi]!;
             const k = opening / RING_DIAMETER_M;
@@ -285,7 +309,7 @@ export function planCourse(input: PlanInput, hooks: PlanHooks = {}): PlanAnswer 
                 const box = zoneBox(a, ask.req, R, opening);
                 if (!box) continue;
                 hooks.onStep?.('free', 0);
-                const zone2 = zoneAt(a, ask.req, R, opening, 2);
+                const zone2 = zoneAt(a, ask.req, R, opening, LOOSEST_TIER);
                 const legMax = R.legMaxM * shrink;
                 const reach = (R.gates * legMax) / 2 + legMax;
                 // the walk keeps within the diameter of a circle of the loop's own length (gates x the mean leg / pi; the start is on
@@ -307,12 +331,10 @@ export function planCourse(input: PlanInput, hooks: PlanHooks = {}): PlanAnswer 
                         start = starts[si]!;
                     }
                 }
-                if (oi === rules.openings.length - 1) ratio = Math.max(ratio, roomRatio(free, k, zoneAt(a, ask.req, R, opening, 2)));
-                let tier = 0;
-                while (tier < topTier && zoneCount(free, k, zoneAt(a, ask.req, R, opening, tier)) < ZONE_CANDS_PER_GATE * R.gates) tier++;
+                if (oi === rules.openings.length - 1) ratio = Math.max(ratio, roomRatio(free, k, zoneAt(a, ask.req, R, opening, LOOSEST_TIER)));
                 const params = { ...p, legMinM: R.legMinM * shrink, legMaxM: R.legMaxM * shrink, spacingM: R.legMinM * shrink, turnCosMin: R.level.turnCosMin, axisCosMin: R.level.axisCosMin, gatesMin: R.level.gatesMin, gatesMax: Math.max(R.gates, R.level.gatesMax) };
                 // a zone with enough cells can still be a broken sheet (Wroclaw's eye band over 7.2 m tiles at 0.4 m cells:
-                // every walk stopped at 1-2 gates): the looser tiers are walked at the same opening before the opening shrinks
+                // every walk stopped at 1-2 gates): the pass's looser tier is walked at the same opening before it shrinks
                 const lay = (t: number, v: number): void => {
                     const place: CoursePlace = { at: zoneAt(a, ask.req, R, opening, t), start, reachM: Math.min(R.zoneR, loopR), gates: R.gates, maxGates: R.level.gatesMax, climbMax: R.level.climbMax, version: v ? `${version}.w${v}` : version };
                     hooks.onStep?.('lay', lastMs);
@@ -321,11 +343,17 @@ export function planCourse(input: PlanInput, hooks: PlanHooks = {}): PlanAnswer 
                     if (now) lastMs = now() - t0;
                     if (track.gates.length > 0 && track.gates.length > bestGates()) best = { track, opening };
                 };
-                const enough = (): boolean => bestGates() >= rules.level.gatesMin;
-                for (; tier <= topTier && !late() && !enough(); tier++) lay(tier, 0);
-                for (let v = 1; v < WALK_VARIANTS && !late() && !enough(); v++) lay(topTier, v);
+                // a tier with too few cells is not walked unless it is the pass's last; each tier's derived seeds are walked
+                // before the tier loosens
+                const last = pass.tiers[pass.tiers.length - 1]!;
+                const sparse = (t: number): boolean => t !== last && zoneCount(free, k, zoneAt(a, ask.req, R, opening, t)) < ZONE_CANDS_PER_GATE * R.gates;
+                for (const t of pass.tiers) {
+                    if (late() || enough()) break;
+                    if (sparse(t)) continue;
+                    for (let v = 0; v < WALK_VARIANTS && !late() && !enough(); v++) lay(t, v);
+                }
             }
-            if (bestGates() >= rules.level.gatesMin) break;
+            if (enough()) break;
         }
     }
     if (!best) return { ok: false, reason: 'no-room', kind: a.kind, fitSize: fitSizeFor(transform[0], ratio) };

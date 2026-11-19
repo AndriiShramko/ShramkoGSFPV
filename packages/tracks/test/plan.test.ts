@@ -58,6 +58,17 @@ describe('planCourse: the asked course in the scanned part, closed, at the craft
             expect(again.ok && JSON.stringify(again.track.gates)).toBe(JSON.stringify(r.track.gates));
         });
 
+    // gen4a A3 (G3; Forest Floor beginner had 0.4-0.6 of its gates on good tiles): the quality rule is kept down the whole
+    // opening ladder before a pass drops it
+    it('a city filmed from above, pro wide seed 2: every gate on a well-scanned tile', () => {
+        const r = planCourse(input(cityFromAbove(), { seed: 2, level: 'pro', spread: 'wide', anyQuality: false }));
+        expect(r.ok).toBe(true);
+        if (!r.ok) return;
+        expect(r.stats.gates).toBeGreaterThanOrEqual(LEVELS.pro.gatesMin);
+        expect(r.stats.goodShare).toBe(1);
+        expect(r.stats.closed).toBe(true);
+    });
+
     it('a city filmed from above: gates between and over the roofs, none in the fuzzy ground; the old path fails', () => {
         const city = cityFromAbove();
         const r = planCourse(input(city, ask('medium')));

@@ -98,8 +98,16 @@ tools/bench/src/scan-kinds.json, evidence/2026-11-19/gen4/.
   - [x] LEFT 3b: plan.test 'a short walk is walked again' (room beginner seeds 4 and 12: shrunk before, not now): NEG OK
     against 18aec1d6. The tier fallback and the kept kind rule (9076951a) keep the audit rows as proof (no cheap world).
     tracks 167 passed, typecheck clean. Commit: the one after 18aec1d6.
-  - [ ] LEFT 3c: Forest Floor detail (goodShare under 0.8 compact / 0.6 wide): read whether the plants zone or the
-    quality map is the cause.
+  - [x] LEFT 3c: Forest Floor ab5efa0e detail. Cause: the plants rule (under the leaves' top) holds 0-9 cells for a whoop
+    gate at x1, so every course fell to the old tier 2, which dropped the quality rule with the kind rule (350 of 682
+    tiles are good: the map is fine). Fix (plan.ts): tier 2 = no kind rule, quality kept; tier 3 (LOOSEST_TIER) = both
+    dropped; the ladder is walked in passes (LadderPass): the quality-keeping tiers over every opening first, a pass that
+    drops a rule only when no course at all was laid (room and object: quality dropped at the same opening, their kind
+    rule bounds the scanned part; a bare room's floor and a skull's table read poor); each walked tier tries
+    WALK_VARIANTS seeds. Forest Floor + Wroclaw seed 1: 12 of 12 PASS (ff6.json); Forest Floor beginner now 2 gates on
+    good tiles at the ladder's floor (was 5 gates, 0.4-0.6 good). plan.test 'every gate on a well-scanned tile' (city pro
+    wide seed 2; old 0.933): NEG OK against 095a7624; tracks 168 passed. Synthetic old/new comparison: only that plan
+    differs (goodcmp.log).
   - [ ] LEFT 3: re-run the audit after the fixes -> evidence/2026-11-19/gen4/place.json (all rules PASS, or each FAIL
     named in Not verified); ms per plan <= FIT_BUDGET_MS (run 1: at most 61 s).
   - [ ] LEFT 4: gates once (typecheck,vitest,architecture,i18n,b18,leaks), status parts, LANE-DONE.
