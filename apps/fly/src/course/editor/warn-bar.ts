@@ -108,6 +108,11 @@ export class WarnBar {
         this.timer = setTimeout(() => this.keep(), KEEP_ASK_MS);
     }
 
+    /** the pilot ends the question without a press on it (key Esc, Add armed): as its cross, the gate is kept */
+    dismiss(): void {
+        this.keep();
+    }
+
     /** the gate the open question is about (null: no question) */
     asking(): string | null {
         return this.mode === 'ask' ? this.gate : null;

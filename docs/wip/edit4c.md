@@ -194,3 +194,21 @@ Differences from the design (the code wins):
   killed run cost four. Cheaper: run on 2-3 seeds from the first probe run (one seed hid the far-wall bug), a shared
   probe helper (a scene point free of handles, the arrow by the gate's 3D axes, end adding safely, settle) and a lock
   wrapper with a trap in train4-common.md.
+- Review: most replies went to the probe's view-dependent aim (a third drag found no warning on its arrow once) and two
+  builds; a probe helper 'drag until the question shows' would have saved two.
+
+## Review
+
+Verdict: SHIP (independent check, after one repair; full findings in U:/Temp/gsfpv-train4/reviews/edit4c.md).
+
+- PROVEN, repaired: key Esc while 'Keep it here?' was open fell through to the editor's exit (course.ts keydown): the
+  box stayed and the line said 'The changes are not saved. Esc again leaves without saving', so a second Esc at a box
+  that did not close left the editor without saving. Arming Add with the question open left the box over the Add list
+  (at 844x390 it covered the right column and the list's cross). Now warn.ts escTarget (the question, then adding, then
+  the editor) and addClosesQuestion (Add answers it Keep first), WarnBar.dismiss (= its cross). Test
+  tools/bench/test/edit4c-warn.test.ts (7 passed; NEG OK on HEAD for warn.ts + course.ts and for course.ts alone).
+  Probe steps s9.escAsk and s10.addAsk added to edit4c-probe.mjs: on the lane's build (c242d970) s9 FAIL (asked, box
+  still 'ask', the unsaved line) and s8 FAIL (the box over the list); on the repaired build PASS 12 of 12, COURSE=g1.1,
+  render=off (evidence/2026-11-19/edit4c/review-probe-before-g1.1.json, review-probe-after-g1.1.json).
+- Claims 1-3 re-run: 20 passed; NEG OK editor.ts vs origin/main (place test), rules.ts + warn-live.ts vs origin/main.
+- Not checked by the review: Shift+G seeds, the live negative again, a drawn run, touch, other layouts.

@@ -45,6 +45,7 @@ import { EditView } from '../../course/editor/view-mouse';
 import { GateBar } from '../../course/editor/gate-bar';
 import { WarnBar } from '../../course/editor/warn-bar';
 import { LiveWarnings } from '../../course/editor/warn-live';
+import { addClosesQuestion, escTarget } from '../../course/editor/warn';
 import { ADD_CHOICE_KEYS, KEPT_KEY, PIECE_ADDED_KEY, PIECE_HINT_KEY, type AddChoice } from '../../course/editor/pieces-texts';
 import { AddChooser } from '../../course/editor/piece-menu';
 import { TopBar } from '../../course/editor/top-bar';
@@ -1084,6 +1085,8 @@ export const course: Feature = {
         };
         /** lane edit4c C2 (E12): Add is armed or no more: the top bar's Add button and the list of what it puts (a plain gate first) */
         const showAdding = (on: boolean): void => {
+            // review of edit4c: an open 'Keep it here?' is answered Keep first, so the box never lies over the Add list
+            if (addClosesQuestion(on, (warnBar?.asking() ?? null) !== null)) warnBar?.dismiss();
             addWhat = 'gate';
             top?.adding(on);
             chooser?.show(on, addWhat);
@@ -1458,7 +1461,15 @@ export const course: Feature = {
         addEventListener('keydown', (e: KeyboardEvent) => {
             // lane editor3 E3: while the drone flies the keys belong to the flight
             if (!ed || !panel || mode === 'fly') return;
-            if (e.code === 'Escape' && view?.adding) {
+            // the order key Esc closes things in (course/editor/warn.ts escTarget): the open question, armed adding, the editor
+            const escAt = e.code === 'Escape' ? escTarget((warnBar?.asking() ?? null) !== null, !!view?.adding) : null;
+            if (escAt === 'question') {
+                e.preventDefault();
+                e.stopPropagation();
+                warnBar?.dismiss();
+                return;
+            }
+            if (escAt === 'adding' && view) {
                 e.preventDefault();
                 e.stopPropagation();
                 view.adding = false;

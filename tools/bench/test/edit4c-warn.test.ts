@@ -105,4 +105,24 @@ describe('edit4c C1w: the words and the box', () => {
         expect(warnPlace([5, 400, 1], 1536, 730, 320, 120, 52)![0]).toBe(8);
         expect(warnPlace([768, 400, -1], 1536, 730, 320, 120, 52)).toBeNull();
     });
+
+    it('review: key Esc closes the open question first, then adding, only then the editor; Add answers the question', async () => {
+        // read through the module object: on the old code the names are absent and the expectations fail (no import error)
+        const w = (await import('../../../apps/fly/src/course/editor/warn')) as Record<string, unknown>;
+        const escTarget = w.escTarget as ((asking: boolean, adding: boolean) => string) | undefined;
+        const addClosesQuestion = w.addClosesQuestion as ((arming: boolean, asking: boolean) => boolean) | undefined;
+        expect(typeof escTarget).toBe('function');
+        expect(typeof addClosesQuestion).toBe('function');
+        expect(escTarget!(true, false)).toBe('question');
+        expect(escTarget!(true, true)).toBe('question');
+        expect(escTarget!(false, true)).toBe('adding');
+        expect(escTarget!(false, false)).toBe('editor');
+        expect(addClosesQuestion!(true, true)).toBe(true);
+        expect(addClosesQuestion!(false, true)).toBe(false);
+        expect(addClosesQuestion!(true, false)).toBe(false);
+        // the page uses them: Esc's order in the edit view's keydown and the Add list's arming
+        const src = readFileSync(new URL('../../../apps/fly/src/app/builtin/course.ts', import.meta.url), 'utf8');
+        expect(src).toMatch(/escTarget\(\(warnBar\?\.asking\(\) \?\? null\) !== null, !!view\?\.adding\)/);
+        expect(src).toMatch(/if \(addClosesQuestion\(on, \(warnBar\?\.asking\(\) \?\? null\) !== null\)\) warnBar\?\.dismiss\(\);/);
+    });
 });

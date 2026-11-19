@@ -95,6 +95,19 @@ export function warnedGates(ws: readonly Warning[], index: number): Set<number> 
 export const WARN_EVERY_MS = 100;
 /** how long the question 'Keep it here?' waits for an answer, ms; no answer keeps the gate where the pilot put it */
 export const KEEP_ASK_MS = 8000;
+
+/** What key Esc closes first in the edit view: the open question 'Keep it here?' (as its cross: the gate is kept), then
+ *  armed adding (as Add again), else the editor's own Esc (leave, asking about unsaved changes first). Review of edit4c:
+ *  the question fell through to 'leave', so a second Esc at a box that did not close left without saving. */
+export type EscTarget = 'question' | 'adding' | 'editor';
+export function escTarget(asking: boolean, adding: boolean): EscTarget {
+    return asking ? 'question' : adding ? 'adding' : 'editor';
+}
+
+/** Arming Add while the question is open answers it Keep first: the Add list and the box must never lie over each other. */
+export function addClosesQuestion(arming: boolean, asking: boolean): boolean {
+    return arming && asking;
+}
 /** the warning box stands this far above the gate's centre, CSS px (the gate bar stands as far below: bar-place.ts BAR_CLEAR_PX) */
 export const WARN_CLEAR_PX = 210;
 

@@ -372,6 +372,41 @@ try {
             const moved = !!two.after?.list?.[gi] && Math.hypot(...two.after.list[gi].pos.map((v, i) => v - two.before[i])) > 0.05;
             const orange = !!kept && Array.isArray(kept.warn?.kept) && kept.warn.kept.includes(two.id);
             judge('s7.keep', !!asked2 && stayed && moved && orange, { asked: !!asked2, stayed, moved, kept: kept?.warn?.kept ?? null, id: two.id, barAfter: kept?.warn?.mode ?? null, why: two.why ?? null, px: two.px ?? null });
+            // s9 (the review's step): the question open, the pilot presses key Esc to get rid of the box, as Esc ends adding.
+            // Esc must close it as its cross does (the gate kept), and must not start leaving the edit view.
+            await settle();
+            let three = await dragToward('third');
+            // the gate kept in s7 may stand where its arrow finds no warning: up to two more drags from where it is now
+            for (let k = 0; k < 2 && !three.after?.askDom; k++) { await settle(); three = await dragToward(`third-again-${k}`); }
+            const asked3 = three.after?.askDom && three.after.warn?.mode === 'ask';
+            let esc = null;
+            if (asked3) {
+                await page.keyboard.press('Escape');
+                await sleep(500);
+                esc = await snap();
+            }
+            const escClosed = !!esc && esc.warn?.mode === 'off';
+            const escStayed = !!esc && esc.open && esc.mode === 'edit';
+            const escKept = !!esc && Array.isArray(esc.warn?.kept) && esc.warn.kept.includes(three.id);
+            judge('s9.escAsk', !!asked3 && escClosed && escStayed && escKept, { asked: !!asked3, escClosed, escStayed, escKept, barAfter: esc?.warn?.mode ?? null, said: esc?.said ?? null, why: three.why ?? null });
+            // s10 (the review's): the question open, the pilot presses Add: the box goes (kept) and lies over no item of the list
+            await settle();
+            const four = await dragToward('fourth');
+            const asked4 = four.after?.askDom && four.after.warn?.mode === 'ask';
+            let addS = null;
+            let addClear = false;
+            if (asked4) {
+                await clickSel('.ce-topbar [data-top="add"]', 600);
+                addS = await snap();
+                addClear = await page.evaluate(() => {
+                    const r = document.querySelector('[data-testid="add-chooser"]');
+                    if (!r || r.hidden) return false;
+                    return [...r.querySelectorAll('button')].every((b) => { const bb = b.getBoundingClientRect(); const top = document.elementFromPoint(bb.left + bb.width / 2, bb.top + bb.height / 2); return top === b || b.contains(top); });
+                });
+                await endAdding();
+            }
+            const addClosedAsk = !!addS && addS.warn?.mode === 'off';
+            judge('s10.addAsk', !!asked4 && addClosedAsk && addClear, { asked: !!asked4, addClosedAsk, addClear, barAfter: addS?.warn?.mode ?? null, why: four.why ?? null });
         }
         res.tags = tags;
     }
