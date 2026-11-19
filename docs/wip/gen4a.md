@@ -256,3 +256,19 @@ does not refuse: the dialog names the Scene size where the course fits (gen4b's 
   and to finding the micro-greens id (a repo-wide grep timed out: grep docs/wip only). Cheaper: print the real scans'
   per-layer cover profile BEFORE writing kind rules, so the rules are designed from data in one pass.
 - S0: about 12 replies; the neg_control call needs `npx.cmd`, not `npx`, on this Windows shell (one wasted call).
+- Review (independent check): about 30 replies; most went to finding a craft and spawn for the old-vs-new comparison
+  (LoadedScene has no spawn; boundRadius is computed in sim-core). Cheaper: the audit could take --craft R and print the
+  old fitCourse path's gate count beside each plan.
+
+## Review
+
+Verdict: SHIP (independent check, 2026-11-19; full text U:/Temp/gsfpv-train4/reviews/gen4a.md).
+- Re-run: packages/tracks/test 171 passed; audit on the skull 5dfeb49b x1 and Winter Garden 7a475d38 seed 1: PLANS 12
+  FAILED 0. NEG OK twice (generate.ts of origin/main under plan.test.ts; generate.ts of c8cbfa55 under 'stored at').
+- Repaired (PROVEN): plan.ts planCourse started a lay that would end past FIT_BUDGET_MS (late() checked only now >= at);
+  fit.ts fitCourse's rule (review T2-6 / CV-5) is kept now: the longest lay so far is added. Test plan.test.ts 'a lay
+  that would end past the deadline is not started': NEG OK against d2468eeb. Gates typecheck, vitest, architecture PASS.
+- For the lead / gen4b (not repaired): a whoop in the fixture room 39e63ce9 at x1 gets 1 gate at Beginner (every seed) and
+  2 at Pro seed 1, while a 5-inch quad gets 5 and 12 there and today's path gives the whoop 2-3. A deadline cut before
+  any course answers no-room with fitSize null (DOUBT: the page could say no size fits).
+- Not checked: no page, picture or browser (no page in this lane); the full 216-plan audit not re-run.

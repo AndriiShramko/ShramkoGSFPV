@@ -132,6 +132,33 @@ describe('planCourse: the asked course in the scanned part, closed, at the craft
         expect(big.stats.underGround).toBe(0);
     });
 
+    it('a lay that would end past the deadline is not started (the page\'s watchdog would end the worker)', () => {
+        // review gen4a: fit.ts fitCourse's rule (review T2-6 / CV-5) kept by planCourse. A fake clock: each lay takes LAY_MS
+        const req = ask('beginner', 4);
+        let lays = 0;
+        planCourse(input(room, req), { onStep: (s) => { if (s === 'lay') lays++; } });
+        expect(lays).toBeGreaterThanOrEqual(3);
+        const LAY_MS = 10_000, at = 2.5 * LAY_MS;
+        let clock = 0, pending = 0;
+        const ends: number[] = [];
+        const now = (): number => {
+            const v = clock;
+            clock += pending;
+            pending = 0;
+            return v;
+        };
+        planCourse(input(room, req), {
+            deadline: { at, now },
+            onStep: (s) => {
+                if (s !== 'lay') return;
+                pending = LAY_MS;
+                ends.push(clock + LAY_MS);
+            }
+        });
+        expect(ends.length).toBeGreaterThanOrEqual(1);
+        expect(Math.max(...ends)).toBeLessThanOrEqual(at);
+    });
+
     it('fitSizeFor: the first step over the size that reaches size / ratio; null when none does', () => {
         expect(fitSizeFor(1, 0.45)).toBe(3);
         expect(fitSizeFor(1, 1.2)).toBe(2);

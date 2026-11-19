@@ -297,7 +297,10 @@ function letters(r: CourseRequest): string {
 export function planCourse(input: PlanInput, hooks: PlanHooks = {}): PlanAnswer {
     const { walls, transform, request } = input;
     const now = hooks.deadline?.now;
-    const late = (): boolean => !!hooks.deadline && hooks.deadline.now() >= hooks.deadline.at;
+    /** the longest lay so far, ms: a lay that would end past the deadline is not started (fit.ts fitCourse's rule, review
+     *  T2-6 / CV-5: the page's watchdog ends a worker that runs on past FIT_BUDGET_MS and the pilot gets only a failure) */
+    let longest = 0;
+    const late = (): boolean => !!hooks.deadline && hooks.deadline.now() + longest >= hooks.deadline.at;
     hooks.onStep?.('analyse', 0);
     const a = analyzeScan(walls, transform);
     const rules = planRules(request, input.craftRadiusM || SMALLEST_DRONE_RADIUS_M, a);
@@ -373,7 +376,10 @@ export function planCourse(input: PlanInput, hooks: PlanHooks = {}): PlanAnswer 
                     hooks.onStep?.('lay', lastMs);
                     const t0 = now ? now() : 0;
                     const track = generateCourse(free, walls, { seed: walkSeed(request.seed, v), scene: input.scene, transform, created: input.created, spawn: start, params, place, elements, craftRadiusM: input.craftRadiusM });
-                    if (now) lastMs = now() - t0;
+                    if (now) {
+                        lastMs = now() - t0;
+                        longest = Math.max(longest, lastMs);
+                    }
                     if (track.gates.length > 0 && track.gates.length > bestGates() && legsWithinServer(track)) best = { track, opening };
                 };
                 // a tier with too few cells is not walked unless it is the pass's last; each tier's derived seeds are walked
