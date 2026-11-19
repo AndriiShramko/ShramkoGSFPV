@@ -3,7 +3,7 @@
 // import, so a Node test can hold the tables to the four languages.
 import type { Course, CourseProblem, EditAction, EditRefusal } from '@gsfpv/tracks';
 import { CAM_ROWS, KEY_ROWS } from './keys';
-import { TOOLS, TOP_BUTTONS } from './bar-place';
+import { COURSE_MENU_HUB, TOOLS, TOP_BUTTONS } from './bar-place';
 
 /** the locale key of every refusal code: the test holds this table to EditRefusal and to the four languages */
 export const REFUSAL_KEYS: Record<EditRefusal['code'], string> = {
@@ -13,6 +13,8 @@ export const REFUSAL_KEYS: Record<EditRefusal['code'], string> = {
     'size-min': 'course.edit.r.sizeMin',
     'size-max': 'course.edit.r.sizeMax',
     'order-edge': 'course.edit.r.orderEdge',
+    // lane edit4b (E4): an empty course
+    'no-gate': 'course.edit.r.noGate',
     same: 'course.edit.r.same',
     'nothing-to-undo': 'course.edit.r.undo',
     'nothing-to-redo': 'course.edit.r.redo'
@@ -103,6 +105,7 @@ export const ACTION_KEYS: Record<EditAction['kind'], string> = {
     insert: 'course.edit.key.insert',
     add: 'course.edit.bar.add',
     delete: 'course.edit.key.delete',
+    replace: 'course.edit.key.cleared',
     order: 'course.edit.key.order',
     undo: 'course.edit.key.undo',
     redo: 'course.edit.key.redo'
@@ -131,7 +134,7 @@ export function editorLocaleKeys(): string[] {
         // review ED-6: a gate taken by a click
         'course.edit.selected', LEG_START_KEY, SAVE_FIX_KEY, ADD_FIX_KEY];
     return [...new Set([...fixed, ...Object.values(FIX_KEYS),...Object.values(REFUSAL_KEYS), ...Object.values(PROBLEM_KEYS), ...Object.values(ACTION_KEYS), ...KEY_ROWS.map((r) => r.labelKey),
-        ...CAM_ROWS.map((r) => r.labelKey), ...TOP_BUTTONS.map((b) => b.labelKey), ...TOOLS.map((b) => b.labelKey)])];
+        ...CAM_ROWS.map((r) => r.labelKey), ...TOP_BUTTONS.map((b) => b.labelKey), ...COURSE_MENU_HUB.map((b) => b.labelKey), 'course.edit.bar.back', ...TOOLS.map((b) => b.labelKey)])];
 }
 
 /** review ED-6: the word for what an accepted edit did: a step back says "previous gate", a click (select) says "selected" */

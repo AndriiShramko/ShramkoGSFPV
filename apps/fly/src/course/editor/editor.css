@@ -172,7 +172,8 @@
 }
 .ce-topbar .ce-tb-line.refused { color: #ffb347; }
 /* lane editfix E2: while the course is flown in the mode, Exit stays on the bar and takes a click (no dead end) */
-.ce-topbar.flying .ce-tb:not([data-top='exit']) { display: none; }
+.ce-topbar.flying .ce-tb:not([data-top='exit']):not([data-top='fly']) { display: none; }
+.ce-topbar.flying .ce-tb[data-top='fly'] { pointer-events: auto; }
 .ce-topbar.flying { pointer-events: none; }
 .ce-topbar.flying .ce-tb[data-top='exit'] { pointer-events: auto; }
 

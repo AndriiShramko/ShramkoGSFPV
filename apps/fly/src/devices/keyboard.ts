@@ -85,6 +85,18 @@ export function stopKeyboardArm(): void {
     if (typeof dispatchEvent === 'function') dispatchEvent(new Event(KB_ARM_STOP));
 }
 
+/**
+ * Lane edit4b (E5): the editor's Fly the course button arms (true) and its Back to editing disarms (false) as one Space
+ * press does in the edit mode: the keyboard game pilot asks for the motors or stops them, the pilot scheme flips its latch,
+ * a passive keyboard asks the flying source's key arm (Controls.toggleArm, nothing for a switch: the editor says so).
+ * A window event, as KB_ARM_STOP, so the editor needs no handle on the source.
+ */
+export const KB_ARM_SET = 'gsfpv:kb-arm-set';
+
+export function setKeyboardArm(on: boolean): void {
+    if (typeof dispatchEvent === 'function' && typeof CustomEvent === 'function') dispatchEvent(new CustomEvent<boolean>(KB_ARM_SET, { detail: on }));
+}
+
 export function dialogOpen(): boolean {
     return !!document.querySelector(`${DIALOGS}, ${EDIT_MODE}`);
 }
@@ -133,6 +145,7 @@ export class KeyboardSource {
         addEventListener('keydown', this.onDown, { capture: true });
         addEventListener('keyup', this.onUp, { capture: true });
         addEventListener(KB_ARM_STOP, this.armStop);
+        addEventListener(KB_ARM_SET, this.armSet);
         // a key released in another window never sends its keyup here: forget held keys on leaving
         addEventListener('blur', this.release);
         document.addEventListener('visibilitychange', this.release);
@@ -305,6 +318,30 @@ export class KeyboardSource {
         return !g.armed && g.block !== 'crashed';
     }
 
+    /** KB_ARM_SET: the editor's Fly / Back to editing button, as the edit mode's Space (the caller asks only for a change) */
+    private armSet = (e: Event): void => {
+        const on = (e as CustomEvent<boolean>).detail === true;
+        if (this.passive) {
+            this.onArm?.();
+            return;
+        }
+        const now = performance.now();
+        if (this.isGame) {
+            if (on) this.game!.pilot.arm.request();
+            else {
+                this.game!.pilot.arm.stop();
+                this.down.delete('Space');
+                this.editSpaceAt = null;
+            }
+            this.emitGame(now);
+            return;
+        }
+        if (on && this.armed && this.letGo()) { this.armed = false; this.emit(now); }
+        if (this.armed === on) return;
+        this.armed = on;
+        this.emit(now);
+    };
+
     /** KB_ARM_STOP: the keyboard game pilot's motors stop and a held Space no longer climbs (the same call as the edit tap) */
     private armStop = (): void => {
         if (this.passive || !this.isGame) return;
@@ -318,6 +355,7 @@ export class KeyboardSource {
         removeEventListener('keydown', this.onDown, { capture: true });
         removeEventListener('keyup', this.onUp, { capture: true });
         removeEventListener(KB_ARM_STOP, this.armStop);
+        removeEventListener(KB_ARM_SET, this.armSet);
         removeEventListener('blur', this.release);
         document.removeEventListener('visibilitychange', this.release);
         clearInterval(this.timer);

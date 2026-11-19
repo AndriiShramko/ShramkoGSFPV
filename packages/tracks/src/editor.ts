@@ -25,7 +25,8 @@ export const MIN_OPENING_M = 0.5;
 export const MAX_OPENING_M = MAX_GATE_SIZE_M;
 export const INSERT_AHEAD_M = 4;
 /** the format's least gates (validateTrack: at least 1) and the server's most */
-export const MIN_GATES = 1;
+/** lane edit4b (E4): a course may hold no gate while it is edited (Delete all gates, New empty course); saving one is refused */
+export const MIN_GATES = 0;
 export const MAX_GATES_EDIT = SERVER_MAX_GATES;
 /** undo steps kept (estimate) */
 export const UNDO_MAX = 200;
@@ -72,7 +73,7 @@ export function wallsCheck(walls: VoxelCollision, transform: SceneTransform, mar
 
 export interface EditorState {
     readonly course: Course;
-    /** the selected gate's index */
+    /** the selected gate's index; -1 when the course has no gate */
     readonly selected: number;
     readonly undo: readonly { readonly course: Course; readonly selected: number }[];
     readonly redo: readonly { readonly course: Course; readonly selected: number }[];
@@ -96,6 +97,8 @@ export type EditAction =
      *  TrackGate.pos and .quat); the selected gate's shape; selected afterwards. Refused as insert is (max-gates, placement). */
     | { readonly kind: 'add'; readonly pos: Vec3; readonly quat: Quat }
     | { readonly kind: 'delete' }
+    /** lane edit4b (E4): every gate at once (Delete all gates: []), one undo step; `selected` afterwards (-1: none) */
+    | { readonly kind: 'replace'; readonly gates: readonly TrackGate[]; readonly selected: number }
     /** the selected gate earlier (-1) or later (+1) in the order */
     | { readonly kind: 'order'; readonly step: number }
     | { readonly kind: 'undo' }
@@ -109,6 +112,8 @@ export type EditRefusal =
     | { readonly code: 'size-min'; readonly minM: number }
     | { readonly code: 'size-max'; readonly maxM: number }
     | { readonly code: 'order-edge' }
+    /** lane edit4b: the course has no gate to change (add one first) */
+    | { readonly code: 'no-gate' }
     | { readonly code: 'same' }
     | { readonly code: 'nothing-to-undo' }
     | { readonly code: 'nothing-to-redo' };
@@ -118,12 +123,12 @@ export type EditOutcome =
     | { readonly ok: false; readonly state: EditorState; readonly reason: EditRefusal };
 
 export function openEditor(course: Course, check: CourseCheck, selected = 0): EditorState {
-    return { course, selected: Math.max(0, Math.min(course.gates.length - 1, selected)), undo: [], redo: [], problems: check(course) };
+    return { course, selected: course.gates.length === 0 ? -1 : Math.max(0, Math.min(course.gates.length - 1, selected)), undo: [], redo: [], problems: check(course) };
 }
 
 /** Saving is allowed only while the course has no problem at all (tracks-plan 2.11). */
 export function canSave(s: EditorState): boolean {
-    return s.problems.length === 0;
+    return s.problems.length === 0 && s.course.gates.length > 0;
 }
 
 const r3 = (v: number): number => {
@@ -162,6 +167,13 @@ function withOpening(s: ObjectShape, opening: number): ObjectShape {
     return s;
 }
 
+/** lane edit4b: the first gate of an empty course (a square of DEFAULT_OPENING_M flown, the course's frame at scale `s`) */
+export const DEFAULT_OPENING_M = 1.5;
+function firstGate(s: number): TrackGate {
+    const side = r3(DEFAULT_OPENING_M / s);
+    return { id: 'g0', shape: { kind: 'square', side, bar: Math.min(r3(SQUARE_BAR_M / s), side) }, pos: [0, 0, 0], quat: [1, 0, 0, 0], direction: 'forward' };
+}
+
 function nextGateId(gates: readonly TrackGate[]): string {
     const used = new Set(gates.map((g) => g.id));
     let n = 0;
@@ -185,10 +197,11 @@ export function edit(state: EditorState, action: EditAction, check: CourseCheck)
     const { course } = state;
     const gates = course.gates;
     const n = gates.length;
-    const sel = Math.max(0, Math.min(n - 1, state.selected));
+    const sel = n === 0 ? -1 : Math.max(0, Math.min(n - 1, state.selected));
     const s = course.transform[0];
-    const at = (st: EditorState): EditOutcome => ({ ok: true, state: st, gate: st.course.gates[st.selected]!.id, index: st.selected, action: action.kind });
+    const at = (st: EditorState): EditOutcome => ({ ok: true, state: st, gate: st.course.gates[st.selected]?.id ?? '', index: st.selected, action: action.kind });
 
+    if (n === 0 && (action.kind === 'select' || action.kind === 'select-step')) return refuse(state, { code: 'no-gate' });
     if (action.kind === 'select') return at({ ...state, selected: Math.max(0, Math.min(n - 1, Math.trunc(action.index))) });
     if (action.kind === 'select-step') return at({ ...state, selected: (((sel + Math.trunc(action.step)) % n) + n) % n });
     if (action.kind === 'undo' || action.kind === 'redo') {
@@ -201,9 +214,19 @@ export function edit(state: EditorState, action: EditAction, check: CourseCheck)
         return at({ course: top.course, selected: top.selected, undo, redo, problems: check(top.course) });
     }
 
-    const g = gates[sel]!;
     let next: TrackGate[] = [...gates];
     let selected = sel;
+    if (action.kind === 'replace') {
+        next = [...action.gates];
+        selected = next.length === 0 ? -1 : Math.max(0, Math.min(next.length - 1, Math.trunc(action.selected)));
+        const changed: Course = { ...course, gates: next };
+        if (next.length === n && next.every((x, i) => x === gates[i])) return refuse(state, { code: 'same' });
+        const undo = [...state.undo, { course, selected: sel }].slice(-UNDO_MAX);
+        return at({ course: changed, selected, undo, redo: [], problems: check(changed) });
+    }
+    // an empty course: only a gate placed by Add (the default gate of the course's scale) is a change
+    const g = gates[sel] ?? (action.kind === 'add' ? firstGate(s) : null);
+    if (!g) return refuse(state, { code: 'no-gate' });
     if (action.kind === 'move') {
         const d = (action.steps * (action.stepM ?? MOVE_STEP_M)) / s;
         const pos = [...g.pos] as [number, number, number];

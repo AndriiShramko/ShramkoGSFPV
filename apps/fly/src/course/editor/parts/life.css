@@ -1,0 +1,74 @@
+/* Lane edit4b: the question before a step that drops the pilot's gates (life-ask.ts) and the top bar's menu (top-bar.ts). */
+.life-ask-back {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.55);
+    pointer-events: auto;
+}
+.life-ask {
+    position: relative;
+    box-sizing: border-box;
+    width: min(440px, calc(100vw - 24px));
+    max-height: calc(100vh - 24px);
+    overflow: auto;
+    padding: 18px 60px 16px 18px;
+    border: 2px solid #a6ff1a;
+    border-radius: 10px;
+    background: #10140c;
+    color: #f2f2f2;
+    font: 16px/1.4 system-ui, sans-serif;
+}
+.life-ask h2 { margin: 0 0 8px; font-size: 19px; }
+.life-ask p { margin: 0 0 14px; }
+.life-ask-row { display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; margin-right: -42px; }
+.life-ask-row button, .life-ask-x {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0 16px;
+    border: 2px solid #5a6650;
+    border-radius: 8px;
+    background: #1d2416;
+    color: #f2f2f2;
+    font: 600 16px system-ui, sans-serif;
+    cursor: pointer;
+}
+.life-ask-row button:focus-visible, .life-ask-x:focus-visible, .life-ask-row button:hover { border-color: #a6ff1a; }
+.life-ask-row .life-ask-yes { background: #5c1a1a; border-color: #ff6b6b; }
+.life-ask-x { position: absolute; top: 6px; right: 6px; width: 44px; height: 44px; padding: 0; font-size: 24px; line-height: 1; }
+
+/* the top bar's Course menu */
+.ce-menu {
+    position: fixed;
+    z-index: 55;
+    box-sizing: border-box;
+    min-width: 230px;
+    max-width: calc(100vw - 16px);
+    max-height: calc(100vh - 16px);
+    overflow: auto;
+    padding: 50px 6px 6px;
+    border: 2px solid #a6ff1a;
+    border-radius: 10px;
+    background: #10140c;
+    pointer-events: auto;
+}
+.ce-menu button {
+    display: block;
+    width: 100%;
+    min-height: 44px;
+    padding: 0 14px;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: #f2f2f2;
+    font: 600 16px system-ui, sans-serif;
+    text-align: left;
+    cursor: pointer;
+}
+.ce-menu button:hover, .ce-menu button:focus-visible { background: #2a3a12; }
+.ce-menu .ce-menu-x { position: absolute; top: 4px; right: 4px; width: 44px; height: 44px; padding: 0; font-size: 24px; text-align: center; }
+.ce-topbar .ce-tb[data-top='fly'] { background: #1f5c12; border-color: #a6ff1a; }
+.ce-topbar.flying .ce-tb.ce-tb[data-top='fly'] { pointer-events: auto; background: #5c3a12; border-color: #ffb347; }

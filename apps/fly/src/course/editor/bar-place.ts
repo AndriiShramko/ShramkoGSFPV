@@ -61,17 +61,25 @@ export function toolAfter(tool: Tool, prevGate: string | number | null, gate: st
     return gate !== prevGate ? 'move' : tool;
 }
 
-/** what a top bar button does that is not a key row: arm Add gate, or open the window at its courses or its keys */
-export type TopPress = 'add' | 'courses' | 'keys';
+/** what a top bar button does that is not a key row: arm Add gate, the test flight (Fly the course / Back to editing),
+ *  or open the Course menu (lane edit4b, design edit4 1.3: Courses and Keys are items of that menu) */
+export type TopPress = 'add' | 'fly' | 'course';
 
-/** One button of the top bar: a key row it runs, or a TopPress. Review ED-7: Save, Courses and Keys as in the design. */
+/** One button of the top bar: a key row it runs, or a TopPress (design edit4 1.3: seven buttons, ids are the probes' handles). */
 export const TOP_BUTTONS: readonly { readonly id: string; readonly labelKey: string; readonly press: KeyPress | TopPress }[] = [
     { id: 'add', labelKey: 'course.edit.bar.add', press: 'add' },
     // lane editor3 H1: the top bar's own words, each with a capital letter (the key.* texts are lower-case sentence parts)
     { id: 'undo', labelKey: 'course.edit.bar.undo', press: { code: 'KeyZ', ctrlKey: true } },
     { id: 'redo', labelKey: 'course.edit.bar.redo', press: { code: 'KeyY', ctrlKey: true } },
+    // lane edit4b (E5): the test flight has its own button; while flying it reads Back to editing (course.edit.bar.back)
+    { id: 'fly', labelKey: 'course.edit.bar.fly', press: 'fly' },
     { id: 'save', labelKey: 'course.edit.bar.save', press: { code: 'KeyS', ctrlKey: true } },
-    { id: 'courses', labelKey: 'course.edit.bar.courses', press: 'courses' },
-    { id: 'keys', labelKey: 'course.edit.bar.keys', press: 'keys' },
+    { id: 'course', labelKey: 'course.edit.bar.course', press: 'course' },
     { id: 'exit', labelKey: 'course.edit.bar.exit', press: { code: 'Escape' } }
 ];
+
+/** lane edit4b: the Course menu's own items the hub adds (the window opened at its courses or its keys) */
+export const COURSE_MENU_HUB = [
+    { id: 'courses', labelKey: 'course.edit.bar.courses' },
+    { id: 'keys', labelKey: 'course.edit.bar.keys' }
+] as const;
