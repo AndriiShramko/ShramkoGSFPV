@@ -29,8 +29,11 @@ Stages (adapted from plan 1.4; at most 4; see "Differences from the design"):
   - [x] H4a nginx camera=(self) in `location ~ ^/(en|es|pl|ru)/fly/` only; tests apps/api/tests/test_nginx_routes.py
     (camera_of, 2 new tests, 19 OK) and tools/bench/test/sonicrec-headers.test.ts (5 OK), both NEG OK on origin/main;
     the microphone controls of sonicrec-headers.ts and sonicrec-serve.ts follow the new text; deploy/README.md row.
-  - [ ] H4b one release build, serve-csp, the acceptance probe (mouse, 1536x730 at 1.25), the same probe on the live site.
-  - [ ] H4c the parts below completed, the gates.
+  - [x] H4b one release build, serve-csp on 6142, the acceptance probe tools/bench/scripts/head4-accept.mjs (mouse,
+    1536x730 at 1.25, 12 steps): PASS, evidence/2026-11-19/head4/accept.json; the same probe on the live site: 10 steps
+    FAIL (the lane's), 2 PASS (true before: nothing loads, other pages refuse), evidence/2026-11-19/head4/accept-live.json.
+    The privacy sentence in four languages: docs/wip/head4-privacy.json.
+  - [ ] H4c the gates.
 
 ### Differences from the design
 
@@ -52,7 +55,20 @@ Stages (adapted from plan 1.4; at most 4; see "Differences from the design"):
 
 ## What the owner does
 
-Filled in at stage H4.
+1. Open https://gsfpv.flyreelstudio.eu/en/fly/?sonic=start (or the pause menu's Fly by Sound item). Headphones on, a web
+   camera on the computer.
+2. In the navigation choose Settings (mouse or Tab, Enter). The settings list has "Turn my head to listen", off. With it
+   off nothing of the head tracking is downloaded and the camera is not touched.
+3. Tick it. The voice says what the camera is for, that no picture leaves the computer, and that the browser will ask.
+   Then the browser asks for the camera: choose Allow. The first time "Loading the face tracker, about 8 megabytes" is said
+   if it takes more than a second; then "Head tracking on. Face the screen; to centre again later, press key Shift+H."
+4. Start a lesson (Start the course from the beginning). Face the screen and press key Shift+H: "Centred." Turn your head left and
+   right: a sound ahead of the drone should stay where it is in the room, not turn with your head.
+5. Move out of the camera's view: "Head lost. Sounds follow the drone until your face is back." (once, with the narrator
+   on); the sound glides back to the drone's own front in about a second.
+6. Untick the setting (or close or hide the tab): "Head tracking off. The camera is closed." The camera's light goes out.
+7. If you choose Block in step 3, the voice says the camera was not allowed and how to allow it by the icon left of the
+   address; the setting is off again.
 
 ## Claims
 
@@ -80,6 +96,23 @@ Filled in at stage H4.
    is said only past a second. Proof: `npx vitest run tools/bench/test/sonic-head-tracker.test.ts`; last result 6 of 6,
    NEG OK on origin/main and, for the loading line, on 777c5893.
 
+5. Only the simulator page may ask for the camera: deploy/nginx.conf sends camera=(self) in `location ~ ^/(en|es|pl|ru)/fly/`
+   and camera=() everywhere else (the site, the assets, the admin, the scene pages). Proof:
+   `cd apps/api && python -X utf8 -m unittest tests.test_nginx_routes` (19 OK) and
+   `npx vitest run tools/bench/test/sonicrec-headers.test.ts` (5 passed); both NEG OK on origin/main.
+
+6. The pilot's path on the release served under the live policy (serve-csp), with the mouse at 1536x730, scale 1.25, a fake
+   camera: the row is there and off; off, nothing of it is downloaded and no camera opened; the explanation is said before
+   the camera is asked; the camera opens and "on" is said; the tracker's files come from /fly/headtrack/ on our origin;
+   nothing is sent while the camera runs (no request but GET, none to another origin); a second click ends the camera's
+   track and says "off"; on again, a lesson started with the mouse, a click into the scene, key Shift+H says "Centred.";
+   in the lesson the AudioListener's up vector moves with the rolling portrait (range 0.457); the landing page's
+   getUserMedia is refused (NotAllowedError); a browser that refuses the camera hears the "not allowed" line and the row
+   is off again. Proof: `node tools/bench/scripts/head4-accept.mjs http://localhost:6142 <out.json>` with
+   `node tools/bench/scripts/serve-csp.mjs dist 6142` on a `node scripts/build-release.mjs` build; last result PASS
+   (12 of 12), evidence/2026-11-19/head4/accept.json. Control: the same probe on https://gsfpv.flyreelstudio.eu FAILS the
+   10 steps of this lane (no row, camera=() on the page) and passes the 2 that were true before; accept-live.json.
+
 ## Not verified
 
 - No person, no camera, no phone and no real controller took part. The roll sign is now measured (claim 3); the signs of
@@ -87,8 +120,11 @@ Filled in at stage H4.
   degrees, pitch -4.8 to -2.6 on the clip). A clip of a real head turn would settle them.
 - The worker times (43 ms a picture) are one desktop's CPU in headless Chrome; integrated GPU machines and phones are not
   measured, the GPU delegate is not measured.
-- The production build of the worker and the path from the settings row to the tracker in the simulator page run in H4
-  (the probe of H3 runs the dev server's lab page).
+- The browser's camera question itself was answered by Chrome's flag (--use-fake-ui-for-media-stream), which also reports
+  the permission as granted before it is asked: the real prompt and a pilot's Allow click were not seen. The refusal was
+  Playwright's own (no flag), not a pilot's Block click. Speech was a stand-in (headless Chrome has no voice): the lines'
+  order and words are checked, not their sound.
+- The listener's turn was measured by its numbers; nobody listened to it. Firefox and Safari were not run.
 - The fake clip's portrait is MediaPipe's sample photo (https://storage.googleapis.com/mediapipe-assets/portrait.jpg),
   kept only in the TEMP folder, not in the repository.
 
@@ -110,6 +146,36 @@ Filled in at stage H4.
   4.1 MB after gzip; build-release gzips .wasm), vision_wasm_module_internal.js 336,662, face_landmarker.task 3,758,596;
   the worker chunk is measured at the H4 build. Downloaded only when the pilot turns the setting on.
 - H3: a new spoken line sonichead.say.loading in en, es, pl, ru.
+- H4 nginx (deploy/nginx.conf, `location ~ ^/(en|es|pl|ru)/fly/` only), the exact line now:
+  `add_header Permissions-Policy "hid=(self), gamepad=(self), fullscreen=(self), screen-wake-lock=(self), camera=(self), microphone=(self), geolocation=(), usb=(self), serial=(), bluetooth=(), xr-spatial-tracking=()" always;`
+  Every other location keeps camera=(). CSP: no change. The page's policy already has script-src 'wasm-unsafe-eval' (the
+  wasm), worker-src 'self' blob: (the worker /fly/assets/face-worker-*.js), connect-src 'self' (the files under
+  /fly/headtrack/); the camera's MediaStream on a video element is not a media-src load. The probe ran under that
+  enforced policy. /fly/headtrack/*.wasm falls in `location ~ \.wasm$` (immutable cache, gzip_static), the .js and
+  .task files in `location /` (no-cache, ETag): the file names carry no hash, so they revalidate.
+  Limit: the .wasm's name carries no hash but its cache is immutable for a year, so a later MediaPipe version must move
+  the folder (HEAD_ASSET_DIR in apps/fly/src/sonic/head/assets.ts, e.g. headtrack/1.2.4/), not overwrite the file.
+- H4 download, measured on the build (only when the pilot turns the setting on): over the wire with gzip_static about
+  8.06 MB (vision_wasm_module_internal.wasm.gz 4,168,800; face_landmarker.task 3,758,596, not gzipped; the runtime's .js.gz
+  81,181; the chunks face-worker 45,447, tracking 1,955, face-tracker 925 bytes gzipped); 18.9 MB unpacked (wasm
+  14,665,738, task 3,758,596, runtime .js 336,662, face-worker 154,936, tracking 4,949, face-tracker 1,890).
+- H4 privacy page: one new paragraph in privacy.sections[7] (Fly by Sound) of packages/i18n/locales/site/{en,es,pl,ru}.json,
+  after its first paragraph; the exact words in four languages are docs/wip/head4-privacy.json (JSON escapes keep this
+  repository's docs ASCII; JSON.parse gives the text). The English, exactly: "Turn my head to listen" (off until you turn
+  it on) uses your web camera only to know where your head points. The pictures are read in the page on your own device
+  and are never recorded, stored or sent; the face tracker (about 8 MB) is downloaded from this site the first time, and
+  the camera closes when you turn the setting off or leave the page.
+- H4 files outside the head folder: deploy/nginx.conf, deploy/README.md (the nginx table and the curl check),
+  apps/api/tests/test_nginx_routes.py (camera_of and two tests), tools/bench/src/sonicrec-headers.ts and
+  tools/bench/src/sonicrec-serve.ts (their microphone controls replace the new policy text),
+  tools/bench/test/sonicrec-headers.test.ts; new tools/bench/scripts/head4-accept.mjs.
+- Deploy order: page and nginx together (the release, then deploy/nginx.conf: upload, nginx -t, reload). nginx alone is
+  harmless (no page asks for the camera before this release); the page alone says "the camera was not allowed" and
+  turns the setting off. No API files, no rooms; the sound package is not changed.
+- Live checks after the deploy: `curl -sI https://gsfpv.flyreelstudio.eu/en/fly/ | grep -i permissions-policy`
+  (camera=(self)); the same for /en/privacy/ (camera=()); `node tools/bench/scripts/head4-accept.mjs
+  https://gsfpv.flyreelstudio.eu <out.json> <clip.mjpeg>` must PASS 12 of 12 (the clip: head4-tracker.mjs makes it
+  from any face photo given to it; it stays outside the repository).
 
 - Sound package (lane sound6 or later): an optional headPose in SonicFrameInput, applied per voice before pannerDirection
   and the ILD side gain, would make the ILD boost follow the head too; the host would then pass the pose instead of
