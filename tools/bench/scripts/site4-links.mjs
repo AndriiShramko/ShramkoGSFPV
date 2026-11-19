@@ -9,6 +9,8 @@
 //   person  /en/supporters/kanal-fpv/ (a person with a scene): the header's button opens the person's scene
 //   lang    /en/sound/#sound-keys, the header's "pl" clicked: /pl/sound/#sound-keys
 //   banner  /es/sound/ at 320x568 and 320x640, cookie banner unanswered: the start button is not under the banner
+//   fit     (opt-in, added by the review) /{en,es,pl,ru}/sound/ at 844x390, 1366x768 and 768x1024, cookie banner unanswered:
+//           the header's button fits the row and is free, the start button scrolled to is free and opens the sound start
 // Read-only: nothing is saved or sent (the simulator's address is answered by a stub page, /api/** by 204).
 // Prints one JSON verdict; exit 1 on a FAIL.
 import { chromium } from 'playwright';
@@ -176,6 +178,50 @@ if (WANT.includes('banner')) {
         // a banner that is not shown proves nothing: the step needs the banner up (the build with a GA id)
         step(`banner es 320x${h}: the start button is on screen and not under the cookie banner`, shown && !overlap && hit && sb.y + sb.height <= h, { shown, banner: bb, start: sb, hit });
         await ctx.close();
+    }
+}
+
+// review step (opt-in, `fit`): the owner's sizes with the cookie question unanswered, as a person meets the page the first time.
+// The header's main button must fit the row (no sideways scroll) and be free to press; the start button, scrolled to as a
+// person scrolls, must be free under the finger and open the sound start.
+if (WANT.includes('fit')) {
+    const sizes = [
+        ['844x390', { viewport: { width: 844, height: 390 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true }],
+        ['1366x768', { viewport: { width: 1366, height: 768 }, deviceScaleFactor: 1 }],
+        ['768x1024', { viewport: { width: 768, height: 1024 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true }],
+    ];
+    for (const lang of ['en', 'es', 'pl', 'ru']) {
+        for (const [size, opts] of sizes) {
+            const ctx = await ctxFor(opts, 'ask');
+            const page = await ctx.newPage();
+            await page.goto(`${BASE}/${lang}/sound/`, { waitUntil: 'networkidle' });
+            const head = await page.evaluate(() => {
+                const a = document.querySelector('header a.btn-primary');
+                const r = a?.getBoundingClientRect();
+                const shown = !!r && r.width > 0;
+                const top = shown ? document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2) : null;
+                return { shown, right: r?.right, vw: innerWidth, sw: document.documentElement.scrollWidth, free: !!top && a.contains(top) };
+            });
+            const start = page.locator('main a.btn-primary').first();
+            await start.scrollIntoViewIfNeeded();
+            await page.waitForTimeout(400);
+            const box = await start.boundingBox();
+            const free = await page.evaluate(() => {
+                const s = document.querySelector('main a.btn-primary');
+                const r = s.getBoundingClientRect();
+                const top = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2);
+                return !!top && s.contains(top);
+            });
+            const nav = page.waitForURL(/\/fly\//, { timeout: 8000 }).then(() => true, () => false);
+            if (opts.hasTouch) await page.touchscreen.tap(box.x + box.width / 2, box.y + box.height / 2);
+            else await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+            await nav;
+            const u = query(page.url());
+            const opened = !!u && u.pathname === `/${lang}/fly/` && u.searchParams.get('sonic') === 'start';
+            const pass = head.shown && head.right <= head.vw && head.sw <= head.vw && head.free && free && opened;
+            step(`fit ${lang} ${size}: the header's button fits and is free, the start button is free and opens the sound start`, pass, { head, free, url: page.url() });
+            await ctx.close();
+        }
     }
 }
 

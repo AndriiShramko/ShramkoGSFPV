@@ -78,8 +78,19 @@ Probe: `node tools/bench/scripts/site4-links.mjs https://gsfpv.flyreelstudio.eu 
 - Live checks after the deploy: `node tools/bench/scripts/site4-links.mjs https://gsfpv.flyreelstudio.eu out.json` must print pass true (13 steps); and `pnpm --filter @gsfpv/site verify` on the build.
 - New locale keys: nav.flySound and sticky.soundNote (en, es, pl, ru).
 
+## Review
+
+Verdict: SHIP (independent check, 2026-11-19; full text U:/Temp/gsfpv-train4/reviews/site4.md).
+
+- No proven finding. The diff stays in apps/site, the site locales and the lane probe: no flight, keys, pause, touch, Fly by Sound package, course or edit-mode file is touched. Every simulator link on the built sound pages goes to /{lang}/fly/?sonic=start.
+- Re-run on a fresh build of the head (127.0.0.1:6082): steps sound 4/4, band 1/1, banner 2/2 PASS (evidence/2026-11-19/site4/review-local.json). Negative controls: main-cta.test.ts with config/site.ts from origin/main, NEG OK; with lib/consent-dock.ts and lib/lang-href.ts absent, NEG OK.
+- Review step added to the probe (opt-in `fit`): /{en,es,pl,ru}/sound/ at 844x390, 1366x768 and 768x1024 with the cookie question unanswered. The header's "Fly by Sound" fits and is free, and the start button scrolled to is free and opens the sound start. Local 12/12 PASS; live 12/12 PASS too, so it is a regression check, not proof of a repair (review-live-fit.json).
+- Doubts, not proven: (1) langHref leaves an earlier hash on the link when the current hash is empty; a back/forward-cache path could carry a stale anchor, which is harmless. (2) The banner re-docks on every scroll, which may look jumpy on a 320 px phone.
+- Not re-run: the scene and person steps (they need a local API), the language step, the site smoke.
+
 ## Cost notes
 
 - Stage 1: most replies went to finding where each page's main button is built (Header, StickyCTA, the API scene templates); one probe on the live site gave the whole audit table in one run.
 - Stage 2: the most replies went to the smoke's first runs (serve.mjs needs python on PATH; a navigation request carries no #anchor; a missing bottom bar made a click throw on the old build). Cheaper: start the server with the PATH export from the start, and make every click in a check catch its own timeout.
+- Review: the most replies went to serving the build (serve-csp needs the release's csp-hashes.conf, serve.mjs died in a subshell); cheaper: serve apps/site/out with python http.server as a background command from the start.
 - Stage 3: the most replies went to the run setup (two servers, because a scene page comes from the API); the probe itself gave the whole verdict in one run each side. Cheaper: a probe flag for a second base for the API steps.
