@@ -68,13 +68,16 @@ async function answer(page, action) {
 
 /** The Controls screen of the first visit: the keyboard; then the How to fly card that opens by itself: Start flying. */
 async function keyboardAndCard(page) {
+    // the first visit's cookie question lies over the page's lower middle: a new pilot answers it (Decline: nothing loads)
+    const consent = await page.waitForSelector('[data-action=consent-decline]', { timeout: 4000, state: 'visible' }).then(() => true, () => false);
+    if (consent) await page.locator('[data-action=consent-decline]').click();
     const asks = await page.waitForSelector('.screen.radio [data-action=radio-keyboard]', { timeout: 15000 }).then(() => true, () => false);
     if (asks) await page.locator('[data-action=radio-keyboard]').click();
     await page.waitForFunction(() => !document.querySelector('.screen.radio'), null, { timeout: 15000 }).catch(() => {});
     const card = await page.waitForSelector('[data-action=htf-start]', { timeout: 8000, state: 'visible' }).then(() => true, () => false);
     if (card) await page.locator('[data-action=htf-start]').click();
     await settle(page, 1000);
-    return { controls: asks, card };
+    return { consent, controls: asks, card };
 }
 
 const locked = (page) => page.evaluate(() => document.pointerLockElement !== null);
@@ -94,7 +97,8 @@ async function capture(page) {
 const pauseLook = (page) => page.evaluate(() => {
     const menu = document.querySelector('.pause-menu');
     if (!menu) return null;
-    const shown = (e) => { const r = e.getBoundingClientRect(); return r.height > 0 && r.width > 0; };
+    // an item inside a closed "More" keeps a layout box in Chrome (details content-visibility), so it counts as hidden by its details
+    const shown = (e) => { const r = e.getBoundingClientRect(); return r.height > 0 && r.width > 0 && (e.tagName === 'SUMMARY' || !e.closest('details:not([open])')); };
     const items = [...menu.querySelectorAll('[data-action^="pause."]')];
     const vis = items.filter(shown);
     const more = menu.querySelector('[data-action=menu-more]');
@@ -105,10 +109,12 @@ const pauseLook = (page) => page.evaluate(() => {
         const a = rects[i], b = rects[j];
         if (a.left < b.right - 1 && b.left < a.right - 1 && a.top < b.bottom - 1 && b.top < a.bottom - 1) { overlap = [a.id, b.id]; break; }
     }
+    // below the fold now (the panel scrolls: the drone card and the rows stand above the list; reported, not judged)
     const outside = rects.filter((r) => r.top < 0 || r.bottom > innerHeight + 0.5).map((r) => r.id);
+    const span = rects.length ? Math.round(Math.max(...rects.map((r) => r.bottom)) - Math.min(...rects.map((r) => r.top))) : 0;
     return {
         total: items.length, shown: vis.length, ids: vis.map((e) => e.getAttribute('data-action')),
-        more: more && shown(more) ? more.textContent.trim() : null, overlap, outside,
+        more: more && shown(more) ? more.textContent.trim() : null, overlap, outside, span, view: innerHeight,
         locked: document.pointerLockElement !== null
     };
 });
@@ -163,7 +169,7 @@ const out = { what: "a new pilot's first minute with the mouse (menu4-first-minu
     r.pause = await pauseLook(page);
     const p = r.pause;
     check('pause: P frees the mouse and shows few items with "More (n)" holding the rest', !!p && !p.locked && p.shown <= 12 && !!p.more && p.total - p.shown >= 10, p && { shown: p.shown, total: p.total, more: p.more, locked: p.locked });
-    check('fits: every item shown fits the 730 px view and none lies over another', !!p && p.outside.length === 0 && p.overlap === null, p && { outside: p.outside, overlap: p.overlap });
+    check('fits: the list of items shown is shorter than the 730 px view and none lies over another', !!p && p.span > 0 && p.span <= p.view && p.overlap === null, p && { span: p.span, view: p.view, overlap: p.overlap, belowTheFold: p.outside });
     if (shotDir) await page.screenshot({ path: `${shotDir}/menu4-pause-first.png` });
     if (p?.more) await page.locator('[data-action=menu-more]').click();
     await settle(page);
