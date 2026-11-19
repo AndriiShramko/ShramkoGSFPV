@@ -56,7 +56,7 @@ const READ = () => {
         dialog: dlg ? { rect: r(dlg), x: r(dlg.querySelector('.panel-x')), replaces: (dlg.querySelector('[data-testid=gen-replaces]') || {}).textContent || null } : null,
         box: box ? { rect: r(box), font: parseFloat(getComputedStyle(box).fontSize), model: bm } : null,
         note: note && !note.hidden && note.offsetParent !== null ? (note.textContent || '').trim().slice(0, 160) : null,
-        scale: g.scale ? g.scale.size : null
+        scale: g.scale ? (typeof g.scale.size === 'function' ? g.scale.size() : g.scale.size) : null
     };
 };
 
@@ -120,7 +120,7 @@ async function poll(page, ms, ok) {
     const t0 = Date.now(), samples = [];
     for (;;) {
         const s = await page.evaluate(READ);
-        samples.push({ t: Date.now() - t0, ...s });
+        samples.push({ t: Date.now() - t0, at: Date.now(), ...s });
         if (ok(s) || Date.now() - t0 > ms) return samples;
         await sleep(100);
     }
@@ -148,8 +148,9 @@ try {
     check(3, 'click Beginner, Compact, Build', p3.every(Boolean) && !after3.dialog, { pressed: p3, dialogGone: !after3.dialog, request: after3.request });
 
     // 4 the progress box until the course is there
-    const samples = await poll(page, COURSE_MS, courseUp);
-    const pre = samples.filter((q) => !courseUp(q));
+    const noRoom = (q) => !!(q.box && q.box.model && q.box.model.kind === 'noRoom');
+    const samples = await poll(page, COURSE_MS, (q) => courseUp(q) || noRoom(q));
+    const pre = samples.filter((q) => !courseUp(q) && !noRoom(q));
     const withBox = pre.filter((q) => q.box && q.box.model && q.box.model.kind === 'progress');
     const pcts = withBox.map((q) => q.box.model.pct);
     const mono = pcts.every((p, i) => i === 0 || p >= pcts[i - 1]);
@@ -170,7 +171,8 @@ try {
     const line = s.startLine;
     const seen = await poll(page, 9000, (q) => !q.note || !line || !q.note.includes(line.slice(0, 20)));
     const shown = seen.filter((q) => q.note && line && q.note.includes(line.slice(0, 20)));
-    const shownMs = shown.length ? shown[shown.length - 1].t : 0;
+    const upAt = samples[samples.length - 1].at; // the course (and its line) appeared at the last sample of step 4
+    const shownMs = shown.length ? shown[shown.length - 1].at - upAt : 0;
     check(6, 'start line visible >= 8 s', !!line && shownMs >= 7900, { line, shownMs, lastNote: seen[seen.length - 1].note });
 
     if (LAST >= 7) {

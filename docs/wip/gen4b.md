@@ -15,7 +15,12 @@ The contract (packages/tracks/src/request.ts) came from gen4a S0 (b142e495), mer
       writes 'g2.' links; the no-room box 'Make the scene xN and build' / 'Try another layout' + Close + 44 px cross; the
       start line 'The start gate is N m away' for 8 s; hook.box, hook.plan, hook.startLine. course-progress.test.ts
       (+5 tests, 20 passed, NEG OK). Commit 25fbb339.
-- [ ] B3 acceptance: tools/bench/scripts/gen4-accept-probe.mjs (design section 6), the live negative control, the gates.
+- [x] B3 acceptance: tools/bench/scripts/gen4-accept-probe.mjs (design section 6, 10 steps, mouse, 1536x730 at 1.25),
+      local PASS (step 9 pending gen4a), live control FAILS steps 2-8 and 10, one drawn run, the gates. Commits 505ebbc5 and
+      the B3 commit that holds this line.
+- Step 1 runs on Lublin 2f1ddf5f, not 5dfeb49b: on this tree planCourse is the gen4a S0 stub, and 5dfeb49b at x1 answers
+  no room (evidence accept-5dfeb49b-stub.json: the no-room box came, steps 5-8 could not run). G1 (gates at x1 there) is
+  gen4a's stage A3; the probe takes the scene as its third argument, so the merged train runs it on 5dfeb49b.
 
 Differences from the design (the code wins):
 - The editor's 'regen' branch lives in app/builtin/course.ts (this lane's file), so this lane routed it to the dialog itself.
@@ -56,10 +61,33 @@ Differences from the design (the code wins):
    origin/main (progress.ts, progress-box.ts, four locales swapped).
 4. Tests importing the changed page modules stay green: admin-tracks, sonic-scan-free, tracks-finish, tracks-fixes,
    tracks-review, generate-dialog - 46 passed. Typecheck apps/fly and tools/bench clean.
+5. The pilot's mouse path works on a local release (render off): pointer lock by a click, Escape, the menu item opens the
+   dialog (in view, cross 44x44, nothing built), Beginner + Compact + Build, the progress box (16 px, in view, percent
+   0 -> 99 never back, 3 steps in words, there for every sample until the course), 17 gates closed, the start line
+   'The start gate is 42 m away' 7.9-8 s, the dialog again says 'Replaces the current course (17 gates)', Cancel keeps it,
+   Replace makes a new one, at 844x390 its 12 parts do not overlap, all in view, buttons >= 44 px. Proof:
+   `node tools/bench/scripts/gen4-accept-probe.mjs http://localhost:5920/en out.json 2f1ddf5f 2f1ddf5f` - verdict pass,
+   step 9 pending (evidence/2026-11-19/gen4b/accept-local.json; steps 1-6 again after the timing fix:
+   accept-local-steps1-6.json).
+6. The negative control of the whole lane: the same probe against the live site fails steps 2, 3, 4, 5, 6, 7, 8 and 10
+   (the menu item built 19 gates at once with no question; a second press replaced the course with no question; no
+   progress box, no start line, no plan). Proof: the command of claim 5 with https://gsfpv.flyreelstudio.eu/en and
+   STEPS=8 - evidence/2026-11-19/gen4b/accept-live.json. Nothing was saved or sent there (no save button pressed).
+7. The drawn run (GPU, steps 1-6): steps 1-5 PASS; step 6 read 7.3 s because the probe then measured from after its own
+   screenshot; the measure now starts when the course appears (claim 5's steps 1-6 rerun: 7.9 s, PASS). Picture
+   U:/Temp/gsfpv-train4/shots/gen4b-course-start.png: over the drawn Lublin old town the line 'Gates: 17. The start gate is
+   44 m away: follow the arrow' sits at the top centre, 'Fly through START' under it with its cross, and the chip
+   'START / FINISH 44 m' at the right edge; nothing lies over another thing.
 
 ## Not verified
 
-- No person, phone or real controller took part. The dialog was not yet seen in a browser (B3 probe).
+- No person, phone or real controller took part; the browser was headless Chromium driven by the probe.
+- Step 9 (Lublin underGround 0, nearGroundShare <= 0.2) and the meaning of step 5's 'outside 0': planCourse on this tree
+  answers zero stats (gen4a S0 stub), so the probe reports step 9 as pending; it must be run on the merged train.
+- 5dfeb49b at x1: the stub finds no room there (gen4a A3 repairs it); the page's no-room box came, its one press was not
+  clicked by the probe.
+- The voxels-only view's line and the editor's G route were checked by unit tests only, not by the page probe.
+- The 844x390 check resized a desktop page; no touch phone was used.
 
 ## For the lead
 
@@ -76,6 +104,9 @@ Files changed outside the owned list:
 - Needed from gen4a (contract only, nothing edited): planCourse's onStep estMs may be 0 (the page then uses the rates of
   progress.ts); fitSize > the current size is used for the no-room box's press.
 Deploy order: page only.
+Live checks to run after the deploy (read-only): `node tools/bench/scripts/gen4-accept-probe.mjs <site>/en out.json 5dfeb49b`
+(all 10 steps PASS on the merged train with gen4a; step 9 then judged, not pending).
+New probe (owned): tools/bench/scripts/gen4-accept-probe.mjs. Evidence: evidence/2026-11-19/gen4b/*.json.
 
 ## Cost notes
 
@@ -83,3 +114,6 @@ Deploy order: page only.
   a note in agent-map that ui/dom.ts tests need location and document before import would save three runs.
 - B2: the most replies went to wiring course.ts (six slices); neg_control.py on Windows needs `npx.cmd`, not `npx`; the
   fake DOM has no `firstElementChild` nor child selectors, so keep element references instead of querySelector.
+- B3: the most replies went to two probe runs lost to the stub (5dfeb49b has no room before gen4a) and to hook.scale.size
+  being a function; a line in agent-map listing which hook fields are functions, and which scenes the S0 stub can fill,
+  would save two runs of five minutes.
