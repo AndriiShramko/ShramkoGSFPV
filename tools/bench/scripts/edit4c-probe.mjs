@@ -78,7 +78,16 @@ async function clickSel(sel, after = 600) {
     await click(b.x, b.y, after);
     return true;
 }
-const onCanvas = (x, y) => page.evaluate(([a, b]) => document.elementFromPoint(a, b)?.tagName === 'CANVAS', [x, y]);
+// the scene itself under the point: the canvas, and no gate handle or gate the edit view would pick there instead
+const onCanvas = (x, y, strict = false) => page.evaluate(([a, b, st]) => {
+    if (document.elementFromPoint(a, b)?.tagName !== 'CANVAS') return false;
+    if (!st) return true;
+    const v = window.__gsfpvEditView ? window.__gsfpvEditView() : null;
+    const s = v?.stand?.screen;
+    if (s && Math.hypot(a - s[0], b - s[1]) < 160) return false;
+    if ((v?.gates || []).some((g) => g[2] > 0 && Math.hypot(a - g[0], b - g[1]) < 30)) return false;
+    return !(window.__gsfpvEditHit && window.__gsfpvEditHit(a, b));
+}, [x, y, strict]);
 // the course's points in metres flown: the course file's pos times the flown transform [s, tx, ty, tz]
 const flown = (p, tr) => [p[0] * tr[0] + tr[1], p[1] * tr[0] + tr[2], p[2] * tr[0] + tr[3]];
 // a gate's way: its local -Z turned by quat [w, x, y, z] (sonic-fpv contract), on the floor plane
@@ -91,21 +100,23 @@ const angle2 = (a, b) => { const d = Math.atan2(a[0] * b[1] - a[1] * b[0], a[0] 
 const norm2 = (v) => { const n = Math.hypot(v[0], v[1]) || 1; return [v[0] / n, v[1] / n]; };
 
 /** a leg of the course whose two gates are on the canvas, far apart on the page, not starting at the selected gate */
-async function legs(s) {
+async function legs(s, any = false) {
     const g = s.gates || [];
     const out = [];
     for (let i = 0; i + 1 < g.length; i++) {
         const a = g[i];
         const b = g[i + 1];
-        if (i === s.selected || !(a[2] > 0 && b[2] > 0)) continue;
+        if ((!any && i === s.selected) || !(a[2] > 0 && b[2] > 0)) continue;
         const inV = (p) => p[0] > 40 && p[0] < W - 40 && p[1] > 110 && p[1] < H - 90;
         if (!inV(a) || !inV(b)) continue;
         const len = Math.hypot(b[0] - a[0], b[1] - a[1]);
         const mid = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
-        if (len < 120 || !(await onCanvas(mid[0], mid[1]))) continue;
-        out.push({ i, len: Math.round(len), mid: mid.map(Math.round) });
+        if (len < 70 || !(await onCanvas(mid[0], mid[1]))) continue;
+        out.push({ i, len: Math.round(len), mid: mid.map(Math.round), depth: r2(Math.max(a[2], b[2])) });
     }
-    return out.sort((x, y) => y.len - x.len);
+    // the nearest legs first: a click lands where its ray meets the scan (measured: legs 30 m off were behind a wall 6 m
+    // from the eye, so the gate went, rightly, into the leg nearest that wall point)
+    return out.sort((x, y) => x.depth - y.depth);
 }
 async function backOff() {
     await page.keyboard.down('KeyS');
@@ -115,22 +126,39 @@ async function backOff() {
     await sleep(250);
     await page.keyboard.up('KeyE');
     await sleep(500);
+    const s = await snap();
+    (res.backOffs ??= []).push({ onPage: (s.gates || []).filter((p) => p[2] > 0 && p[0] >= 0 && p[0] < W && p[1] >= 0 && p[1] < H).length, mode: s.mode, open: s.open });
 }
 /** Add armed (and a piece chosen in the Add list), a click at `at`; the page's state before and after */
+const addPressed = () => page.evaluate(() => document.querySelector('.ce-topbar [data-top="add"]')?.getAttribute('aria-pressed') === 'true');
+/** adding ends, as the pilot ends it: the Add list's cross when it shows, else a second press on Add (never Esc: Esc with
+ *  nothing armed leaves the edit view) */
+async function endAdding() {
+    if (!(await addPressed())) return;
+    if (!(await clickSel('[data-testid="add-chooser"] .ce-add-x', 400))) await clickSel('.ce-topbar [data-top="add"]', 400);
+}
 async function addAt(choice, at) {
+    await endAdding();
     const a = await snap();
-    const armed = await clickSel('.ce-topbar [data-top="add"]', 500);
+    const armed = (await clickSel('.ce-topbar [data-top="add"]', 500)) && (await addPressed());
     let chose = choice === 'gate';
-    if (choice !== 'gate') chose = await clickSel(`[data-testid="add-chooser"] [data-add="${choice}"]`, 400);
+    if (armed && choice !== 'gate') chose = await clickSel(`[data-testid="add-chooser"] [data-add="${choice}"]`, 400);
     if (!armed || !chose) {
-        // nothing armed or no such piece: Esc ends adding so the next step starts clean
-        await page.keyboard.press('Escape');
-        await sleep(300);
+        await endAdding();
         return { a, b: await snap(), armed, chose };
     }
-    await click(at[0], at[1], 300);
+    // the Add list now stands under the Add button: the first point (of `at`, one point or several) with the scene under it
+    const pts = typeof at[0] === 'number' ? [at] : at;
+    let p = null;
+    for (const q of pts) if (await onCanvas(q[0], q[1], choice !== 'gate')) { p = q; break; }
+    if (!p) {
+        await endAdding();
+        return { a, b: await snap(), armed, chose, covered: pts.length };
+    }
+    await click(p[0], p[1], 300);
     const b = (await until(snap, (s) => (s.list?.length ?? 0) > (a.list?.length ?? 0), 5000)).v;
-    return { a, b, armed, chose };
+    await endAdding();
+    return { a, b, armed, chose, at: p };
 }
 async function undoOnce() {
     const ok = await clickSel('.ce-topbar [data-top="undo"]', 800);
@@ -139,7 +167,7 @@ async function undoOnce() {
 const sameIds = (x, y) => JSON.stringify((x || []).map((g) => g.id)) === JSON.stringify((y || []).map((g) => g.id));
 
 try {
-    await page.goto(`${base}/fly/?scene=${scene}&nowarn=1${env.QUERY || ''}`, { waitUntil: 'domcontentloaded', timeout: 120000 });
+    await page.goto(`${base}/fly/?scene=${scene}&nowarn=1${env.COURSE ? `&course=${env.COURSE}` : ''}${env.QUERY || ''}`,{ waitUntil: 'domcontentloaded', timeout: 120000 });
     const ready = await until(() => page.evaluate(() => window.__gsfpv?.status ?? null), (v) => v === 'ready' || v === 'error', 300000, 1000);
     res.ready = { status: ready.v, s: Math.round(ready.ms / 1000) };
     if (ready.v !== 'ready') throw new Error(`page status ${ready.v}`);
@@ -148,7 +176,7 @@ try {
     await clickSel(KB, 1500);
     await click(W / 2, H / 2, 900);
     res.lockAfterClick = (await snap()).lock;
-    await page.keyboard.press('Shift+KeyG');
+    if (!env.COURSE) await page.keyboard.press('Shift+KeyG');
     const gen = await until(snap, (s) => (s.courseGates ?? 0) > 0 && s.courseOn, Number(env.COURSE_MS || 300000), 1000);
     res.course = { ok: gen.ok, s: Math.round(gen.ms / 1000), gates: gen.v.courseGates };
     if (!gen.ok) throw new Error('no course');
@@ -156,7 +184,9 @@ try {
     await page.keyboard.press('Shift+KeyB');
     const op = await until(snap, (s) => s.open && s.mode === 'edit', 30000, 400);
     await sleep(1500);
-    judge('s1.open', op.ok, { mode: op.v.mode, gates: op.v.list?.length ?? null, lock: op.v.lock });
+    const onPage = (op.v.gates || []).filter((p) => p[2] > 0 && p[0] >= 0 && p[0] < W && p[1] >= 0 && p[1] < H).length;
+    const under = await page.evaluate(([w, h]) => [[0.5, 0.5], [0.3, 0.3], [0.7, 0.7], [0.5, 0.8]].map(([fx, fy]) => { const e = document.elementFromPoint(w * fx, h * fy); return e ? `${e.tagName}.${String(e.className).slice(0, 40)}${e.id ? '#' + e.id : ''}` : null; }), [W, H]);
+    judge('s1.open', op.ok, { mode: op.v.mode, gates: op.v.list?.length ?? null, onPage, under, screen: (op.v.gates || []).slice(0, 12), selected: op.v.selected, stand: op.v.stand?.screen ?? null, lock: op.v.lock });
     if (!op.ok) throw new Error('edit view did not open');
     await page.keyboard.press('KeyM');
     await sleep(300);
@@ -168,7 +198,13 @@ try {
         for (let n = 0; n < 5 && !found; n++) {
             const s = await snap();
             const ls = await legs(s);
-            if (!ls.length) { await backOff(); continue; }
+            if (!ls.length) {
+                // the near legs start at the selected gate: select the farthest gate on the page first, as the pilot would
+                // to add elsewhere (the old page then puts the new gate after it, not into the leg clicked)
+                const far = (s.gates || []).map((p, i) => ({ p, i })).filter(({ p, i }) => i !== s.selected && p[2] > 0 && p[0] > 40 && p[0] < W - 40 && p[1] > 110 && p[1] < H - 90).sort((x, y) => y.p[2] - x.p[2])[0];
+                if (n === 0 && far) { await click(far.p[0], far.p[1], 800); tries.push({ selectedFar: far.i, now: (await snap()).selected }); } else await backOff();
+                continue;
+            }
             for (const leg of ls.slice(0, 3)) {
                 const { a, b, armed } = await addAt('gate', leg.mid);
                 const k = b.selected;
@@ -197,16 +233,16 @@ try {
     // s3 / s4: the pieces, each removed by one Undo press
     for (const [step, choice, n, stack] of [['s3', 'double-vertical', 2, 'up'], ['s4', 'triple-horizontal', 3, 'side']]) {
         let s = await snap();
-        let ls = await legs(s);
-        for (let k = 0; k < 3 && !ls.length; k++) { await backOff(); s = await snap(); ls = await legs(s); }
-        const at = ls[0]?.mid ?? [W / 2, Math.round(H * 0.66)];
-        const { a, b, armed, chose } = await addAt(choice, at);
+        let ls = await legs(s, true);
+        for (let k = 0; k < 3 && !ls.length; k++) { await backOff(); s = await snap(); ls = await legs(s, true); }
+        const at = [...ls.map((l) => l.mid), [W / 2, Math.round(H * 0.6)], [W * 0.35, Math.round(H * 0.6)]];
+        const { a, b, armed, chose, covered } = await addAt(choice, at);
         const added = (b.list || []).filter((g) => !(a.list || []).some((o) => o.id === g.id));
         const tr = b.place?.tr ?? [1, 0, 0, 0];
         const ps = added.map((g) => flown(g.pos, tr));
         const gaps = ps.slice(1).map((p, i) => ({ up: r2(p[1] - ps[i][1]), side: r2(Math.hypot(p[0] - ps[i][0], p[2] - ps[i][2])) }));
         const shapeOk = stack === 'up' ? gaps.every((g) => g.up > 1.5 && g.side < 0.3) : gaps.every((g) => Math.abs(g.up) < 0.3 && g.side > 1.5);
-        judge(`${step}.piece`, added.length === n && shapeOk, { choice, armed, chose, added: added.length, gaps, list: b.addDom?.text ?? null, refused: b.refused, said: b.said });
+        judge(`${step}.piece`, added.length === n && shapeOk, { choice, armed, chose, covered: covered ?? null, added: added.length, gaps, refused: b.refused, said: b.said });
         if (added.length > 0) {
             const u = await undoOnce();
             judge(`${step}.undo`, sameIds(u.s.list, a.list), { pressed: u.pressed, gates: [a.list?.length, b.list?.length, u.s.list?.length] });
@@ -235,8 +271,12 @@ try {
             const from = d.stand?.screen;
             const nb = d.gates?.[gi + 1];
             if (!from || !nb || !d.axes) return { ok: false, why: 'no handles or no next gate' };
-            const want = norm2([nb[0] - from[0], nb[1] - from[1]]);
-            const best = ['x', 'y', 'z'].map((k) => ({ k, dot: d.axes[k][0] * want[0] + d.axes[k][1] * want[1] })).sort((x, y) => Math.abs(y.dot) - Math.abs(x.dot))[0];
+            // the arrow whose axis in the scene (the gate's right, up, forward from its quat) points most toward the next gate
+            const me = d.list[gi];
+            const to = d.list[gi + 1].pos.map((v, i) => v - me.pos[i]);
+            const [w, x, y, z] = me.quat;
+            const world = { x: [1 - 2 * (y * y + z * z), 2 * (x * y + w * z), 2 * (x * z - w * y)], y: [2 * (x * y - w * z), 1 - 2 * (x * x + z * z), 2 * (y * z + w * x)], z: [-(2 * (x * z + w * y)), -(2 * (y * z - w * x)), -(1 - 2 * (x * x + y * y))] };
+            const best = ['x', 'y', 'z'].map((k) => ({ k, dot: world[k][0] * to[0] + world[k][1] * to[1] + world[k][2] * to[2] })).sort((p, q) => Math.abs(q.dot) - Math.abs(p.dot))[0];
             const dir = best.dot >= 0 ? d.axes[best.k] : [-d.axes[best.k][0], -d.axes[best.k][1]];
             const hitAt = await page.evaluate(([f, dv, ax]) => {
                 const h = window.__gsfpvEditHit;
@@ -256,7 +296,7 @@ try {
                 await sleep(30);
                 if (px % 24 === 4) {
                     const m = await snap();
-                    if (m.warnDom && m.warn && m.warn !== 'absent' && m.warn.mode === 'tag') { tag = { codes: m.warn.codes, text: m.warnDom.text, box: m.warnDom.box, dragging: m.dragging }; break; }
+                    if (m.warnDom && m.warn && m.warn !== 'absent' && m.warn.mode === 'tag') { tag = { codes: m.warn.codes, lines: m.warn.lines, box: m.warnDom.box, dragging: m.dragging }; break; }
                 }
             }
             await sleep(250);
