@@ -6,8 +6,8 @@ The owner's messages 64 to 67 of 2026-11-19 (vault brief, verbatim): finish what
 
 - Designs: five agents on the API key wrote C:/dev/.gsfpv-lanes/designs/gen4.md, edit4.md, voxux4.md, sound6.md, mc4.md (causes proven from the code, the change, owned files, stages, checks).
 - Fifteen lanes are built at the same time, each in its own work copy on its own branch (the owner lifted the rule of three agents for this train). Start: 2026-11-19 14:16 UTC.
-- The conductor has no model: vault tool .claude/tools/gsfpv/train4.py, Windows task ShramkoGsfpvTrain every minute, plan C:/dev/.gsfpv-lanes/train4.json. One agent run is one stage (`claude -p`, opus, shell and file tools only) and ends with LANE-STAGE-DONE or LANE-DONE; the next stage is a new run with a clean context. After a lane the conductor starts its independent check `r-<lane>`; after all checks the integration `int4`.
-- Events: U:/Temp/gsfpv-train4/events.log; lines with WAKE are for the lead. Status: `python -X utf8 <vault>/.claude/tools/gsfpv/train4.py status`. Park a job: `set --name X --state hold`; give it back: `--state wait`.
+- The conductor has no model: vault tool .claude/tools/gsfpv/train4.py, Windows task ShramkoGsfpvTrain every minute, plan C:/dev/.gsfpv-lanes/train4.json. One agent run is one stage (`claude -p`, opus, shell and file tools only) and ends with LANE-STAGE-DONE or LANE-DONE; the next stage is a new run with a clean context. After a lane the conductor starts its independent check `r-<lane>`; after all checks the integration `int4`. Since 15:30 UTC an early pass `int4-early` (prompt t4-int4-early.md) merges the lanes whose checks already say SHIP while the last lanes are still built; `int4` waits for it, merges the rest and checks every lane head again.
+- Events: U:/Temp/gsfpv-train4/events.log; lines with WAKE are for the lead. Status: `python -X utf8 <vault>/.claude/tools/gsfpv/train4.py status`. Park a job: `set --name X --state hold`; give it back: `--state wait`. `add` and `set` take the tick's lock (since 15:30 UTC), so they are safe while the train runs. Never run `tick --dry-run` on the live plan: it writes the events of finished runs a second time.
 - Prompts: C:/dev/.gsfpv-lanes/prompts/train4-common.md (the rules of every job), t4-<lane>.md, t4-r-<lane>.md, t4-int4.md. They are made by the vault tool train4_setup.py.
 
 ## Lanes
@@ -45,9 +45,15 @@ Rules for every job are in train4-common.md: a test with a negative control besi
 ## What the lead does at each event
 
 - WAKE FAILED or BLOCKED: read the job's log U:/Temp/gsfpv-train4/runs/<job>-*.jsonl (its last result line), repair the cause, `set --name <job> --state wait`.
-- WAKE DONE mc4: look at the pictures U:/Temp/gsfpv-train4/shots/mc4-*.png, show them to the owner, ask for his yes.
+- WAKE HOLD r-<lane>: the check ended without 'Verdict: SHIP', so the integration would leave the lane out. Read U:/Temp/gsfpv-train4/reviews/<lane>.md; write C:/dev/.gsfpv-lanes/prompts/t4-fix-<lane>.md (a short repair order for exactly the left list, on top of the lane's own prompt); `add --name fix-<lane> --worktree <the lane's work copy> --prompt <that file> --max-runs 3`; then `set --name r-<lane> --state wait --reset-runs --after-add fix-<lane>`: the check runs again after the repair, and int4 waits for it.
+- WAKE DONE mc4: look at the pictures U:/Temp/gsfpv-train4/shots/mc4-*.png, show them to the owner, ask for his yes. Done at 15:27 UTC, see the state below.
 - WAKE DONE int4: read 'Deploy order' in docs/wip/train4-int.md; push the sound package's main first when the order names it; release the API files when it names them; then the vault tool ship_chain.sh with the sha and the live checks of int4.json; then STATE.md, this note, the vault notes.
 - WAKE LIMIT: the weekly limit reached 80 %: tell the owner, start nothing.
+
+## State, 2026-11-19 15:30 UTC
+
+- mc4 is done (C:/dev/ShramkoSplatCraft, docs/STATUS.md, no remote, nothing published). The six pictures went to the owner at 15:27 UTC with the honest verdict: the layout reads from above; from the street it is a corridor of stepped walls without windows, mostly grey. He has not answered yet. Nothing of Minecraft starts before his yes; nobody opened a schematic in the real game.
+- Lanes menu4 and tails4 are done, the check of tails4 says SHIP; the other twelve lanes are in their second to fourth stage. The weekly limit went from 5 % to 14 % in the first 75 minutes.
 
 ## Not verified at the start
 
