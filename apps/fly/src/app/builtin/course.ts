@@ -1346,6 +1346,9 @@ export const course: Feature = {
         addEventListener('keydown', (e: KeyboardEvent) => {
             // lane editor3 E3: while the drone flies the keys belong to the flight
             if (!ed || !panel || mode === 'fly') return;
+            // review of lane edit4a: Esc during a handle drag belongs to the edit view (view-mouse.ts onKey cancels the drag
+            // and stops the key); this listener runs first, and its Esc would ask 'leave without saving' or leave the editor
+            if (e.code === 'Escape' && view?.isDragging()) return;
             if (e.code === 'Escape' && view?.adding) {
                 e.preventDefault();
                 e.stopPropagation();

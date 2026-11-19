@@ -172,3 +172,22 @@ against the code as it is: EditView gets the walls ray through its own host (Edi
   Keeping dist between runs of one stage (delete it only at LANE-DONE) would save a build.
 - A3 run 4 (last): 12 replies; the build and the gates (about 10 minutes) took the most time. The probe records only PASS
   per step, so the claims' numbers had to come from run 1: writing each step's measured numbers into the JSON would save that.
+- Review: the most replies went to finding which keydown listener sees Esc first (two window capture listeners, ordered by
+  registration) and to the two builds; a probe step that cancels twice from the start would have shown it in the lane.
+
+## Review
+
+Independent check, 2026-11-19. Verdict: SHIP (full text: U:/Temp/gsfpv-train4/reviews/edit4a.md).
+- PROVEN, repaired: key Esc during a handle drag also reached the editor's own key listener in course.ts (registered first,
+  at feature setup), which ran 'exit': the first Esc-cancelled drag on a changed course said 'Esc again leaves without
+  saving', the next Esc-cancelled drag closed the editor and dropped the unsaved changes (on an unchanged course the first
+  one closed it). New probe step R.escTwice: FAIL on the build of 26d94483 (evidence review-before-renderoff.json, the editor
+  closed); after the repair (course.ts returns on Esc while view.isDragging()) PASS on a drawn run (review-local.json).
+  Test: edit4a-gizmo.test.ts 'Esc in a drag only cancels it', NEG OK against 26d94483.
+- Rerun: claims 1 (edit4a-camera, NEG OK against origin/main), 4 (edit4a-gizmo, 24 passed with camera), 10 (editor3-gatebar,
+  NEG OK against 2f835eef); the drawn probe on the repaired build: steps 1 to 12, cancel and R.escTwice PASS.
+- DOUBT: step 13.laptop FAILED in the review's drawn run with 0 gates to click after Home at 844x390 (a new random course
+  of 34 gates); its layout part held (nothing over anything, nothing outside). The step depends on the course drawn; it
+  passed in the lane's run 4.
+- Gates on the staged review tree (`gates.py --only typecheck,vitest,b18,leaks`): all PASS (vitest 149 s).
+- Not checked: touch (a one-finger drag on empty space is now an orbit, was a look), Safari, a person, a real controller.

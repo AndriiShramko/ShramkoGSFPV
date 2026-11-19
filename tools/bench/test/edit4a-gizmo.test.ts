@@ -85,4 +85,15 @@ describe('edit4a A2: hover names the part, a drag can be cancelled', () => {
         expect(COURSE).toMatch(/e\.phase === 'cancel' \? dragCancel\(\)/);
         expect(COURSE).toMatch(/const dragCancel = \(\): void => \{[^]*?if \(dragBase\) ed = dragBase;/);
     });
+    it('Esc in a drag only cancels it: the editor\'s own key listener (registered first) leaves it to the view', () => {
+        // review of lane edit4a: the probe's step R.escTwice on the build of 26d94483: the second drag cancelled by Esc
+        // closed the editor (the first had armed 'Esc again leaves without saving'), the pilot's changes were dropped
+        const i = COURSE.indexOf("addEventListener('keydown', (e: KeyboardEvent) => {");
+        expect(i).toBeGreaterThan(0);
+        const body = COURSE.slice(i, COURSE.indexOf('applyKey(e);', i));
+        const guard = body.search(/if \(e\.code === 'Escape' && view\?\.isDragging\(\)\) return;/);
+        expect(guard).toBeGreaterThan(0);
+        expect(guard).toBeLessThan(body.indexOf('keyRoute('));
+        expect(VIEW).toMatch(/e\.code === 'Escape' && this\.dragging && !this\.suspended\) \{\s*e\.preventDefault\(\);\s*e\.stopImmediatePropagation\(\);\s*this\.cancelDrag\(\);/);
+    });
 });

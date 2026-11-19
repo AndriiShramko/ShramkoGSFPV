@@ -328,6 +328,26 @@ try {
             judge('cancel', !!mid && dist(mid.stand.pos, a.stand.pos) > 0.05 && dist(b.stand.pos, a.stand.pos) < 0.01 && (b.cancels ?? 0) > (a.cancels ?? 0), { movedMid: mid ? r3(dist(mid.stand.pos, a.stand.pos)) : null, after: r3(dist(b.stand.pos, a.stand.pos)), cancels: [a.cancels, b.cancels], tag: b.hoverTag });
         }
     }
+    // review step (independent check): a pilot cancels two drags in a row with key Esc, on a course he has changed. Esc in a
+    // drag only cancels it: the editor stays open, no 'leave without saving' question, the changes are kept
+    {
+        const a = await snap();
+        const said = [];
+        for (let n = 0; n < 2; n++) {
+            const q = await partsOf();
+            const p = q && (q.arrowX || q.ringY || q.box);
+            const s = await snap();
+            if (!p || !s.open || s.mode !== 'edit') break;
+            const dx = p.part[0] === 'move' && s.axes ? s.axes.x[0] * 80 : 60;
+            const dy = p.part[0] === 'move' && s.axes ? s.axes.x[1] * 80 : 0;
+            await drag(p.at[0], p.at[1], dx, dy, { mid: async () => { await key('Escape'); await sleep(200); } });
+            const b = await snap();
+            said.push([b.open, b.mode, b.said, b.topLine]);
+        }
+        const b = await snap();
+        const asked = said.some((x) => /Esc again/.test(String(x[2])) || /Esc again/.test(String(x[3])));
+        judge('R.escTwice', said.length === 2 && b.open && b.mode === 'edit' && !asked && !!b.stand && dist(b.stand.pos, a.stand.pos) < 0.01, { said, open: b.open, mode: b.mode, asked });
+    }
 
     // 11 click another gate from the same eye, then drag its arrow: the eye never moves
     await page.mouse.move(W * 0.5, H * 0.95);
