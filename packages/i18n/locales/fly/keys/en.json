@@ -5,6 +5,7 @@
   "keys.frameStats.toggle": "Frame times and delay",
   "keys.fullscreen.toggle": "Full screen on / off",
   "keys.hud.toggle": "Show or hide the HUD",
+  "keys.messages.open": "Messages: read the last lines again",
   "keys.mode.cycle": "Flight mode",
   "keys.pause.toggle": "Pause / resume",
   "keys.record.toggle": "Start or stop recording",

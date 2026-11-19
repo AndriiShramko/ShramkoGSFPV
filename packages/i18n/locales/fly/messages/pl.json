@@ -1,0 +1,13 @@
+{
+  "messages.send": "Wyślij autorowi",
+  "messages.close": "Zamknij tę wiadomość",
+  "messages.fix.default": "Jeśli to się powtórzy, wyślij to autorowi: przycisk poniżej.",
+  "messages.more": "+{n} więcej w Wiadomościach",
+  "messages.title": "Wiadomości",
+  "messages.empty": "Nie ma jeszcze wiadomości.",
+  "messages.unread": "nieprzeczytane problemy: {n}",
+  "messages.kind.info": "Uwaga",
+  "messages.kind.done": "Gotowe",
+  "messages.kind.problem": "Problem",
+  "messages.kind.progress": "W toku"
+}

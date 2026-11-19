@@ -5,6 +5,7 @@
   "keys.frameStats.toggle": "Время кадра и задержка",
   "keys.fullscreen.toggle": "Полный экран вкл. / выкл.",
   "keys.hud.toggle": "Показать или скрыть HUD",
+  "keys.messages.open": "Сообщения: прочитать последние строки ещё раз",
   "keys.mode.cycle": "Режим полёта",
   "keys.pause.toggle": "Пауза / продолжить",
   "keys.record.toggle": "Начать или остановить запись",

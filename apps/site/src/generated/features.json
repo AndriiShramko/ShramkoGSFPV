@@ -7,10 +7,10 @@
   "groups": 11,
   "drones": 9,
   "modes": 3,
-  "keys": 31,
+  "keys": 32,
   "rateTypes": 5,
   "flyingKeys": 12,
-  "allKeys": 41
+  "allKeys": 42
  },
  "locales": {
   "en": {
@@ -1668,6 +1668,13 @@
      "label": "Show or hide the HUD",
      "keys": [
       "H"
+     ]
+    },
+    {
+     "action": "messages.open",
+     "label": "Messages: read the last lines again",
+     "keys": [
+      "Shift+H"
      ]
     },
     {
@@ -3864,6 +3871,13 @@
      ]
     },
     {
+     "action": "messages.open",
+     "label": "Mensajes: leer de nuevo las \u00faltimas l\u00edneas",
+     "keys": [
+      "Shift+H"
+     ]
+    },
+    {
      "action": "scale.down",
      "label": "Escena m\u00e1s peque\u00f1a",
      "keys": [
@@ -6057,6 +6071,13 @@
      ]
     },
     {
+     "action": "messages.open",
+     "label": "Wiadomo\u015bci: przeczytaj ostatnie linie jeszcze raz",
+     "keys": [
+      "Shift+H"
+     ]
+    },
+    {
      "action": "scale.down",
      "label": "Scena mniejsza",
      "keys": [
@@ -8247,6 +8268,13 @@
      "label": "\u041f\u043e\u043a\u0430\u0437\u0430\u0442\u044c \u0438\u043b\u0438 \u0441\u043a\u0440\u044b\u0442\u044c HUD",
      "keys": [
       "H"
+     ]
+    },
+    {
+     "action": "messages.open",
+     "label": "\u0421\u043e\u043e\u0431\u0449\u0435\u043d\u0438\u044f: \u043f\u0440\u043e\u0447\u0438\u0442\u0430\u0442\u044c \u043f\u043e\u0441\u043b\u0435\u0434\u043d\u0438\u0435 \u0441\u0442\u0440\u043e\u043a\u0438 \u0435\u0449\u0451 \u0440\u0430\u0437",
+     "keys": [
+      "Shift+H"
      ]
     },
     {

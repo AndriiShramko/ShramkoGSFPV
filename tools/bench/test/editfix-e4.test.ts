@@ -90,7 +90,7 @@ describe('editfix E4: a key the edit view swallows says why', () => {
 
     it('course.ts gives the edit view its line, in all four languages', () => {
         const src = readFileSync(join(__dirname, '../../../apps/fly/src/app/builtin/course.ts'), 'utf8');
-        expect(src).toMatch(/ctx\.keys\.block\(\(\) => ed !== null && mode === 'edit', \(a, e\) => \{\s*const l = keyOffLine\(a, keyName\(e\)\);\s*say\(t\(l\.key, l\.vars\), true\);/);
+        expect(src).toMatch(/ctx\.keys\.block\(\(\) => ed !== null && mode === 'edit', \(a, e\) => \{\s*const l = keyOffLine\(a, keyName\(e\)\);\s*say\(t\(l\.key, l\.vars\), 'key'\);/); // review of ux4a: a refused key is a refusal line (messages-logic.ts refusal), no problem
         for (const lang of ['en', 'es', 'pl', 'ru']) {
             const j = JSON.parse(readFileSync(join(__dirname, `../../../packages/i18n/locales/fly/course/${lang}.json`), 'utf8')) as Record<string, string>;
             expect(j['course.edit.keyOff'], lang).toContain('{key}');

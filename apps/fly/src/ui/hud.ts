@@ -10,6 +10,7 @@ import type { ArmView } from '../controls';
 import { radioArt, knobsFrom, sideOf, tickIcon } from './radio-art';
 import type { ArtTarget } from './radio-art';
 import { watchTopRow } from './top-row';
+import { messages, tell } from './messages';
 import { linkLines } from './link-text';
 import { keysFor } from '@gsfpv/prefs';
 import { MODE2_KEYS } from '../play/keys';
@@ -245,8 +246,6 @@ export function isFormField(el: EventTarget | null): boolean {
 export class Hud {
     readonly root: HTMLDivElement;
     private ui: HTMLElement | null = null;
-    private note = h('div', { class: 'hud-note', role: 'status', hidden: true });
-    private noteTimer = 0;
     private textOff = false;
     private tl = h('div', { class: 'osd tl' });
     private tr = h('div', { class: 'osd tr' });
@@ -295,8 +294,9 @@ export class Hud {
      */
     mount(parent: HTMLElement): void {
         this.ui = parent;
-        // outside .hud: it says how to get the text back while the rest is hidden
-        parent.append(this.root, this.note);
+        // the message stack (ui/messages.ts) outside .hud: it says how to get the text back while the rest is hidden
+        parent.append(this.root);
+        messages.mount(parent);
         watchBanners(parent);
         watchTopRow(parent);
     }
@@ -317,12 +317,13 @@ export class Hud {
         this.flash(t(this.textOff ? 'hud.textOff' : 'hud.textOn'));
     }
 
-    /** A short note under the OSD's top line (H, walls C, voxels V): what a key just did. */
-    flash(text: string, ms = 2500): void {
-        this.note.textContent = text;
-        this.note.hidden = false;
-        clearTimeout(this.noteTimer);
-        this.noteTimer = window.setTimeout(() => { this.note.hidden = true; }, ms);
+    /**
+     * A short note under the OSD's top line (H, walls C, voxels V): what a key just did. The old name of
+     * tell({ kind: 'info' }) (ui/messages.ts): the line stays as long as its length needs, `_ms` is no longer used.
+     * A problem calls tell({ kind: 'problem', from, text, fix }) itself.
+     */
+    flash(text: string, _ms?: number): void {
+        tell({ text, kind: 'info' });
     }
 
     /** Text widths of the corner line, measured once per text (it is one line, fly.css nowrap). */

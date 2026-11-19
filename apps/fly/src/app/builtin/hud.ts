@@ -3,17 +3,39 @@
 // tag and the note when the walls are switched.
 import { isFormField } from '../../ui/hud';
 import { t } from '../../i18n';
-import type { Feature } from '../context';
+import type { Feature, PauseReason } from '../context';
 import { lodLine, lodReport } from '../lod';
 import { drawingFor, drawingLine } from '../drawing';
 import { cleanDraw } from '../clean-draw';
 import { onRadioLost } from '../../devices/dji-rc2-source';
+import { messages } from '../../ui/messages';
+import { openMessages, toggleMessages, type MessagesHost } from '../../ui/messages-panel';
+import { openFeedback } from './feedback';
+
+/** The pauses that put a window over the flight view (the message lines wait under them, ui/messages.ts setCovered). */
+const COVERING: ReadonlySet<PauseReason> = new Set<PauseReason>(['menu', 'panel', 'controls', 'export', 'help']);
 
 export const hud: Feature = {
     id: 'hud',
     install(ctx) {
         const h = ctx.hud;
         h.mount(ctx.ui);
+        // the message service (ui/messages.ts): every line carries the scene; a problem's "Send to the author" opens the report
+        messages.setScene(() => ctx.scene?.id);
+        messages.setReporter((text) => openFeedback(ctx, 'bug', { message: text }));
+        // the Messages list: Shift+H, the top-row button (builtin/top.ts) and the stack's '+N more' line open it
+        const list: MessagesHost = { parent: ctx.ui, pause: () => ctx.pause('panel'), resume: () => ctx.resume('panel') };
+        messages.openList = () => openMessages(list);
+        ctx.keys.on('messages.open', (e) => {
+            if (e.repeat) return;
+            if (toggleMessages(list)) e.preventDefault();
+        });
+        // the pause menu (the pilot's Esc frees the mouse and opens it) leads to the list: the lines wait under the menu
+        ctx.menu.add({ id: 'pause.messages', action: 'messages.open', labelKey: 'messages.title', order: 74, section: 'tools', run: () => openMessages(list) });
+        // a window over the flight (the windows that free the cursor, builtin/play.ts): the lines wait under it, time stopped
+        ctx.events.on('pause', ({ on, reasons }) => {
+            messages.setCovered(on && reasons.some((r) => COVERING.has(r)));
+        });
         // arm kind 'key' (no switch on the radio): the on-screen ARM / DISARM button
         h.onArm = () => ctx.controls.toggleArm();
         // the walls tag itself the OSD reads from the flight (ui/hud.ts update)

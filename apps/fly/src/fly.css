@@ -88,6 +88,35 @@ h1 { font-size: 22px; margin: 0 0 12px; } h2 { font-size: 18px; margin: 0 0 10px
 #ui.hud-off .touch-hint, #ui.hud-off > .banner, #ui.hud-off > .bake-box, #ui.hud-off .attribution, #ui.hud-off .input-note { display: none; }
 .hud-note { position: absolute; left: 50%; top: calc(max(14px, env(safe-area-inset-top)) + 30px + var(--banner-h, 0px)); transform: translateX(-50%); max-width: min(90vw, 420px); background: rgba(0,0,0,.6); color: #fff; padding: 6px 12px; border-radius: 8px; font-size: 13px; text-align: center; }
 .hud-note[hidden] { display: none; }
+/* lane ux4a (U1): the one message stack (ui/messages.ts, messages-logic.ts messagePlace): 16 px lines that stay long enough;
+   a problem has an amber edge, what to do, "Send to the author" and its 44 px cross. Wide: top centre, bottom above a
+   third of the height (the script folds older lines into "+N"); narrow or low (.msg-side): the left third. */
+.hud-note.msg-stack { background: none; padding: 0; width: max-content; max-width: min(560px, 33vw); display: flex; flex-direction: column; align-items: stretch; gap: 6px; font-size: 16px; line-height: 1.35; text-align: left; }
+.hud-note.msg-stack[hidden] { display: none; }
+#ui > .hud-note.msg-stack.msg-side { left: max(12px, env(safe-area-inset-left)); top: calc(max(14px, env(safe-area-inset-top)) + 30px + var(--banner-h, 0px)); transform: none; width: min(30vw, 300px); max-height: 60vh; overflow: hidden; }
+.msg { display: flex; align-items: flex-start; gap: 4px; background: rgba(0,0,0,.72); color: #fff; padding: 10px 14px; border-radius: 8px; }
+.msg[hidden] { display: none; }
+.msg-body { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.msg-done { border-left: 4px solid #4caf50; }
+.msg-problem { border-left: 4px solid #ffb300; padding-right: 0; }
+.msg-fix { margin-top: 4px; color: #ffe08a; }
+.msg-send { margin-top: 8px; min-height: 44px; font-size: 15px; }
+.msg-x { flex: none; margin: -10px 0 -10px 0; color: #fff; }
+.msg-more { align-self: center; background: rgba(0,0,0,.72); color: #fff; padding: 4px 12px; border-radius: 8px; font-size: 15px; }
+.msg-more[hidden] { display: none; }
+button.msg-more { border: 0; min-height: 44px; cursor: pointer; font: inherit; font-size: 15px; text-decoration: underline; }
+/* the Messages list (ui/messages-panel.ts) and its top-row button with the count of problems not read */
+/* above the walls menu (z 40): the list is the top window, so Esc (panel-head closeTop, the highest layer) closes it first */
+.panel.messages-panel { z-index: 50; }
+.messages-panel .msg-list { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.msg-item { display: flex; gap: 10px; align-items: flex-start; padding: 8px 10px; border-radius: 8px; background: rgba(255,255,255,.05); font-size: 16px; line-height: 1.35; }
+.msg-item.msg-problem { border-left: 4px solid #ffb300; }
+.msg-item.msg-done { border-left: 4px solid #4caf50; }
+.msg-icon { flex: none; width: 24px; height: 24px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; background: rgba(255,255,255,.12); font-weight: 700; }
+.msg-problem .msg-icon { background: #ffb300; color: #111; }
+.top-actions .btn.msg-top { position: relative; min-width: 44px; min-height: 44px; padding: 6px 10px; display: inline-flex; align-items: center; justify-content: center; font-size: 18px; }
+.msg-count { position: absolute; top: -6px; right: -6px; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 10px; background: #ffb300; color: #111; font-size: 12px; font-weight: 700; line-height: 20px; text-align: center; }
+.msg-count[hidden] { display: none; }
 /* panels & overlays (fade, never a full-screen flash) */
 .panel { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(560px, calc(100vw - 32px)); max-height: calc(100vh - 32px); overflow: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 16px; animation: fadein .4s ease both; }
 .panel-head { display: flex; justify-content: space-between; align-items: center; }
