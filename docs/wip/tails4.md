@@ -90,3 +90,16 @@ Nothing to press for this lane: the three repairs show without a step of his.
   wrong and why in one run) and to 2f1ddf5f's holes. A walls-bounds/ground helper in tools/bench would save 4.
 - T3: about 20 replies; most went to the 3 keys the wider scan found beyond the 13 (my first grep skipped '.v1' keys)
   and to neg_control.py needing npx.cmd on Windows. Grepping with the test's own regex first would save 3.
+- Review: about 25 replies; most went to finding how a headless page probe reads the start (the craft does not arm
+  without a radio) and to the slow release build. A documented test-hook recipe for "read spawn and ground in the
+  page" would save 4.
+
+## Review
+
+Verdict: SHIP (independent check, full text U:/Temp/gsfpv-train4/reviews/tails4.md). No proven finding; nothing
+repaired. Reran claim 1 (PASS 12/12 on a release build of e4ec0655), claim 2 (PASS 13/13), two NEG OK (migrate.test.ts,
+start.test.ts). Own step tools/bench/scripts/tails4-review-start.mjs: the start the page itself places on 2f1ddf5f,
+d10c5638, ab5efa0e is 1.5 m over its walls and free of them (PASS 9/9); the live site FAILs exactly the 3 over-ground
+steps (evidence/2026-11-19/tails4/review-start.json, review-start-live.json). DOUBTs (do not hold): placeStart moves
+any walls scan's camera that stands more than 6 m over ground, not only the 13 measured; the 2f1ddf5f 'around'
+ground is still not seen in a picture; generated courses on the 3 scans change with the start.
