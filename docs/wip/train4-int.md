@@ -89,6 +89,37 @@ so they are car 2's to make real. Where car 1 lanes meet:
   keeping both (sonic-start-screen.test.ts counts 18 settings today); the spoken key help (sound6's mode-keys.ts) does
   not list Shift+H yet.
 
+Car 2 (on car 1's head 2716e78e and release aa18f1e4; gen4a and gen4b are car 3, so the Generate dialog in the editor and
+the dialog's options reaching gen4a's generator are car 3's seams)
+
+- ux4a's message service x head4 (car 1): both bound Shift+H (messages.open always, sonic.headCentre on ?sonic= pages): the
+  keymap and app-keys tests failed after the ux4a merge. head4's key is live since car 1 and said by the voice, so it stays;
+  Messages moved to Shift+J (J for journal). Refused on the way by the repository's own rules: Shift+M (M is keyboard
+  flying's shared key), Shift+L (rooms RV-1: a pilot holding Shift to descend keeps L = Share and O = Settings), Shift+I (no
+  other action may take a shifted sound-mode letter T U I Z G). Plain J is a radio's or gamepad's throttle style and Shift
+  is a flying key only while the keyboard flies, so Shift+J takes nothing from anyone; it also gives H back to a pilot
+  descending with Shift (plain H, the HUD). Caps come from the keymap, so the pause menu's Messages item, the top-row
+  button's title and the generated catalogue (docs/settings.md, README.md, features.json) follow. Tests: keymap.test.ts
+  (Shift+J opens Messages, J alone stays the throttle style, Shift+H routes nothing off the sound page and centres the head
+  on it), app-keys.test.ts, rooms-review and rooms-public unchanged and passing; NEG OK against the merged keymap.
+- head4 x sound6's spoken key help (mode-keys.ts KEY_HELP): K did not name Shift+H. One line sonic.say.helpHead in en es pl ru,
+  said after the narrator key. sonic-head-switch.test.ts (K names it with the page's cap; off the sound page no line),
+  sonic-optin.test.ts's pinned list +1; NEG OK.
+- ux4a's message service x the course and the editor: real. The course's lines go through tell() with COURSE_LINE
+  (progress, done, problem from 'course'); the editor's refusals go to the top bar's line and, as problems from
+  'course-editor', to the Messages list; edit4s's saveFailed says through the same path. Not done (ux4a's follow-up, not a
+  seam break): vox4's voxel failure and ux4b's walls failure stay in their panels' status lines, logged as plain lines.
+- edit4a's gizmo drag x edit4c's warnings: the HandleDrag event's move and end reach dragTo, which asks LiveWarnings during
+  the drag and on the release. A cancelled drag (Esc, a right click: edit4a A2) left the live tag beside the gate, naming a
+  place the gate no longer stood at: dragCancel now ends the live check and closes the tag. int4-seams.test.ts, NEG OK.
+- edit4s's save x edit4b's seam: no one emitted the seam's 'saved', so life.ts kept 'unsaved' after a save and the next loss
+  question called saved gates unsaved. Both saves (mine, admin) now emit it after keeper.saved. int4-seams.test.ts, NEG OK.
+- edit4a's camera rule x edit4b's arrow: edit4a-camera.test.ts counted one frameSel() in course.ts; the second is the seam's
+  frameSelection, which only a click on edit4b's edge arrow asks for (the pilot's own press). The test now names both and
+  that point.ts calls it once.
+- head4's start-screen row x sound6's rows: merged in S1 (sonic-start-screen.test.ts keeps both, 18 settings); the gates run
+  it.
+
 ## Deploy order
 
 Car 1 (from the merged lanes' 'For the lead' and `git diff origin/main HEAD -- apps/api deploy packages/sonic-fpv`)

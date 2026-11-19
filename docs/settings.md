@@ -176,7 +176,7 @@ The simulator shows each key next to its menu item.
 | `V` | Voxel grid: off / over the scan / voxels only |
 | `C` | Walls on / off for this scan |
 | `H` | Show or hide the HUD |
-| `Shift+L` | Messages: read the last lines again |
+| `Shift+J` | Messages: read the last lines again |
 | `[` `Shift+[` | Scene smaller |
 | `]` `Shift+]` | Scene larger |
 | `F9` | Start or stop recording |

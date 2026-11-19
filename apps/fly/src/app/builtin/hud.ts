@@ -23,7 +23,7 @@ export const hud: Feature = {
         // the message service (ui/messages.ts): every line carries the scene; a problem's "Send to the author" opens the report
         messages.setScene(() => ctx.scene?.id);
         messages.setReporter((text) => openFeedback(ctx, 'bug', { message: text }));
-        // the Messages list: Shift+L, the top-row button (builtin/top.ts) and the stack's '+N more' line open it
+        // the Messages list: Shift+J, the top-row button (builtin/top.ts) and the stack's '+N more' line open it
         const list: MessagesHost = { parent: ctx.ui, pause: () => ctx.pause('panel'), resume: () => ctx.resume('panel') };
         messages.openList = () => openMessages(list);
         ctx.keys.on('messages.open', (e) => {

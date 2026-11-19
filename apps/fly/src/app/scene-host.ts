@@ -379,7 +379,7 @@ interface LoadOutcome {
 }
 
 /** The v0.2 keys were merged into the store's library once (set after the merge). */
-const MERGED_KEY = 'gsfpv.library.merged.v1';
+const MERGED_FLAG = 'gsfpv.library.merged.v1';
 
 /**
  * The scene library lives in the page's preferences store from now on (E.1: the collection
@@ -389,7 +389,7 @@ const MERGED_KEY = 'gsfpv.library.merged.v1';
  */
 export function useStoreLibrary(prefs: PrefsStore): void {
     let merged = false;
-    try { merged = localStorage.getItem(MERGED_KEY) === '1'; } catch { merged = true; }
+    try { merged = localStorage.getItem(MERGED_FLAG) === '1'; } catch { merged = true; }
     const read = (): SceneLibraryData => prefs.collection('sceneLibrary') as SceneLibraryData;
     const write = (d: SceneLibraryData): void => prefs.updateCollection('sceneLibrary', (draft) => {
         draft.history = d.history;
@@ -400,7 +400,7 @@ export function useStoreLibrary(prefs: PrefsStore): void {
     if (!merged) {
         const old = legacyLibraryStore.read();
         if (old.history.length || old.favourites.length) write(mergeLibraries(read(), old));
-        try { localStorage.setItem(MERGED_KEY, '1'); } catch { /* blocked storage: the store is in memory anyway */ }
+        try { localStorage.setItem(MERGED_FLAG, '1'); } catch { /* blocked storage: the store is in memory anyway */ }
     }
     useLibraryStore({ read, write });
 }
