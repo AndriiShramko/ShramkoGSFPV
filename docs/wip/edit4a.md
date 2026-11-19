@@ -14,11 +14,26 @@ against the code as it is: EditView gets the walls ray through its own host (Edi
 - [x] A2 one gizmo: move arrows, size boxes and turn rings at once; nearest handle owns the press; hover tag; no tool buttons;
   Esc / right click cancels a drag (commit b74bd0a8)
   - the drawn check of the hover (design A2 page probe) is folded into A3 step 7: one build and one GPU run for both
-- [x] A3 acceptance: tools/bench/scripts/edit4a-probe.mjs (mouse, 1536x730 dsf 1.25), the live run as the negative control
-  (commits 5e9d70f1, 3ef5816c, 205f115d; evidence and this file in the A3 status commit)
-  - drawn run on the local build: steps 1 to 12 and cancel PASS, 13 (laptop layout) FAIL by a probe fault, repaired in
-    205f115d (its gate could lie under the gate bar); 13 then PASS in a ?render=off run (layout and clicks need no drawing)
-  - drawn run on the live site: 2 to 7, 9, 10, cancel, 11 and 13 FAIL (the negative control)
+- [ ] A3 acceptance: tools/bench/scripts/edit4a-probe.mjs (mouse, 1536x730 dsf 1.25), the live run as the negative control
+  (commits 5e9d70f1, 3ef5816c, 205f115d, 6b90afbf; the press records and this left list in the next commit)
+  - [x] the probe, 14 steps, one JSON verdict, exit 1 on a FAIL
+  - [x] drawn run 1 on the local build (evidence accept-local.json): steps 1 to 12 and cancel PASS, 13 (laptop layout) FAIL
+    by a probe fault, repaired in 205f115d (its gate could lie under the gate bar)
+  - [x] drawn run on the live site (accept-live.json): 2 to 7, 9, 10, cancel, 11 and 13 FAIL (the negative control)
+  - [x] drawn run 2 on the local build (accept-local-run2.json): every step PASS but 9.ringY: the press where hitAt named
+    turn/ring:y went to the view (an orbit, eye 0.9 m, the gate not turned). Not a probe fault: a real intermittent miss.
+  - [x] gates (typecheck, vitest, architecture, i18n, catalog, b18, leaks) on 6b90afbf: all PASS but vitest, whose only two
+    failures are rooms-race and rooms-open-vote ('rooms.py did not start' under the load of 15 lanes); both pass alone
+    (2 files, 13 passed). This lane changes no rooms file.
+  - LEFT 1: find why a press on a part hitAt names is sometimes not taken (drawn run 2 step 9; ?render=off runs: steps 9, 10,
+    11 at random; once hitAt named move/x and 0.3 s later turn/ring:y at the same point with nothing moved). Suspect: the
+    gizmos size and place their shapes in the engine's frame update while the camera entity holds the drone's pose
+    (view-mouse.ts apply() comments 'the entity may hold the drone's pose between frames'), so the shapes the press tests
+    are not the ones the hover tested. The probe now records, for every drag, hitAt the moment before the press and what
+    the press took (res.presses): read them from one drawn run first. Fix in view-mouse.ts, with a unit test that fails
+    on the old code.
+  - LEFT 2: one drawn local run with all 14 steps PASS, saved as evidence/2026-11-19/edit4a/accept-local.json; then gates
+    vitest only (the status file and the view change are the new inputs), then LANE-DONE.
 
 ## What the owner does
 
@@ -75,7 +90,9 @@ against the code as it is: EditView gets the walls ray through its own host (Edi
    moved 0 m in every drag. Proof: `until mkdir C:/dev/.gpu-lock 2>/dev/null; do sleep 15; done; node
    tools/bench/scripts/edit4a-probe.mjs http://localhost:5941/en 70b50d42 1536x730 1.25 local
    evidence/2026-11-19/edit4a/accept-local.json; rmdir C:/dev/.gpu-lock` (release build, dist served by serve-csp.mjs):
-   steps 1-12 and cancel PASS, 13 FAIL by the probe fault named in Status.
+   steps 1-12 and cancel PASS, 13 FAIL by the probe fault named in Status. A second drawn run after the probe fix
+   (accept-local-run2.json): 13 PASS and every other step PASS but 9.ringY (Status, LEFT 1): claim 7 holds for the drag
+   of a ring only intermittently until LEFT 1 is done.
 8. At 844x390, device scale 2, no touch, nothing lies over another thing: top bar, gate bar, hover tag and the editor's
    window are disjoint and inside the window. Proof: `QUERY='&render=off' node tools/bench/scripts/edit4a-probe.mjs
    http://localhost:5941/en 70b50d42 1536x730 1.25 off-local evidence/2026-11-19/edit4a/accept-local-renderoff.json`:
@@ -91,11 +108,10 @@ against the code as it is: EditView gets the walls ray through its own host (Edi
 
 - No person, phone, touch pad or real controller took part: the probe is a headless Chrome with a synthetic mouse. A touch
   pad's two-finger scroll and pinch are proven only by unit tests (wheelNotches with deltaMode and ctrlKey).
-- With ?render=off the gizmo's parts are not kept up to date (the engine sizes them in the drawn frame), so a press can find
-  another part than the scan before it: the gizmo steps 7 to 11 are judged only in the drawn run. The render-off run is
-  used for the laptop layout (step 13) only.
-- The drawn run's step 13 was not repeated drawn after the probe fix: the GPU lock was held by other lanes for over 30
-  minutes; a second drawn run is queued and its JSON, when it ends, is U:/Temp/gsfpv-train4/edit4a/accept-local2.json.
+- A press on a gizmo part is sometimes not taken (Status, LEFT 1): seen in ?render=off runs and once in a drawn run. The
+  render-off run is used for the laptop layout (step 13) only; its 10.box and 11.another FAILs are this same miss.
+- Two drawn local runs were made in this stage (the rule is one): the first one's step 13 judged a click that the gate bar
+  covered, a probe fault; the second run waited about 45 minutes for the GPU lock.
 - Picture (U:/Temp/gsfpv-train4/shots/edit4a-hover-local.png, looked at once): the selected ring gate lit yellow with the
   small gizmo inside it, the hovered y ring lit yellow, the red x arrow and the green y arrow out from the centre boxes, and
   the tag 'Turn around Y' at the cursor; nothing else lies over the gizmo.
@@ -133,4 +149,5 @@ against the code as it is: EditView gets the walls ray through its own host (Edi
   line; a grep of the locales for the removed keys and words at the start would be cheaper.
 - A3: the most replies went to a gizmo press that went to the orbit in ?render=off runs (stale gizmo shapes without drawing)
   and to waiting for the shared GPU lock; trusting the design's 'render=off cannot draw gizmos' and going drawn at once,
-  with the probe's clicks checked against the bars beforehand, would be cheaper.
+  with the probe's clicks checked against the bars beforehand, would be cheaper. Next run: start from LEFT 1 with one drawn
+  run that writes res.presses, before reading any engine code.

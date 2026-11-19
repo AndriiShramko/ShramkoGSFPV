@@ -99,9 +99,16 @@ async function drag(x, y, dx, dy, { shift = false, mid = null } = {}) {
     await page.mouse.move(x, y, { steps: 3 });
     await sleep(120);
     if (shift) await page.keyboard.down('Shift');
+    // what the view's hit test names at the point the moment before the press (rule and gizmo's own), and what the press
+    // took after the first moves: a part named here but not taken is a press that went to the view
+    const state = () => page.evaluate(() => { const v = window.__gsfpvEditView && window.__gsfpvEditView(); return v ? { grabbed: v.grabbed, dragging: v.dragging, ring: v.ring, nav: v.nav && v.nav.kind, sets: v.sets, stand: v.stand && v.stand.screen } : null; });
+    const rec = { at: [Math.round(x), Math.round(y)], pre: await page.evaluate(([x, y]) => (window.__gsfpvEditHit ? [window.__gsfpvEditHit(x, y), window.__gsfpvEditHit(x, y, true)] : null), [x, y]), before: await state() };
     await page.mouse.down();
-    await page.mouse.move(x + dx, y + dy, { steps: 14 });
+    await page.mouse.move(x + dx / 4, y + dy / 4, { steps: 4 });
+    rec.taken = await state();
+    await page.mouse.move(x + dx, y + dy, { steps: 10 });
     await sleep(150);
+    (res.presses ??= []).push(rec);
     if (mid) await mid();
     await page.mouse.up();
     if (shift) await page.keyboard.up('Shift');
