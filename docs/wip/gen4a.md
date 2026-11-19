@@ -12,7 +12,7 @@ tools/bench/src/scan-kinds.json, evidence/2026-11-19/gen4/.
   placementStats answers zeros, kind 'unknown'), index.ts exports; request.test.ts (link round trip for all 6
   combinations; NEG OK: absent request.ts fails). Commit b142e495.
 - [x] A1 analysis: scan.ts analyzeScan + scan.test.ts + scan-kind-audit.ts + scan-kinds.json. Commits 7da1c05c, 1da82a25,
-  c54508f8 (run 1) and the A1 commit of run 2 (this Status).
+  c54508f8 (run 1), 7b5b4788 (run 2).
   - Run 2 found from the walls themselves (scan-kind-audit.ts --profile and --map): SuperSplat's voxels are SOLID under
     every surface (64 voxels in every inner block; a column is one run from the grid's bottom to the ground or the roof),
     and 5dfeb49b is solid up to the grid's top all round a carved bowl. So run 1's density measures (crisp, cover, fill)
@@ -58,10 +58,10 @@ Nothing yet: stage S0 changes no page. After gen4b: Shift+G opens the 'Generate 
 - planCourse's stub is not run by a test of its own in S0 (it is the worker's code of today moved; A2 tests it). No person,
   phone or real controller took part.
 
-3. analyzeScan tells room, plants, object, cityAbove and street apart on four synthetic scans, finds the TOP of a fuzzy
+2. analyzeScan tells room, plants, object, cityAbove and street apart on four synthetic scans, finds the TOP of a fuzzy
    ground shell where qualityMap's old rule does not, and keeps the air beside a table out of the territory. Proof:
    `npx vitest run packages/tracks/test/scan.test.ts`; last result 5 passed; NEG OK (scan.ts absent; run 1's scan.ts).
-4. On the 12 real scans the kind matches the hand label 11 of 14 times (x1 and x15). Proof: `cd tools/bench && npx tsx
+3. On the 12 real scans the kind matches the hand label 11 of 14 times (x1 and x15). Proof: `cd tools/bench && npx tsx
    src/scan-kind-audit.ts`; last result MATCH 11/14 (evidence/2026-11-19/gen4/scan-kinds.json).
 
 ## For the lead
