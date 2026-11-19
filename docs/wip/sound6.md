@@ -77,7 +77,7 @@ the design says train6: the lane prompt wins). Design C:/dev/.gsfpv-lanes/design
   All 60 host files tools/bench/test/sonic*: 862 passed, 10 skipped. fly typecheck and tools/bench tsc 0 errors.
   Not done here, for S5 (it builds anyway): the page in Playwright firefox (firefox-1543 is installed) with
   ?render=off: the engine running after a press; only if it plays, the site note names Firefox too.
-- [ ] S5 pin moved, package suite + listen:words, simulator gates, acceptance probe sonic-quick-walk; the Firefox page
+- [x] S5 pin moved, package suite + listen:words, simulator gates, acceptance probe sonic-quick-walk; the Firefox page
   check of S4.
   - [x] Package full suite at e4fce05: 1422 passed, 1 failed (test/words.test.ts, its evidence waits for listen:words), 4
     skipped. listen:words needs SHRAMKO_LISTEN_PY=U:/venvs/shramko-listen/Scripts/python.exe and
@@ -112,7 +112,9 @@ the design says train6: the lane prompt wins). Design C:/dev/.gsfpv-lanes/design
     against the live site (read only): sound6-walk-live.json FAILS chromium 1, 2, 4, 6, 7, 8, 9 and firefox 1, 2, 4
     (small links; no Quick start; no wall knock within 12 s; ears-walls named no side; the glossary followed; Firefox's
     engine never started); chromium 3, 5 and firefox 3 pass there (not repaired by this lane).
-  - [ ] (e) the gates once (typecheck, vitest, architecture, i18n, b18, leaks, catalog); then delete dist.
+  - [x] (e) gates at ce18b28c (staged tree): typecheck, vitest, architecture, i18n, catalog, b18, leaks all PASS (logs
+    U:/Temp/gsfpv-gates-20261119-182638). Package full suite at 53a5675: 78 files, 1423 passed, 4 skipped, 0 failed;
+    package tsc 0 errors. dist deleted.
 
 Base: origin/main e3201fec differs from this branch only in STATE.md: not merged.
 
@@ -197,3 +199,6 @@ tried.
 - S5 run 1: 40 replies; finding how the page shows a lesson's sound (runner action 'cue' -> engine.cue -> hook
   oneShots) took 8, and listen:words' missing Python env 3: the design could name the hook fields a probe reads and the
   package's listen env paths.
+- S5 run 2: 45 replies; finding why the first knock waited (the runner waits for the host speech queue) and which
+  lessons have no question (ears-walls: scenes only) took 6: a design naming how a host line delays a runner sound would
+  save them; listen:words re-says only changed lines (4 s with its cache), so it is cheap to re-run.
