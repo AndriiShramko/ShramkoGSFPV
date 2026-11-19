@@ -5,7 +5,7 @@ picture of the scan with holes through it; the voxels look flat), 577-578 (Lubli
 
 ## Status
 
-- [x] V-1 render side: voxels-only stops the scan drawing (no frozen picture), SplatLoadGuard for ux4b, sun and fog (commit: this one, "vox4 V-1")
+- [x] V-1 render side: voxels-only stops the scan drawing (no frozen picture), SplatLoadGuard for ux4b, sun and fog (commit 3a3105d6)
 - [ ] V-2 the Lublin hole (experiment first, then the fix by its decision) and per-vertex ambient occlusion
 - [ ] V-3 acceptance probe tools/bench/scripts/vox4-probe.mjs (drawn run, 1536x730 dsf 1.25, mouse), live negative control
 
