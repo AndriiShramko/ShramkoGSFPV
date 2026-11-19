@@ -20,8 +20,9 @@ describe('EJ-1: hitAt and measure project with the edit view camera before they 
         const vm = src('apps/fly/src/course/editor/view-mouse.ts');
         const hit = body(vm, '    hitAt(x: number, y: number');
         expect(hit.indexOf('this.apply()')).toBeGreaterThan(-1);
-        expect(hit.indexOf('this.apply()')).toBeLessThan(hit.indexOf('pickRing('));
-        expect(hit.indexOf('this.apply()')).toBeLessThan(hit.indexOf('_getSelection'));
+        // train 4 edit4a A2 (the owner, brief 543: one gizmo): hitAt asks partAt, the press's own rule (rings and shapes)
+        expect(hit.indexOf('this.apply()')).toBeLessThan(hit.indexOf('this.partAt('));
+        expect(hit.indexOf('this.partAt(')).toBeGreaterThan(-1);
         const me = body(vm, '    measure(): Record<string, unknown> | null {');
         expect(me.indexOf('this.apply()')).toBeGreaterThan(-1);
         expect(me.indexOf('this.apply()')).toBeLessThan(me.indexOf('worldToScreen'));

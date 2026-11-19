@@ -1,0 +1,6 @@
+{
+  "course.view.handle.move": "Сдвинуть по {axis}",
+  "course.view.handle.turn": "Повернуть вокруг {axis}",
+  "course.view.handle.size": "Размер",
+  "course.view.cancelled": "Отменено: ворота вернулись на место"
+}

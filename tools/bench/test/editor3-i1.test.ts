@@ -124,7 +124,8 @@ describe('I1 D4: the pick of an edge-on ring and its angle from the mouse travel
         expect(take(null, null)).toBe(false);
         const vm = src('apps/fly/src/course/editor/view-mouse.ts');
         // J1 (E3): the edit view takes every ring it picks, edge-on or open (ringDeg along the pick's own direction)
-        expect(vm).toMatch(/if \(rp\) \{\s*this\.ring = \{ axis: rp\.index, dir: rp\.dir/);
+        // train 4 edit4a A2: partAt picks the ring (unless an arrow or a box is nearer), the press takes it
+        expect(vm).toMatch(/if \(part\.ring\) \{\s*const rp = part\.ring;\s*this\.ring = \{ axis: rp\.index, dir: rp\.dir/);
     });
     it('hides the shapes switched off (grey centre sphere and face ring) also after each drag', () => {
         const vm = src('apps/fly/src/course/editor/view-mouse.ts');
@@ -134,14 +135,16 @@ describe('I1 D4: the pick of an edge-on ring and its angle from the mouse travel
 });
 
 describe('I1 D2 D3: the handles look as in an ordinary 3D editor, the selected gate is marked', () => {
-    it('no part is larger than 16 px but lines and rings; arrows about 90 px, rings 85 px, lines 2 to 3 px', () => {
+    it('no part is larger than 16 px but lines and rings; arrows to 115 px, rings 60 px, lines 2 to 3 px', () => {
         expect(PART_MAX_PX).toBeLessThanOrEqual(16);
         // as drawn: a cube at an angle and the wide field make a part up to 1.67 times its set size (measured)
         const drawn = Math.max(HANDLE_PX.arrowLength * 1.13, HANDLE_PX.arrowWidth * 1.67, HANDLE_PX.sizeBox * 1.67,
             HANDLE_PX.centreBox * 1.67);
         expect(drawn).toBeLessThanOrEqual(16);
-        expect(HANDLE_PX.moveReach).toBe(90);
-        expect(HANDLE_PX.ringRadius).toBe(85);
+        // train 4 edit4a A2 (the owner, brief 543: arrows, boxes and rings at once): the edit4 design's bands, boxes to 35 px,
+        // rings at 60 px, arrows from 75 to 115 px (edit4a-gizmo.test.ts keeps them apart)
+        expect(HANDLE_PX.moveReach).toBe(115);
+        expect(HANDLE_PX.ringRadius).toBe(60);
         expect(HANDLE_PX.line).toBeGreaterThanOrEqual(2);
         expect(HANDLE_PX.line).toBeLessThanOrEqual(3);
         // one gizmo unit is UNIT_PX px: PlayCanvas scale 0.3 * size * half extent

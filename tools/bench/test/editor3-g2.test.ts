@@ -27,7 +27,8 @@ describe('editor3 G2', () => {
         expect(view).toMatch(/addEventListener\('pointercancel', this\.onUpCapture, true\)/);
         expect(view).not.toMatch(/addEventListener\('pointerup', this\.onUp\)/);
         // a move from a gizmo that kept its axis is not a drag; a kept axis is ended on the up
-        expect(view).toMatch(/if \(!this\.dragging\) return;\s+const p = this\.pose\(this\.openingAtStart\);\s+host\.onDrag\(p, false\)/);
+        // train 4 edit4a A2: the step is a 'move' drag event of the part the press took
+        expect(view).toMatch(/if \(!this\.dragging \|\| !this\.grabbed\) return;\s+const p = this\.pose\(this\.openingAtStart\);\s+this\.emitDrag\('move', p\)/);
         expect(view).toMatch(/this\.endStale\(\);/);
         // measured in the G2 REPRO run: the bar's place read only the Move set's nodes, so Turn or Size hid the bar
         const ss = view.slice(view.indexOf('standScreen(): '), view.indexOf('standScreen(): ') + 400);
@@ -110,20 +111,27 @@ describe('editor3 G2', () => {
         // train 4 edit4a A1: one helper builds every ray of the view (the click, the double click, the orbit pivot, the dolly)
         expect(view).toMatch(/const ray = this\.rayAt\(/);
         expect(view).toMatch(/return camRay\(this\.cam, /);
-        expect(view).not.toMatch(/cc\.screenToWorld\(/);
+        // train 4 edit4a A2: the gizmos' own pick ray (shapeHit, the engine's _getSelection with its distance) is the only
+        // screenToWorld, and every caller gives the camera the edit view's pose first (partAt's callers call apply())
+        const sh = view.indexOf('function shapeHit(');
+        const shEnd = view.indexOf('\n}\n', sh);
+        expect(sh).toBeGreaterThan(-1);
+        expect(view.slice(0, sh) + view.slice(shEnd)).not.toMatch(/cc\.screenToWorld\(/);
     });
 
-    it('the opening line names one set of handles at a time and Move, Turn, Size on the bar, in en, es, pl, ru', () => {
+    // train 4 edit4a A2 (the owner, brief 543 and 545): no tools and no M R T any more, the wheel no longer sets the speed;
+    // the opening line names the one gizmo's parts and the Blender-like view (drag on empty space, wheel, F, Home)
+    it('the opening line names the arrows, rings and boxes, the drag on empty space, F and Home, in en, es, pl, ru', () => {
         const words: Record<string, string[]> = {
-            en: ['one set of handles', 'Move', 'Turn', 'Size', 'Space'],
-            es: ['un solo juego de controles', 'Mover', 'Girar', 'Tama\u00f1o', 'Espacio'],
-            pl: ['jeden zestaw uchwyt\u00f3w', 'Przesu\u0144', 'Obr\u00f3\u0107', 'Rozmiar', 'Spacja'],
-            ru: ['\u043e\u0434\u0438\u043d \u043d\u0430\u0431\u043e\u0440 \u0440\u0443\u0447\u0435\u043a', '\u0421\u0434\u0432\u0438\u043d\u0443\u0442\u044c', '\u041f\u043e\u0432\u0435\u0440\u043d\u0443\u0442\u044c', '\u0420\u0430\u0437\u043c\u0435\u0440', '\u041f\u0440\u043e\u0431\u0435\u043b']
+            en: ['arrows', 'rings', 'boxes', 'Shift', 'key F', 'key Home', 'Space', 'Key Esc'],
+            es: ['flechas', 'anillos', 'cubos', 'May\u00fas', 'tecla F', 'tecla Inicio', 'Espacio', 'tecla Esc'],
+            pl: ['strza\u0142ki', 'pier\u015bcienie', 'kostki', 'Shift', 'klawisz F', 'klawisz Home', 'Spacja', 'Klawisz Esc'],
+            ru: ['\u0441\u0442\u0440\u0435\u043b\u043a\u0438', '\u043a\u043e\u043b\u044c\u0446\u0430', '\u043a\u0443\u0431\u0438\u043a\u0438', 'Shift', '\u043a\u043b\u0430\u0432\u0438\u0448\u0430 F', '\u043a\u043b\u0430\u0432\u0438\u0448\u0430 Home', '\u041f\u0440\u043e\u0431\u0435\u043b', '\u041a\u043b\u0430\u0432\u0438\u0448\u0430 Esc']
         };
         for (const [lang, want] of Object.entries(words)) {
             const s = (JSON.parse(read(`packages/i18n/locales/fly/course/${lang}.json`)) as Record<string, string>)['course.edit.opened'] ?? '';
             for (const w of want) expect(s, lang + ': ' + w).toContain(w);
-            expect(s).toContain('M, R, T');
+            expect(s).not.toContain('M, R, T');
             expect(s).not.toMatch(/\d/);
         }
     });

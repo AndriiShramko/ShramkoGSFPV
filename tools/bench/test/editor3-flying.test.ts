@@ -169,7 +169,9 @@ describe('editor3 E3: flying inside the edit mode', () => {
         expect(COURSE_TS).not.toMatch(/aim\(\);/);
         const VM = readFileSync(join(__dirname, '../../../apps/fly/src/course/editor/view-mouse.ts'), 'utf8');
         // a drag left set when the button goes up is ended there (one undo step), so put() places the handles again
-        expect(VM).toMatch(/if \(this\.dragging\) \{\s*this\.dragging = false;\s*this\.host\.onDrag\(this\.pose\(this\.openingAtStart\), true\);/);
+        // train 4 edit4a A2: the up ends it through endDrag (one 'end' drag event), which does nothing when no drag is held
+        expect(VM).toMatch(/private onUp = [^]*?this\.endDrag\(\);/);
+        expect(VM).toMatch(/private endDrag\(\): void \{\s*if \(!this\.dragging\) return;\s*this\.dragging = false;\s*this\.emitDrag\('end', this\.pose\(this\.openingAtStart\)\);/);
     });
 
     it('the test flight shows the lap clock and the next gate, the best lap is not written', () => {

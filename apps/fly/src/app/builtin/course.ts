@@ -50,6 +50,7 @@ import { stopKeyboardArm } from '../../devices/keyboard';
 import type { Ray } from '../../course/editor/pick';
 import { camFrom } from '../../course/editor/fly-cam';
 import { gateFlownPose, placeGate, placeInState, type FlownPose } from '../../course/editor/drag';
+import type { Handle } from '../../course/editor/handle-look';
 import type { CourseCheck, EditorState } from '@gsfpv/tracks';
 import { myTokens, myVotes, rememberToken, rememberVote, voterId } from '../../course/store';
 import { EditorPanel } from '../../course/editor/panel';
@@ -933,7 +934,9 @@ export const course: Feature = {
                 },
                 onPick: (i) => pickAt(i),
                 onPlace: (ray) => placeAt(ray),
-                onDrag: (p, end) => dragTo(p, end),
+                // lane edit4a A2: a cancelled drag (Esc, right click) puts the course back as the press found it
+                onDrag: (e) => (e.phase === 'cancel' ? dragCancel() : dragTo(e.pose, e.phase === 'end', e.handle)),
+                text: (k, v) => t(k, v),
                 onSpeed: (s) => ctx.hud.flash(t('course.edit.camSpeed', { v: s.toFixed(1) }), 1200),
                 typing: (target) => panel?.typing(target) ?? false,
                 sizeText: (m) => t('course.edit.sizeTag', { m: m.toFixed(1) }),
@@ -942,7 +945,7 @@ export const course: Feature = {
                 onFrame: () => frameSel(),
                 ray: (o, d, max) => (camRay ? camRay(o, d, max) : null)
             }, camFrom([ep.x, ep.y, ep.z], [ep.x + ef.x, ep.y + ef.y, ep.z + ef.z]));
-            bar = new GateBar(ctx.ui, { key: (p) => applyKey(p), where: () => view?.standScreen() ?? null, tool: () => view?.tool ?? 'move', setTool: (tl) => view?.setTool(tl), dragging: () => view?.isDragging() ?? false });
+            bar = new GateBar(ctx.ui, { key: (p) => applyKey(p), where: () => view?.standScreen() ?? null, dragging: () => view?.isDragging() ?? false });
             top = new TopBar(ctx.ui, { key: (p) => applyKey(p), add: () => toggleAdd(), show: (part) => panel?.reveal(part) });
             // read only, for the page probes (tools/bench/src/editor3-smoke.ts)
             (window as unknown as { __gsfpvEditView?: () => unknown }).__gsfpvEditView = () => (view ? { ...view.debug(), mode, bar: bar?.debug() ?? null, place: lastPlace, wrong: lastWrong, course: ed ? { gates: ed.course.gates, start: (ed.course as { start?: unknown }).start ?? null, problems: ed.problems } : null, camTaken, crashCleared, crashActive: ctx.crash.active, drone: [S.px, S.py, S.pz].map((i) => Math.round((ctx.session.runner.sim.s[i] ?? 0) * 100) / 100), override: ctx.session.cameraOverride } : null);
@@ -959,7 +962,7 @@ export const course: Feature = {
                 const f = forwardOf(s[S.qw] ?? 1, s[S.qx] ?? 0, s[S.qy] ?? 0, s[S.qz] ?? 0);
                 const n = Math.hypot(f[0], f[1]) || 1;
                 const at: [number, number, number] = [eye[0] + (f[0] / n) * m, eye[1] + up, eye[2] + (f[1] / n) * m];
-                dragTo({ pos: at, quat: facingFrom(eye, at), opening: open }, true);
+                dragTo({ pos: at, quat: facingFrom(eye, at), opening: open }, true, 'move');
                 return { drone: eye, gate: at };
             };
             if (!adminLive && adminHinted()) {
@@ -1111,7 +1114,7 @@ export const course: Feature = {
             if (mode === 'fly') frame(true);
         };
         /** lane editor3 E2: a handle drag; the gate follows live, the release is one undo step and asks the walls check */
-        const dragTo = (p: FlownPose, end: boolean): void => {
+        const dragTo = (p: FlownPose, end: boolean, handle: Handle): void => {
             if (!ed) return;
             const base = dragBase ?? ed;
             dragBase = base;
@@ -1139,8 +1142,16 @@ export const course: Feature = {
             showEd();
             // lane edit4a A1 (E1): the view stays where the pilot set it after a drag too (train 3 J1's reframe is gone)
             // H2-look: the top bar says what the drag did; after a Size drag the gate line carries the new opening in metres
-            const did = view?.tool === 'size' ? ACTION_KEYS.size : view?.tool === 'turn' ? ACTION_KEYS.turn : ACTION_KEYS.move;
+            const did = handle === 'size' ? ACTION_KEYS.size : handle === 'turn' ? ACTION_KEYS.turn : ACTION_KEYS.move;
             if (st) say(t('course.edit.did', { what: t(did), gate: gateLine(st, scale()) }));
+        };
+        /** lane edit4a A2: a drag cancelled by Esc or a right click: the course as the press found it, no undo step */
+        const dragCancel = (): void => {
+            cancelAnimationFrame(dragFrame);
+            dragFrame = 0;
+            if (dragBase) ed = dragBase;
+            dragBase = null;
+            showEd();
         };
         const viewForward = (): [number, number] => {
             // lane editor3 E2: the arrows follow the free edit camera
