@@ -215,5 +215,18 @@
   "course.gen.build": "Zbuduj tor",
   "course.gen.replace": "Zastąp nowym torem",
   "course.gen.cancel": "Anuluj",
-  "course.gen.enter": "klawisz Enter"
+  "course.gen.enter": "klawisz Enter",
+  "progress.step.analyse": "szukanie najlepiej zeskanowanej części",
+  "course.gen.progressTitle": "Budowanie toru",
+  "course.gen.stepOf": "Krok {n} z {m}",
+  "course.gen.left": "Zostało około {left}",
+  "course.gen.over": "Trwa dłużej niż zakładano, na razie {elapsed}",
+  "course.gen.done": "Gotowe",
+  "course.gen.noRoom": "Przy rozmiarze sceny x{s} nie mieści się żadna bramka, przez którą przeleci twój dron.",
+  "course.gen.noRoomGrow": "Ustaw scenę x{to} i zbuduj",
+  "course.gen.noRoomAgain": "Spróbuj innego układu",
+  "course.gen.close": "Zamknij",
+  "course.gen.startHere": "Bramki: {n}. Jesteś przy bramce startowej: przeleć przez START, aby włączyć zegar",
+  "course.gen.startAhead": "Bramki: {n}. Bramka startowa jest {m} m dalej: leć za strzałką. Klawisz Shift+T ukrywa tor",
+  "course.gen.cancelled": "Budowanie toru anulowane. Nic się nie zmieniło"
 }

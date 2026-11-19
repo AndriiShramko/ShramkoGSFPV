@@ -27,15 +27,16 @@ import { courseElements, gateRole, gateRoles, lapEnd, lapSplashMode, noCourseSiz
 import { aimOf } from '../../course/guide';
 import type { GuideCamera } from '../../course/guide';
 import { coveredBy } from '../../course/cover';
-import { bestKey, editOfLink, firstOffer, readBest, seedOfLink, servedOfLink, withCourse, writeBest } from '../../course/link';
+import { bestKey, courseOfLink, editOfLink, firstOffer, readBest, servedOfLink, withCourse, writeBest } from '../../course/link';
 import { CourseStore, type CourseRow } from '../../course/store';
 import type { CheckJob, CourseGrid, CourseJob, FromCourseWorker } from '../../course/worker';
-import { COURSE_WARN_MS, PROGRESS_TICK_MS, ProgressClock, SpeechPacer, courseSteps, isParked, progressLine, spokenLine } from '../../course/progress';
+import { COURSE_WARN_MS, PROGRESS_TICK_MS, ProgressClock, SpeechPacer, courseSteps, isParked, planSteps, progressLine, spokenLine } from '../../course/progress';
+import { CourseBox, START_LINE_MS, noRoomModel, progressBoxModel, startLine } from '../../course/progress-box';
 import { sayVia } from '../say-via';
 import type { CueEvent } from '@shramko/sonic-fpv';
 import { soundCourseSeed } from './sonic-flight';
 import { S } from '@gsfpv/sim-core';
-import { MAX_GATES_EDIT, REQUEST_DEFAULTS, canSave, checkTrack, edit, flownCollision, flownStart, marginOf, nearestWall, openEditor, toTrackV1, upgradeTrack, wallsCheck } from '@gsfpv/tracks';
+import { MAX_GATES_EDIT, REQUEST_DEFAULTS, canSave, courseLinkId, checkTrack, edit, flownCollision, flownStart, marginOf, nearestWall, openEditor, toTrackV1, upgradeTrack, wallsCheck } from '@gsfpv/tracks';
 import type { CourseRequest } from '@gsfpv/tracks';
 import { COURSE_LEVELS, COURSE_SPREADS, GenerateDialog, pressAction, type GenerateFrom } from '../../course/generate-dialog';
 import { dialogOpen } from '../../devices/keyboard';
@@ -148,7 +149,8 @@ export const course: Feature = {
         let job = 0;
         let busy = false;
         let saving = false;
-        let linkSeed = seedOfLink(liveSearch());
+        // lane gen4b B2: 'g1.' rebuilds the old generator's course, 'g2.' the asked one (level and spread from the link)
+        let linkCourse = courseOfLink(liveSearch());
         // lane onecourse fixes (review OC-4): the course a pilot made on the ordinary page goes along to the mode's page as sg=
         // (sonic-flight.ts modeScanPage); the first Shift+G (or N) there makes that course, the next ones a new one
         let soundSeed = soundCourseSeed(liveSearch());
@@ -357,24 +359,38 @@ export const course: Feature = {
         const sayLine = (text: string, quietCue?: CueEvent): void => {
             if (ctx.sonic) void speak({ key: 'sonic.say.text', params: { text } }, quietCue ? { quietCue } : undefined);
         };
+        // lane gen4b B2 (G9): the course's own box (16 px, bar, step, percent, time left, Cancel) stays until the answer; the
+        // old HUD note hid itself 2 s after a late tick
+        const box = new CourseBox(ctx.ui, {
+            cancel: () => cancelBuild(),
+            grow: (to) => {
+                // the no-room box's one press: the size it named (generate() sets it first), else another layout
+                resizeTo = to;
+                if (to !== null) resizeFrom = ctx.hook.scale?.size() ?? 1;
+                generate(randomSeed());
+            }
+        });
+        hook.box = () => box.model();
         const showProgress = (): void => {
             if (!prog) return;
             const v = prog.view();
             hook.progress = progressLine(v, t);
-            ctx.hud.flash(hook.progress, PROGRESS_TICK_MS * 2);
+            box.show(progressBoxModel(v, t));
             if (pacer.due(v)) sayLine(spokenLine(v, t));
         };
-        const startProgress = (): void => {
+        const startProgress = (asked: boolean): void => {
             clearInterval(progTimer);
-            prog = new ProgressClock('course', courseSteps(null), () => performance.now());
+            prog = new ProgressClock('course', asked ? planSteps(null) : courseSteps(null), () => performance.now());
             pacer = new SpeechPacer(() => performance.now());
             progTimer = window.setInterval(showProgress, PROGRESS_TICK_MS);
             showProgress();
         };
         const stopProgress = (): void => {
             clearInterval(progTimer);
+            prog?.finish();
             prog = null;
             hook.progress = null;
+            if (box.model()?.kind === 'progress') box.close();
         };
 
         /** course4 review CU-4: the Scene size the next generate() sets first (after a 'no course fits') */
@@ -383,14 +399,15 @@ export const course: Feature = {
         let resizeFrom = 1;
         /** course5 review CV-4: the Scene sizes that gave no course in this scene (cleared with the scene) */
         const noCourseAt = new Set<number>();
-        const fail =(problem: string, text: string): void => {
+        /** `text` goes on the HUD note (null: the caller shows its own box); `spoken` is said, by default the same text */
+        const fail = (problem: string, text: string | null, spoken: string | null = text): void => {
             stopProgress();
             hook.problem = problem;
             reopenAfter = false; // review TK-4: a failed load or generation does not open the editor later
-            ctx.hud.flash(text, 4000);
+            if (text !== null) ctx.hud.flash(text, 4000);
             // lane onecourse fixes (review OC-1): a pilot by sound hears why no course came and what to press (the text names Shift+G)
             // lane quiet2 (review QW-2): with the narrator off one short falling sound says no course came (no gate is there to miss)
-            sayLine(text, { kind: 'wrong-side' });
+            if (spoken !== null) sayLine(spoken, { kind: 'wrong-side' });
         };
 
         // lane review TR-3: a job that does not answer in time (a hostile course kept the worker in the sweeps for minutes) ends
@@ -415,6 +432,19 @@ export const course: Feature = {
             }, ms);
         };
 
+        /** lane gen4b B2: the progress box's Cancel: the worker is ended (its answer would come too late), nothing changes */
+        const cancelBuild = (): void => {
+            if (!busy || checking) return;
+            disarm();
+            worker?.terminate();
+            worker = null;
+            job++;
+            busy = false;
+            stopProgress();
+            hook.problem = 'cancelled';
+            ctx.hud.flash(t('course.gen.cancelled'), 4000);
+        };
+
         const onWorker = (e: MessageEvent<FromCourseWorker>): void => {
             const m = e.data;
             if (m.job !== job) return;
@@ -423,6 +453,7 @@ export const course: Feature = {
                 showProgress();
                 return;
             }
+            if (m.t === 'track') hook.plan = m.plan ?? null;
             stopProgress();
             busy = false;
             disarm();
@@ -457,20 +488,34 @@ export const course: Feature = {
                 // and builds again (Forest Floor at x15, x20, x100 gave no course for any seed)
                 const sc = ctx.hook.scale;
                 const size = sc ? sc.size() : 1;
-                resizeTo = sc ? noCourseSize(size, noCourseAt) : null;
+                // lane gen4b B2: the plan's own size where the smallest gate fits, else the ladder of finish.ts
+                const fit = m.plan && !m.plan.ok ? m.plan.fitSize : null;
+                resizeTo = sc ? (fit !== null && fit > size ? fit : noCourseSize(size, noCourseAt)) : null;
                 noCourseAt.add(size);
                 resizeFrom = size;
                 const x = (v: number): string => String(Math.round(v * 100) / 100);
-                return fail(m.short ? 'too few gates' : 'nothing fits', resizeTo !== null ? t('course.noneResize', { s: x(size), to: x(resizeTo) }) : t('course.none'));
+                const line = resizeTo !== null ? t('course.noneResize', { s: x(size), to: x(resizeTo) }) : t('course.none');
+                if (!m.plan) return fail(m.short ? 'too few gates' : 'nothing fits', line);
+                // the asked course: a box (not a 4 s note) with the one press on, the larger size and the build
+                fail('no room', null, line);
+                box.show(noRoomModel(size, resizeTo, t));
+                return;
             }
             const tr = m.track;
             const mine = job;
+            // lane gen4b B2: the asked course's link names its level and spread ('g2.'), so the link rebuilds the same ask
+            const linkId = m.plan && hook.request ? courseLinkId(hook.request) : tr.id;
             const show = (): void => {
                 if (mine !== job) return;
                 hook.progress = null;
                 setTrack(tr, 'generated', tr.generator?.seed ?? pending);
-                history.replaceState(history.state, '', withCourse(location.href, tr.id));
-                ctx.hud.flash(t('course.ready', { n: tr.gates.length }), 4000);
+                history.replaceState(history.state, '', withCourse(location.href, linkId));
+                // the end of G3: the line says where the start gate is from the craft and stays 8 s; the guide arrow points at it
+                const g1 = run?.gates[0];
+                const sim = ctx.session.runner.sim.s;
+                const far = g1 ? Math.hypot(g1.pos[0] - sim[S.px]!, g1.pos[1] - sim[S.py]!, g1.pos[2] - sim[S.pz]!) : 0;
+                hook.startLine = startLine(far, tr.gates.length, t);
+                ctx.hud.flash(hook.startLine, START_LINE_MS);
                 // lead's decision P2: the spoken line names the chord in words ("Shift and key T"), the written one keeps Shift+T
                 sayLine(t('course.readySpoken', { n: tr.gates.length }), COURSE_READY_CUE);
             };
@@ -608,7 +653,8 @@ export const course: Feature = {
             });
         };
 
-        const generate = (seed: number): void => {
+        /** `how`: 'request' lays the dialog's ask (planCourse), 'legacy' a 'g1.' link's seed by the old generator */
+        const generate = (seed: number, how: 'request' | 'legacy' = 'request'): void => {
             // course4 review CU-4: the press after 'no course fits' sets the Scene size the line named, waits until the
             // scene has it (scale.ts pending), then builds
             const sc = ctx.hook.scale;
@@ -620,13 +666,13 @@ export const course: Feature = {
                 sc.set(to);
                 const wait = (n: number): void => {
                     if (sc.pending() !== 1 && n < 50) return void window.setTimeout(() => wait(n + 1), 200);
-                    generate(seed);
+                    generate(seed, how);
                 };
                 return wait(0);
             }
             const s = ctx.session;
             const w = walls();
-            if (!w) return wallsFirst(() => generate(seed));
+            if (!w) return wallsFirst(() => generate(seed, how));
             // lane onecourse fixes (review OC-1): a press while a course is being made says how far it is (the progress line)
             if (busy) {
                 // lane quiet2 (review QW-2): with the narrator off the press is answered by the package's "wait" sound
@@ -635,9 +681,11 @@ export const course: Feature = {
             }
             busy = true;
             hook.problem = null;
-            startProgress();
+            box.close();
+            startProgress(how === 'request');
             pending = seed;
-            hook.request = { seed, ...request };
+            hook.request = how === 'request' ? { seed, ...request } : undefined;
+            hook.plan = null;
             const msg: CourseJob = {
                 t: 'generate', job: ++job, ...w,
                 spawn: [s.spawn[0], s.spawn[1], s.spawn[2]],
@@ -648,7 +696,8 @@ export const course: Feature = {
                 // pilot was measured on single upright gates only, so the competition elements are for the eyes' mode
                 elements: courseElements(ctx.sonic),
                 // course5 Z2 (A3, review CU-7): the ladder's smallest gate is sized by the craft that is flown
-                craftRadiusM: s.params?.boundRadius
+                craftRadiusM: s.params?.boundRadius,
+                request: hook.request
             };
             ensureWorker().postMessage(msg, [w.nodes.buffer, w.leaf.buffer]);
             arm(GENERATE_LIMIT_MS);
@@ -865,7 +914,7 @@ export const course: Feature = {
             hook.serverTracks = -1;
             setTrack(null, 'none', null);
             void refresh();
-            if (linkSeed !== null) tryLink();
+            if (linkCourse !== null) tryLink();
             else dropLink();
         });
         // ---------------- the editor (T3-editor-ui)
@@ -1454,9 +1503,12 @@ export const course: Feature = {
         ctx.menu.add({ id: 'pause.course.edit', action: 'course.edit', labelKey: 'course.edit.menu', order: 76, section: 'tools', run: () => openEdit(), enabled: () => run !== null && !busy });
 
         const tryLink = (): void => {
-            if (linkSeed === null || !ctx.session.collision) return;
-            const seed = linkSeed;
-            linkSeed = null;
+            if (linkCourse === null || !ctx.session.collision) return;
+            const link = linkCourse;
+            linkCourse = null;
+            if (link.kind === 'legacy') return generate(link.seed, 'legacy');
+            const { seed, ...asked } = link.request;
+            request = asked;
             generate(seed);
         };
         tryLink();

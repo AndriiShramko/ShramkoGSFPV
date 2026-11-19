@@ -215,5 +215,18 @@
   "course.gen.build": "Build the course",
   "course.gen.replace": "Replace with a new course",
   "course.gen.cancel": "Cancel",
-  "course.gen.enter": "key Enter"
+  "course.gen.enter": "key Enter",
+  "progress.step.analyse": "finding the best scanned part",
+  "course.gen.progressTitle": "Building the course",
+  "course.gen.stepOf": "Step {n} of {m}",
+  "course.gen.left": "About {left} left",
+  "course.gen.over": "Taking longer than expected, {elapsed} so far",
+  "course.gen.done": "Done",
+  "course.gen.noRoom": "No gate your drone passes fits at Scene size x{s}.",
+  "course.gen.noRoomGrow": "Make the scene x{to} and build",
+  "course.gen.noRoomAgain": "Try another layout",
+  "course.gen.close": "Close",
+  "course.gen.startHere": "Gates: {n}. You are at the start gate: fly through START to start the clock",
+  "course.gen.startAhead": "Gates: {n}. The start gate is {m} m away: follow the arrow. Key Shift+T hides the course",
+  "course.gen.cancelled": "Course building cancelled. Nothing changed"
 }

@@ -5,6 +5,8 @@
 import type { SonicObject, TrackFile } from '@shramko/sonic-fpv';
 import type { CourseRequest } from '@gsfpv/tracks';
 import type { DialogModel, GenerateFrom } from './generate-dialog';
+import type { CourseBoxModel } from './progress-box';
+import type { PlanNote } from './worker';
 
 /** Lane onecourse (message 52, D1/D6): the course in the scene as Fly by Sound takes it. One course; the course feature owns it. */
 export interface CourseForSound {
@@ -67,6 +69,12 @@ export interface CourseHook {
     dialog?: () => DialogModel | null;
     /** lane gen4b B1: what the last generate() asked the worker for (level, spread, anyQuality, seed) */
     request?: CourseRequest;
+    /** lane gen4b B2: the course's progress or no-room box now (course/progress-box.ts); null when it is closed */
+    box?: () => CourseBoxModel | null;
+    /** lane gen4b B2: what planCourse said with the last answer (stats, or no room and its size); null for a 'g1.' link */
+    plan?: PlanNote | null;
+    /** lane gen4b B2: the line said when the last course appeared (where its start gate is) */
+    startLine?: string;
     /** train 2, T3-editor-ui: the editor (tracks-plan 2.11); absent until the feature installs it */
     editor?: CourseEditorHook;
 }

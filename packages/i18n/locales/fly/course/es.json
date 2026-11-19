@@ -215,5 +215,18 @@
   "course.gen.build": "Crear el circuito",
   "course.gen.replace": "Sustituir por un circuito nuevo",
   "course.gen.cancel": "Cancelar",
-  "course.gen.enter": "tecla Enter"
+  "course.gen.enter": "tecla Enter",
+  "progress.step.analyse": "buscando la parte mejor escaneada",
+  "course.gen.progressTitle": "Creando el circuito",
+  "course.gen.stepOf": "Paso {n} de {m}",
+  "course.gen.left": "Quedan unos {left}",
+  "course.gen.over": "Tarda más de lo previsto, {elapsed} hasta ahora",
+  "course.gen.done": "Listo",
+  "course.gen.noRoom": "Ninguna puerta por la que pase tu dron cabe con el tamaño de escena x{s}.",
+  "course.gen.noRoomGrow": "Poner la escena en x{to} y crear",
+  "course.gen.noRoomAgain": "Probar otra disposición",
+  "course.gen.close": "Cerrar",
+  "course.gen.startHere": "Puertas: {n}. Estás en la puerta de salida: pasa por START para iniciar el reloj",
+  "course.gen.startAhead": "Puertas: {n}. La puerta de salida está a {m} m: sigue la flecha. La tecla Shift+T oculta el circuito",
+  "course.gen.cancelled": "Creación del circuito cancelada. No ha cambiado nada"
 }

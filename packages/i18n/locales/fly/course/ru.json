@@ -215,5 +215,18 @@
   "course.gen.build": "Построить трассу",
   "course.gen.replace": "Заменить новой трассой",
   "course.gen.cancel": "Отмена",
-  "course.gen.enter": "клавиша Enter"
+  "course.gen.enter": "клавиша Enter",
+  "progress.step.analyse": "поиск лучше всего отсканированной части",
+  "course.gen.progressTitle": "Строится трасса",
+  "course.gen.stepOf": "Шаг {n} из {m}",
+  "course.gen.left": "Осталось около {left}",
+  "course.gen.over": "Дольше, чем ожидалось, прошло {elapsed}",
+  "course.gen.done": "Готово",
+  "course.gen.noRoom": "При размере сцены x{s} не помещаются ворота, в которые пролетит ваш дрон.",
+  "course.gen.noRoomGrow": "Сделать сцену x{to} и построить",
+  "course.gen.noRoomAgain": "Попробовать другую раскладку",
+  "course.gen.close": "Закрыть",
+  "course.gen.startHere": "Ворот: {n}. Вы у стартовых ворот: пролетите START, чтобы пошло время",
+  "course.gen.startAhead": "Ворот: {n}. Стартовые ворота в {m} м: летите по стрелке. Клавиша Shift+T скрывает трассу",
+  "course.gen.cancelled": "Постройка трассы отменена. Ничего не изменилось"
 }
