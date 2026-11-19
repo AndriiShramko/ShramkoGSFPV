@@ -16,6 +16,9 @@ export const CAMERA_CONSTRAINTS: MediaStreamConstraints = {
     video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 }, frameRate: { ideal: 30 } }
 };
 
+/** ms after which a tracker still loading is said to be loading */
+export const LOADING_LINE_MS = 1000;
+
 /** Why getUserMedia refused, from its DOMException name (each has its own spoken way on). */
 export function cameraRefusal(e: unknown): Exclude<HeadResult, 'on'> {
     const name = typeof e === 'object' && e !== null && 'name' in e ? String((e as { name: unknown }).name) : '';
@@ -76,6 +79,10 @@ export class HeadTracking implements HeadTrackingLike {
             stopStream(stream);
             return 'failed';
         }
+        // the first start downloads the tracker (about 8 MB): past a second the pilot hears that it is loading
+        const slow = setTimeout(() => {
+            if (gen === this.gen) void this.d.say('loading', { interrupt: false });
+        }, LOADING_LINE_MS);
         try {
             this.tracker ??= await this.d.tracker();
             // a fresh filter: the first face seen is straight ahead
@@ -84,6 +91,8 @@ export class HeadTracking implements HeadTrackingLike {
         } catch {
             stopStream(stream);
             return 'failed';
+        } finally {
+            clearTimeout(slow);
         }
         if (gen !== this.gen) {
             this.tracker.stop();

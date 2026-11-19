@@ -25,9 +25,9 @@ export function headLine(id: HeadLineId): string {
 
 const wait = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
 
-/** The face tracker (stage H3 brings it; until then a start reports 'failed' and the setting goes back off, said). */
-function loadTracker(): Promise<HeadTracker> {
-    return Promise.reject(new Error('the face tracker arrives with stage H3'));
+/** The face tracker (MediaPipe in a worker, face-tracker.ts): imported only when the setting is turned on. */
+async function loadTracker(): Promise<HeadTracker> {
+    return (await import('./face-tracker')).createFaceTracker();
 }
 
 async function cameraPermission(): Promise<CameraPermission> {

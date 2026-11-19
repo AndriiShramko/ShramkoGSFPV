@@ -7,7 +7,7 @@ import type { HeadPose } from './pose';
 export type HeadResult = 'on' | 'denied' | 'no-camera' | 'busy' | 'unsupported' | 'failed';
 
 /** The spoken lines of head tracking: packages/i18n/locales/fly/sonichead, key `sonichead.say.<id>`. */
-export type HeadLineId = 'ask' | 'on' | 'off' | 'keyOff' | 'centred' | 'lost' | Exclude<HeadResult, 'on'>;
+export type HeadLineId = 'ask' | 'loading' | 'on' | 'off' | 'keyOff' | 'centred' | 'lost' | Exclude<HeadResult, 'on'>;
 
 /** The part of navigator.mediaDevices this uses. */
 export interface MediaLike {
