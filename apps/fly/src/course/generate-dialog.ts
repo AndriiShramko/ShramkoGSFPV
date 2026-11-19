@@ -124,6 +124,9 @@ export class GenerateDialog {
             this.onKey = (e: KeyboardEvent) => {
                 const k = dialogKey(e.code);
                 if (e.repeat || k === null || !this.root) return;
+                // review gen4b: Enter on another button the pilot focused (Cancel, the cross, a level) presses that button, as
+                // a keyboard does everywhere; it never builds over the course the pilot chose to keep. The flight does not see it.
+                if (k === 'build' && this.focusedOther(e.target)) return void e.stopImmediatePropagation();
                 // the dialog is on top: the key is its own, the pause menu (Esc) and the editor's keys do not see it
                 e.preventDefault();
                 e.stopImmediatePropagation();
@@ -141,6 +144,13 @@ export class GenerateDialog {
         this.root?.remove();
         this.root = null;
         this.state = null;
+    }
+
+    /** the key's target is a button of this dialog other than the main one */
+    private focusedOther(target: EventTarget | null): boolean {
+        const el = target as { tagName?: unknown; getAttribute?: (n: string) => string | null } | null;
+        if (!el || !this.root || typeof el.tagName !== 'string' || el.tagName.toUpperCase() !== 'BUTTON') return false;
+        return this.root.contains(target as Node) && el.getAttribute?.('data-action') !== 'gen-build';
     }
 
     private cancel(): void {

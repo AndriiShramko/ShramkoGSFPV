@@ -10,6 +10,7 @@
 //   7 dialog again: 'Replaces' line; Cancel -> same course            8 again -> Replace -> a new course
 //   9 Lublin: stats underGround 0, nearGroundShare <= 0.2 (pass null when the stats are not measured: planCourse stub)
 //  10 the dialog at 844x390: no two of its parts overlap, all inside the viewport, every button >= 44 px
+//  11 (the review's step, run between 8 and 10) in flight Shift+G, Tab to Cancel, Enter: the dialog closes, nothing is built
 // Usage: node tools/bench/scripts/gen4-accept-probe.mjs <base with /en> <out.json> [scene 5dfeb49b] [lublin 2f1ddf5f]
 // env: RENDER=on draws (hold the GPU lock C:/dev/.gpu-lock around the run), STEPS=6 stops after that step, SHOT=<png> one
 // picture after step 6. Nothing is saved or sent: no save button is pressed; a generated course lives only in the tab.
@@ -191,6 +192,27 @@ try {
         const s8 = await poll(page, COURSE_MS, (q) => q.digest !== d7 && courseUp(q));
         const a8 = s8[s8.length - 1];
         check(8, 'again: Replace -> a new course', built && a8.digest !== d7 && courseUp(a8), { built, seed: [s.seed, a8.seed], gates: a8.gates, ms: a8.t });
+
+        // 11 (the review's step): in flight Shift+G, then the keyboard as a person without a mouse: Tab to Cancel, Enter.
+        // Enter on the focused Cancel must cancel (the course stays), never build over it
+        await sleep(9000); // the start line of step 8 goes
+        const v11 = page.viewportSize();
+        await page.mouse.click(Math.round(v11.width / 2), Math.round(v11.height * 0.6));
+        await sleep(500);
+        await page.keyboard.press('Shift+KeyG');
+        const opened = await page.waitForSelector('[data-testid=gen-dialog]', { timeout: 4000 }).then(() => true, () => false);
+        let focused = null;
+        for (let i = 0; opened && i < 40; i++) {
+            await page.keyboard.press('Tab');
+            focused = await page.evaluate(() => (document.activeElement && document.activeElement.getAttribute('data-action')) || null);
+            if (focused === 'gen-cancel') break;
+        }
+        if (focused === 'gen-cancel') await page.keyboard.press('Enter');
+        await sleep(2500);
+        const a11 = await page.evaluate(READ);
+        check(11, 'Shift+G, Tab to Cancel, Enter: nothing replaced', opened && focused === 'gen-cancel' && !a11.dialog && a11.digest === a8.digest && !(a11.box && a11.box.model),
+            { opened, focused, dialogGone: !a11.dialog, same: a11.digest === a8.digest, box: a11.box && a11.box.model ? a11.box.model.kind : null });
+        if (a11.dialog) await press(page, 'gen-x');
 
         // 10 the dialog at 844x390 (a phone held across)
         await page.setViewportSize({ width: 844, height: 390 });

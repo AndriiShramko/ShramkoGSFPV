@@ -103,6 +103,14 @@ describe('gen4b B1: the Generate dialog', () => {
             for (const f of [...keys]) f(ev);
             expect(built).toEqual([{ level: 'beginner', spread: 'wide', anyQuality: false }]);
             expect([d.isOpen, keys.length]).toEqual([false, 0]);
+            // review gen4b (probe step 11): Tab to Cancel, then Enter, presses Cancel (the browser's own press), never the build
+            d.open({ ...base, shownGates: 7 });
+            let prevented = 0;
+            const at = (sel: string) => ({ code: 'Enter', repeat: false, target: q(sel), preventDefault: () => void prevented++, stopImmediatePropagation: () => undefined });
+            for (const sel of ['[data-action=gen-cancel]', 'button.panel-x', '[data-action=gen-level-pro]']) for (const f of [...keys]) f(at(sel));
+            expect([built.length, prevented, d.isOpen]).toEqual([1, 0, true]);
+            for (const f of [...keys]) f(at('[data-action=gen-build]'));
+            expect([built.length, d.isOpen]).toEqual([2, false]);
         } finally {
             Object.assign(g, keep);
         }

@@ -130,3 +130,23 @@ New probe (owned): tools/bench/scripts/gen4-accept-probe.mjs. Evidence: evidence
 - B3: the most replies went to two probe runs lost to the stub (5dfeb49b has no room before gen4a) and to hook.scale.size
   being a function; a line in agent-map listing which hook fields are functions, and which scenes the S0 stub can fill,
   would save two runs of five minutes.
+- Review: the most turns went to a build that ran while a negative control had course.ts swapped (it served the old
+  routing); never run neg_control.py and a build at the same time on one work copy.
+
+## Review
+
+Verdict: SHIP (independent check, full text in U:/Temp/gsfpv-train4/reviews/gen4b.md).
+- PROVEN, repaired: GenerateDialog took Enter in the capture phase and always built. With key Shift+G, then key Tab to
+  Cancel and Enter, the course the pilot kept was replaced (new probe step 11 FAILed on 2713dc7a: a build started). Now
+  Enter on another focused button of the dialog presses that button. generate-dialog.test.ts: 7 passed, NEG OK against
+  HEAD. Probe on a local release (render off, STEPS=8): steps 1-8, 10 and 11 PASS
+  (evidence/2026-11-19/gen4b/review-accept-local.json).
+- PROVEN in the code, does nothing on this tree (the stub lays what the old path lays): race rooms name a dialog course
+  'g1.<seed>' and race-page.ts rebuilds it with the old generator, and hook.adopt builds it with the guest's own level and
+  spread. With gen4a's planCourse the race times gates the pilots do not see. For the lead: rooms must carry the g2 id
+  (race.ts courseFor and parseCourse, race-page.ts generate sends the request, course.ts adopt picks legacy or request).
+- DOUBT: claim 1's unit test cannot see the routing in course.ts (NEG BAD with course.ts from origin/main); only the page
+  probe guards it (step 2 the menu item, step 11 key Shift+G).
+- Gates after the repair (`gates.py --only typecheck,vitest,b18,leaks`): typecheck, b18, leaks PASS. vitest: 5327 passed,
+  0 tests failed, but two suites (rooms-race, rooms-socket) stopped at 'rooms.py did not start' under the other lanes'
+  load. Alone, rooms-race, rooms-socket and rooms-open-vote pass (7 + 8 tests). The review changed nothing of rooms.
