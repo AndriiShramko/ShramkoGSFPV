@@ -7,7 +7,7 @@ picture of the scan with holes through it; the voxels look flat), 577-578 (Lubli
 
 - [x] V-1 render side: voxels-only stops the scan drawing (no frozen picture), SplatLoadGuard for ux4b, sun and fog (commit 3a3105d6)
 - [ ] V-2 the Lublin hole (experiment first, then the fix by its decision) and per-vertex ambient occlusion
-  - [x] V-2a experiment (below) and the fix by its decision H1: VoxelStats.near/nearWalls, the panel says why (commit see git log "vox4 V-2a")
+  - [x] V-2a experiment (below) and the fix by its decision H1: VoxelStats.near/nearWalls, the panel says why (commit fc3d3742)
   - [ ] V-2b per-vertex ambient occlusion: apps/fly/src/voxel-ao.ts vertexAo + voxel-ao.test.ts, worker samples occupancy, packChunk multiplies RGB, Entry keeps the array for writeColors
 - [ ] V-3 acceptance probe tools/bench/scripts/vox4-probe.mjs (drawn run, 1536x730 dsf 1.25, mouse), live negative control;
   its Lublin step reads stats.nearWalls (expect 'thin' at the spawn) and the panel line voxels.nearThin, not the design's 60 % pixel block
