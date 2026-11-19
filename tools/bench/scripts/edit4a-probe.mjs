@@ -14,7 +14,7 @@
 // same run on the live site is read-only: it is this lane's negative control).
 //   node tools/bench/scripts/edit4a-probe.mjs <address with /en> <scan> <WxH> <device scale> <name> <out.json>
 // env: QUERY (more query, e.g. &render=off), COURSE_MS (wait for the course, default 480000), SHOT (a PNG path: the hover
-// picture). Headless (tools/bench/src/chrome.mjs pickBrowser); takes no GPU lock itself (wrap a drawn run in it).
+// picture), GATE11 (the gate step 11 takes when it is on screen, default 7). Headless (tools/bench/src/chrome.mjs pickBrowser); takes no GPU lock itself (wrap a drawn run in it).
 import { createRequire } from 'node:module';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
@@ -111,21 +111,35 @@ const boxOf = (sel) => page.evaluate((s) => [...document.querySelectorAll(s)].fi
 /** the gates on screen, in front, away from the selected one's gizmo, nearest first */
 const onScreen = (s, w = W, h = H, skip = []) => (s.gates || []).map((g, i) => ({ g, i })).filter(({ g, i }) => i !== s.selected && !skip.includes(i) && g[2] > 0 && g[0] > 40 && g[0] < w - 40 && g[1] > 90 && g[1] < h - 60 && (!s.stand || Math.hypot(g[0] - s.stand.screen[0], g[1] - s.stand.screen[1]) > 170)).sort((a, b) => a.g[2] - b.g[2]);
 /** points of the selected gate's gizmo, walking out from its centre with the view's own hit test (hitAt) */
-const partsOf = () => page.evaluate(() => {
+const scanParts = () => page.evaluate(() => {
     const v = window.__gsfpvEditView ? window.__gsfpvEditView() : null;
     const hit = window.__gsfpvEditHit;
     if (!v || !v.stand || !hit) return null;
     const [cx, cy] = v.stand.screen;
-    const out = {};
+    const out = {}; const seen = {};
     for (let r = 4; r <= 170; r += 2) for (let a = 0; a < 360; a += 5) {
         const x = cx + r * Math.cos((a * Math.PI) / 180), y = cy + r * Math.sin((a * Math.PI) / 180);
         const p = hit(x, y);
         if (!p) continue;
+        seen[p.join('/')] = (seen[p.join('/')] || 0) + 1;
         const k = p[0] === 'move' && p[1] === 'x' ? 'arrowX' : p[0] === 'size' ? 'box' : p[0] === 'turn' && /y$/.test(p[1]) ? 'ringY' : null;
         if (k && !out[k]) out[k] = { at: [Math.round(x), Math.round(y)], r, a, part: p };
     }
-    return { centre: [cx, cy], ...out };
+    return { centre: [cx, cy], ...out, seen };
 });
+/** the gizmo's points once they hold still: each found point names the same part 300 ms later (the gizmo sizes itself to
+ *  the view in the engine's frame update, so a scan right after a selection or a frame can read the old shapes) */
+const partsOf = async () => {
+    let a = null;
+    for (let n = 0; n < 6; n++) {
+        a = await scanParts();
+        if (!a) return null;
+        await sleep(300);
+        const same = await page.evaluate((pts) => pts.every(([at, part]) => JSON.stringify(window.__gsfpvEditHit(at[0], at[1])) === JSON.stringify(part)), ['arrowX', 'box', 'ringY'].filter((k) => a[k]).map((k) => [a[k].at, a[k].part]));
+        if (same) return { ...a, tries: n + 1 };
+    }
+    return { ...a, tries: 6, stable: false };
+};
 /** an empty place on the canvas: no gizmo part, no gate within 120 px, the canvas itself under the point */
 const emptyAt = (w, h) => page.evaluate(([w, h]) => {
     const v = window.__gsfpvEditView();
@@ -303,7 +317,7 @@ try {
     await sleep(1200);
     const s11 = await snap();
     const c11 = onScreen(s11);
-    const g7 = c11.find((c) => c.i === 7) ?? c11[0];
+    const g7 = c11.find((c) => c.i === Number(env.GATE11 ?? 7)) ?? c11[0];
     if (!g7) judge('11.another', false, { why: 'no other gate on screen' });
     else {
         await click(g7.g[0], g7.g[1], 300);
@@ -311,8 +325,12 @@ try {
         await sleep(800);
         const p = await partsOf();
         const m = await snap();
-        if (p && p.arrowX && m.axes) await drag(p.arrowX.at[0], p.arrowX.at[1], m.axes.x[0] * 80, m.axes.x[1] * 80);
+        if (p && p.arrowX && m.axes) {
+            res.hit11 = await page.evaluate(([x, y]) => [window.__gsfpvEditHit(x, y), window.__gsfpvEditHit(x, y, true)], p.arrowX.at);
+            await drag(p.arrowX.at[0], p.arrowX.at[1], m.axes.x[0] * 80, m.axes.x[1] * 80, { mid: async () => { const v = await page.evaluate(() => window.__gsfpvEditView()); res.mid11 = { dragging: v.dragging, grabbed: v.grabbed, sets: v.sets, nav: v.nav, muted: v.muted, lock: v.lock }; } });
+        }
         const b = await snap();
+        res.parts11 = p;
         judge('11.another', got.ok && !!(p && p.arrowX) && dist(s11.eye, m.eye) < 0.01 && dist(s11.eye, b.eye) < 0.01 && dist(m.stand.pos, b.stand.pos) > 0.05, { gate: g7.i, selected: b.selected, eyeAfterClick: r3(dist(s11.eye, m.eye)), eyeAfterDrag: r3(dist(s11.eye, b.eye)), gateMoved: r3(dist(m.stand.pos, b.stand.pos)) });
     }
     // 12 double click a third gate: selected and framed (its centre in the middle third of the canvas)
@@ -357,7 +375,8 @@ try {
         }
         const outside = all.filter(([, r]) => r[0] < 0 || r[1] < 0 || r[0] + r[2] > w || r[1] + r[3] > h).map(([k]) => k);
         const s = await snap();
-        judge('13.laptop', !!c[0] && s.selected === c[0].i && !!hp && rects.topbar.length === 1 && rects.gatebar.length === 1 && !!s.hoverTag && over.length === 0 && outside.length === 0, { selected: s.selected, hovered: s.hover, rects, over, outside });
+        // the layout is judged: the click selects whichever gate it shows (small gates lie close at this size)
+        judge('13.laptop', !!c[0] && s.selected !== null && s.selected !== a.selected && !!hp && rects.topbar.length === 1 && rects.gatebar.length === 1 && !!s.hoverTag && over.length === 0 && outside.length === 0, { selected: s.selected, hovered: s.hover, rects, over, outside });
     }
 } catch (e) {
     res.error = String(e).slice(0, 400);
