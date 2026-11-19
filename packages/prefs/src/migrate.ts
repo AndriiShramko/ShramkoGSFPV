@@ -51,8 +51,51 @@ export const MACHINE_LOCAL_KEYS: Readonly<Record<string, string>> = {
     'gsfpv.rcBridge': "whether this browser was told to offer the RC bridge, a program that runs on this computer only; a fact about this machine, not a pilot's choice",
     // packages/render-pc governor.ts (train 3 lane laptop3, R32): the frame governor's step this machine settled at,
     // keyed by device class and GPU name, so the next load starts there instead of missing frames on the way down.
-    'gsfpv.governor.start': "the frame governor's step this machine's GPU settled at, a measurement of this computer, not a pilot's choice"
+    'gsfpv.governor.start': "the frame governor's step this machine's GPU settled at, a measurement of this computer, not a pilot's choice",
+    // train 4 lane tails4: the fourteen dotted keys of apps/fly the source scan could not see before (train3-lead.md
+    // 'Not verified'). Each source names it a per-browser fact or a record of this browser, never a setting.
+    // apps/fly app/macro-hint.ts: '1' once the Scene size hint was shown in this browser.
+    'gsfpv.hint.macro': "whether this browser already showed the Scene size hint, a note that it was seen, not a pilot's choice",
+    // apps/fly course/link.ts: the best lap time of each course key (track, scene, walls, drone), in seconds.
+    'gsfpv.course.best': "the best lap times flown in this browser, a record of what happened here, not a setting; an exported settings file carries choices only",
+    // apps/fly course/link.ts: the scenes whose saved course was already offered once (the newest 200).
+    'gsfpv.course.offered': "the scenes where this browser already flashed the saved-course offer, a note that it was seen, not a pilot's choice",
+    // apps/fly course/store.ts: the random voter id the course server counts one vote per.
+    'gsfpv.course.voter': "this browser's random voter id for the course server, one vote per browser; carried to another computer it would vote twice",
+    // apps/fly course/store.ts: the courses this browser voted for, so the vote button shows its state.
+    'gsfpv.course.votes': "the course votes this browser cast, tied to its voter id, a record kept with that id, not a pilot's choice",
+    // apps/fly course/store.ts: the newest 50 edit tokens of the courses this browser saved (review TK-7).
+    'gsfpv.course.tokens': "the edit tokens of the courses this browser saved, a server grant to this browser; it must never travel in an exported file",
+    // apps/fly rooms/nick.ts: the nickname asked once in rooms; the schema has no text setting (docs/wip/rooms.md).
+    'gsfpv.rooms.nick': "the nickname this browser gave in rooms, asked again on another computer; a free text the settings schema does not hold",
+    // apps/fly sonic/gpu-hint.ts: GpuHintMemory, the soft note's 'off' and the note whose long line was said.
+    'gsfpv.hint.gpu': "what this browser remembers of the graphics chip hint (which chip it ran on, its 'do not show again'), a fact about this machine",
+    'gsfpv.hint.gpu.soft': "the 'do not show again' of the software-drawing note, which ends when this machine draws on real graphics; a fact about this machine",
+    'gsfpv.hint.gpu.said': "which graphics note's long spoken line this browser already said in Fly by Sound, a note that it was heard, not a pilot's choice",
+    // apps/fly sonic-session/consent.ts: the recording pilot's random id, age flag, guardian consent and headphones.
+    'gsfpv.sonicrec.profile': "the Fly by Sound recording profile a helper entered on this computer (consent, a minor's guardian confirmation); it must never travel in an exported file",
+    // three more the dotted scan found (lane tails4). apps/fly app/scene-host.ts: '1' once the v0.2 library keys were
+    // merged into the store's library, so the merge runs once in this browser.
+    'gsfpv.library.merged.v1': "whether this browser already merged its v0.2 library keys into the store, a one-time step done here, not a pilot's choice",
+    // apps/fly ui/scenes-superspl.ts (sessionStorage): the SuperSplat scans that failed to load in this tab.
+    'gsfpv.superspl.failed.v1': "the SuperSplat scans that failed to load in this tab, kept in its session storage only; a fact about this visit",
+    // apps/fly ui/scenes-superspl.ts: the SuperSplat tab's sort and filters. A view state the settings schema has no
+    // setting for (docs/wip/tails4.md 'For the lead': a schema setting would let it travel); until then kept here.
+    'gsfpv.superspl.filters.v1': "the SuperSplat tab's last sort and filters in this browser, a view state the settings schema holds no setting for yet"
 };
+
+/**
+ * Prefixes of keys that are not preferences, as MACHINE_LOCAL_KEYS is for whole keys: the key goes on with an id.
+ */
+export const MACHINE_LOCAL_PREFIXES: Readonly<Record<string, string>> = {
+    // apps/fly app/builtin/rooms.ts (sessionStorage): the host secret of the room this tab opened, by room id.
+    'gsfpv.rooms.host.': "the host grant of a room this tab opened, kept in this tab's session storage only; it must never travel in an exported file"
+};
+
+/** A key that is not a preference (MACHINE_LOCAL_KEYS, or one of MACHINE_LOCAL_PREFIXES with an id after it). */
+export function isMachineLocal(key: string): boolean {
+    return Object.hasOwn(MACHINE_LOCAL_KEYS, key) || Object.keys(MACHINE_LOCAL_PREFIXES).some((p) => key.startsWith(p) && key.length > p.length);
+}
 
 export interface LegacyBag { format: 'gsfpv-legacy'; version: 0; keys: Record<string, string> }
 
@@ -64,7 +107,7 @@ export interface LegacyBag { format: 'gsfpv-legacy'; version: 0; keys: Record<st
 export function readLegacy(read: (key: string) => string | null, keys?: () => readonly string[]): LegacyBag {
     const out: Record<string, string> = {};
     const take = (k: string) => {
-        if (Object.hasOwn(MACHINE_LOCAL_KEYS, k)) return;
+        if (isMachineLocal(k)) return;
         let v: string | null = null;
         try {
             v = read(k);
