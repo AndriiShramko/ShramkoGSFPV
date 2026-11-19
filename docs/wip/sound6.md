@@ -100,9 +100,12 @@ the design says train6: the lane prompt wins). Design C:/dev/.gsfpv-lanes/design
     then 1 in 5 steps; NEG OK against f9229f76. sonic-lesson-keys.test.ts: the glossary opened by G no longer says the
     keys with its title. All 60 host files tools/bench/test/sonic*: 864 passed, 10 skipped; fly typecheck 0 errors.
   - [x] (c) apps/fly/src/sonic/sonic.css: .sonic-start nav a, footer a min-height 44 px (inline-flex); proof: the walk.
-  - [ ] (b) en cue.speed.brake.name "Brake notes" -> "Slow-down notes" (package, uncommitted until listen:words passes),
+  - [x] (b) package quick1 53a5675, pin packages/sonic-fpv at 53a5675 (local; simulator commit of this line). en
+    cue.speed.brake.name "Brake notes" -> "Slow-down notes",
     measured with David 1.895 s (es, pl, ru re-measured: unchanged); package tests brake-planner, budget-wired,
-    lesson-schedule, quick-path, locales: 84 passed. listen:words run 2: see its log.
+    lesson-schedule, quick-path, locales: 84 passed. listen:words run 2 PASS (en 0 over 0.2, es, pl, ru 0; ru-by-David
+    control 575 of 575 over, key control fires); its evidence evidence/listen/VL-4-words.json committed; test/words.test.ts
+    18 passed.
   - Left list of S5 (run 1's, (a) and (c) done): (a) host fix: the keys line of a lesson step must not stand between the lesson's lines and its
     sound; the cheapest clean rule: in a module-0 listening lesson (ears-*) the keys line is said once a lesson, after
     the first question is answered (or the step's keys are said only at an 'ask' action), keep R8's flying lessons as
