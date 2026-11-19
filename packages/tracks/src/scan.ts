@@ -55,15 +55,17 @@ export interface ScanAnalysis {
 /** What the kind rules read, one number each (all shares 0..1; heights flown m). */
 export interface ScanMeasures {
     readonly footprintTiles: number;
-    /** footprint tiles with a ceiling / footprint tiles */
+    /** footprint tiles within KIND_RULES.zoneR x coreRadiusM of the core: the zone the measures below are taken in */
+    readonly zoneTiles: number;
+    /** zone tiles with a ceiling / zone tiles */
     readonly ceilingShare: number;
     /** voxels within OBJECT_R x extentM of the core / all voxels */
     readonly coreVoxelShare: number;
-    /** median over the footprint of roofTop - groundTop, flown m */
+    /** median over the zone of roofTop - groundTop, flown m */
     readonly reliefM: number;
-    /** median crisp of the ground run's layers over the footprint */
+    /** median over the zone of voxels per occupied block in the ground run's layers (of 64) */
     readonly groundCrisp: number;
-    /** median crisp of the layers above the ground run over the footprint */
+    /** median over the zone of voxels per occupied block above the ground run (of 64) */
     readonly upperCrisp: number;
     /** occupied blocks / all blocks from the ground run's bottom to roofTop, over the core's tiles */
     readonly coreFill: number;
@@ -89,6 +91,7 @@ export const SCAN_DEFAULTS = {
 
 /** The kind rules' thresholds (estimates; the audit table in evidence/2026-11-19/gen4/scan-kinds.json). */
 export const KIND_RULES = {
+    zoneR: 2, // x coreRadiusM
     roomCeilingShare: 0.6,
     objectR: 0.25, // x extentM
     objectVoxelShare: 0.5,
@@ -218,7 +221,7 @@ export function analyzeScan(walls: VoxelCollision, transform: SceneTransform): S
     const groundEnd = new Int32Array(nt).fill(-1);
     const roofL = new Int32Array(nt).fill(-1);
     const ceiling = new Float32Array(nt).fill(NaN);
-    const raw = new Float64Array(nt);
+    const raw = new Float64Array(nt); // crisp x cover
     const crispG = new Float64Array(nt).fill(NaN), crispU = new Float64Array(nt).fill(NaN);
     const freeL = Math.max(1, Math.ceil((S.ceilFreeM * unitM) / blockM - 1e-9));
     for (let t = 0; t < nt; t++) {
@@ -262,8 +265,8 @@ export function analyzeScan(walls: VoxelCollision, transform: SceneTransform): S
                 oU += occ[t * ny + j]!;
             }
         }
-        if (oG > 0) crispG[t] = Math.min(1, vG / oG / S.crispFull);
-        if (oU > 0) crispU[t] = Math.min(1, vU / oU / S.crispFull);
+        if (oG > 0) crispG[t] = vG / oG;
+        if (oU > 0) crispU[t] = vU / oU;
         const o = oG + oU;
         if (o > 0) raw[t] = Math.min(1, (vG + vU) / o / S.crispFull) * Math.min(1, o / (c * S.coverLayers));
     }
@@ -348,10 +351,16 @@ export function analyzeScan(walls: VoxelCollision, transform: SceneTransform): S
     let footTiles = 0, ceil = 0, nearVox = 0, fillOcc = 0, fillAll = 0;
     const relief: number[] = [], cg: number[] = [], cu: number[] = [];
     const objR = K.objectR * extentM;
+    // the kind is judged in the core's zone (a scan's sparse surroundings are most of its footprint: 5dfeb49b's skull lies
+    // in 132 m of fuzz, Winter Garden's glass house in 153 m of garden)
+    const zoneR = K.zoneR * coreRadiusM;
+    let zoneTiles = 0;
     for (let t = 0; t < nt; t++) {
         if (dist(t) <= objR) nearVox += tileVox[t]!;
         if (!foot[t]) continue;
         footTiles++;
+        if (dist(t) > zoneR) continue;
+        zoneTiles++;
         if (Number.isFinite(ceiling[t]!)) ceil++;
         if (Number.isFinite(groundTop[t]!) && Number.isFinite(roofTop[t]!)) relief.push(roofTop[t]! - groundTop[t]!);
         if (Number.isFinite(crispG[t]!)) cg.push(crispG[t]!);
@@ -363,7 +372,8 @@ export function analyzeScan(walls: VoxelCollision, transform: SceneTransform): S
     }
     const measures: ScanMeasures = {
         footprintTiles: footTiles,
-        ceilingShare: footTiles ? ceil / footTiles : 0,
+        zoneTiles,
+        ceilingShare: zoneTiles ? ceil / zoneTiles : 0,
         coreVoxelShare: allVox ? nearVox / allVox : 0,
         reliefM: relief.length ? median(relief) : 0,
         groundCrisp: cg.length ? median(cg) : 0,
