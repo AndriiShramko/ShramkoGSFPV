@@ -10,7 +10,8 @@ Owner's words: brief lines 533-536 (the Fly by Sound page's top menu says "Fly n
   - [x] 2b: verify.mjs checks (static + browser): 296/296 on the local build; negative control (neg_control.py swapped the 8 page/component files to origin/main, rebuilt): 269/296, the 27 failing are exactly the new checks (band x4, sound header/bar/keep-clear x12, scene template x4, clicks 1536x730 and 375x667 x4, language anchor, banner 320x568 and 320x640). Logs U:/Temp/gsfpv-train4/site4/verify.log, neg-verify.log
   - Note: no joined person has a scene today, so the person-page check loops over nobody; the code passes `fly` to both buttons (row 4). apps/site/out now holds the origin/main build of the negative control: stage 3 rebuilds first.
   - Note: the privacy hook refuses Bash commands that name verify.mjs (the file holds the public contact address): edit it with Edit, run it through `pnpm verify` or `node scripts/verify.mjs` from apps/site.
-- [ ] Stage 3: the acceptance (tools/bench/scripts/site4-links.mjs on a local build, the same probe on the live site must fail), the gates, the status parts
+- [x] Stage 3: the acceptance (tools/bench/scripts/site4-links.mjs on a local build: 13 of 13 PASS; the same probe on the live site: 12 of 12 FAIL), the gates, the status parts: the commit "site4 stage 3"
+  - Local run: the static build (apps/site/out, rebuilt) on 127.0.0.1:6080 for the steps sound, soundall, band, person, lang, banner; the scene step on a local apps/api/server.py (port 6081, SCENE_TEMPLATES = the rebuilt out/scene-templates, DATA_DIR in the temp folder), because a scene page is rendered by the API. Evidence: evidence/2026-11-19/site4/local-static.json, local-scene.json, live.json.
 
 ## Audit (stage 1)
 
@@ -40,21 +41,45 @@ Probe: `node tools/bench/scripts/site4-links.mjs https://gsfpv.flyreelstudio.eu 
 
 ## What the owner does
 
-(stage 3)
+1. Open https://gsfpv.flyreelstudio.eu/en/sound/ on the computer. The top menu's main button now says "Fly by Sound" (not "Fly now"). Click it: the simulator opens in the Fly by Sound start (the address ends with `?sonic=start`), the same place as the big start button on the page.
+2. Do the same on /pl/sound/ (and /es/, /ru/): the same button in each language, the same result.
+3. On the phone open /en/sound/: at the bottom of the screen there is now a bar with the button "Fly by Sound"; press it: the Fly by Sound start opens.
+4. Open the home page /en/ and scroll to the Fly by Sound band: it now has a button "Start Fly by Sound" beside the link "Who it is for and how to join"; press it: the Fly by Sound start opens.
+5. Open a scene page, for example /en/scenes/39e63ce9/: the top menu's button opens that scene in the simulator (the address has `scene=39e63ce9`), not the scene picker. The same on a supporter's page with a scene: the menu button flies that person's scene.
+6. Open /en/sound/#sound-keys and press "pl" in the top menu: the Polish page opens at the same place (/pl/sound/#sound-keys).
+7. On a narrow phone (320 px wide) open /es/sound/ before answering the cookie question: the cookie box now stands under the menu at the top and the start button is free to press; after Accept or Decline the box is gone.
 
 ## Claims
 
-(stage 3)
+1. On every sound page (en, es, pl, ru) the menu's main button is "Fly by Sound" and leads to /{lang}/fly/?sonic=start, the address of the page's own start button; clicked with the mouse at 1536x730 (scale 1.25) and by touch at 375x812 on en and pl. Proof: `node tools/bench/scripts/site4-links.mjs http://127.0.0.1:6080 out.json sound,soundall` on the local build. Last result: 6 of 6 PASS; on the live site 6 of 6 FAIL.
+2. The home page's Fly by Sound band has a button that starts the sound mode. Proof: the same probe, step band. Last: PASS local, FAIL live.
+3. A scene page's menu button opens that scene. Proof: the probe step scene against a local API (port 6081). Last: PASS local (/en/fly/?scene=39e63ce9), FAIL live (the picker).
+4. A supporter's page with a scene: the menu button opens that scene. Proof: probe step person. Last: PASS local, FAIL live.
+5. The language switch keeps the page and its anchor. Proof: probe step lang. Last: PASS local (/pl/sound/#sound-keys), FAIL live (no anchor).
+6. The cookie banner never covers the start button of /es/sound/ at 320x568 and 320x640. Proof: probe step banner. Last: PASS local (banner docked at y 72..262, button at y 405), FAIL live.
+7. The same rules are checked on every build by the site smoke. Proof: `pnpm --filter @gsfpv/site verify`. Last (stage 2): 296 of 296; with the old page files 269 of 296, the 27 failing are the new checks.
+8. `mainCta` and `consentDock` are unit-tested. Proof: `npx vitest run apps/site/test/main-cta.test.ts`. Last: 7 pass, NEG OK against origin/main.
+9. The gates typecheck, vitest, architecture, i18n, catalog, b18, leaks pass on this tree. Proof: gates.py (see the stage 3 commit). Last result: below in For the lead.
 
 ## Not verified
 
-(stage 3)
+- No person, phone or real controller took part: the clicks are headless Chrome with the mouse and with emulated touch.
+- The simulator itself is not loaded by the probe: the /{lang}/fly/ address is answered by a stub page, so the probe proves the address opened, not that the sound lesson then plays (that is the sound lanes' acceptance).
+- The pointer-lock step of the common acceptance does not apply: no step of this lane is inside the flight.
+- The scene page was checked on a local API with the rebuilt templates, not on the live API: the live result needs the page and the templates deployed together.
+- The language switch on the API's scene pages (no script on those pages) keeps the page but not the anchor; those pages have no anchors people link to.
+- The person page check uses kanal-fpv from the local supporters data; whether live supporters have a scene today was not checked.
+- No picture was taken: the probe measures the banner and button rectangles instead.
 
 ## For the lead
 
-(stage 3)
+- Files outside apps/site/src, the site locales and verify.mjs: apps/site/test/main-cta.test.ts (new unit test), tools/bench/scripts/site4-links.mjs (the lane probe), evidence/2026-11-19/site4/*.json. Nothing in apps/api, rooms, nginx or packages/sonic-fpv.
+- Deploy order: the page only (the site build). The scene templates (out/scene-templates) change with it: the API reads them from the release folder, so the API itself needs no new code, but the scene pages show the fix only after the new release folder is current.
+- Live checks after the deploy: `node tools/bench/scripts/site4-links.mjs https://gsfpv.flyreelstudio.eu out.json` must print pass true (13 steps); and `pnpm --filter @gsfpv/site verify` on the build.
+- New locale keys: nav.flySound and sticky.soundNote (en, es, pl, ru).
 
 ## Cost notes
 
 - Stage 1: most replies went to finding where each page's main button is built (Header, StickyCTA, the API scene templates); one probe on the live site gave the whole audit table in one run.
 - Stage 2: the most replies went to the smoke's first runs (serve.mjs needs python on PATH; a navigation request carries no #anchor; a missing bottom bar made a click throw on the old build). Cheaper: start the server with the PATH export from the start, and make every click in a check catch its own timeout.
+- Stage 3: the most replies went to the run setup (two servers, because a scene page comes from the API); the probe itself gave the whole verdict in one run each side. Cheaper: a probe flag for a second base for the API steps.
