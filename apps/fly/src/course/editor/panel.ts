@@ -14,6 +14,7 @@ import './keep.css';
 import { clockOf, type DraftEntry } from './drafts';
 import { draftByKey } from './keep-texts';
 import { fieldProblem, type SaveAgain } from './save-words';
+import { OFFER_KEYS, type FixAnswer } from './fixes';
 
 export interface PanelHost {
     key(press: KeyPress): void;
@@ -53,6 +54,10 @@ export class EditorPanel {
     private readonly rule: HTMLElement;
     private readonly again: HTMLButtonElement;
     private againTimer: ReturnType<typeof setTimeout> | null = null;
+    private readonly offer: HTMLElement;
+    private readonly offerText: HTMLElement;
+    private readonly offerYes: HTMLButtonElement;
+    private offerAnswer: ((a: FixAnswer) => void) | null = null;
 
     constructor(ui: HTMLElement, private readonly host: PanelHost) {
         const root = el('section', 'course-editor interactive');
@@ -129,7 +134,26 @@ export class EditorPanel {
         this.again.type = 'button';
         this.again.hidden = true;
         this.again.addEventListener('click', () => host.saveMine(this.name.value, this.title.value));
-        save.append(this.name, this.title, this.rule, this.mine, this.again, this.all, this.admin);
+        // lane edit4s (E7): a refused Save offers to make the small corrections itself (fixes.ts)
+        this.offer = el('div', 'ce-fix-offer');
+        this.offer.hidden = true;
+        this.offer.setAttribute('role', 'alertdialog');
+        this.offerText = el('p', 'ce-fix-text');
+        this.offerYes = el('button', 'ce-fix-yes');
+        this.offerYes.type = 'button';
+        this.offerYes.addEventListener('click', () => this.answer('yes'));
+        const show = el('button', 'ce-fix-show', t(OFFER_KEYS.show));
+        show.type = 'button';
+        show.addEventListener('click', () => this.answer('show'));
+        const close = el('button', 'ce-fix-close', '×');
+        close.type = 'button';
+        close.setAttribute('aria-label', t(OFFER_KEYS.close));
+        close.title = t(OFFER_KEYS.close);
+        close.addEventListener('click', () => this.answer('close'));
+        const buttons = el('div', 'ce-fix-buttons');
+        buttons.append(this.offerYes, show);
+        this.offer.append(this.offerText, buttons, close);
+        save.append(this.name, this.title, this.rule, this.mine, this.offer, this.again, this.all, this.admin);
         root.append(save);
 
         // lane edit4s (E6): the drafts this browser kept, each with a way back (parts/keep.ts)
@@ -180,6 +204,31 @@ export class EditorPanel {
         input.classList.add('ce-field-bad');
         this.root.classList.add('ce-open');
         input.focus();
+    }
+
+    /**
+     * Lane edit4s (E7): the offer of small corrections (its sentence, the yes button's words), answered once by `on`; null
+     * takes it away. The window opens so it is seen, and the yes button takes the focus (key Enter answers it).
+     */
+    offerFixes(offer: { text: string; yes: string } | null, on: ((a: FixAnswer) => void) | null = null): void {
+        this.offerAnswer = offer ? on : null;
+        this.offer.hidden = offer === null;
+        if (!offer) return;
+        this.offerText.textContent = offer.text;
+        this.offerYes.textContent = offer.yes;
+        this.root.classList.add('ce-open');
+        this.offerYes.focus();
+    }
+
+    /** true while the offer of corrections waits for its answer */
+    offering(): boolean {
+        return !this.offer.hidden;
+    }
+
+    private answer(a: FixAnswer): void {
+        const on = this.offerAnswer;
+        this.offerFixes(null);
+        on?.(a);
     }
 
     /** a failed save's Save again (save-words.ts SaveAgain): shown, enabled from `at`; null hides it */

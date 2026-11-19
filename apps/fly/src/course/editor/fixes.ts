@@ -7,6 +7,8 @@ import { quatMultiply, quatNormalize, yawQuat } from '@shramko/sonic-fpv';
 import type { Quat, Vec3 } from '@shramko/sonic-fpv';
 
 export type FixKind = 'face-line' | 'nudge' | 'lift';
+/** the pilot's answer to the offer: make them (and save when all are made), point at the first, or not now */
+export type FixAnswer = 'yes' | 'show' | 'close';
 /** a gate's place and turn in the course's own frame (as TrackGate.pos and .quat) */
 export interface GatePose {
     readonly pos: Vec3;
@@ -38,6 +40,8 @@ export const FIX_STEP_M = 0.1;
 export const FIX_MAX_M = 1;
 /** problems looked at, at most (each costs a few window checks) */
 export const FIX_MAX_PROBLEMS = 12;
+/** ms the course is shown whole before the corrections, and corrected before the save (estimate: long enough to see it) */
+export const FIX_SHOW_MS = 900;
 
 export const FIX_WORDS: Record<FixKind, string> = {
     'face-line': 'course.fix.done.turned',
@@ -181,7 +185,7 @@ function lift(c: Course, p: Extract<CourseProblem, { code: 'leg-wall' }>, before
         });
         if (!clears(withGates(c, moved), Math.min(...ends), Math.max(...ends), p, before, w)) continue;
         const cm = Math.round(m * 100);
-        const words = a >= 0 ? { key: FIX_WORDS.lift, args: { a: a + 1, b: b + 1, cm } } : { key: LIFT_ONE_KEY, args: { b: b + 1, cm } };
+        const words: Fix['words'] = a >= 0 ? { key: FIX_WORDS.lift, args: { a: a + 1, b: b + 1, cm } } : { key: LIFT_ONE_KEY, args: { b: b + 1, cm } };
         return { kind: 'lift', problem: p, gates: moved, words };
     }
     return null;
@@ -270,8 +274,8 @@ export function foundWords(c: Course, p: CourseProblem): { key: string; args: Re
  */
 export function courseOverview(points: readonly Vec3[], tanHalfV: number, ray: ((o: Vec3, d: Vec3, max: number) => number | null) | null, share = 0.8): { eye: Vec3; at: Vec3 } | null {
     if (points.length === 0) return null;
-    const lo: Vec3 = [Infinity, Infinity, Infinity];
-    const hi: Vec3 = [-Infinity, -Infinity, -Infinity];
+    const lo = [Infinity, Infinity, Infinity];
+    const hi = [-Infinity, -Infinity, -Infinity];
     for (const p of points) for (let k = 0; k < 3; k++) {
         lo[k] = Math.min(lo[k]!, p[k]!);
         hi[k] = Math.max(hi[k]!, p[k]!);

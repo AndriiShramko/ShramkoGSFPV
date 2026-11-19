@@ -1,6 +1,8 @@
 // Lane edit4s (E7): a refused Save offers small corrections. On the analytic rooms of packages/tracks: a gate turned 180
 // degrees is faced along the line and the course passes; a gate pushed into a wall is moved away from it; a fix the whole
 // course's check finds a new problem beside is dropped; the offer's and the change list's words exist in all four locales.
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { canSave, freeSpace, generateCourse, nearestWall, openEditor, upgradeTrack, wallsCheck } from '@gsfpv/tracks';
 import type { Course, CourseProblem } from '@gsfpv/tracks';
@@ -12,6 +14,7 @@ import es from '../../../packages/i18n/locales/fly/course-save/es.json';
 import pl from '../../../packages/i18n/locales/fly/course-save/pl.json';
 import ru from '../../../packages/i18n/locales/fly/course-save/ru.json';
 
+const root = join(__dirname, '../../..');
 const walls = threeRooms();
 const track = generateCourse(freeSpace(walls, { spawn: SPAWN_A }), walls, { seed: 7, scene: { id: '0000aaaa', version: 1 }, transform: IDENTITY, created: '2026-11-13T00:00:00.000Z' });
 const course = upgradeTrack(track);
@@ -89,6 +92,19 @@ describe('lane edit4s: the corrections a refused Save offers (E7)', () => {
     it('the overview sees every gate from above', () => {
         const o = courseOverview(course.gates.map((x) => x.pos as [number, number, number]), Math.tan((60 * Math.PI) / 360), null)!;
         expect(o.eye[1]).toBeGreaterThan(o.at[1]);
+    });
+
+    it('the page asks before it corrects: a refused Save goes through the offer, the window has its 44 px cross', () => {
+        const page = readFileSync(join(root, 'apps/fly/src/app/builtin/course.ts'), 'utf8');
+        expect(page).toMatch(/return refusedSave\(\(\) => void saveMine\(nameIn, titleIn\)\)/);
+        expect(page).toMatch(/proposeFixes\(from, problems, w\)/);
+        expect(page).toMatch(/panel\.offerFixes\(/);
+        // one undo step, the overview first
+        expect(page).toMatch(/restoredState\(ed, r\.course/);
+        expect(page).toMatch(/courseOverview\(/);
+        const css = readFileSync(join(root, 'apps/fly/src/course/editor/keep.css'), 'utf8');
+        expect(css).toMatch(/\.ce-fix-close \{[^}]*width: 44px; height: 44px/);
+        expect(readFileSync(join(root, 'apps/fly/src/course/editor/panel.ts'), 'utf8')).toMatch(/offerFixes\(offer: \{ text: string; yes: string \} \| null/);
     });
 
     it('the offer and the change list have their words in en, es, pl, ru, with the gates named', () => {

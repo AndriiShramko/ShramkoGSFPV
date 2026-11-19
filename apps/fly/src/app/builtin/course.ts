@@ -39,7 +39,8 @@ import { MAX_GATES_EDIT, canSave, checkTrack, edit, flownCollision, flownStart, 
 import { CheckQueue, checkOnPage } from '../../course/editor/check-core';
 import type { FromCheckWorker } from '../../course/editor/check-core';
 import { aimAt, gateCamera, type GateView } from '../../course/editor/camera';
-import { frameGate, reframeOnDragEnd } from '../../course/editor/frame';
+import { FRAME_GLIDE_MS, frameGate, reframeOnDragEnd } from '../../course/editor/frame';
+import { FIX_SHOW_MS, OFFER_KEYS, confirmFixes, courseOverview, foundWords, proposeFixes, type FixResult } from '../../course/editor/fixes';
 import type { RayFn } from '../../course/editor/camera';
 import { EditView } from '../../course/editor/view-mouse';
 import { GateBar } from '../../course/editor/gate-bar';
@@ -174,6 +175,12 @@ export const course: Feature = {
         /** I1 (D1): the edit view glides to the selected gate, a third of the view high, 35 degrees aside, 20 above */
         // review EI-7: true when the framing is done for this selection (a glide started, or no place is free: D1 keeps the
         // view); false when it was skipped (flying, a drag, the view suspended), so a later repaint frames it
+        /** the tangent of half the view's vertical angle (the framing's and the overview's distance) */
+        const viewTanHalfV = (): number => {
+            const cc = ctx.renderer.camera.camera;
+            const tf = Math.tan(((cc?.fov ?? 115) * Math.PI) / 360);
+            return cc && cc.horizontalFov ? (tf * Math.max(1, window.innerHeight)) / Math.max(1, window.innerWidth) : tf;
+        };
         const frameSel = (): boolean => {
             if (!ed || !view || mode === 'fly') return false;
             const eg = ed.course.gates[ed.selected];
@@ -182,10 +189,7 @@ export const course: Feature = {
             // the axis through the opening: the gate's local z turned by its pose (quat w, x, y, z)
             const [w, x, y, z] = p.quat;
             const axis: [number, number, number] = [2 * (x * z + w * y), 2 * (y * z - w * x), 1 - 2 * (x * x + y * y)];
-            const cc = ctx.renderer.camera.camera;
-            const tf = Math.tan(((cc?.fov ?? 115) * Math.PI) / 360);
-            const tanHalfV = cc && cc.horizontalFov ? (tf * Math.max(1, window.innerHeight)) / Math.max(1, window.innerWidth) : tf;
-            const f = frameGate({ centre: p.pos, axis, size: p.opening, tanHalfV, from: view.cam.pos }, camRay);
+            const f = frameGate({ centre: p.pos, axis, size: p.opening, tanHalfV: viewTanHalfV(), from: view.cam.pos }, camRay);
             (edHook as { frame?: unknown }).frame = f ? { side: f.sideDeg, dist: Math.round(f.dist * 100) / 100, skipped: f.skipped } : { blocked: true };
             return f ? view.glideTo(camFrom(f.eye, f.at, view.cam.speed)) : true;
         };
@@ -203,6 +207,8 @@ export const course: Feature = {
         const markChanged = (by: string): void => {
             edChanged = true;
             keeper?.changed(by);
+            // lane edit4s (E7): an offer of corrections made for the course before this change is taken away
+            if (by !== 'fix') panel?.offerFixes(null);
         };
         /** the step that dropping unsaved changes was asked for ('exit', 'regen', 'row:<id>'); doing it again goes on */
         let askedFor: string | null = null;
@@ -846,9 +852,71 @@ export const course: Feature = {
             say(t(lead, { fix: t(w.key, w.args) }), true);
             return true;
         };
-        const refusedSave = (): void => {
+        /** the old refusal: the first wrong gate selected and named, or the problems in one line */
+        const pointAtWrong = (): void => {
             if (!ed || showWrong(SAVE_FIX_KEY)) return;
             say(t('course.edit.saveRefused', { why: problemsLine(ed) }), true);
+        };
+        /**
+         * Lane edit4s (E7): a refused Save first looks for small corrections (fixes.ts) and offers them in the window: yes ->
+         * the overview of the whole course, the gates corrected in front of the pilot as one undo step, the change listed, and
+         * the save `retry` made when nothing is left; Show me -> the first wrong gate; the cross -> the refusal as before.
+         */
+        const refusedSave = async (retry: () => void): Promise<void> => {
+            const col = ctx.session.collision;
+            if (!ed || !col || !panel) return pointAtWrong();
+            const from = ed.course;
+            const problems = [...ed.problems];
+            say(t(OFFER_KEYS.looking));
+            // the line is painted before the whole course's check (seconds on a big scan) holds the page
+            await new Promise<void>((done) => requestAnimationFrame(() => setTimeout(done, 0)));
+            if (!ed || ed.course !== from) return;
+            const w = { col, transform: flownTransform(), margin: edMargin };
+            const r = confirmFixes(from, problems, proposeFixes(from, problems, w), (c) => checkOnPage(col, w.transform, w.margin, c));
+            fixHook = { offered: r.fixes.map((f) => ({ kind: f.kind, gates: f.gates.map((g) => g.index + 1) })), answer: null, left: r.problems.length };
+            if (r.fixes.length === 0) return pointAtWrong();
+            const all = r.problems.length === 0;
+            const what = r.fixes.map((f) => foundWords(from, f.problem)).filter((x) => x !== null).map((x) => t(x.key, x.args)).join('; ');
+            say(t(all ? OFFER_KEYS.all : OFFER_KEYS.some, { what }), true);
+            panel.offerFixes({ text: t(all ? OFFER_KEYS.all : OFFER_KEYS.some, { what }), yes: t(all ? OFFER_KEYS.yes : OFFER_KEYS.yesOnly) }, (a) => {
+                fixHook = { ...fixHook, answer: a };
+                if (!ed || ed.course !== from) return;
+                if (a === 'show') return pointAtWrong();
+                if (a === 'close') return say(t('course.edit.saveRefused', { why: problemsLine(ed) }), true);
+                void applyFixes(r, all ? retry : null);
+            });
+        };
+        /** the probes' record of the last offer (gates from 1) and its answer */
+        let fixHook: { offered: { kind: string; gates: number[] }[]; answer: string | null; left: number; done?: string } = { offered: [], answer: null, left: 0 };
+        /** the corrections made where the pilot sees them: the overview first, then the gates change, then the save */
+        const applyFixes = async (r: FixResult, then: (() => void) | null): Promise<void> => {
+            if (!ed) return;
+            const at = ed.course;
+            keeper?.beforeLoss('fix');
+            const tr = flownTransform();
+            const o = view ? courseOverview(ed.course.gates.map((g) => gateFlownPose(g, tr).pos), viewTanHalfV(), camRay) : null;
+            if (o && view) {
+                view.glideTo(camFrom(o.eye, o.at, view.cam.speed));
+                // the course before, seen whole for a moment, then the corrections
+                await new Promise((done) => setTimeout(done, FRAME_GLIDE_MS + FIX_SHOW_MS));
+            }
+            if (!ed || ed.course !== at) return;
+            const fixed = r.problems;
+            ed = { ...restoredState(ed, r.course, () => [...fixed]), selected: r.fixes[0]!.gates[0]!.index };
+            okCourse = ed.course;
+            markChanged('fix');
+            askedFor = null;
+            showEd();
+            const list = r.fixes.map((f) => t(f.words.key, f.words.args)).join('; ');
+            fixHook = { ...fixHook, done: list };
+            say(t(OFFER_KEYS.done, { list }));
+            if (!then) {
+                // what is left has no small correction: its gate is selected and named after the list
+                pointAtWrong();
+                return say(`${t(OFFER_KEYS.done, { list })} ${edHook.said ?? ''}`.trim(), true);
+            }
+            await new Promise((done) => setTimeout(done, FIX_SHOW_MS));
+            if (ed && ed.course === r.course) then();
         };
         const renderList = (): void => {
             edHook.votes = myVotes();
@@ -981,7 +1049,7 @@ export const course: Feature = {
             bar = new GateBar(ctx.ui, { key: (p) => applyKey(p), where: () => view?.standScreen() ?? null, tool: () => view?.tool ?? 'move', setTool: (tl) => view?.setTool(tl), dragging: () => view?.isDragging() ?? false });
             top = new TopBar(ctx.ui, { key: (p) => applyKey(p), add: () => toggleAdd(), show: (part) => panel?.reveal(part) });
             // read only, for the page probes (tools/bench/src/editor3-smoke.ts)
-            (window as unknown as { __gsfpvEditView?: () => unknown }).__gsfpvEditView = () => (view ? { ...view.debug(), mode, bar: bar?.debug() ?? null, place: lastPlace, wrong: lastWrong, course: ed ? { gates: ed.course.gates, start: (ed.course as { start?: unknown }).start ?? null, problems: ed.problems } : null, camTaken, crashCleared, crashActive: ctx.crash.active, drone: [S.px, S.py, S.pz].map((i) => Math.round((ctx.session.runner.sim.s[i] ?? 0) * 100) / 100), override: ctx.session.cameraOverride, edit4: { s: { ...keepHook, save: saveHook } } } : null);
+            (window as unknown as { __gsfpvEditView?: () => unknown }).__gsfpvEditView = () => (view ? { ...view.debug(), mode, bar: bar?.debug() ?? null, place: lastPlace, wrong: lastWrong, course: ed ? { gates: ed.course.gates, start: (ed.course as { start?: unknown }).start ?? null, problems: ed.problems } : null, camTaken, crashCleared, crashActive: ctx.crash.active, drone: [S.px, S.py, S.pz].map((i) => Math.round((ctx.session.runner.sim.s[i] ?? 0) * 100) / 100), override: ctx.session.cameraOverride, edit4: { s: { ...keepHook, save: saveHook, fix: fixHook } } } : null);
             // lane editor3 H1, read only: the shown handles' shape under a page point (the probe finds the ring it presses)
             (window as unknown as { __gsfpvEditHit?: (x: number, y: number, own?: boolean) => unknown }).__gsfpvEditHit = (x, y, own) => view?.hitAt(x, y, own === true) ?? null;
             // I1, read only: the eye's distance, the gate's height, the rings' minor axes and the handle parts' rectangles
@@ -1316,7 +1384,7 @@ export const course: Feature = {
             if (!ed || !edSource || saving) return;
             await checked();
             if (!ed || !edSource) return;
-            if (!canSave(ed)) return refusedSave();
+            if (!canSave(ed)) return refusedSave(() => void saveMine(nameIn, titleIn));
             const name = nameIn.trim().normalize('NFC');
             // lane edit4s (E9): an emptied title keeps the course's own (as the admin's save does), it is no refusal
             const title = titleIn.trim().normalize('NFC') || edSource.title;
@@ -1366,7 +1434,7 @@ export const course: Feature = {
             if (!ed || !edSource || saving || !adminLive) return;
             await checked();
             if (!ed || !edSource) return;
-            if (!canSave(ed)) return refusedSave();
+            if (!canSave(ed)) return refusedSave(() => void saveAdmin(titleIn));
             const serverId = hook.saved ?? (hook.source === 'server' ? edSource.id : null);
             if (serverId === null) return say(t('course.edit.adminFirst'), true);
             const title = titleIn.trim().normalize('NFC') || edSource.title;
