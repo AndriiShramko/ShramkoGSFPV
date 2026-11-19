@@ -11,7 +11,7 @@ import { openVoxelCollision } from '@gsfpv/collision';
 import type { VoxelMetadata } from '@gsfpv/collision';
 import { checkTrack, fitCourse, flownCollision, freeSpace, marginOf, toTrackV1, upgradeTrack, validateServerTrack, COURSE_DEFAULTS, FIT_BUDGET_MS } from '@gsfpv/tracks';
 import type { SceneTransform, Vec3 } from '@gsfpv/tracks';
-import type { TrackFile } from '@shramko/sonic-fpv';
+import type { TrackFile } from '../../../packages/sonic-fpv/src';
 
 const arg = (n: string): string | null => {
     const i = process.argv.indexOf(n);

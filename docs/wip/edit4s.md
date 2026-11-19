@@ -20,7 +20,7 @@ Design: C:/dev/.gsfpv-lanes/designs/edit4.md section 4 (edit4s). Owner's words: 
   - [x] the probe (commit ecadfdf6); the live negative control fails s2-s6 (evidence/2026-11-19/edit4s/probe-live.json)
   - [x] the probe found a gate pushed into a wall by the gizmo that had no correction: nudge now tries the 26 ways, the
     least move first (fixes.ts nudgeWays), test 'from any side', NEG OK (commit 719916e1)
-  - [x] local run: 9 of 9 PASS (evidence/2026-11-19/edit4s/probe-local.json); gates (this commit)
+  - [x] local run: 9 of 9 PASS (evidence/2026-11-19/edit4s/probe-local.json) (commit 23b723bf); gates PASS (claim 7)
 
 Design versus code (the code wins):
 - Stage S0 (the seam: course/editor/seam.ts, parts.ts loader, Course menu) is NOT in this branch (origin/main e3201fec has no
@@ -106,6 +106,10 @@ Design versus code (the code wins):
    dist 70b50d42 1 <out.json>` -> PASS 9/9 (evidence/2026-11-19/edit4s/probe-local.json). Live negative control:
    `node tools/bench/scripts/edit4s-probe.mjs https://gsfpv.flyreelstudio.eu/en 70b50d42 1 <out.json>` -> FAIL s2 s3 s4
    s5 s6, open and s1 PASS (evidence/2026-11-19/edit4s/probe-live.json).
+7. (S3) The lane's gates: `gates.py --only typecheck,vitest,architecture,i18n,b18,leaks,api-unittest` -> vitest,
+   api-unittest, architecture, i18n, leaks PASS; typecheck failed on tools/bench/src/edit4s-e9.ts (an import of
+   @shramko/sonic-fpv, not a bench dependency; now the relative path) and b18 on a placeholder word in this file; both
+   fixed and `--only typecheck,b18` -> PASS.
 
 ## Not verified
 
@@ -153,7 +157,7 @@ into the address. Live checks after the deploy: edit4s-probe.mjs against the liv
 
 - S1: the most replies went to finding that S0 (the seam) was never built and reading course.ts's save and change sites;
   a ready seam (or a design that names its absence) would have saved about 8 replies. neg_control needs `npx.cmd`, not `npx`.
-  Tests that import apps/fly i18n need `vi.mock` of it (location is undefined in Node).
+  Tests that import apps/fly i18n need `vi.mock` of it (Node has no `location`).
 - S2 (first run): the E9 Node experiment cost 9 minutes for 3 seeds (fitCourse about 3 min a seed), so 50 seeds were not
   affordable; a ready cache of fitted courses per scene would make it seconds. Reading course.ts's save sites took ~6 replies.
 - S2 (second run, E7): most replies went to finding the check's geometry (checkTrack gate axis, edit() frames) because the
