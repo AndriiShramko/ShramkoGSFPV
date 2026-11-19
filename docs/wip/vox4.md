@@ -125,6 +125,10 @@ Notes on the design vs the code:
 9. Voxels only is cheaper than before: 5.2 ms a frame here against 10.2 ms on live in the same view (the scan is no
    longer drawn behind the voxels). Proof: step 5 of the same two runs (headless, this PC, uncapped).
 
+11. (review) A scene switch made from voxels only reveals the next scan as fast as one from "Over the scan" (not by the 30 s
+   stall bound) and voxels only holds after it. Proof: `node tools/bench/scripts/vox4-switch.mjs http://localhost:6021/en out.json`
+   (drawn) - PASS 5.9 s 'ready'; negative control: the same on a build of 4793788c - FAIL 32.3 s 'stall'.
+
 ## Not verified
 
 - The AO corners were not judged on screen by a measure of their own: step 4 measures top against side faces (AO
@@ -146,6 +150,7 @@ Notes on the design vs the code:
   whether the scan really has no ground there or the bake drops it needs a look at the bake's density rule.
 - Contract for ux4b: packages/render-pc exports SplatLoadGuard, SplatLoadCancelled, isSplatLoadCancelled; renderer.unloadSplat()
   cancels a loadSplat() under way (it rejects with SplatLoadCancelled).
+- Review repair: packages/render-pc/src/renderer.ts unloadSplat (the next scan starts shown); new probe tools/bench/scripts/vox4-switch.mjs.
 - New probe tools/bench/scripts/vox4-probe.mjs (and vox4-near.mjs, vox4-plan.ts, vox4-ao-cost.ts from V-2): bench only.
 - Not this lane's files, seen in V-3: (a) after the pointer lock, Esc opens the pause menu, which is modal and lies over
   the walls chip at 1536x730, so in a pause the voxel panel cannot be reached by the mouse (key V still works);
@@ -154,9 +159,25 @@ Notes on the design vs the code:
 - Live checks after the deploy: `BENCH_UNCAPPED=1 node tools/bench/scripts/vox4-probe.mjs https://gsfpv.flyreelstudio.eu/en out.json`
   must give 6/6 PASS (read-only: it saves, sends and creates nothing; the voxel mode is a browser setting of the probe's own profile).
 
+## Review
+
+Verdict: SHIP (independent check, 2026-11-19; full text U:/Temp/gsfpv-train4/reviews/vox4.md).
+- Re-run: claims 1, 5, 6 (57 tests pass); NEG OK for accum-policy.test.ts (origin/main) and vox4-near.test.ts (f5550bda);
+  the acceptance probe on a build of 4793788c: 6/6 PASS.
+- Found and repaired (PROVEN): a scene switch made from voxels only kept the next scan's entity disabled
+  (renderer.ts loadSplat `e.enabled = !this.splatHidden`), and the loading's reveal (session/reveal.ts) waits for drawn
+  splats, so the loading screen stayed until the 30 s stall bound: 32.3 s, reveal 'stall', against 6.2 s 'ready' with
+  "Over the scan". Repair: unloadSplat() shows the scan again (setSplatVisible(true)); the voxel view hides it at the
+  hand-over (voxels.ts setSession -> apply). Proof: `node tools/bench/scripts/vox4-switch.mjs <base>/en out.json`
+  (drawn, GPU lock): FAIL on 4793788c, PASS on the repair (5.9 s, 'ready', voxels only held, scan hidden after it);
+  evidence/2026-11-19/vox4/review-switch-*.json.
+- DOUBT (not proven): the voxels-only fog is the scene's global fog, so World items (gates) past the plan's reach fade into
+  the background; and in a Fly by Sound world its lesson fog and the voxel fog each save and restore the other's.
+
 ## Cost notes
 
 - V-1: the most replies went to finding the voxel view's lines in the 230 KB brief (Cyrillic grep in bash hung); next time Grep the brief with a phrase and offset only.
 - V-2a: the most replies went to the experiment's reach (the page hook wraps the controller, the 27-box was empty over the grid); a Node plan script on the baked walls (vox4-plan.ts) answered in one run: start there.
 - V-3: the most replies went to the probe's own faults (data: fetch blocked by the CSP, the pause menu over the chip after the lock, too few far voxels for the fog rule); ?render=off still draws the voxels, so the whole probe was debugged without the GPU lock: do that before the locked run.
+- Review: the most replies went to the two builds (one for the head, one for the repair) and to tracing the reveal from the renderer to reveal.ts; a probe of the in-page scene switch at the start would have found it in one drawn run.
 - V-2b: the most replies went to finding how the faces are built (runs, DIRS, flip) and to a second pass for the cost (octree per sample was +108 %); next time read mesh.ts facesFromOcc first and sample a halo window from the start.

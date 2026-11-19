@@ -546,7 +546,7 @@ export class SplatRenderer {
                 e.setLocalPosition(this.sceneT[0], this.sceneT[1], this.sceneT[2]);
                 e.setLocalScale(this.sceneS, this.sceneS, this.sceneS);
                 e.addComponent('gsplat', { asset }); // unified rendering is the engine default
-                // the voxels-only view outlives a scene switch: the next scan starts hidden too
+                // hidden only when setSplatVisible(false) came during this load (unloadSplat shows the next scan)
                 e.enabled = !this.splatHidden;
                 this.app.root.addChild(e);
                 this.splat = e;
@@ -833,6 +833,10 @@ export class SplatRenderer {
             this.accumHeld = true;
             if (this.accum?.active) this.setStochastic(this.wantStochastic);
         }
+        // the next scan starts shown: the loading's reveal (apps/fly session/reveal.ts) waits for drawn splats, so a scan kept hidden
+        // through a scene switch in voxels only was shown only by the 30 s stall bound. The voxel view hides it again at the hand-over
+        // (apps/fly voxels.ts setSession -> apply).
+        if (this.splatHidden) this.setSplatVisible(true);
         if (this.splat) {
             this.splat.destroy();
             this.splat = null;
