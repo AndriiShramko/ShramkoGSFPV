@@ -37,7 +37,7 @@ against the code as it is: EditView gets the walls ray through its own host (Edi
     13 FAIL, a real product fault: at 844x390 the gate bar placed above the gate (y 43) lay over the editor's window
     [400, 86, 380, 35]. Fixed in bar-place.ts barPlace(keep) and gate-bar.ts keepClear() (the top bar and the editor's
     window): on each row it moves left or right of the box, else the next row. Test editor3-gatebar (4 passed), NEG OK;
-    the 6 test files importing bar-place or gate-bar 45 passed; apps/fly typecheck exit 0. (next commit)
+    the 6 test files importing bar-place or gate-bar 45 passed; apps/fly typecheck exit 0. (commit 19caf118)
   - LEFT (next run), in this order: 1) `node scripts/build-release.mjs` (dist was deleted; remove dist.tgz and
     SHA256SUMS after it), copy the walls, serve on 5941; 2) ONE drawn local run inside the GPU lock, output
     evidence/2026-11-19/edit4a/accept-local.json (overwrite run 1's file; runs 2 and 3 stay as their own files); all 14
