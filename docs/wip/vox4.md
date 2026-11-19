@@ -118,6 +118,10 @@ Notes on the design vs the code:
    0.0 ms a frame, the panel's 44 px cross closes it at 1536x730 and 844x390.
    Proof: `BENCH_UNCAPPED=1 node tools/bench/scripts/vox4-probe.mjs http://localhost:6020/en out.json` - 6/6 PASS;
    negative control: the same against https://gsfpv.flyreelstudio.eu/en - steps 1-5 FAIL, 6 PASS (Acceptance V-3).
+10. The lane's tree passes the gates: `gates.py --only typecheck,vitest,architecture,i18n,b18,leaks` on c630bfe7 -
+   typecheck, architecture, i18n, B18, leaks PASS; vitest FAIL only in tools/bench/test/rooms-race.test.ts ("rooms.py did
+   not start": the API server's start-up wait under the full suite's load; this lane changes nothing in apps/api or the
+   rooms); alone `npx vitest run tools/bench/test/rooms-race.test.ts` - 7 pass. Logs U:/Temp/gsfpv-gates-20261119-172854.
 9. Voxels only is cheaper than before: 5.2 ms a frame here against 10.2 ms on live in the same view (the scan is no
    longer drawn behind the voxels). Proof: step 5 of the same two runs (headless, this PC, uncapped).
 
