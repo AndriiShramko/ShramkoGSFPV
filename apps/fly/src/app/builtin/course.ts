@@ -827,10 +827,10 @@ export const course: Feature = {
             if (!ed) return false;
             const w = firstWrong(ed.course, ed.problems, focus);
             if (!w) return false;
-            ed = { ...ed, selected: w.index };
             lastWrong = { index: w.index, key: w.key, lead };
-            showEd();
-            aim();
+            // lane edit4b (E8): the gate the sentence names is selected where it stands (no camera move), its number and paint
+            // flash, and an edge arrow leads to it when it is out of view (course/editor/parts/point.ts)
+            bus?.call('pointAt', w.index, 'problem');
             say(t(lead, { fix: t(w.key, w.args) }), true);
             return true;
         };
@@ -1398,6 +1398,7 @@ export const course: Feature = {
                 showEd();
                 b.emit('selected', { index, id: framedId === null ? null : String(framedId), by });
             },
+            flashGate: (index, on) => stage.flashEdit(index, on),
             startNew: (file) => startNew(file),
             saveNow: async (name, title) => {
                 await saveMine(name, title);

@@ -26,5 +26,7 @@
   "course.life.saveEmpty": "Nie ma jeszcze czego zapisać: tor nie ma bramki. Dodaj bramkę jest włączone: kliknij, gdzie ma stać pierwsza bramka",
   "course.life.flySwitch": "Twój kontroler uzbraja się przełącznikiem: przełącz go, by przelecieć tor",
   "course.life.flyEmpty": "Tor nie ma jeszcze bramki. Dodaj bramkę jest włączone: kliknij, gdzie ma stać pierwsza bramka, potem Przeleć tor",
-  "course.life.backSwitch": "Twój kontroler uzbraja się przełącznikiem: wyłącz go, by znowu edytować"
+  "course.life.backSwitch": "Twój kontroler uzbraja się przełącznikiem: wyłącz go, by znowu edytować",
+  "course.life.point.arrow": "Bramka {n} jest w tę stronę. Kliknij, aby na nią spojrzeć",
+  "course.life.point.behind": "Bramka {n} jest za tobą. Kliknij, aby na nią spojrzeć"
 }

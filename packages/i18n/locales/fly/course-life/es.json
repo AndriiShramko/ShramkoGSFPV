@@ -26,5 +26,7 @@
   "course.life.saveEmpty": "Aún no hay nada que guardar: el circuito no tiene puertas. Añadir puerta está activo: haz clic donde va la primera puerta",
   "course.life.flySwitch": "Tu mando se arma con su interruptor: actívalo para volar el circuito",
   "course.life.flyEmpty": "El circuito aún no tiene puertas. Añadir puerta está activo: haz clic donde va la primera puerta y luego Volar el circuito",
-  "course.life.backSwitch": "Tu mando se arma con su interruptor: apágalo para editar de nuevo"
+  "course.life.backSwitch": "Tu mando se arma con su interruptor: apágalo para editar de nuevo",
+  "course.life.point.arrow": "La puerta {n} está por aquí. Haz clic para verla",
+  "course.life.point.behind": "La puerta {n} está detrás de ti. Haz clic para verla"
 }

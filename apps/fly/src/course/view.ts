@@ -19,7 +19,7 @@ import type { Prim, StageRenderer } from '../sonic/primitives';
 import type { EditPaint } from './editor/rules';
 import type { GateRole } from './finish';
 
-type Paint = 'next' | 'later' | 'passed' | 'arrow' | 'checkNext' | 'checkLater' | 'checkPassed' | 'checkDark' | EditPaint;
+type Paint = 'next' | 'later' | 'passed' | 'arrow' | 'checkNext' | 'checkLater' | 'checkPassed' | 'checkDark' | 'flash' | EditPaint;
 /** sRGB colours (design choice, not measured): next lime, later dim teal, passed dark grey (S2: darker than later; the old
  *  0.45 grey was about as bright as the teal), arrows amber; the START / FINISH gate's light cells white when it is next, light
  *  grey later, dark grey passed, its dark cells near black; in the editor the selected gate bright yellow (train 3 I1, D3: the
@@ -35,7 +35,9 @@ const PAINT: Record<Paint, [number, number, number]> = {
     checkDark: [0.02, 0.02, 0.02],
     selected: [1, 0.92, 0.25],
     bad: [1, 0.08, 0.05],
-    'selected-bad': [1, 0.5, 0]
+    'selected-bad': [1, 0.5, 0],
+    // lane edit4b: a gate a message points at flashes magenta (as its label), told apart from yellow selected and red bad
+    flash: [1, 0.25, 0.95]
 };
 /** a chevron every this many metres along the path (tracks-plan 2.3) */
 export const CHEVRON_STEP_M = 2;
@@ -200,7 +202,9 @@ export class CourseStage {
     private drawnCount = 0;
     private arrowCount = 0;
     /** S1 and S2 as the page drew them (the page hook course.look; probes read it) */
-    readonly look = { banners: 0, groundLines: 0, plate: -1, roles: [] as GateRole[] };
+    readonly look = { banners: 0, groundLines: 0, plate: -1, roles: [] as GateRole[], flash: -1 };
+    /** the editor's last paint per gate (paintEdit), restored after a flash */
+    private editPaints: readonly EditPaint[] = [];
 
     constructor(renderer: StageRenderer) {
         this.r = renderer;
@@ -383,10 +387,23 @@ export class CourseStage {
      *  of a START / FINISH frame stay dark (review CU-10: the editor shows where the course starts and ends). */
     paintEdit(paints: readonly EditPaint[]): void {
         if (!this.root) return;
-        this.gates.forEach((g, i) => {
-            const m = this.material(paints[i] ?? 'later');
-            g.instances.forEach((mi, k) => { mi.material = g.dark[k] ? this.material('checkDark') : m; });
-        });
+        this.editPaints = paints;
+        this.gates.forEach((g, i) => this.paintGate(i, i === this.look.flash ? 'flash' : (paints[i] ?? 'later')));
+    }
+
+    /** lane edit4b (pointAt): one gate's light cells in the pointing's flash colour, or back to its edit paint */
+    flashEdit(index: number, on: boolean): void {
+        // the flash outlives a redraw of the course (show), so paintEdit keeps it; the pointer always ends it with on false
+        if (on) this.look.flash = index;
+        else if (this.look.flash === index) this.look.flash = -1;
+        if (this.root) this.paintGate(index, on ? 'flash' : (this.editPaints[index] ?? 'later'));
+    }
+
+    private paintGate(i: number, p: Paint): void {
+        const g = this.gates[i];
+        if (!g) return;
+        const m = this.material(p);
+        g.instances.forEach((mi, k) => { mi.material = g.dark[k] ? this.material('checkDark') : m; });
     }
 
     /** Takes the course off the screen (the materials stay for the next show). */
@@ -401,6 +418,7 @@ export class CourseStage {
         this.look.banners = 0;
         this.look.groundLines = 0;
         this.look.plate = -1;
+        this.editPaints = [];
     }
 
     dispose(): void {

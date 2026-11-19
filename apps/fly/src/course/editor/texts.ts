@@ -56,6 +56,10 @@ export const FIX_KEYS: Record<CourseProblem['code'] | 'legStart', string> = {
     'gate-direction': 'course.edit.fix.direction',
     'no-start': 'course.edit.fix.noStart'
 };
+/** lane edit4b (E8): the sentences that name a gate for the pilot to find and fix. They come only from firstWrong, whose one
+ *  caller (course.ts showWrong) points at that gate (Services.pointAt: selected, its number and paint flash, an edge arrow);
+ *  the problem words (PROBLEM_KEYS, the window's status line) name gates the labels show red (rules.ts badGates). */
+export const POINTED_KEYS: readonly string[] = [FIX_KEYS.outside, FIX_KEYS['gate-wall'], FIX_KEYS['leg-wall'], FIX_KEYS.legStart, FIX_KEYS['gate-direction']];
 /** the lead's sentence around it: a refused Save, a floor-added gate the check refuses */
 export const SAVE_FIX_KEY = 'course.edit.saveFix';
 export const ADD_FIX_KEY = 'course.edit.addFix';

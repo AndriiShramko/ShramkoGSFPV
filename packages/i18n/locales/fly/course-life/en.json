@@ -26,5 +26,7 @@
   "course.life.saveEmpty": "Nothing to save yet: the course has no gate. Add gate is on: click where the first gate stands",
   "course.life.flySwitch": "Your controller arms with its switch: flip the arm switch to fly the course",
   "course.life.flyEmpty": "The course has no gate yet. Add gate is on: click where the first gate stands, then Fly the course",
-  "course.life.backSwitch": "Your controller arms with its switch: flip the arm switch off to edit again"
+  "course.life.backSwitch": "Your controller arms with its switch: flip the arm switch off to edit again",
+  "course.life.point.arrow": "Gate {n} is this way. Click to look at it",
+  "course.life.point.behind": "Gate {n} is behind you. Click to look at it"
 }

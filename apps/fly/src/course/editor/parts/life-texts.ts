@@ -56,6 +56,8 @@ export const LIFE_LINES = {
     flySwitch: 'course.life.flySwitch',
     flyEmpty: 'course.life.flyEmpty',
     backSwitch: 'course.life.backSwitch',
+    pointArrow: 'course.life.point.arrow',
+    pointBehind: 'course.life.point.behind',
     close: 'course.life.ask.close'
 } as const;
 

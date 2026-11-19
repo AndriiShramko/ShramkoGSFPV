@@ -72,3 +72,43 @@
 .ce-menu .ce-menu-x { position: absolute; top: 4px; right: 4px; width: 44px; height: 44px; padding: 0; font-size: 24px; text-align: center; }
 .ce-topbar .ce-tb[data-top='fly'] { background: #1f5c12; border-color: #a6ff1a; }
 .ce-topbar.flying .ce-tb.ce-tb[data-top='fly'] { pointer-events: auto; background: #5c3a12; border-color: #ffb347; }
+
+/* gate numbers (gate-numbers.ts) and the pointing's edge arrow (point.ts): under the editor's bars, never over them */
+.cl-nums { position: fixed; inset: 0; z-index: 4; pointer-events: none; overflow: hidden; }
+.cl-num {
+    position: absolute;
+    left: 0;
+    top: 0;
+    box-sizing: border-box;
+    min-width: 28px;
+    height: 28px;
+    padding: 0 6px;
+    border: 2px solid #10140c;
+    border-radius: 6px;
+    background: #a6ff1a;
+    color: #000;
+    font: 700 16px/24px system-ui, sans-serif;
+    text-align: center;
+    pointer-events: none;
+}
+.cl-num.sel { background: #ffeb40; }
+.cl-num.bad { background: #ff3020; color: #fff; }
+.cl-num.flash { background: #ff40f2; color: #000; border-color: #fff; }
+.cl-edge {
+    position: absolute;
+    left: 0;
+    top: 0;
+    min-width: 44px;
+    height: 44px;
+    padding: 0 10px;
+    border: 2px solid #fff;
+    border-radius: 22px;
+    background: #ff40f2;
+    color: #000;
+    font: 700 18px/40px system-ui, sans-serif;
+    white-space: nowrap;
+    pointer-events: auto;
+    cursor: pointer;
+}
+.cl-edge[hidden] { display: none; }
+.cl-edge.flash { background: #fff; }

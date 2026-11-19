@@ -109,6 +109,8 @@ export interface EditorSeam {
     replace(gates: readonly Gate[], by: ChangeBy, selected?: number): void;
     /** NEVER moves the camera */
     select(index: number, by: SelectBy): void;
+    /** lane edit4b: the gate's paint flashed for pointAt (course/view.ts paint 'flash') or back to its edit paint */
+    flashGate(index: number, on: boolean): void;
     /** new identity: source 'new', saved null, changed true */
     startNew(course: TrackFile): void;
     saveNow(name: string, title: string): Promise<{ ok: true; id: string; version: number } | { ok: false; problem: SaveProblem }>;
