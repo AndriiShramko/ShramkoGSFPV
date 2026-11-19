@@ -7,7 +7,7 @@ Work copy C:/dev/gsfpv-v13-host, branch edit4c from origin/main e3201fec.
 
 - [x] C1 placing and warnings (pure + the click path): course-line.ts, add-place.ts placeFor, editor.ts insert along the
       course's line and add after a given gate, warn.ts placeWarnings, course.ts placeAt uses placeFor. Test
-      tools/bench/test/edit4c-place.test.ts. Commit: this one (see git log, "edit4c C1").
+      tools/bench/test/edit4c-place.test.ts. Commit e8a812f5.
 - [ ] C1w live warnings on the page: while a gate drags, its paint 'warn' and a tag beside it; on release with a warning
       a small bar 'Keep it here?' [Keep] [Put back], 8 s no answer = keep; texts in locales fly/course-pieces (en es pl ru).
 - [ ] C2 pieces: double and triple vertical, double and triple horizontal (one undo step each), Add menu items.
