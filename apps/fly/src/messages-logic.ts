@@ -85,6 +85,16 @@ export function withFix(m: PilotMessage, fallback: string): PilotMessage {
     return m.kind === 'problem' && !m.fix?.trim() ? { ...m, fix: fallback } : m;
 }
 
+/**
+ * A key refused where it does not work (the course editor's edit mode, KeyRouter.block): its text already says what to
+ * press, so it is no fault of the page (no "send it to the author", no line that stays until closed). The next refusal of
+ * the same feature replaces it in place and it leaves by its reading time (review of lane ux4a: three refused keys in the
+ * editor made three amber problem lines that stayed, each asking to send it to the author).
+ */
+export function refusal(text: string, from: string): PilotMessage {
+    return { text, kind: 'info', key: `${from}.refused`, from };
+}
+
 /** The text a "Send to the author" report starts with. */
 export function reportText(m: Pick<LoggedMessage, 'text' | 'fix' | 'from' | 'scene'>): string {
     return [m.text, m.fix, m.from ? `from: ${m.from}` : '', m.scene ? `scene: ${m.scene}` : ''].filter(Boolean).join('\n');

@@ -17,6 +17,7 @@
 import type { SonicObject, TrackFile } from '@shramko/sonic-fpv';
 import { t } from '../../i18n';
 import { tell } from '../../ui/messages';
+import { refusal } from '../../messages-logic';
 import { liveSearch, q as pageQuery } from '../env';
 import type { Feature, FlightContext } from '../context';
 import { withWalls } from '../../walls-first';
@@ -808,12 +809,15 @@ export const course: Feature = {
         });
         // ---------------- the editor (T3-editor-ui)
         const scale = (): number => ctx.session.transform.s;
-        const say = (text: string, refused = false): void => {
+        /** refused: true for a refusal or a failure (a problem line), 'key' for a key that does not work in the edit mode */
+        const say = (text: string, refused: boolean | 'key' = false): void => {
             edHook.said = text;
-            panel?.say(text, refused);
+            panel?.say(text, refused !== false);
             // lane editor3 H1: the window opens closed: the top bar's line says it, a refusal also on the HUD
-            top?.tell(text, refused);
-            if (refused) tell({ text, kind: 'problem', from: 'course-editor' });
+            top?.tell(text, refused !== false);
+            // review of ux4a: a refused key says what to press, it is no fault to send to the author (messages-logic.ts refusal)
+            if (refused === 'key') tell(refusal(text, 'course-editor'));
+            else if (refused) tell({ text, kind: 'problem', from: 'course-editor' });
         };
         /** train 3 H1: the gate a floor add put in, until the check's answer on it came */
         let addedId: string | null = null;
@@ -931,7 +935,7 @@ export const course: Feature = {
             // review 1: Shift+B (this editor's own key) repeats the editor's line instead (course/editor/keys.ts keyOffLine)
             unblock = ctx.keys.block(() => ed !== null && mode === 'edit', (a, e) => {
                 const l = keyOffLine(a, keyName(e));
-                say(t(l.key, l.vars), true);
+                say(t(l.key, l.vars), 'key');
             });
             panel = new EditorPanel(ctx.ui, { key: (p) => applyKey(p), saveMine: (n, ti) => void saveMine(n, ti), saveAll: () => void saveAll(), saveAdmin: (ti) => void saveAdmin(ti), vote: (id, v) => void vote(id, v), open: (id) => openRow(id) });
             panel.defaults('', run.track.title);

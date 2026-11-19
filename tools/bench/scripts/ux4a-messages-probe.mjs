@@ -261,6 +261,47 @@ async function runSize({ w, h, dsf }) {
             has && r.opened && r.hasProblem && r.hasReady && r.cross && r.cross.w >= 44 && r.cross.h >= 44 && r.shiftHCloses && r.shiftHOpens && r.crossCloses && r.escCloses, r);
     } catch (e) { step(5, 'the Messages list', false, { error: errText(e) }); }
 
+    // ---- 7 (the review's step): the pause menu's Messages item names its key; one press of Shift+H there opens the list ----
+    try {
+        const open = () => page.evaluate(() => { const p = document.querySelector('.messages-panel'); return !!p && p.getBoundingClientRect().height > 0; });
+        const r = {};
+        if (await open()) { await page.locator('.messages-panel .panel-x').first().click({ timeout: 3000 }).catch(() => 0); await page.waitForTimeout(400); }
+        await free();
+        const menuUp = () => page.locator('[data-action="pause.continue"]').isVisible().catch(() => false);
+        if (!(await menuUp())) await page.locator('.top-actions [data-action=pause]').click({ timeout: 5000 });
+        await page.waitForTimeout(400);
+        r.menu = await menuUp();
+        r.itemKey = (await page.locator('[data-action="pause.messages"]').first().textContent({ timeout: 3000 }).catch(() => '') ?? '').includes('Shift+H');
+        await page.keyboard.press('Shift+KeyH'); await page.waitForTimeout(500);
+        r.opened = await open();
+        await page.keyboard.press('Escape'); await page.waitForTimeout(400);
+        r.escCloses = !(await open());
+        step(7, 'with the pause menu up, key Shift+H (named on its Messages item) opens the list at one press; Esc closes it', r.menu && r.itemKey && r.opened && r.escCloses, r);
+    } catch (e) { step(7, 'Shift+H in the pause menu', false, { error: errText(e) }); }
+
+    // ---- 8 (the review's repair): in the course editor's edit mode (key Shift+B, the course of steps 1-3) the pilot
+    //      presses three keys that work only in flight (Shift+H, Shift+N, P): the page says once, in place, what to press
+    //      (one line, no amber problem, no "Send to the author") and the line goes by itself (it stayed for good before) ----
+    try {
+        const edit = () => page.evaluate(() => !!document.querySelector('.course-editor:not(.ce-flying)'));
+        const lines = () => page.evaluate(() => [...document.querySelectorAll('#ui > .hud-note:not([hidden]) > .msg:not([hidden])')]
+            .map((e) => ({ kind: e.dataset.kind ?? '?', text: (e.querySelector('.msg-text')?.textContent ?? '').trim(), send: !!e.querySelector('.msg-send') }))
+            .filter((l) => / in flight, /.test(l.text)));
+        const r = {};
+        if (await page.locator('[data-action="pause.continue"]').isVisible().catch(() => false)) { await page.keyboard.press('Escape'); await page.waitForTimeout(500); }
+        await page.keyboard.press('Shift+KeyB'); await page.waitForTimeout(2500);
+        r.editMode = await edit();
+        for (const k of ['Shift+KeyH', 'Shift+KeyN', 'KeyP']) { await page.keyboard.press(k); await page.waitForTimeout(400); }
+        const now = await lines();
+        r.lines = now.length;
+        r.said = now[0]?.text ?? null;
+        r.problems = now.filter((l) => l.kind === 'problem' || l.send).length;
+        await page.waitForTimeout(16000);
+        r.after16s = (await lines()).length;
+        step(8, 'edit mode: three keys of the flight give one line saying what to press, no problem, gone by itself',
+            r.editMode && r.lines === 1 && /\bP\b/.test(r.said ?? '') && r.problems === 0 && r.after16s === 0, r);
+    } catch (e) { step(8, 'refused keys in the edit mode', false, { error: errText(e) }); }
+
     // ---- 6: where every line stood, every 100 ms of the run ----
     const s = await seen(page);
     step(6, 'every message: inside the view, over no top-row button or OSD, outside the middle third', s.samples > 100 && Object.keys(s.faults).length === 0, { samples: s.samples, faults: s.faults });
@@ -271,8 +312,8 @@ async function runSize({ w, h, dsf }) {
 try {
     for (const sz of sizes) await runSize(sz);
 } catch (e) { out.error = String(e.message).slice(0, 300); }
-const all = out.sizes.flatMap((z) => [1, 2, 3, 4, 5, 6].map((n) => ({ size: z.size, n, pass: z.steps[n]?.pass === true })));
-out.pass = !out.error && all.length === sizes.length * 6 && all.every((x) => x.pass);
+const all = out.sizes.flatMap((z) => [1, 2, 3, 4, 5, 6, 7, 8].map((n) => ({ size: z.size, n, pass: z.steps[n]?.pass === true })));
+out.pass = !out.error && all.length === sizes.length * 8 && all.every((x) => x.pass);
 save();
 await browser.close();
 console.log(JSON.stringify({ base, pass: out.pass, steps: Object.fromEntries(out.sizes.map((z) => [z.size, Object.fromEntries(Object.entries(z.steps).map(([n, v]) => [n, v.pass ? 'PASS' : 'FAIL']))])), error: out.error ?? null }));

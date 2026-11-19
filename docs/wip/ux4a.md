@@ -108,8 +108,35 @@ failure lines should call tell({ kind: 'problem', from, text, fix }) instead of 
 - After the merge with vox4 and ux4b: their problem lines (walls bake failed, voxels failed, scene load cancel) should
   move to tell({ kind: 'problem', from, text, fix }) (follow-up list above).
 
+## Review
+
+Verdict: SHIP (independent check, after one repair). Full review: U:/Temp/gsfpv-train4/reviews/ux4a.md.
+
+- Re-run: claim 1 and 2 unit tests (71 passed); negative controls with neg_control.py: keymap.ts at origin/main -> NEG OK,
+  messages-logic.ts at e217ce05 -> NEG OK. Claim 3 probe on a build of this head: PASS at both sizes, plus two review steps.
+- Review step 7 (what a pilot does that the lane did not walk): with the pause menu up, key Shift+H (named on its
+  Messages item) opens the list at one press, Esc closes it: PASS at both sizes.
+- PROVEN and repaired: in the course editor's edit mode a key that works only in flight (KeyRouter.block, editfix E4)
+  was told as a problem: three keys (Shift+H, Shift+N, P) left three amber lines that never went, each with
+  "If it comes again, send it to the author" and a Send button, though each line says what to press. Now
+  messages-logic.ts refusal() (kind info, one key per feature: the next refusal replaces it, it goes by its reading
+  time) and course.ts say(text, 'key'); save and vote failures stay problems. Test: messages-logic.test.ts "a refused
+  key" (with refusal() giving kind problem it fails: 1 failed). Probe step 8: FAIL on the old build (3 lines, 3
+  problems, still there after 16 s: evidence/2026-11-19/ux4a/review-probe-neg-refusal.json), PASS on the repaired
+  build at both sizes (16 of 16 steps: evidence/2026-11-19/ux4a/review-probe-local.json).
+- DOUBT: probe step 6 at 1536x730 failed in 2 of 5 runs: the first problem line (533..1004 px) lay over the right
+  part of the top row (from 892 px) for 2-3 s with note-crowded still false; not reproduced in 3 instrumented runs.
+- The live check after the deploy: the probe now has 8 steps a size and must print pass true (16 PASS).
+- tools/bench/test/editfix-e4.test.ts pins the text of course.ts's key block: its regex now reads say(..., 'key').
+- Gates on the staged review tree (`gates.py --only typecheck,vitest,architecture,b18,leaks`): typecheck,
+  architecture, b18, leaks PASS; vitest 405 of 408 files: editfix-e4 (the pin above, then repaired) and
+  rooms-race, rooms-socket ("rooms.py did not start" under the full suite's load, as in claim 7). Alone, after the
+  pin's repair: `npx vitest run` of editfix-e4, messages-logic, rooms-race, rooms-socket - 34 passed. The full suite
+  was not run a second time.
+
 ## Cost notes
 
 - A-1: most replies went to finding the consumers of `.hud-note` and the fake-DOM tests that mount the Hud without a window; a list of the Node tests that mount ui/hud.ts in the design would save two runs.
 - A-2: most replies went to the course.ts call sites and the keymap tables (three fixed lists in keymap.test.ts plus the Shift control in app-keys.test.ts); naming those tests in the design would save two runs.
 - A-3: most replies went to the probe meeting the pointer lock (the canvas takes every click until Esc) and to Esc picking the walls menu; a design that names the pointer lock and panel-head closeTop's z rule would have saved one build and about eight replies.
+- Review: most replies went to a wrong first finding (Shift+H in the edit mode is blocked on purpose by KeyRouter.block, not by dialogOpen); naming the edit mode's key block in the design would have saved one build and four replies.

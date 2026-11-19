@@ -1,6 +1,24 @@
 // Lane ux4a (complaint U1): the rules of the one message service (apps/fly/src/messages-logic.ts), no page.
 import { describe, expect, it } from 'vitest';
-import { LOG_SIZE, MAX_SHOWN_MS, MIN_SHOWN_MS, MessageLog, messagePlace, PROGRESS_IDLE_MS, reportText, shownMs, withFix } from '../../../apps/fly/src/messages-logic';
+import { LOG_SIZE, MAX_SHOWN_MS, MIN_SHOWN_MS, MessageLog, messagePlace, PROGRESS_IDLE_MS, refusal, reportText, shownMs, withFix } from '../../../apps/fly/src/messages-logic';
+
+describe('messages: a refused key (review of ux4a)', () => {
+    it('three refused keys in the editor are one line in place, no problem, no "send to the author", gone by its reading time', () => {
+        const log = new MessageLog();
+        const texts = ['Shift+H works in flight, not in the editor: press Esc to leave the editor, then Shift+H.', 'Shift+N works in flight, not in the editor: press Esc to leave the editor, then Shift+N.', 'P works in flight, not in the editor: press Esc to leave the editor, then P.'];
+        texts.forEach((x, i) => log.add(withFix(refusal(x, 'course-editor'), 'send it to the author'), i * 500));
+        const { lines } = log.visible(1200);
+        expect(lines.map((e) => e.text)).toEqual([texts[2]]);
+        expect(lines[0].kind).not.toBe('problem');
+        expect(lines[0].fix).toBeUndefined();
+        expect(log.unreadProblems()).toBe(0);
+        // long enough to read (more than the old 5 s), then it goes by itself
+        expect(log.visible(1000 + 5000).lines.length).toBe(1);
+        expect(log.visible(1000 + shownMs(refusal(texts[2], 'course-editor')) + 1).lines).toEqual([]);
+        // the list keeps every line (one, rewritten in place)
+        expect(log.all().length).toBe(1);
+    });
+});
 
 describe('messages: a window over the flight, the list opened', () => {
     it('under a window no line is on the screen and no time runs; after it the lines come back', () => {
