@@ -47,7 +47,8 @@ const SNAP = `(() => {
     const tb = document.querySelector('.ce-topbar');
     return { open: !!e.open, selected: e.selected ?? null, said: String(e.said || '').slice(0, 200), mode: v && v.mode,
         ids: v && v.course && v.course.gates ? v.course.gates.map((g) => g.id) : null, courseGates: c.gates ?? null, courseOn: !!c.on,
-        eye: e.view ? [...e.view.eye, ...e.view.at] : null, wrong: v ? v.wrong : null, b,
+        eye: e.view ? [...e.view.eye, ...e.view.at] : null, wrong: v ? v.wrong : null, b, problems: v && v.course && v.course.problems ? v.course.problems.length : 0,
+        windows: shown('.panel, .screen, [aria-modal="true"]').length,
         nums: shown('.cl-num').map((x) => x.textContent.trim()), flash: shown('.cl-num.flash, .cl-edge.flash').map((x) => x.textContent.trim()),
         ask: shown('.life-ask').length, menu: shown('.ce-menu').length, topShown: !!tb && shown('.ce-topbar').length > 0,
         add: (document.querySelector('[data-top="add"]') || { getAttribute: () => null }).getAttribute('aria-pressed'),
@@ -198,18 +199,65 @@ try {
     await sleep(800);
     s = await snap();
     judge('9-generate-no', r.asked && JSON.stringify(s.ids) === JSON.stringify(ids9), { ...r, gates: s.ids?.length });
-    // 10 a gate on top of gate 2: the check refuses it and the sentence names a gate; that gate is pointed at
-    const e10 = (await snap()).eye;
-    let pointed = null;
-    if (gate2At) {
-        await press('[data-top="add"]', 300);
-        await clickAt(gate2At[0], gate2At[1], 300);
-        const seen = await until(snap, (x) => x.wrong && x.b?.pointed && x.flash.length > 0, 4000, 100);
-        pointed = seen.v;
+    // 10 a sentence naming a gate: that gate is pointed at. The eye first comes to rest (the view eases back after the flight).
+    // On localhost: Save, refused while a gate has a problem (a floor gate in a wall: the check's gateWall), sends nothing
+    // then; on another address Save is never pressed: a gate put on top of gate 2 instead (the check may refuse it).
+    const eyeRest = () => {
+        let prevEye = null;
+        return until(async () => { const a = (await snap()).eye; const d = dist(a, prevEye); prevEye = a; return d; }, (d) => d >= 0 && d < 0.001, 6000, 400);
+    };
+    const rest = await eyeRest();
+    const before = await snap();
+    const e10 = before.eye;
+    // a floor gate the check refuses (gate 1 of step 6 stood in a wall there); an accepted one is undone and the next spot tried
+    const spots = [...tried.map((x) => [x[0], x[1]]), [W * 0.15, H * 0.85], [W * 0.85, H * 0.85], [W * 0.3, H * 0.55], [W * 0.7, H * 0.55], [W * 0.5, H * 0.5], [W * 0.1, H * 0.6], [W * 0.9, H * 0.6]];
+    let seen = { ok: false, v: before };
+    const how = [];
+    // a course that already has a problem (gate 1 of step 6 often stands in a wall) goes straight to Save
+    for (const [x, y] of before.problems > 0 ? [] : spots) {
+        const s0 = await snap();
+        if (s0.add !== 'true') await press('[data-top="add"]', 300);
+        const wrongBefore = JSON.stringify(s0.wrong);
+        await clickAt(x, y, 0);
+        seen = await until(snap, (v) => JSON.stringify(v.wrong) !== wrongBefore && !!v.b?.pointed && v.flash.length > 0, 3000, 100);
+        const eyeAdd = dist(seen.v.eye, s0.eye);
+        if (seen.ok) {
+            await sleep(1500);
+            how.push({ at: [Math.round(x), Math.round(y)], pointed: true, eyeAdd: Math.round(eyeAdd * 1000) / 1000, eyeLater: Math.round(dist((await snap()).eye, seen.v.eye) * 1000) / 1000 });
+            break;
+        }
+        const undo = (await snap()).ids.length > s0.ids.length;
+        // Undo frames the gate it selects (review ED-1, a glide): the next add waits for the eye to come to rest
+        if (undo) { await press('[data-top="undo"]', 300); await eyeRest(); }
+        how.push({ at: [Math.round(x), Math.round(y)], pointed: false, eyeAdd: Math.round(eyeAdd * 1000) / 1000, undo, eyeUndo: Math.round(dist((await snap()).eye, seen.v.eye) * 1000) / 1000 });
     }
-    const w = pointed?.wrong;
-    judge('10-pointed', !!w && pointed.b?.pointed?.index === w.index && pointed.selected === w.index && pointed.flash.includes(String(w.index + 1)) && dist(pointed.eye, e10) < 0.01,
-        { wrong: w ?? null, pointed: pointed?.b?.pointed ?? null, selected: pointed?.selected ?? null, flash: pointed?.flash ?? null, eyeMoved: pointed ? dist(pointed.eye, e10) : null, said: pointed?.said ?? null });
+    const p = seen.v;
+    const w = p.wrong;
+    const n = w ? String(w.index + 1) : '?';
+    // a gate just added is framed by the hub itself (train 3 I1, D1: a new selection frames it), so the eye is judged on the
+    // second sentence: the eye at rest, then Save, refused while that gate stands in a wall (nothing is sent then)
+    const refused = seen.ok && p.b.pointed.index === w.index && p.selected === w.index && p.flash.some((f) => f.includes(n));
+    let save = null;
+    if ((refused || before.problems > 0) && !LIVE && (await snap()).problems > 0) {
+        if ((await boxOf('.cl-num, .cl-edge')) === null) res.log.push('no label before Save');
+        // the top bar's Save opens the window's save part at the name; Save mine there checks first (course.ts saveMine:
+        // canSave false -> refusedSave -> the sentence naming the gate) and sends nothing
+        await press('[data-top="save"]', 600);
+        const nameBox = await press('.ce-name', 200);
+        if (nameBox) await page.keyboard.type('probe', { delay: 30 });
+        await eyeRest();
+        const b = await snap();
+        await press('.ce-save-mine', 0);
+        const got = await until(snap, (v) => v.said !== b.said && v.flash.length > 0, 3000, 100);
+        await sleep(1500);
+        const later = await snap();
+        save = { said: got.v.said, flash: got.v.flash, pointed: got.v.b?.pointed ?? null, selected: got.v.selected, wrong: got.v.wrong, eyeMoved: Math.round(dist(later.eye, b.eye) * 1000) / 1000, nameAsked: later.windows };
+        const wi = save.wrong ? save.wrong.index : -2;
+        save.ok = got.ok && save.pointed?.index === wi && save.selected === wi && save.flash.some((f) => f.includes(String(wi + 1))) && save.eyeMoved < 0.01;
+    }
+    // on the live site Save is never pressed: the refused floor gate's pointing is judged there
+    judge('10-pointed', LIVE ? refused : !!save?.ok,
+        { how, eyeRest: rest.ok, wrong: w ?? null, pointed: p.b?.pointed ?? null, selected: p.selected, flash: p.flash, problems: p.problems, said: p.said, save });
 
     // 11 at 844x390: the menu and the question inside the view, crosses 44 px
     W2 = 844; H2 = 390;
