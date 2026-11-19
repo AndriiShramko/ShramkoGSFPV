@@ -28,6 +28,7 @@ import { SceneHost } from './scene-host';
 import { PauseStack } from './pause-stack';
 import { KeyRouter } from './keys';
 import { PauseMenu } from './menu';
+import { prefsLevels } from './menu-levels';
 import { InputHost, expectResume, ownInput, resumeInput, release } from './input';
 import { Quality } from './quality';
 import { drawingFor } from './drawing';
@@ -85,7 +86,7 @@ class Flight implements FlightContext {
         // the sound mode's keys (T U I Z G) are on the page only when it was entered through ?sonic= (v12-optin)
         this.keys = new KeyRouter({ state: () => (this.crash.active ? 'crash' : 'flight'), shiftIsFlying: () => this.input.keyboard.shiftFlies(), sonic: () => sonicEntry() !== null });
         this.keys.block(() => !!document.querySelector('.screen.radio'));
-        this.menu = new PauseMenu(ui, this.keys, this);
+        this.menu = new PauseMenu(ui, this.keys, this, prefsLevels(prefs));
         this.input = new InputHost(this);
     }
 

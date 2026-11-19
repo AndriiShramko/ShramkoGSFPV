@@ -2,12 +2,15 @@
 // their items; the menu lists them by `order`, shows each item's keys (the keymap, through the
 // router) and, while it is up, lets those keys run the item. Since D.2 the menu is the summary
 // panel: the summary feature (builtin/summary.ts) hands it the flight's stats and the keymap's
-// shortcuts through setSummary, and they show beside the items.
+// shortcuts through setSummary, and they show beside the items. The pilot's menu level (app/menu-levels.ts)
+// puts the items above it under a collapsed "More (n)"; they stay on the page and their keys keep working.
 import { dialogOpen } from '../devices/keyboard';
 import { pauseMenu } from '../ui/pause';
 import type { SummaryData } from '../ui/summary';
 import type { MenuItem, MenuRegistry, PauseReason } from './context';
 import { isUserGesture } from './keys';
+import { EXPERT_LEVEL, inMore } from './menu-levels';
+import type { MenuLevelSource } from './menu-levels';
 import type { KeyRouter } from './keys';
 
 export class PauseMenu implements MenuRegistry {
@@ -19,11 +22,13 @@ export class PauseMenu implements MenuRegistry {
     private hold: { pause(r: PauseReason): void; resume(r: PauseReason): void };
     private summary: (() => SummaryData | null) | null = null;
     private rows: (() => HTMLElement | null)[] = [];
+    private levels: MenuLevelSource;
 
-    constructor(ui: HTMLElement, keys: KeyRouter, hold: { pause(r: PauseReason): void; resume(r: PauseReason): void }) {
+    constructor(ui: HTMLElement, keys: KeyRouter, hold: { pause(r: PauseReason): void; resume(r: PauseReason): void }, levels: MenuLevelSource = EXPERT_LEVEL) {
         this.ui = ui;
         this.keys = keys;
         this.hold = hold;
+        this.levels = levels;
     }
 
     add(item: MenuItem): () => void {
@@ -62,16 +67,30 @@ export class PauseMenu implements MenuRegistry {
         // over another dialog (settings, a picker) the menu's Continue would fly under that dialog
         if (this.isOpen || dialogOpen()) return;
         this.hold.pause('menu');
+        this.show(null);
+    }
+
+    /** Draws the menu (the flight is held already); `focus`: the item that takes the focus, else the first one. */
+    private show(focus: string | null): void {
         const items = this.items();
-        const entries = items.map((it) => ({ id: it.id, labelKey: it.labelKey, label: it.label?.(), keys: it.action ? this.keys.caps(it.action) : [], disabled: it.enabled?.() === false, href: it.href?.() }));
+        const level = this.levels.level();
+        const entries = items.map((it) => ({ id: it.id, labelKey: it.labelKey, label: it.label?.(), keys: it.action ? this.keys.caps(it.action) : [], disabled: it.enabled?.() === false, href: it.href?.(), more: inMore(it.id, level) }));
         const rows: HTMLElement[] = [];
         for (const make of this.rows) {
             try { const el = make(); if (el) rows.push(el); } catch (e) { console.error('summary panel row', e); }
         }
-        this.closeUi = pauseMenu(this.ui, entries, (i) => this.pick(items[i], true), () => this.close(), this.summary?.() ?? null, rows);
+        const more = entries.find((e) => e.more)?.id ?? null;
+        this.closeUi = pauseMenu(this.ui, entries, (i) => this.pick(items[i], true), () => this.close(), this.summary?.() ?? null, rows, { showAll: () => this.showAll(more), focus });
         // with the menu up, a key shown beside an item is that item (P / Esc continue, R restarts); so is
         // a radio switch's action (KeyRouter.trigger), which is no user activation
         for (const it of items) if (it.action && this.keys.routes(it.action)) this.unbind.push(this.keys.on(it.action, (_e, source) => this.pick(it, isUserGesture(source))));
+    }
+
+    /** "Always show everything": the level becomes expert, and the menu is drawn again with every item in its list. */
+    private showAll(focus: string | null): void {
+        this.levels.showAll();
+        this.dismiss();
+        this.show(focus);
     }
 
     close(): void {

@@ -44,6 +44,10 @@
 .sr-badge[data-apply="life"] { border-color: rgba(251,191,36,.45); color: var(--warn); }
 .sr-badge[data-apply="reload"] { border-color: rgba(248,113,113,.45); color: var(--bad); }
 .sr-link { color: var(--warn); }
+/* a row above the pilot's menu level: found by a search, or kept in sight because its value was changed */
+.sr-level { color: var(--accent); }
+.set-show-all { align-self: flex-start; min-height: 44px; }
+.set-show-all[hidden], .set-rail-btn[hidden] { display: none; }
 .sr-control { grid-area: control; min-width: 0; }
 .sr-side { grid-area: side; display: flex; align-items: center; gap: 6px; min-width: 24px; justify-content: flex-end; }
 .sr-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); flex: none; }

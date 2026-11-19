@@ -3,7 +3,8 @@
 // its unit read, and what an import preview says. Generated from the prefs schema: a setting
 // another agent ships appears here by its status alone, with no code of its own (W2-1's rule).
 // Node tests: tools/bench/test/app-settings.test.ts.
-import type { GroupId, ImportReport, Schema, SettingDef, Unit } from '@gsfpv/prefs';
+import { levelShows } from '@gsfpv/prefs';
+import type { GroupId, ImportReport, MenuLevel, Schema, SettingDef, Unit } from '@gsfpv/prefs';
 
 /** The rail's entries: the schema's groups that have a shipped setting, then Data. */
 export type RailId = GroupId | 'data';
@@ -43,6 +44,22 @@ export function matches(def: SettingDef, query: string, tx: DefTexts): boolean {
     if (!words.length) return true;
     const text = searchText(def, tx);
     return words.every((w) => text.includes(w));
+}
+
+/** How a row shows at the pilot's menu level: `inFull` found by a search above the level, `changed` kept in sight above it. */
+export type RowMark = 'inFull' | 'changed' | null;
+export interface RowShow { shown: boolean; mark: RowMark }
+
+/**
+ * Whether a row shows (docs/wip/menu-plan.md 2.3, nothing is lost): a search finds every row (one above the level
+ * says "In the full menu"); otherwise the rows of the level, every row after "Show all settings", and a row above
+ * the level whose value the pilot changed (marked "Changed": nobody flies with an invisible change).
+ */
+export function rowShow(def: SettingDef, level: MenuLevel, s: { all: boolean; searching: boolean; hit: boolean; explicit: boolean }): RowShow {
+    const inLevel = levelShows(level, def.level ?? 'expert');
+    if (s.searching) return { shown: s.hit, mark: s.hit && !inLevel && !s.all ? 'inFull' : null };
+    if (inLevel || s.all) return { shown: true, mark: null };
+    return s.explicit ? { shown: true, mark: 'changed' } : { shown: false, mark: null };
 }
 
 export type FocusTarget =

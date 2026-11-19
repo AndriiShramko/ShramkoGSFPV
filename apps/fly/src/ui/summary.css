@@ -12,6 +12,12 @@
 .panel.summary.has-stats .sum-grid { grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) minmax(0, 1fr); align-items: start; }
 .summary .sum-menu .btn.block { min-height: 40px; margin: 4px 0; padding: 7px 12px; }
 .summary .sum-menu .btn.block:first-child { margin-top: 0; }
+/* "More (n)": the items above the pilot's menu level, one press away (app/menu-levels.ts) */
+.summary .sum-menu .pm-more > summary { list-style: none; cursor: pointer; margin-top: 4px; }
+.summary .sum-menu .pm-more > summary::-webkit-details-marker { display: none; }
+.summary .sum-menu .pm-more > summary .pm-label::after { content: " \25B8"; }
+.summary .sum-menu .pm-more[open] > summary .pm-label::after { content: " \25BE"; }
+.summary .sum-menu .pm-more[open] { padding-left: 10px; border-left: 2px solid var(--line); }
 .sum-col { min-width: 0; }
 .sum-col h3 { margin: 0 0 6px; font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
 .sum-col h3.sum-sub { margin-top: 14px; }
