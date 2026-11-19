@@ -165,3 +165,30 @@ into the address. Live checks after the deploy: edit4s-probe.mjs against the liv
 - S3: the most replies went to finding the probe's selectors and hooks in course.ts and panel.ts, and to a unit test that
   makes the old nudge fail (box rooms never did; a low gate pushed along its axis does); a second build was needed after
   the probe found the nudge fault. A probe skeleton with the editor's selectors and a local-API helper would save ~6 replies.
+- Review: the most replies went to reading course.ts's diff and the keeper's restore rule to find the Generate fault; a
+  design that states what a confirmed loss means for the restore rule would have caught it before the build.
+
+## Review
+
+Verdict: SHIP (independent check, 2026-11-19, commit of this part).
+- R1 PROVEN and repaired (commit 4da1c5f8): parts/keep.ts beforeLoss + drafts.ts draftToRestore. A generated course
+  counts as a throwaway, so after key G twice in the editor (the pilot confirmed dropping the changes) the editor reopened
+  on the new course and at once put the dropped course back over it ('Your unsaved course ... is back'); the same draft
+  came back on every later open, so key G seemed to do nothing. Now a course left by Generate or another course is kept
+  marked dropped (Versions still lists it) and neither it nor an older draft comes back by itself; the next course's own
+  drafts come back as before. Test 'a course dropped by Generate or another course does not come back over the next one'
+  (edit4s-drafts.test.ts), NEG OK against HEAD before the repair.
+- The probe got step s9 (key G twice after a move: the editor shows the new course, nothing restored). Run on the release
+  build of this head with the local API: 10 of 10 PASS (evidence/2026-11-19/edit4s/probe-review.json). s9 was not run on
+  the lane's code on the page (one build a run); the unit NEG proves the fault there.
+- Re-run: claims 1, 3, 4/5 (edit4s-drafts, -save, -fixes: 30 passed); NEG store.ts vs origin/main OK; NEG fixes.ts
+  'from any side' vs 719916e1~ OK.
+- DOUBT (not repaired): Versions shows an entry written at a failed save that was later saved as 'not saved: kept here
+  . saved' (seen in s4 of the run); the two words read as a contradiction.
+- DOUBT: a draft restored after a reload saves as a new course (version 1 again in s6), as Not verified already says.
+- Gates after the repair: `gates.py --only typecheck,vitest,b18` -> typecheck PASS, b18 PASS, vitest 5334 passed and 3
+  files failed at start: rooms-open-vote, rooms-race, rooms-socket ('rooms.py did not start' within their 10 s; started
+  by hand it binds after about 5 s on this machine with the other lanes running; the same 3 fail alone). The lane changes
+  no rooms file; the merged train and CI run them again.
+- Not checked: 844x390, the touch branch, the flight keys and pause (course.ts's flight paths are not in the diff),
+  accept-fly, the live site (nothing stored there).

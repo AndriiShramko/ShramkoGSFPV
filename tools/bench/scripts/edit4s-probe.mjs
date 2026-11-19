@@ -119,7 +119,7 @@ try {
     page.on('response', (r) => { const q = r.request(); if (q.method() === 'POST' && new URL(r.url()).pathname.startsWith('/api/tracks')) res.posts.push({ path: new URL(r.url()).pathname, status: r.status(), at: Date.now() }); });
     const cdp = await ctx.newCDPSession(page);
     const snap = () => page.evaluate(SNAP);
-    const KEYS = { BracketRight: [']', 221], ArrowRight: ['ArrowRight', 39], KeyB: ['b', 66], Space: [' ', 32] };
+    const KEYS = { BracketRight: [']', 221], ArrowRight: ['ArrowRight', 39], KeyB: ['b', 66], KeyG: ['g', 71], Space: [' ', 32] };
     async function key(code, { shift = false, hold = 60 } = {}) {
         const [k0, vk] = KEYS[code];
         const k = shift && k0.length === 1 ? k0.toUpperCase() : k0;
@@ -296,6 +296,21 @@ try {
     const stored = res.posts.filter((p) => p.at >= tYes);
     judge('s6.correctAndSave', !!yes && most === n6 && n6 > 0 && s.selected === 2 && /\b3\b/.test(s.s4?.fix?.done ?? '') && stored.some((p) => p.status === 201) && s.s4?.save?.status == null,
         { yes: !!yes, gatesOnScreenMost: most, gates: n6, selected: s.selected, done: s.s4?.fix?.done ?? null, line: s.topLine || s.said, stored, problem: s.s4?.save ?? null });
+
+    // s9 (review edit4s R1): a gate moved, then key G twice (a new course, the changes dropped on purpose): the editor
+    // opens on the NEW course; the dropped one does not come back over it (it stays in Versions)
+    await key('ArrowRight');
+    await sleep(2600);
+    const dropped = (await snap()).egates;
+    const tG = Date.now();
+    await key('KeyG');
+    await sleep(500);
+    await key('KeyG');
+    const g9 = await until(snap, (x) => (x.open && Array.isArray(x.egates) && JSON.stringify(x.egates) !== JSON.stringify(dropped)) || (x.s4?.restored ?? 0) >= tG - 60_000 && (x.s4?.restored ?? 0) > 0 && x.open, 300000, 1000);
+    await sleep(2000);
+    s = await snap();
+    judge('s9.generateDropsForReal', s.open && JSON.stringify(s.egates) !== JSON.stringify(dropped) && s.s4?.restored == null && !/is back/.test(`${s.topLine} ${s.said}`),
+        { ms: g9.ms, open: s.open, newCourse: JSON.stringify(s.egates) !== JSON.stringify(dropped), restored: s.s4?.restored ?? null, line: `${s.topLine} | ${s.said}`.slice(0, 220), drafts: s.s4?.drafts ?? null });
 } catch (e) {
     res.error = String(e).slice(0, 400);
     fails.push('error');
