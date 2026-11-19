@@ -72,6 +72,11 @@ export class DraftKeeper {
         if (this.dirty) this.flush(this.pendingBy ?? by);
     }
 
+    /** a save failed: the course as it stands is kept now, changed or not (the failure's words say that it is kept) */
+    saveFailed(): void {
+        this.flush(this.pendingBy ?? 'save-failed');
+    }
+
     /** the page hides or the editor closes: a waiting draft is written now */
     leave(): void {
         if (this.pendingBy !== null) this.flush();

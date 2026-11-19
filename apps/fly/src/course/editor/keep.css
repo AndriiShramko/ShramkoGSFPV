@@ -5,3 +5,9 @@
 .ce-version-list { list-style: none; margin: 0; padding: 0; max-height: 220px; overflow-y: auto; }
 .ce-version { border-top: 1px solid #2a3442; }
 .ce-version-back { display: block; width: 100%; min-height: 44px; text-align: left; font-size: 15px; }
+/* lane edit4s (E9): a save field the server would refuse is outlined, its rule stands under it; Save again after a failure */
+.ce-save input.ce-field-bad { outline: 2px solid #ff6b6b; outline-offset: 1px; }
+.ce-field-rule { margin: 2px 0 4px; color: #ffb3b3; font-size: 15px; line-height: 1.3; }
+.ce-save-again { min-height: 44px; font-size: 15px; }
+.ce-field-rule { grid-column: 1 / -1; }
+.ce-field-rule[hidden], .ce-save-again[hidden] { display: none; }

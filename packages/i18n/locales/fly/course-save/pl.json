@@ -11,6 +11,7 @@
   "course.keep.by.restore": "przed powrotem do wersji",
   "course.keep.by.leave": "przed opuszczeniem tej trasy",
   "course.keep.by.edit": "edycja",
+  "course.keep.by.notSaved": "niezapisana: zachowana tutaj",
   "course.keep.restored": "Twoja niezapisana trasa z {time} wróciła (Wersje: {n} zachowanych). Klawisz Ctrl+Z ją cofa.",
   "course.keep.blocked": "Szkice nie są zachowywane: pamięć strony w przeglądarce jest pełna lub zablokowana. Zapisz trasę, aby ją zachować.",
   "course.keep.versions": "Wersje",
@@ -20,5 +21,14 @@
   "course.keep.versionSaved": "zapisana",
   "course.keep.back": "Wróć do tej wersji",
   "course.keep.backDone": "Powrót do wersji z {time} ({n} bramek). Klawisz Ctrl+Z to cofa.",
-  "course.keep.close": "Zamknij wersje"
+  "course.keep.close": "Zamknij wersje",
+  "course.save.problem.rate": "Za dużo nowych tras z tego komputera w tej godzinie. Twoja trasa jest zachowana jako szkic. Zapisz ponownie po {time}.",
+  "course.save.problem.network": "Brak połączenia ze stroną. Twoja trasa jest zachowana jako szkic. Sprawdź internet i naciśnij Zapisz ponownie.",
+  "course.save.problem.name": "Imię musi mieć 2-32 litery lub cyfry; dozwolone są spacje i - _ . '. Popraw je i naciśnij Zapisz.",
+  "course.save.problem.title": "Tytuł musi mieć 3-60 liter lub cyfr; dozwolone są spacje i - _ . ' , ! ? # ( ) + : &. Popraw go i naciśnij Zapisz.",
+  "course.save.problem.leg": "Bramki {a} i {b} dzieli ponad 60 m. Dodaj bramkę między nimi albo je przybliż i naciśnij Zapisz.",
+  "course.save.problem.storage": "Strona nie mogła jej teraz zapisać. Twoja trasa jest zachowana jako szkic. Zapisz ponownie za minutę; jeśli to się powtórzy, przycisk Opinia wyśle nam szczegóły.",
+  "course.save.problem.other": "Strona nie przyjęła trasy ({msg}). Twoja trasa jest zachowana jako szkic. Naciśnij Zapisz ponownie; jeśli to się powtórzy, przycisk Opinia wyśle nam szczegóły.",
+  "course.save.again": "Zapisz ponownie",
+  "course.save.againAt": "Zapisz ponownie po {time}"
 }

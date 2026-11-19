@@ -26,12 +26,61 @@ export interface CourseRow {
 export interface CourseMark { kind: string; name: string | null }
 
 export type Voted = { ok: true; up: number; down: number; v: number } | { ok: false; problem: string };
+
+/**
+ * Lane edit4s (E9): why a save failed, kept whole so that the page can say what happened and what to do
+ * (course/editor/save-words.ts). `status` is the HTTP status (null: no answer, or refused on the page before the post).
+ */
+export type SaveProblemCode =
+    | 'rate'          // 429: too many creates from this computer this hour (retryAfterS from the server's Retry-After)
+    | 'network'       // no answer
+    | 'invalid-name'  // the name the pilot typed breaks the rule (server.ts textIssues)
+    | 'invalid-title' // the title breaks the rule
+    | 'leg-long'      // a leg is longer than MAX_LEG_M (gate: the leg's first gate, from 1)
+    | 'invalid'       // another rule of the file
+    | 'storage'       // 5xx or 507: the site could not store it now
+    | 'refused';      // another 4xx (detail: the server's error code)
+export interface SaveProblem {
+    status: number | null;
+    code: SaveProblemCode;
+    /** the first issues or the server's error code, for the hook and the Feedback report (not shown as the sentence) */
+    detail: string;
+    retryAfterS: number | null;
+    /** leg-long: the leg's first gate, from 1 */
+    gate: number | null;
+}
+
+/** the problem of contract issues (validateServerTrack on the page, or the issues of the server's 400 'invalid') */
+export function invalidProblem(issues: readonly string[], status: number | null): SaveProblem {
+    const detail = `invalid: ${issues.slice(0, 2).join('; ')}`.slice(0, 200);
+    const base = { status, detail, retryAfterS: null, gate: null };
+    if (issues.some((i) => i.startsWith('author.name'))) return { ...base, code: 'invalid-name' };
+    if (issues.some((i) => i.startsWith('title'))) return { ...base, code: 'invalid-title' };
+    const leg = issues.map((i) => /^gates\[(\d+)\]: the leg to the next gate/.exec(i)).find((m) => m !== null);
+    if (leg) return { ...base, code: 'leg-long', gate: Number(leg[1]) + 1 };
+    return { ...base, code: 'invalid' };
+}
+
+/** the problem of a refused POST: its status, its body's error code and issues, its Retry-After */
+export function answerProblem(status: number, body: { error?: unknown; issues?: unknown }, retryAfter: string | null): SaveProblem {
+    const error = typeof body.error === 'string' ? body.error : '';
+    if (status === 400 && error === 'invalid' && Array.isArray(body.issues)) return invalidProblem(body.issues.filter((x): x is string => typeof x === 'string'), status);
+    const detail = `http ${status}${error ? ` ${error}` : ''}`;
+    if (status === 429) {
+        const s = retryAfter !== null && /^\d{1,6}$/.test(retryAfter.trim()) ? Number(retryAfter.trim()) : null;
+        return { status, code: 'rate', detail, retryAfterS: s, gate: null };
+    }
+    return { status, code: status >= 500 ? 'storage' : 'refused', detail, retryAfterS: null, gate: null };
+}
+
+export const NETWORK_PROBLEM = (e: unknown): SaveProblem => ({ status: null, code: 'network', detail: e instanceof Error ? e.message.slice(0, 200) : 'network', retryAfterS: null, gate: null });
+
 /** a saved pilot's course: the edit token comes only with a new course or fork (kept in this tab, for its next versions) */
-export type SavedMine = { ok: true; id: string; version: number; token: string | null } | { ok: false; problem: string };
+export type SavedMine = { ok: true; id: string; version: number; token: string | null } | { ok: false; problem: SaveProblem };
 
 export type Fetch = (input: string, init?: RequestInit) => Promise<Response>;
 
-export type Saved = { ok: true; id: string; version: number } | { ok: false; problem: string };
+export type Saved = { ok: true; id: string; version: number } | { ok: false; problem: SaveProblem };
 export type Loaded = { ok: true; track: TrackFile } | { ok: false; problem: string };
 
 export class CourseStore {
@@ -73,19 +122,19 @@ export class CourseStore {
      */
     async saveMine(track: TrackFile, token: string | null = null): Promise<SavedMine> {
         const v = validateServerTrack(JSON.parse(JSON.stringify(track)));
-        if (!v.ok) return { ok: false, problem: `invalid: ${v.issues.slice(0, 2).join('; ')}`.slice(0, 200) };
+        if (!v.ok) return { ok: false, problem: invalidProblem(v.issues, null) };
         const url = token ? `${this.base}/${encodeURIComponent(track.id)}/versions` : this.base;
         const headers: Record<string, string> = { 'Content-Type': 'application/json' };
         if (token) headers['X-Track-Token'] = token;
         try {
             const r = await this.fetchFn(url, { method: 'POST', headers, body: JSON.stringify(track) });
-            const j = (await r.json().catch(() => ({}))) as { id?: unknown; version?: unknown; editToken?: unknown; error?: unknown };
+            const j = (await r.json().catch(() => ({}))) as { id?: unknown; version?: unknown; editToken?: unknown; error?: unknown; issues?: unknown };
             if (r.status === 201 && typeof j.id === 'string' && SERVER_TRACK_ID.test(j.id) && typeof j.version === 'number') {
                 return { ok: true, id: j.id, version: j.version, token: typeof j.editToken === 'string' ? j.editToken : token };
             }
-            return { ok: false, problem: `http ${r.status}${typeof j.error === 'string' ? ` ${j.error}` : ''}` };
+            return { ok: false, problem: answerProblem(r.status, j, r.headers.get('Retry-After')) };
         } catch (e) {
-            return { ok: false, problem: e instanceof Error ? e.message.slice(0, 200) : 'network' };
+            return { ok: false, problem: NETWORK_PROBLEM(e) };
         }
     }
 
@@ -106,14 +155,14 @@ export class CourseStore {
 
     async save(track: TrackFile): Promise<Saved> {
         const v = validateServerTrack(JSON.parse(JSON.stringify(track)));
-        if (!v.ok) return { ok: false, problem: `invalid: ${v.issues.slice(0, 2).join('; ')}`.slice(0, 200) };
+        if (!v.ok) return { ok: false, problem: invalidProblem(v.issues, null) };
         try {
             const r = await this.fetchFn(this.base, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(track) });
-            const j = (await r.json().catch(() => ({}))) as { id?: unknown; version?: unknown; error?: unknown };
+            const j = (await r.json().catch(() => ({}))) as { id?: unknown; version?: unknown; error?: unknown; issues?: unknown };
             if (r.status === 201 && typeof j.id === 'string' && SERVER_TRACK_ID.test(j.id)) return { ok: true, id: j.id, version: 1 };
-            return { ok: false, problem: `http ${r.status}${typeof j.error === 'string' ? ` ${j.error}` : ''}` };
+            return { ok: false, problem: answerProblem(r.status, j, r.headers.get('Retry-After')) };
         } catch (e) {
-            return { ok: false, problem: e instanceof Error ? e.message.slice(0, 200) : 'network' };
+            return { ok: false, problem: NETWORK_PROBLEM(e) };
         }
     }
 }

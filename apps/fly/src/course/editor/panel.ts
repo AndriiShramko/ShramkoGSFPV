@@ -13,6 +13,7 @@ import './editor.css';
 import './keep.css';
 import { clockOf, type DraftEntry } from './drafts';
 import { draftByKey } from './keep-texts';
+import { fieldProblem, type SaveAgain } from './save-words';
 
 export interface PanelHost {
     key(press: KeyPress): void;
@@ -49,6 +50,9 @@ export class EditorPanel {
     private readonly listTitle: HTMLElement;
     private readonly versionsBox: HTMLElement;
     private readonly versionRows: HTMLElement;
+    private readonly rule: HTMLElement;
+    private readonly again: HTMLButtonElement;
+    private againTimer: ReturnType<typeof setTimeout> | null = null;
 
     constructor(ui: HTMLElement, private readonly host: PanelHost) {
         const root = el('section', 'course-editor interactive');
@@ -115,7 +119,17 @@ export class EditorPanel {
         this.admin.type = 'button';
         this.admin.hidden = true;
         this.admin.addEventListener('click', () => host.saveAdmin(this.title.value));
-        save.append(this.name, this.title, this.mine, this.all, this.admin);
+        // lane edit4s (E9): the fields are checked while typing against the server's rule, so the press cannot fail on them
+        this.rule = el('p', 'ce-field-rule');
+        this.rule.hidden = true;
+        this.name.addEventListener('input', () => this.fieldsOk());
+        this.title.addEventListener('input', () => this.fieldsOk());
+        // a failed save: Save again, enabled from the time the words name (save-words.ts)
+        this.again = el('button', 'ce-save-again', t('course.save.again'));
+        this.again.type = 'button';
+        this.again.hidden = true;
+        this.again.addEventListener('click', () => host.saveMine(this.name.value, this.title.value));
+        save.append(this.name, this.title, this.rule, this.mine, this.again, this.all, this.admin);
         root.append(save);
 
         // lane edit4s (E6): the drafts this browser kept, each with a way back (parts/keep.ts)
@@ -143,6 +157,46 @@ export class EditorPanel {
     say(text: string, refused = false): void {
         this.live.textContent = text;
         this.live.classList.toggle('bad', refused);
+    }
+
+    /** lane edit4s (E9): the name and the title against the server's rule; a wrong one is outlined and its rule shown */
+    fieldsOk(): boolean {
+        let first: string | null = null;
+        for (const [input, field] of [[this.name, 'name'], [this.title, 'title']] as const) {
+            const key = fieldProblem(field, input.value);
+            input.classList.toggle('ce-field-bad', key !== null);
+            input.setAttribute('aria-invalid', String(key !== null));
+            first ??= key;
+        }
+        this.rule.hidden = first === null;
+        this.rule.textContent = first === null ? '' : t(first);
+        return first === null;
+    }
+
+    /** the field a failed save named: outlined and focused */
+    markField(field: 'name' | 'title'): void {
+        this.fieldsOk();
+        const input = field === 'name' ? this.name : this.title;
+        input.classList.add('ce-field-bad');
+        this.root.classList.add('ce-open');
+        input.focus();
+    }
+
+    /** a failed save's Save again (save-words.ts SaveAgain): shown, enabled from `at`; null hides it */
+    offerAgain(again: SaveAgain | null): void {
+        if (this.againTimer !== null) clearTimeout(this.againTimer);
+        this.againTimer = null;
+        this.again.hidden = again === null;
+        if (!again) return;
+        const wait = again.at === null ? 0 : again.at - Date.now();
+        this.again.disabled = wait > 0;
+        this.again.textContent = wait > 0 ? t('course.save.againAt', { time: clockOf(again.at!) }) : t('course.save.again');
+        if (wait > 0) {
+            this.againTimer = setTimeout(() => {
+                this.again.disabled = false;
+                this.again.textContent = t('course.save.again');
+            }, wait);
+        }
     }
 
     defaults(name: string, title: string): void {

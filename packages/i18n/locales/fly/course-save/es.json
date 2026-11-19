@@ -11,6 +11,7 @@
   "course.keep.by.restore": "antes de volver a una versión",
   "course.keep.by.leave": "antes de dejar este circuito",
   "course.keep.by.edit": "editado",
+  "course.keep.by.notSaved": "no guardado: se conserva aquí",
   "course.keep.restored": "Tu circuito sin guardar de las {time} ha vuelto (Versiones: {n} guardadas). La tecla Ctrl+Z lo quita.",
   "course.keep.blocked": "Los borradores no se guardan: el almacenamiento del sitio en el navegador está lleno o bloqueado. Guarda el circuito para conservarlo.",
   "course.keep.versions": "Versiones",
@@ -20,5 +21,14 @@
   "course.keep.versionSaved": "guardado",
   "course.keep.back": "Volver a esta versión",
   "course.keep.backDone": "De vuelta a la versión de las {time} ({n} puertas). La tecla Ctrl+Z lo deshace.",
-  "course.keep.close": "Cerrar versiones"
+  "course.keep.close": "Cerrar versiones",
+  "course.save.problem.rate": "Demasiados circuitos nuevos desde este ordenador en esta hora. Tu circuito se guarda como borrador. Guarda de nuevo después de las {time}.",
+  "course.save.problem.network": "Sin conexión con el sitio. Tu circuito se guarda como borrador. Revisa internet y pulsa Guardar de nuevo.",
+  "course.save.problem.name": "El nombre necesita 2-32 letras o cifras; se permiten espacios y - _ . '. Corrígelo y pulsa Guardar.",
+  "course.save.problem.title": "El título necesita 3-60 letras o cifras; se permiten espacios y - _ . ' , ! ? # ( ) + : &. Corrígelo y pulsa Guardar.",
+  "course.save.problem.leg": "Las puertas {a} y {b} están a más de 60 m. Añade una puerta entre ellas o acércalas y pulsa Guardar.",
+  "course.save.problem.storage": "El sitio no pudo guardarlo ahora. Tu circuito se guarda como borrador. Guarda de nuevo en un minuto; si se repite, el botón Opinión nos envía los detalles.",
+  "course.save.problem.other": "El sitio no aceptó el circuito ({msg}). Tu circuito se guarda como borrador. Pulsa Guardar de nuevo; si se repite, el botón Opinión nos envía los detalles.",
+  "course.save.again": "Guardar de nuevo",
+  "course.save.againAt": "Guardar de nuevo después de las {time}"
 }

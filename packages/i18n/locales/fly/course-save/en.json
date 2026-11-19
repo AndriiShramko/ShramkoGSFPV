@@ -11,6 +11,7 @@
   "course.keep.by.restore": "before going back to a version",
   "course.keep.by.leave": "before leaving this course",
   "course.keep.by.edit": "edited",
+  "course.keep.by.notSaved": "not saved: kept here",
   "course.keep.restored": "Your unsaved course from {time} is back (Versions: {n} kept). Key Ctrl+Z takes it away.",
   "course.keep.blocked": "Drafts are not kept: the browser's site storage is full or blocked. Save the course to keep it.",
   "course.keep.versions": "Versions",
@@ -20,5 +21,14 @@
   "course.keep.versionSaved": "saved",
   "course.keep.back": "Go back to this version",
   "course.keep.backDone": "Back to the version of {time} ({n} gates). Key Ctrl+Z undoes it.",
-  "course.keep.close": "Close versions"
+  "course.keep.close": "Close versions",
+  "course.save.problem.rate": "Too many new courses from this computer this hour. Your course is kept as a draft. Save again after {time}.",
+  "course.save.problem.network": "No connection to the site. Your course is kept as a draft. Check the internet and press Save again.",
+  "course.save.problem.name": "The name needs 2-32 letters or digits; spaces and - _ . ' are allowed. Fix it, then press Save.",
+  "course.save.problem.title": "The title needs 3-60 letters or digits; spaces and - _ . ' , ! ? # ( ) + : & are allowed. Fix it, then press Save.",
+  "course.save.problem.leg": "Gates {a} and {b} are more than 60 m apart. Add a gate between them or move them closer, then press Save.",
+  "course.save.problem.storage": "The site could not store it now. Your course is kept as a draft. Save again in a minute; if it repeats, the Feedback button sends us the details.",
+  "course.save.problem.other": "The site did not take the course ({msg}). Your course is kept as a draft. Press Save again; if it repeats, the Feedback button sends us the details.",
+  "course.save.again": "Save again",
+  "course.save.againAt": "Save again after {time}"
 }

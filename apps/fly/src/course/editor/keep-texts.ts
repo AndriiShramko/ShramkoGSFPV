@@ -25,6 +25,7 @@ export const DRAFT_BY_KEYS: Readonly<Record<string, string>> = {
     new: 'course.keep.by.leave',
     'open-other': 'course.keep.by.leave',
     leave: 'course.keep.by.leave',
+    'save-failed': 'course.keep.by.notSaved',
 };
 
 export const DRAFT_BY_OTHER = 'course.keep.by.edit';

@@ -52,6 +52,8 @@ import { camFrom } from '../../course/editor/fly-cam';
 import { gateFlownPose, placeGate, placeInState, type FlownPose } from '../../course/editor/drag';
 import type { CourseCheck, EditorState } from '@gsfpv/tracks';
 import { myTokens, myVotes, rememberToken, rememberVote, voterId } from '../../course/store';
+import { NETWORK_PROBLEM, answerProblem, type SaveProblem } from '../../course/store';
+import { saveProblemWords, type SaveAgain } from '../../course/editor/save-words';
 import { EditorPanel } from '../../course/editor/panel';
 import { DraftKeeper } from '../../course/editor/parts/keep';
 import { restoredState } from '../../course/editor/drafts';
@@ -193,6 +195,10 @@ export const course: Feature = {
         /** lane edit4s (E6): the drafts of the edited course in this browser (course/editor/parts/keep.ts) */
         let keeper: DraftKeeper | null = null;
         let keepHook: Record<string, unknown> = {};
+        /** lane edit4s (E9): the last failed save, its words and its Save again, for the probes */
+        let saveHook: { problem: SaveProblem | null; key: string | null; again: SaveAgain | null } = { problem: null, key: null, again: null };
+        /** the problem of the last 'Save for everyone' (save()), for saveAll's words */
+        let lastSaveProblem: SaveProblem | null = null;
         /** one accepted change of the gates: unsaved, and a draft follows (lane edit4s) */
         const markChanged = (by: string): void => {
             edChanged = true;
@@ -672,7 +678,13 @@ export const course: Feature = {
             const tr = run.track;
             const r = await store.save(tr);
             saving = false;
-            if (!r.ok) return fail(`save: ${r.problem}`, t('course.save.failed'));
+            if (!r.ok) {
+                // lane edit4s (E9): the words say what happened and what to do (save-words.ts), not 'try again'
+                lastSaveProblem = r.problem;
+                const w = saveProblemWords(r.problem, Date.now(), tr.gates.length);
+                return fail(`save: ${r.problem.detail}`, t(w.key, w.args));
+            }
+            lastSaveProblem = null;
             if (run?.track === tr) hook.saved = r.id;
             hook.problem = null;
             ctx.hud.flash(t('course.save.done'), 4000);
@@ -969,7 +981,7 @@ export const course: Feature = {
             bar = new GateBar(ctx.ui, { key: (p) => applyKey(p), where: () => view?.standScreen() ?? null, tool: () => view?.tool ?? 'move', setTool: (tl) => view?.setTool(tl), dragging: () => view?.isDragging() ?? false });
             top = new TopBar(ctx.ui, { key: (p) => applyKey(p), add: () => toggleAdd(), show: (part) => panel?.reveal(part) });
             // read only, for the page probes (tools/bench/src/editor3-smoke.ts)
-            (window as unknown as { __gsfpvEditView?: () => unknown }).__gsfpvEditView = () => (view ? { ...view.debug(), mode, bar: bar?.debug() ?? null, place: lastPlace, wrong: lastWrong, course: ed ? { gates: ed.course.gates, start: (ed.course as { start?: unknown }).start ?? null, problems: ed.problems } : null, camTaken, crashCleared, crashActive: ctx.crash.active, drone: [S.px, S.py, S.pz].map((i) => Math.round((ctx.session.runner.sim.s[i] ?? 0) * 100) / 100), override: ctx.session.cameraOverride, edit4: { s: keepHook } } : null);
+            (window as unknown as { __gsfpvEditView?: () => unknown }).__gsfpvEditView = () => (view ? { ...view.debug(), mode, bar: bar?.debug() ?? null, place: lastPlace, wrong: lastWrong, course: ed ? { gates: ed.course.gates, start: (ed.course as { start?: unknown }).start ?? null, problems: ed.problems } : null, camTaken, crashCleared, crashActive: ctx.crash.active, drone: [S.px, S.py, S.pz].map((i) => Math.round((ctx.session.runner.sim.s[i] ?? 0) * 100) / 100), override: ctx.session.cameraOverride, edit4: { s: { ...keepHook, save: saveHook } } } : null);
             // lane editor3 H1, read only: the shown handles' shape under a page point (the probe finds the ring it presses)
             (window as unknown as { __gsfpvEditHit?: (x: number, y: number, own?: boolean) => unknown }).__gsfpvEditHit = (x, y, own) => view?.hitAt(x, y, own === true) ?? null;
             // I1, read only: the eye's distance, the gate's height, the rings' minor axes and the handle parts' rectangles
@@ -1282,13 +1294,32 @@ export const course: Feature = {
                 showEd();
             }
         };
+        /**
+         * Lane edit4s (E9): a failed save says what happened, that the course is kept (a draft is written now, changed or
+         * not) and what to do: the field is outlined, the gate is pointed at, Save again waits for the time it names.
+         */
+        const saveFailed = (p: SaveProblem, what: 'save' | 'admin save'): void => {
+            hook.problem = `${what}: ${p.detail}`;
+            keeper?.saveFailed();
+            const w = saveProblemWords(p, Date.now(), ed?.course.gates.length ?? 0);
+            saveHook = { problem: p, key: w.key, again: w.again };
+            if (w.field) panel?.markField(w.field);
+            if (w.gate !== null && ed && w.gate <= ed.course.gates.length) {
+                ed = { ...ed, selected: w.gate - 1 };
+                showEd();
+                aim();
+            }
+            panel?.offerAgain(w.again);
+            say(t(w.key, w.args), true);
+        };
         const saveMine = async (nameIn: string, titleIn: string): Promise<void> => {
             if (!ed || !edSource || saving) return;
             await checked();
             if (!ed || !edSource) return;
             if (!canSave(ed)) return refusedSave();
             const name = nameIn.trim().normalize('NFC');
-            const title = titleIn.trim().normalize('NFC');
+            // lane edit4s (E9): an emptied title keeps the course's own (as the admin's save does), it is no refusal
+            const title = titleIn.trim().normalize('NFC') || edSource.title;
             const edited = toTrackV1(ed.course);
             const serverId = hook.saved ?? (hook.source === 'server' ? edSource.id : null);
             // review TK-10: an unchanged course already on the server is not posted again (a new title is a change)
@@ -1303,11 +1334,10 @@ export const course: Feature = {
             saving = true;
             const r = await store.saveMine(body, token);
             saving = false;
-            if (!r.ok) {
-                hook.problem = `save: ${r.problem}`;
-                return say(t('course.save.failed', { msg: r.problem.slice(0, 120) }), true);
-            }
+            if (!r.ok) return saveFailed(r.problem, 'save');
             if (r.token) rememberToken(r.id, r.token);
+            saveHook = { problem: null, key: null, again: null };
+            panel?.offerAgain(null);
             keeper?.saved(body);
             hook.saved = r.id;
             hook.source = 'server';
@@ -1329,7 +1359,7 @@ export const course: Feature = {
                 say(t('course.save.done'));
                 showEd();
                 renderList();
-            } else say(t('course.save.failed', { msg: hook.problem ?? '' }), true);
+            } else if (lastSaveProblem) saveFailed(lastSaveProblem, 'save');
         };
         /** stage F1-finish (R6/R8): the admin's edit of the gates as a new version of the served course, marked edited by the admin */
         const saveAdmin = async (titleIn: string): Promise<void> => {
@@ -1348,9 +1378,8 @@ export const course: Feature = {
             try {
                 r = await new TracksAdminClient(adminClient).version(serverId, body as unknown as Record<string, unknown>);
             } catch (e) {
-                const msg = e instanceof ApiError ? e.reason || `HTTP ${e.status}` : String(e);
-                hook.problem = `admin save: ${msg}`;
-                return say(t('course.save.failed', { msg: msg.slice(0, 120) }), true);
+                saving = false;
+                return saveFailed(e instanceof ApiError && e.status > 0 ? answerProblem(e.status, { error: e.reason }, null) : NETWORK_PROBLEM(e), 'admin save');
             } finally {
                 saving = false;
             }
