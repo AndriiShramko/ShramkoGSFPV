@@ -5,7 +5,7 @@ Design: C:/dev/.gsfpv-lanes/designs/edit4.md section 4 (edit4s). Owner's words: 
 ## Status
 
 - [x] S1 drafts: drafts.ts, parts/keep.ts (draft half), panel.ts (Versions), locales fly/course-save, edit4s-drafts.test.ts, NEG
-  (commit: the one that ticks this box; its id is written by S2)
+  (commit 544a1fd8)
 - [ ] S2 save flow: fixes.ts, save-words.ts, store.ts (SaveProblem), parts/keep.ts, server.py, tracks.py, tests, E9 experiment, NEG
 - [ ] S3 acceptance: tools/bench/scripts/edit4s-probe.mjs (mouse, 1536x730 dsf 1.25, local api), live negative control, gates
 
@@ -51,3 +51,7 @@ Course > Versions -> panel.revealVersions(). parts/keep.ts has no `install(seam)
 without it, or the lead adds install() at merge (seam wanted: on, hook('s'), replace(..., 'restore')).
 
 ## Cost notes
+
+- S1: the most replies went to finding that S0 (the seam) was never built and reading course.ts's save and change sites;
+  a ready seam (or a design that names its absence) would have saved about 8 replies. neg_control needs `npx.cmd`, not `npx`.
+  Tests that import apps/fly i18n need `vi.mock` of it (location is undefined in Node).
