@@ -153,6 +153,16 @@ def usb_of(conf: str, uri: str) -> str | None:
     return None if m is None else m.group(1)
 
 
+def camera_of(conf: str, uri: str) -> str | None:
+    """The allowlist of the camera directive that the location serving `uri` sends, None without a policy or directive."""
+    loc, _ = route(conf, uri)
+    p = _POLICY.search(loc.body)
+    if p is None:
+        return None
+    m = re.search(r"(?:^|,\s*)camera=\(([^)]*)\)", p.group(1))
+    return None if m is None else m.group(1)
+
+
 def microphone_problems(conf: str) -> list[str]:
     """Only the simulator page may use the microphone; every other location that sets a policy keeps it off."""
     out = []
@@ -242,7 +252,23 @@ class FlyBySoundHeaders(unittest.TestCase):
         loc, _ = route(self.conf, "/en/fly/")
         policy = _POLICY.search(loc.body).group(1)
         # lane center-throttle: the WebUSB helper on the fly page needs usb=(self); nothing else changes
-        self.assertEqual(policy, FIRST_CUT_FLY_POLICY.replace("microphone=()", "microphone=(self)").replace("usb=()", "usb=(self)"))
+        self.assertEqual(policy, FIRST_CUT_FLY_POLICY.replace("microphone=()", "microphone=(self)").replace("usb=()", "usb=(self)")
+                         # lane head4: "Turn my head to listen" (Fly by Sound) opens the web camera on the fly page only
+                         .replace("camera=()", "camera=(self)"))
+
+    def test_the_camera_is_allowed_on_the_simulator_page_only(self):
+        for uri in SIMULATOR_URIS:
+            self.assertEqual(camera_of(self.conf, uri), "self", uri)
+        for uri in OTHER_PAGE_URIS:
+            self.assertEqual(camera_of(self.conf, uri), "", uri)
+
+    def test_control_camera_self_on_the_site_is_caught(self):
+        wide = self.conf.replace("camera=()", "camera=(self)")
+        self.assertNotEqual(wide, self.conf)
+        self.assertTrue(any(camera_of(wide, uri) == "self" for uri in OTHER_PAGE_URIS))
+        closed = self.conf.replace("camera=(self)", "camera=()")
+        self.assertNotEqual(closed, self.conf)
+        self.assertTrue(all(camera_of(closed, uri) == "" for uri in SIMULATOR_URIS))
 
     def test_usb_is_allowed_on_the_simulator_page_only(self):
         for uri in SIMULATOR_URIS:
@@ -256,7 +282,7 @@ class FlyBySoundHeaders(unittest.TestCase):
         self.assertTrue(any(usb_of(wide, uri) == "self" for uri in OTHER_PAGE_URIS))
 
     def test_control_the_first_cuts_policy_is_caught(self):
-        first_cut = self.conf.replace("camera=(), microphone=(self), geolocation=()", "camera=(), microphone=(), geolocation=()", 1)
+        first_cut = self.conf.replace("camera=(self), microphone=(self), geolocation=()", "camera=(self), microphone=(), geolocation=()", 1)
         self.assertNotEqual(first_cut, self.conf, "the simulator policy was not found to revert")
         self.assertEqual(microphone_problems(first_cut), [f"{u}: microphone=() instead of (self)" for u in SIMULATOR_URIS])
 

@@ -65,6 +65,8 @@ export interface SonicState {
     attitude?: boolean;
     /** lane sonic-hints: the short line of keys at the start of every lesson step; absent means on, false is the pilot's "off" */
     keyHints?: boolean;
+    /** lane head4: "Turn my head to listen" (a web camera follows the head); absent means off, kept only when true */
+    headTrack?: boolean;
     /** train 2: the pilot once chose "I already fly by sound" on a scan link's start screen; absent means not (a first-timer) */
     fliesBySound?: boolean;
     /** train 3, lane quiet2: the hint to switch the narrator off was said once (after the first course by sound); absent means not */
@@ -323,6 +325,8 @@ export function validateCollection<K extends CollectionId>(k: K, v: unknown, dro
             if (typeof o.attitude === 'boolean') sonic.attitude = o.attitude;
             // the keys line at every step (lane sonic-hints): kept when a boolean, else left out (on)
             if (typeof o.keyHints === 'boolean') sonic.keyHints = o.keyHints;
+            // head tracking (lane head4): off unless the pilot turned it on, so only true is kept
+            if (o.headTrack === true) sonic.headTrack = true;
             // train 2: the pilot said "I already fly by sound" (a scan link's start screen puts the scan first): kept only when true
             if (o.fliesBySound === true) sonic.fliesBySound = true;
             // train 3, lane quiet2: the narrator hint was said once: kept only when true

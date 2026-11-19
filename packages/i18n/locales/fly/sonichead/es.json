@@ -1,0 +1,17 @@
+{
+  "keys.sonic.headCentre": "Volar por sonido: centrar el seguimiento de la cabeza (primero mira a la pantalla)",
+  "sonichead.setting": "Girar la cabeza para escuchar",
+  "sonichead.settingWhat": "La cámara web sigue tu cabeza, así los sonidos se quedan en su sitio cuando la giras. Ninguna imagen sale de este ordenador.",
+  "sonichead.say.ask": "El seguimiento de la cabeza usa tu cámara web solo para saber hacia dónde apunta tu cabeza, así los sonidos se quedan en su sitio cuando la giras. Ninguna imagen sale de este ordenador. Ahora el navegador pedirá usar la cámara: elige Permitir.",
+  "sonichead.say.loading": "Cargando el seguidor de la cara, unos 8 megabytes la primera vez. Espera, por favor.",
+  "sonichead.say.on":"Seguimiento de la cabeza activado. Mira a la pantalla; para centrar de nuevo más tarde, pulsa la tecla {key}.",
+  "sonichead.say.off": "Seguimiento de la cabeza desactivado. La cámara está cerrada.",
+  "sonichead.say.keyOff": "El seguimiento de la cabeza está desactivado. Para activarlo, abre los ajustes de sonido y elige Girar la cabeza para escuchar.",
+  "sonichead.say.centred": "Centrado.",
+  "sonichead.say.lost": "Cabeza perdida. Los sonidos siguen al dron hasta que vuelva tu cara.",
+  "sonichead.say.denied": "El seguimiento de la cabeza está desactivado: no se permitió la cámara. Para permitirla, abre los ajustes del sitio con el icono a la izquierda de la dirección, permite la cámara y vuelve a activar Girar la cabeza para escuchar.",
+  "sonichead.say.no-camera": "El seguimiento de la cabeza está desactivado: no se encontró ninguna cámara web. Conecta una y vuelve a activar Girar la cabeza para escuchar.",
+  "sonichead.say.busy": "El seguimiento de la cabeza está desactivado: otro programa está usando la cámara. Ciérralo y vuelve a activar Girar la cabeza para escuchar.",
+  "sonichead.say.unsupported": "El seguimiento de la cabeza está desactivado: este navegador no da la cámara a la página. Prueba Chrome, Edge o Firefox.",
+  "sonichead.say.failed": "El seguimiento de la cabeza está desactivado: el seguidor de la cara no arrancó. Los sonidos funcionan sin él; vuelve a activar Girar la cabeza para escuchar para intentarlo otra vez."
+}

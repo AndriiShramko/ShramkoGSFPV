@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite';
 import { resolve } from 'node:path';
+import { headTrackAssets } from './vite-headtrack';
 
 // Production build = the simulator (served at /{locale}/fly/, assets under /fly/) and the owner's admin
 // page (admin/index.html; scripts/build-release.mjs moves it to /admin/, its assets stay under /fly/assets/).
@@ -8,6 +9,8 @@ const lab = process.env.GSFPV_LAB === '1';
 
 export default defineConfig({
     base: '/fly/',
+    // lane head4: the face tracker's wasm and model under /fly/headtrack/ (loaded only when head tracking is turned on)
+    plugins: [headTrackAssets()],
     build: {
         target: 'es2022',
         outDir: lab ? 'dist-lab' : 'dist',

@@ -22,6 +22,7 @@ Car 1
 - edit4a: car 2 (no review file)
 - menu4: merged (review SHIP); the same b-repo-b18.json add/add conflict only, menu4's file taken whole
 - tails4: merged (review SHIP), no conflict
+- head4: merged (review SHIP), no conflict (adds @mediapipe/tasks-vision 1.2.3 to apps/fly and the lock)
 - edit4s: car 2 (review Verdict: HOLD)
 - edit4c: car 2 (no review file)
 - sound6: car 2 (no review file)

@@ -34,7 +34,7 @@ export const i18nShim: Plugin = {
  * CSP, no /api/session/ location. A page that needs the microphone or a blob: audio source must fail under this text.
  */
 export function firstCutConf(conf: string = readFileSync(NGINX_CONF, 'utf8')): string {
-    let cut = conf.replace('camera=(), microphone=(self), geolocation=()', 'camera=(), microphone=(), geolocation=()');
+    let cut = conf.replace('camera=(self), microphone=(self), geolocation=()', 'camera=(), microphone=(), geolocation=()');
     cut = cut.replace(" media-src 'self' blob:;", '');
     cut = cut.replace(/\n[ \t]*location \^~ \/api\/session\/ \{[\s\S]*?\n {4}\}\n/, '\n');
     return cut;
