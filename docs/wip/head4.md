@@ -9,7 +9,7 @@ Stages (adapted from plan 1.4; at most 4; see "Differences from the design"):
 
 - [x] H1 head pose math in the host: HeadPose, the head's axes, the turn of the page's AudioListener (ListenerTurn), one-euro
   smoothing, centre and recentre, clamp, a lost face held 0.5 s then glided back over 0.3 s, the face matrix to yaw, pitch
-  and roll. Test tools/bench/test/sonic-head-pose.test.ts (7 tests), NEG OK on origin/main. Commit: see git log (H1).
+  and roll. Test tools/bench/test/sonic-head-pose.test.ts (7 tests), NEG OK on origin/main. Commit 1657b1e8.
 - [ ] H2 the setting "Turn my head to listen" in the sound settings, OFF by default; switching it on speaks first (what the
   camera is for, that no picture leaves the computer, that the browser will ask), only then asks for the camera; the
   spoken result; the key to recentre; the face-lost line; the camera stops when switched off or the page is hidden; the
