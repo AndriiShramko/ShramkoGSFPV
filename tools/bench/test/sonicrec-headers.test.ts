@@ -94,7 +94,10 @@ describe('serve-csp.mjs sends the headers nginx.conf has', () => {
         // nothing but the microphone and USB (lane center-throttle: the WebUSB helper) differs between the simulator's policy and the site's
         expect(flyText).toContain('usb=(self)');
         for (const text of [siteText, assetsText, adminText]) expect(text).toContain('usb=()');
-        expect(flyText.replace('microphone=(self)', 'microphone=()').replace('usb=(self)', 'usb=()')).toBe(siteText);
+        // lane head4: camera=(self) for "Turn my head to listen" on the simulator page only
+        expect(flyText).toContain('camera=(self)');
+        for (const text of [siteText, assetsText, adminText]) expect(text).toContain('camera=()');
+        expect(flyText.replace('microphone=(self)', 'microphone=()').replace('usb=(self)', 'usb=()').replace('camera=(self)', 'camera=()')).toBe(siteText);
         expect(await headerProblems(s.port)).toEqual([]);
     });
 

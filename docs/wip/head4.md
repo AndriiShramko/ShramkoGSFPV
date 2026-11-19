@@ -26,6 +26,11 @@ Stages (adapted from plan 1.4; at most 4; see "Differences from the design"):
   Commits d7c8f19d and head4 H3 (see git log).
 - [ ] H4 deploy/nginx.conf camera=(self) on the simulator page only, the serve-csp run (the prompt path works, other pages
   refuse), the acceptance, the parts below completed, the gates.
+  - [x] H4a nginx camera=(self) in `location ~ ^/(en|es|pl|ru)/fly/` only; tests apps/api/tests/test_nginx_routes.py
+    (camera_of, 2 new tests, 19 OK) and tools/bench/test/sonicrec-headers.test.ts (5 OK), both NEG OK on origin/main;
+    the microphone controls of sonicrec-headers.ts and sonicrec-serve.ts follow the new text; deploy/README.md row.
+  - [ ] H4b one release build, serve-csp, the acceptance probe (mouse, 1536x730 at 1.25), the same probe on the live site.
+  - [ ] H4c the parts below completed, the gates.
 
 ### Differences from the design
 
