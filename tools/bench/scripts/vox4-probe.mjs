@@ -288,7 +288,11 @@ try {
     await pickMode(page, 'overlay');
     await sleep(2500);
     const back = await drawState(page);
-    verdict('3-lublin', lw.ok && ls.mode === 'only' && ls.nearWalls?.walls === 'thin' && drawn && says && back.plan?.why !== 'hidden' && back.splatEnabled !== false, { walls: lw.ok, mode: ls.mode, nearWalls: ls.nearWalls, nearOccupied: occ.length, nearDrawn: drawn, statusSaysThin: says, status: ls.status.slice(0, 220), afterOverlay: back });
+    // int4: since tails4 (car 1) Lublin's start stands 1.5 m over the scanned ground, where its walls are drawn (cover 0.52 on
+    // the release build of car 2), no longer thin: the status must say what is true near the drone either way (thin: it says
+    // so; drawn: it does not); the thin case itself is vox4's unit test (tools/bench/test/vox4-near.test.ts)
+    const truthful = ls.nearWalls?.walls === 'thin' ? says : ls.nearWalls?.walls === 'drawn' && !says;
+    verdict('3-lublin', lw.ok && ls.mode === 'only' && truthful && drawn && back.plan?.why !== 'hidden' && back.splatEnabled !== false, { walls: lw.ok, mode: ls.mode, nearWalls: ls.nearWalls, nearOccupied: occ.length, nearDrawn: drawn, statusSaysThin: says, status: ls.status.slice(0, 220), afterOverlay: back });
     // ---- step 6: the panel's cross at 1536x730 (this page) and at 844x390
     const cross = async (pg) => {
         await freeMouse(pg);

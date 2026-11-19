@@ -123,7 +123,9 @@ const isLublin = (u, folders) => u.includes(TO) || folders.has(folder(u));
 try {
     // ---- steps 1-6 at 1536x730, device scale 1.25, the scan drawn
     if (ONLY !== '7') {
-    const p = await open(1536, 730, 1.25, '', 0);
+    // int4: Lublin's requests wait HOLD_MS (default 1500) each, as step 7's do: on car 2's build the whole switch took 3.4 s,
+    // so the click 2.5 s after the pick met a card that had already said 'ready' and taken its Cancel away (loading.ts finish)
+    const p = await open(1536, 730, 1.25, '', Number(process.env.HOLD_MS ?? 1500));
     res.ready = { ms: p.readyMs, lockAfterClick: p.lock };
     const before = new Set(p.reqs.map((r) => folder(r[1])));
     const pk = await pickLublin(p);
