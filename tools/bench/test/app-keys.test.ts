@@ -285,8 +285,10 @@ describe('Shift held as the game scheme\'s descent (v0.9; the review of 2026-10-
         expect(r.route(key({ code: 'Escape', shiftKey: true }))).toBeNull();
         // control: the router without the rule, Shift held
         const C = counting(KEYMAP);
-        const lost = ['Escape', 'KeyP', 'KeyR', 'KeyM', 'KeyK', 'KeyH', 'KeyC'].filter((code) => C.r.route(key({ code, shiftKey: true })) === null);
-        expect(lost).toEqual(['Escape', 'KeyP', 'KeyR', 'KeyM', 'KeyK', 'KeyH', 'KeyC']);
+        // (H is out of this list since train 4: Shift+H is a chord of its own, the Messages list, lane ux4a)
+        const lost = ['Escape', 'KeyP', 'KeyR', 'KeyM', 'KeyK', 'KeyO', 'KeyC'].filter((code) => C.r.route(key({ code, shiftKey: true })) === null);
+        expect(lost).toEqual(['Escape', 'KeyP', 'KeyR', 'KeyM', 'KeyK', 'KeyO', 'KeyC']);
         expect(C.r.route(key({ code: 'KeyN', shiftKey: true }))).toBe('scene.random');
+        expect(C.r.route(key({ code: 'KeyH', shiftKey: true }))).toBe('messages.open');
     });
 });

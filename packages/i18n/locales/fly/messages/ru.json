@@ -1,5 +1,12 @@
 {
   "messages.send": "Отправить автору",
   "messages.close": "Закрыть это сообщение",
-  "messages.more": "Ещё {n} в Сообщениях"
+  "messages.more": "Ещё {n} в Сообщениях",
+  "messages.title": "Сообщения",
+  "messages.empty": "Сообщений пока нет.",
+  "messages.unread": "непрочитанных проблем: {n}",
+  "messages.kind.info": "Заметка",
+  "messages.kind.done": "Готово",
+  "messages.kind.problem": "Проблема",
+  "messages.kind.progress": "В работе"
 }

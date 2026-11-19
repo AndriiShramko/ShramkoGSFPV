@@ -1,5 +1,12 @@
 {
   "messages.send": "Enviar al autor",
   "messages.close": "Cerrar este mensaje",
-  "messages.more": "+{n} más en Mensajes"
+  "messages.more": "+{n} más en Mensajes",
+  "messages.title": "Mensajes",
+  "messages.empty": "Aún no hay mensajes.",
+  "messages.unread": "problemas sin leer: {n}",
+  "messages.kind.info": "Nota",
+  "messages.kind.done": "Hecho",
+  "messages.kind.problem": "Problema",
+  "messages.kind.progress": "En curso"
 }

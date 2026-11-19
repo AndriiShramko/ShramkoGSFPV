@@ -97,7 +97,10 @@ export class MessageLog {
         const kind = m.kind ?? 'info';
         const same = this.items.find((e) => this.live(e, now) && (m.key ? e.key === m.key : !e.key && e.kind === kind && e.text === m.text));
         const until = now + shownMs({ ...m, kind });
-        if (same) {
+        // a problem is never rewritten into something else: it leaves the screen and stays in the list as it was
+        // (the course's "no course fits" line, then the next Shift+G's progress under the same key)
+        if (same && same.kind === 'problem' && kind !== 'problem') same.gone = true;
+        else if (same) {
             Object.assign(same, { at: now, kind, text: m.text, fix: m.fix, from: m.from ?? same.from, scene, until, pausedLeft: null });
             if (kind === 'problem') same.unread = true;
             return same;

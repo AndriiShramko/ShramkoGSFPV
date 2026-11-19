@@ -16,7 +16,10 @@ export class MessageCenter {
     /** the stack: class hud-note (measured by the top row and the course hud), hidden when no line is on the screen */
     readonly root = h('div', { class: 'hud-note msg-stack', role: 'status', 'aria-live': 'polite', hidden: true });
     private lines = new Map<number, HTMLDivElement>();
-    private more = h('div', { class: 'msg-more', hidden: true });
+    /** the '+N more in Messages' line: a button that opens the list (ui/messages-panel.ts sets openList) */
+    private more = h('button', { type: 'button', class: 'msg-more interactive', 'data-action': 'messages-more', hidden: true, onclick: () => this.openList?.() });
+    /** opens the Messages list (ui/messages-panel.ts) */
+    openList: (() => void) | null = null;
     private timer = 0;
     private parent: HTMLElement | null = null;
     private reporter: ((text: string) => void) | null = null;
@@ -55,6 +58,12 @@ export class MessageCenter {
         const e = this.log.add(m, performance.now(), this.scene());
         this.render();
         return e;
+    }
+
+    /** The list was opened: no problem counts as unread (the count on the top-row button). */
+    markRead(): void {
+        this.log.markRead();
+        for (const w of this.watchers) w();
     }
 
     close(id: number): void {

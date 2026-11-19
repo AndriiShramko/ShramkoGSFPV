@@ -16,6 +16,7 @@
 // saved one, or a new version of the pilot's own with the token kept in this tab), the scene's courses with marks and votes.
 import type { SonicObject, TrackFile } from '@shramko/sonic-fpv';
 import { t } from '../../i18n';
+import { tell } from '../../ui/messages';
 import { liveSearch, q as pageQuery } from '../env';
 import type { Feature, FlightContext } from '../context';
 import { withWalls } from '../../walls-first';
@@ -66,6 +67,8 @@ import { TracksAdminClient } from '../../admin/tracks/api';
 
 /** Lane quiet (Q3): the course is ready, said with the narrator off by the short chime (sonic/quiet-cues.ts, the walls ready alike). */
 const COURSE_READY_CUE: CueEvent = Object.freeze({ kind: 'checkpoint' });
+/** Lane ux4a: the key of the course's one line in the message service (ui/messages.ts): progress, then ready or the problem, in place. */
+export const COURSE_LINE = 'course.progress';
 
 function randomSeed(): number {
     const a = new Uint32Array(1);
@@ -320,7 +323,8 @@ export const course: Feature = {
             if (!prog) return;
             const v = prog.view();
             hook.progress = progressLine(v, t);
-            ctx.hud.flash(hook.progress, PROGRESS_TICK_MS * 2);
+            // lane ux4a: one line under the key course.progress, rewritten in place every tick (it used to push a problem off)
+            tell({ text: hook.progress, kind: 'progress', key: COURSE_LINE });
             if (pacer.due(v)) sayLine(spokenLine(v, t));
         };
         const startProgress = (): void => {
@@ -346,7 +350,8 @@ export const course: Feature = {
             stopProgress();
             hook.problem = problem;
             reopenAfter = false; // review TK-4: a failed load or generation does not open the editor later
-            ctx.hud.flash(text, 4000);
+            // lane ux4a: a problem stays until the pilot closes it (or the next Shift+G's progress takes its place)
+            tell({ text, kind: 'problem', key: COURSE_LINE, from: 'course' });
             // lane onecourse fixes (review OC-1): a pilot by sound hears why no course came and what to press (the text names Shift+G)
             // lane quiet2 (review QW-2): with the narrator off one short falling sound says no course came (no gate is there to miss)
             sayLine(text, { kind: 'wrong-side' });
@@ -408,7 +413,7 @@ export const course: Feature = {
                 }
                 setTrack(tr, 'server', tr.generator?.seed ?? null);
                 dropLink();
-                ctx.hud.flash(t('course.server.loaded', { n: tr.gates.length }), 4000);
+                tell({ text: t('course.server.loaded', { n: tr.gates.length }), kind: 'done', key: COURSE_LINE });
                 return;
             }
             if (!m.track) {
@@ -429,7 +434,7 @@ export const course: Feature = {
                 hook.progress = null;
                 setTrack(tr, 'generated', tr.generator?.seed ?? pending);
                 history.replaceState(history.state, '', withCourse(location.href, tr.id));
-                ctx.hud.flash(t('course.ready', { n: tr.gates.length }), 4000);
+                tell({ text: t('course.ready', { n: tr.gates.length }), kind: 'done', key: COURSE_LINE });
                 // lead's decision P2: the spoken line names the chord in words ("Shift and key T"), the written one keeps Shift+T
                 sayLine(t('course.readySpoken', { n: tr.gates.length }), COURSE_READY_CUE);
             };
@@ -437,7 +442,7 @@ export const course: Feature = {
             if (isParked(ctx.session.runner.sim.s, ctx.session.spawn)) return show();
             const soon = t('progress.course.soon', { n: tr.gates.length, s: Math.round(COURSE_WARN_MS / 1000) });
             hook.progress = soon;
-            ctx.hud.flash(soon, COURSE_WARN_MS);
+            tell({ text: soon, kind: 'progress', key: COURSE_LINE });
             sayLine(soon);
             window.setTimeout(show, COURSE_WARN_MS);
         };
@@ -803,7 +808,7 @@ export const course: Feature = {
             panel?.say(text, refused);
             // lane editor3 H1: the window opens closed: the top bar's line says it, a refusal also on the HUD
             top?.tell(text, refused);
-            if (refused) ctx.hud.flash(text, 5000);
+            if (refused) tell({ text, kind: 'problem', from: 'course-editor' });
         };
         /** train 3 H1: the gate a floor add put in, until the check's answer on it came */
         let addedId: string | null = null;

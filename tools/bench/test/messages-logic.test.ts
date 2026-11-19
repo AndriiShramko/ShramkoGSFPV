@@ -113,4 +113,12 @@ describe('messages: the log', () => {
     it('the report carries the text, what to do, the feature and the scene', () => {
         expect(reportText({ text: 'Failed', fix: 'Try again', from: 'course', scene: '70b50d42' })).toBe('Failed\nTry again\nfrom: course\nscene: 70b50d42');
     });
+    it('a problem replaced by a new progress line under its key stays in the list as it was', () => {
+        const log = new MessageLog();
+        const p = log.add({ text: 'No course fits', kind: 'problem', key: 'course.progress', from: 'course' }, 0);
+        const n = log.add({ text: 'Building the course: 5 %', kind: 'progress', key: 'course.progress' }, 1000);
+        expect(n.id).not.toBe(p.id);
+        expect(log.visible(1100).lines.map((e) => e.text)).toEqual(['Building the course: 5 %']);
+        expect(log.all().map((e) => `${e.kind}:${e.text}`)).toEqual(['progress:Building the course: 5 %', 'problem:No course fits']);
+    });
 });
