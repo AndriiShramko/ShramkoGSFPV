@@ -39,7 +39,7 @@ import { MAX_GATES_EDIT, canSave, checkTrack, edit, flownCollision, flownStart, 
 import { CheckQueue, checkOnPage } from '../../course/editor/check-core';
 import type { FromCheckWorker } from '../../course/editor/check-core';
 import { aimAt, gateCamera, type GateView } from '../../course/editor/camera';
-import { frameGate, reframeOnDragEnd } from '../../course/editor/frame';
+import { frameGate } from '../../course/editor/frame';
 import type { RayFn } from '../../course/editor/camera';
 import { EditView } from '../../course/editor/view-mouse';
 import { GateBar } from '../../course/editor/gate-bar';
@@ -154,19 +154,13 @@ export const course: Feature = {
         let crashHold = false;
         /** the editor's state when a handle drag began (the drag is one undo step on it) */
         let dragBase: EditorState | null = null;
-        let dragBox: readonly [number, number, number, number] | null = null;
         let dragFrame = 0;
         /** G2 measurement: the last Add gate click (ray, wall hit, the point, the selected gate, the flown transform) */
         let lastPlace: Record<string, unknown> | null = null;
         let camTaken = { n: 0, override: true, crash: false, t: 0 };
         let crashCleared = 0;
-        /** a key selected a gate: the edit camera glides to see it (stage K2's view of the gate, now as the free camera's start) */
-        // train 3 I1 (D1): the framing of the selected gate (course/editor/frame.ts) replaced the K2 aim from the paused drone
-        const aim = (): void => {
-            frameSel();
-        };
-        /** the gate the edit view was last framed on (a new selection frames again, the same one does not) */
-        let framedId: string | number | null = null;
+        // lane edit4a A1 (E1, brief 543 and 547: "why move my view when I move an obstacle? No 3D editor does that"): the view
+        // moves only when the pilot moves it. frameSel runs only on his own F, Numpad . or double click (view-mouse.ts onFrame)
         /** I1 (D1): the edit view glides to the selected gate, a third of the view high, 35 degrees aside, 20 above */
         // review EI-7: true when the framing is done for this selection (a glide started, or no place is free: D1 keeps the
         // view); false when it was skipped (flying, a drag, the view suspended), so a later repaint frames it
@@ -820,7 +814,6 @@ export const course: Feature = {
             ed = { ...ed, selected: w.index };
             lastWrong = { index: w.index, key: w.key, lead };
             showEd();
-            aim();
             say(t(lead, { fix: t(w.key, w.args) }), true);
             return true;
         };
@@ -869,8 +862,6 @@ export const course: Feature = {
             view?.put(egPose, eg ? eg.id : null, eg ? eg.shape.kind : null);
             // integration E (brief seam d): the selected gate's own pose from the course state, read by the editor's probe
             edHook.pose = egPose ? { pos: [...egPose.pos], quat: [...egPose.quat] } : null;
-            // I1 (D1): a new selection (a click, Tab, the bar, a gate added, a refused Save) frames that gate
-            if (eg && eg.id !== framedId && frameSel()) framedId = eg.id;
             edHook.open = true;
             (edHook as { flying?: boolean }).flying = false;
             edHook.selected = ed.selected;
@@ -948,7 +939,8 @@ export const course: Feature = {
                 sizeText: (m) => t('course.edit.sizeTag', { m: m.toFixed(1) }),
                 moveText: (m) => t('course.edit.moveTag', { m: m.toFixed(1) }),
                 turnText: (d) => t('course.edit.turnTag', { d: Math.round(d) }),
-                onFrame: () => frameSel()
+                onFrame: () => frameSel(),
+                ray: (o, d, max) => (camRay ? camRay(o, d, max) : null)
             }, camFrom([ep.x, ep.y, ep.z], [ep.x + ef.x, ep.y + ef.y, ep.z + ef.z]));
             bar = new GateBar(ctx.ui, { key: (p) => applyKey(p), where: () => view?.standScreen() ?? null, tool: () => view?.tool ?? 'move', setTool: (tl) => view?.setTool(tl), dragging: () => view?.isDragging() ?? false });
             top = new TopBar(ctx.ui, { key: (p) => applyKey(p), add: () => toggleAdd(), show: (part) => panel?.reveal(part) });
@@ -995,7 +987,6 @@ export const course: Feature = {
             edHook.view = null;
             camForward = null;
             camView = null;
-            framedId = null;
             view?.dispose();
             view = null;
             bar?.destroy();
@@ -1122,8 +1113,6 @@ export const course: Feature = {
         /** lane editor3 E2: a handle drag; the gate follows live, the release is one undo step and asks the walls check */
         const dragTo = (p: FlownPose, end: boolean): void => {
             if (!ed) return;
-            // review EJ-2: the gate's drawn box when the drag began (E1 frames again only a gate that left the middle)
-            if (!dragBase) dragBox = view?.gateBox()?.box ?? null;
             const base = dragBase ?? ed;
             dragBase = base;
             const old = base.course.gates[base.selected];
@@ -1148,16 +1137,7 @@ export const course: Feature = {
                 checks?.ask(st.course, flownTransform(), edMargin);
             }
             showEd();
-            // J1 (E1): a drag that left the gate outside the middle 80 % of the view (a size change, a long move) frames it
-            // again; never during the drag (this is its end). Review EJ-2: only a drag that changed the gate and took its box
-            // out of the middle (a gate the pilot flew close to stays as he set the view)
-            const gb = view?.gateBox();
-            const before = dragBox;
-            dragBox = null;
-            const re = !!(st && gb && reframeOnDragEnd(before, gb.box, gb.w, gb.h));
-            // fixes3 pass 2 (left a): the boxes the decision saw, for the page probes
-            (edHook as { reframe?: unknown }).reframe = { before, after: gb?.box ?? null, w: gb?.w ?? 0, h: gb?.h ?? 0, changed: !!st, framed: re };
-            if (re) frameSel();
+            // lane edit4a A1 (E1): the view stays where the pilot set it after a drag too (train 3 J1's reframe is gone)
             // H2-look: the top bar says what the drag did; after a Size drag the gate line carries the new opening in metres
             const did = view?.tool === 'size' ? ACTION_KEYS.size : view?.tool === 'turn' ? ACTION_KEYS.turn : ACTION_KEYS.move;
             if (st) say(t('course.edit.did', { what: t(did), gate: gateLine(st, scale()) }));
@@ -1176,7 +1156,6 @@ export const course: Feature = {
             if (!k) return;
             if ('cmd' in k) return command(k.cmd);
             askedFor = null;
-            const count = ed.course.gates.length;
             const out = edit(ed, k.edit, keepProblems);
             ed = out.state;
             if (out.ok) {
@@ -1186,9 +1165,7 @@ export const course: Feature = {
                 }
                 edHook.refused = null;
                 showEd();
-                // lane editor3 E2: a key that selects a gate takes the view to it; the mouse and the other keys leave the view
-                // review ED-1: a delete or a duplicate selects another gate too, so the view goes to it
-                if (k.edit.kind === 'select' || k.edit.kind === 'select-step' || ed.course.gates.length !== count) aim();
+                // lane edit4a A1 (E1): Tab, Delete and a duplicate select a gate and leave the view as the pilot set it
                 say(t('course.edit.did', { what: t(actionKey(k.edit)), gate: gateLine(ed, scale()) }));
             } else {
                 edHook.refused = out.reason.code;

@@ -1,5 +1,5 @@
-// Lane editor3 I1 (decision D1 of train 3): "frame selected", as in ordinary 3D editors. When a gate becomes the selected one
-// (or F is pressed) the edit view glides to a place from which the gate fills about a third of the view's height and is seen
+// Lane editor3 I1 (decision D1 of train 3): "frame selected", as in ordinary 3D editors. When the pilot asks (F, Numpad .,
+// a double click on a gate; train 4 edit4a: no longer on every new selection) the edit view glides to a place from which the gate fills about a third of the view's height and is seen
 // at an angle: about 35 degrees to the side of its axis and about 20 degrees above its centre, so the opening and all three
 // turn rings are seen as ellipses. A place inside or behind a wall (a ray from the gate's centre to the eye hits) is skipped:
 // the mirrored side, then 60 degrees each way, then nearer steps down to 1.5 gate sizes. Pure: the walls come in as a ray.
@@ -29,51 +29,8 @@ export const FRAME_WALL_GAP_M = 0.3;
 export const FRAME_GLIDE_MS = 400;
 /** an axis steeper than this (its up share) is a dive gate lying flat: the eye looks down on it from 90 - 35 degrees */
 export const FRAME_FLAT_UP = 0.7;
-/** J1 (E1 of train 3): the share of the view, centred, the gate's drawn box must stay inside after a drag */
-export const REFRAME_SHARE = 0.8;
-
-/**
- * J1 (E1): after a drag ends (a size change, a long move) the view frames the gate again when its drawn box (CSS px from
- * the canvas corner: x0, y0, x1, y1; null when a part of the gate lies behind the eye) is not inside the middle `share` of
- * a `w` x `h` view. Never during a drag: the caller asks only at the drag's end. Pure.
- */
-export function reframeAfterDrag(box: readonly [number, number, number, number] | null, w: number, h: number, share = REFRAME_SHARE): boolean {
-    if (!box) return true;
-    const mx = (w * (1 - share)) / 2;
-    const my = (h * (1 - share)) / 2;
-    return box[0] < mx || box[1] < my || box[2] > w - mx || box[3] > h - my;
-}
-
-/** fixes3 pass 3: a drag that pushed the box this share of the view's side further past the middle frames it again even when
- *  it was already a little past before (an estimate: a size change 1.2 -> 2.4 m measured 0.70 on Tunis, fx3b/tunis e4.json;
- *  an arrow nudge of a gate flown close stays far under it) */
-export const REFRAME_GROW = 0.25;
-
-/** how far the box reaches past the middle `share` of the view, as a share of the view's side (0 inside; null: Infinity) */
-export function overMiddle(box: readonly [number, number, number, number] | null, w: number, h: number, share = REFRAME_SHARE): number {
-    if (!box) return Infinity;
-    const mx = (w * (1 - share)) / 2;
-    const my = (h * (1 - share)) / 2;
-    return Math.max(0, (mx - box[0]) / w, (my - box[1]) / h, (box[2] - (w - mx)) / w, (box[3] - (h - my)) / h);
-}
-
-/**
- * Review EJ-2: E1 says 'no longer inside': the view frames the gate at a drag's end when its box is outside the middle after
- * the drag and either was inside it before (`before`, taken when the drag began) or the drag pushed it more than
- * REFRAME_GROW of the view further out (fixes3 pass 3: on Tunis the gate's top was 18 px from the edge before the size drag
- * to 2.4 m and was not framed). A pilot who flew the view close keeps his view after every nudge. Pure.
- */
-export function reframeOnDragEnd(
-    before: readonly [number, number, number, number] | null,
-    after: readonly [number, number, number, number] | null,
-    w: number,
-    h: number,
-    share = REFRAME_SHARE
-): boolean {
-    if (!reframeAfterDrag(after, w, h, share)) return false;
-    if (!reframeAfterDrag(before, w, h, share)) return true;
-    return overMiddle(after, w, h, share) - overMiddle(before, w, h, share) > REFRAME_GROW;
-}
+// lane edit4a A1 (E1, brief 547): train 3 J1 framed the gate again after a drag that took it out of the middle of the view
+// (reframeOnDragEnd). The owner: "why move my view when I move an obstacle? No 3D editor does that." It is gone.
 
 export interface FrameIn {
     /** the gate's centre, flown frame */
@@ -175,6 +132,37 @@ export function frameGate(g: FrameIn, ray: RayFn | null): Framing | null {
         }
     }
     return null;
+}
+
+/** Lane edit4a A1: the overview looks down on the course at this angle, degrees (edit4 design A1) */
+export const OVERVIEW_DOWN_DEG = 35;
+/** the overview's sphere fills at most this share of the view's smaller field (an estimate: a margin round the gates) */
+export const OVERVIEW_FILL = 0.85;
+
+/** The sphere round the gates' centres (half the box's diagonal plus `pad`, flown m); null without gates. */
+export function boundsOf(points: readonly V3[], pad = 0): { centre: V3; radius: number } | null {
+    if (points.length === 0) return null;
+    const lo = [Infinity, Infinity, Infinity];
+    const hi = [-Infinity, -Infinity, -Infinity];
+    for (const p of points) for (let i = 0; i < 3; i++) {
+        lo[i] = Math.min(lo[i]!, p[i]!);
+        hi[i] = Math.max(hi[i]!, p[i]!);
+    }
+    const centre: V3 = [(lo[0]! + hi[0]!) / 2, (lo[1]! + hi[1]!) / 2, (lo[2]! + hi[2]!) / 2];
+    return { centre, radius: Math.hypot(hi[0]! - lo[0]!, hi[1]! - lo[1]!, hi[2]! - lo[2]!) / 2 + pad };
+}
+
+/**
+ * Lane edit4a A1 (Home, 'frame all'): the view above the sphere (`centre`, `radius`), looking down OVERVIEW_DOWN_DEG along the
+ * pilot's own heading, far enough for the sphere to fit the smaller half field `tanHalf`. No wall test: an overview stands
+ * above the course. The speed stays.
+ */
+export function frameBox(c: FlyCam, centre: V3, radius: number, tanHalf: number): FlyCam {
+    const half = Math.atan(Math.max(1e-3, tanHalf) * OVERVIEW_FILL);
+    const dist = Math.max(1, radius) / Math.sin(half);
+    const p = (-OVERVIEW_DOWN_DEG * Math.PI) / 180;
+    const f: V3 = [Math.sin(c.yaw) * Math.cos(p), Math.sin(p), -Math.cos(c.yaw) * Math.cos(p)];
+    return { pos: [centre[0] - f[0] * dist, centre[1] - f[1] * dist, centre[2] - f[2] * dist], yaw: c.yaw, pitch: p, speed: c.speed };
 }
 
 const wrap = (a: number): number => Math.atan2(Math.sin(a), Math.cos(a));

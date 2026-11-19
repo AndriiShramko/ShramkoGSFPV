@@ -107,7 +107,9 @@ describe('editor3 G2', () => {
         expect((Math.acos(right.d.reduce((s, v, i) => s + v * f0[i]!, 0)) * 180) / Math.PI).toBeCloseTo(45, 6);
         // the view builds the click ray with it, and gives the entity its pose before the gizmos pick
         const view = read('apps/fly/src/course/editor/view-mouse.ts');
-        expect(view).toMatch(/const ray = camRay\(this\.cam, /);
+        // train 4 edit4a A1: one helper builds every ray of the view (the click, the double click, the orbit pivot, the dolly)
+        expect(view).toMatch(/const ray = this\.rayAt\(/);
+        expect(view).toMatch(/return camRay\(this\.cam, /);
         expect(view).not.toMatch(/cc\.screenToWorld\(/);
     });
 

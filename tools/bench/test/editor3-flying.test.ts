@@ -165,8 +165,8 @@ describe('editor3 E3: flying inside the edit mode', () => {
         expect(COURSE_TS).toMatch(/panel\?\.root\.classList\.remove\('ce-flying'\)/);
     });
 
-    it('review ED-1: a delete or a duplicate takes the view to the gate it selects', () => {
-        expect(COURSE_TS).toMatch(/ed\.course\.gates\.length !== count\) aim\(\)/);
+    it('review ED-1: a delete or a duplicate selects another gate; train 4 edit4a A1: the view stays (brief 543, 547)', () => {
+        expect(COURSE_TS).not.toMatch(/aim\(\);/);
         const VM = readFileSync(join(__dirname, '../../../apps/fly/src/course/editor/view-mouse.ts'), 'utf8');
         // a drag left set when the button goes up is ended there (one undo step), so put() places the handles again
         expect(VM).toMatch(/if \(this\.dragging\) \{\s*this\.dragging = false;\s*this\.host\.onDrag\(this\.pose\(this\.openingAtStart\), true\);/);

@@ -5,12 +5,12 @@
 // editor's window is one of mouse-look.ts CURSOR_WINDOWS, so no pointer lock is held.
 import { Color, Entity, Gizmo, Quat as PcQuat, RotateGizmo, ScaleGizmo, TranslateGizmo, Vec3 as PcVec3 } from 'playcanvas';
 import type { AppBase, CameraComponent, Layer } from 'playcanvas';
-import { CAM_KEYS, camForward, camRay, camTarget, stepCam, turnCam, wheelSpeed, type FlyCam } from './fly-cam';
+import { CAM_KEYS, camForward, camRay, camTarget, dollyCam, orbitCam, panCam, PIVOT_AHEAD_M, stepCam, turnCam, wheelNotches, wheelSpeed, type FlyCam, type V3 } from './fly-cam';
 import { fromPcQuat, scaledOpening, toPcQuat, type FlownPose } from './drag';
-import { pickGate, type Pickable, type Ray } from './pick';
+import { pickGate, pickRadius, type Pickable, type Ray } from './pick';
 import { pressOwner } from './press-owner';
 import { toolAfter, toolOfKey, type Tool } from './bar-place';
-import { blendCam, FRAME_GLIDE_MS } from './frame';
+import { blendCam, boundsOf, frameBox, FRAME_GLIDE_MS } from './frame';
 import { AXIS_RGB, gizmoSize, guideOnlyWhileDragging, HANDLE_PX, sizeAxes, units } from './handle-look';
 import { minorAxis, pickRing, ringDeg, type DrawnRing, type P2 } from './ring-pick';
 
@@ -49,6 +49,26 @@ export interface EditViewHost {
     turnText?(deg: number): string;
     /** I1 (D1): F pressed: frame the selected gate again */
     onFrame?(): void;
+    /** lane edit4a A1: the distance to the first wall along a ray (flown frame), null when clear: the orbit's pivot and the
+     *  dolly's point under the cursor (course.ts camRay) */
+    ray?(o: V3, d: V3, max: number): number | null;
+}
+
+/** lane edit4a A1: what a press does once it moves: a click (not yet moved), circling round, sliding, or looking round */
+export type PressNav = 'click' | 'orbit' | 'pan' | 'look';
+
+/** lane edit4a A1: the walls are looked for this far along a ray, flown m (an estimate: a large scan's far side) */
+export const NAV_RAY_M = 200;
+
+/**
+ * Lane edit4a A1 (the edit4 design's key table): what a moving press does. Left: a click until it moves CLICK_SLOP_PX, then
+ * an orbit (Shift: a pan); middle: an orbit at once (Shift: a pan); right: the look round (as before). Pure.
+ */
+export function pressNav(button: number, movedPx: number, shift: boolean, was: PressNav): PressNav {
+    if (button === 2) return 'look';
+    if (button === 0 && was === 'click' && movedPx <= CLICK_SLOP_PX) return 'click';
+    if (button !== 0 && button !== 1) return was;
+    return shift ? 'pan' : 'orbit';
 }
 
 type Handle = TranslateGizmo | RotateGizmo | ScaleGizmo;
@@ -72,7 +92,9 @@ export class EditView {
     private staleEnded = 0;
     /** a handle was dragged during this press (its release is not a click) */
     private dragged = false;
-    private press: { id: number; button: number; x: number; y: number; lx: number; ly: number; look: boolean } | null = null;
+    private press: { id: number; button: number; x: number; y: number; lx: number; ly: number; nav: PressNav; pivot: V3 | null } | null = null;
+    /** lane edit4a A1, for the probes: the last camera move the pilot made and its pivot or point */
+    private lastNav: { kind: string; at: number[] | null } | null = null;
     private disposed = false;
     /** lane editor3 E3: Add gate armed, the next click on the scene places a gate */
     adding = false;
@@ -180,6 +202,7 @@ export class EditView {
         this.canvas.addEventListener('pointerdown', this.onDown);
         this.canvas.addEventListener('contextmenu', this.onMenu);
         this.canvas.addEventListener('wheel', this.onWheel, { passive: false });
+        this.canvas.addEventListener('dblclick', this.onDouble);
         // G2: capture, because a gizmo's own pointermove and pointerup stop propagation over its shapes (PlayCanvas 2.23.2
         // Gizmo._onPointerUp), so a window listener in the bubble phase missed the up after every drag that ended on a handle
         window.addEventListener('pointermove', this.onPointerMove, true);
@@ -562,11 +585,51 @@ export class EditView {
     }
 
     private onDown = (e: PointerEvent): void => {
-        if (this.suspended || (e.button !== 0 && e.button !== 2)) return;
+        if (this.suspended || (e.button !== 0 && e.button !== 1 && e.button !== 2)) return;
         // a press on a handle is the gizmo's (it fired transform:start in its own pointerdown, or will on the first move)
-        this.press = { id: e.pointerId, button: e.button, x: e.clientX, y: e.clientY, lx: e.clientX, ly: e.clientY, look: e.button === 2 };
-        if (e.button === 2) e.preventDefault();
+        this.press = { id: e.pointerId, button: e.button, x: e.clientX, y: e.clientY, lx: e.clientX, ly: e.clientY, nav: e.button === 2 ? 'look' : e.button === 1 ? (e.shiftKey ? 'pan' : 'orbit') : 'click', pivot: null };
+        // the middle button's page scroll and the right button's menu stay off
+        if (e.button !== 0) e.preventDefault();
     };
+
+    /** lane edit4a A1: tan of half the view's vertical and horizontal fields */
+    private fields(): { v: number; h: number; hPx: number } {
+        const cc = this.host.camera.camera as CameraComponent;
+        const r = this.canvas.getBoundingClientRect();
+        const t = Math.tan(((cc.fov || 60) * Math.PI) / 360);
+        const aspect = r.width / (r.height || 1);
+        return cc.horizontalFov ? { v: t / aspect, h: t, hPx: r.height } : { v: t, h: t * aspect, hPx: r.height };
+    }
+
+    /** the ray of the view through a page point (CSS px), from the edit view's own pose */
+    private rayAt(x: number, y: number): Ray | null {
+        const r = this.canvas.getBoundingClientRect();
+        const cc = this.host.camera.camera as CameraComponent;
+        return camRay(this.cam, x - r.left, y - r.top, r.width, r.height, cc.fov, cc.horizontalFov);
+    }
+
+    /** lane edit4a A1: the scene point under a page point: the gate it shows, else the first wall, else PIVOT_AHEAD_M ahead */
+    private pointUnder(x: number, y: number): V3 | null {
+        const ray = this.rayAt(x, y);
+        if (!ray) return null;
+        const gs = this.host.gates();
+        const i = pickGate(ray, gs);
+        if (i >= 0) return gs[i]!.pos;
+        const hit = this.host.ray?.(ray.o, ray.d, NAV_RAY_M) ?? null;
+        const k = hit !== null && hit > 0 ? hit : PIVOT_AHEAD_M;
+        return [ray.o[0] + ray.d[0] * k, ray.o[1] + ray.d[1] * k, ray.o[2] + ray.d[2] * k];
+    }
+
+    /** lane edit4a A1: the orbit's pivot: the selected gate's centre when it is on the screen, else the point under the press */
+    private pivotFor(x: number, y: number): V3 | null {
+        const sp = this.standPose;
+        if (sp) {
+            const cc = this.host.camera.camera as CameraComponent;
+            const s = cc.worldToScreen(new PcVec3(sp.pos[0], sp.pos[1], sp.pos[2]), new PcVec3());
+            if (s.z > 0 && s.x >= 0 && s.y >= 0 && s.x <= this.canvas.clientWidth && s.y <= this.canvas.clientHeight) return sp.pos;
+        }
+        return this.pointUnder(x, y);
+    }
 
     private onPointerMove = (e: PointerEvent): void => {
         if (this.ring) {
@@ -576,16 +639,52 @@ export class EditView {
         }
         const p = this.press;
         if (!p || p.id !== e.pointerId || this.dragging) return;
-        if (!p.look && Math.hypot(e.clientX - p.x, e.clientY - p.y) > CLICK_SLOP_PX) p.look = true;
+        const was = p.nav;
+        p.nav = pressNav(p.button, Math.hypot(e.clientX - p.x, e.clientY - p.y), e.shiftKey, p.nav);
         // lane editor3 H1: the step from the last position, not movementX (0 for some synthetic and remote pointers)
         const dx = e.clientX - p.lx;
         const dy = e.clientY - p.ly;
         p.lx = e.clientX;
         p.ly = e.clientY;
-        if (!p.look) return;
+        if (p.nav === 'click') return;
         this.glide = null;
-        this.cam = turnCam(this.cam, dx, dy);
+        // the pivot is taken once, where the press began (the edit camera's pose first: the entity may hold the drone's)
+        if ((p.nav === 'orbit' || p.nav === 'pan') && (!p.pivot || was === 'click')) {
+            this.apply();
+            p.pivot = this.pivotFor(p.x, p.y);
+        }
+        if (p.nav === 'look') this.cam = turnCam(this.cam, dx, dy);
+        else if (p.nav === 'orbit' && p.pivot) this.cam = orbitCam(this.cam, p.pivot, dx, dy);
+        else if (p.nav === 'pan' && p.pivot) {
+            const f = this.fields();
+            const d = Math.hypot(p.pivot[0] - this.cam.pos[0], p.pivot[1] - this.cam.pos[1], p.pivot[2] - this.cam.pos[2]);
+            this.cam = panCam(this.cam, dx, dy, d, f.v, f.hPx);
+        }
+        this.lastNav = { kind: p.nav, at: p.pivot ? [...p.pivot] : null };
         this.apply();
+    };
+
+    /** lane edit4a A1 (Home): the whole course in view from above (frame.ts frameBox) */
+    frameAll(): boolean {
+        if (this.dragging || this.suspended) return false;
+        const gs = this.host.gates();
+        const pad = gs.reduce((m, g) => Math.max(m, pickRadius(g.shape)), 0);
+        const b = boundsOf(gs.map((g) => g.pos), pad);
+        if (!b) return false;
+        const f = this.fields();
+        this.lastNav = { kind: 'frame-all', at: [...b.centre] };
+        return this.glideTo(frameBox(this.cam, b.centre, b.radius, Math.min(f.v, f.h)));
+    }
+
+    /** lane edit4a A1: a double click on a gate selects it and frames it (Blender's Numpad . on a click) */
+    private onDouble = (e: MouseEvent): void => {
+        if (this.suspended || this.dragging || e.button !== 0) return;
+        this.apply();
+        const ray = this.rayAt(e.clientX, e.clientY);
+        const i = ray ? pickGate(ray, this.host.gates()) : -1;
+        if (i < 0) return;
+        this.host.onPick(i);
+        this.host.onFrame?.();
     };
 
     /** G2: the up is handled after the whole dispatch (the gizmo's own pointerup first), whoever stopped it on the way */
@@ -645,11 +744,9 @@ export class EditView {
         const wasDrag = this.dragging || this.dragged;
         this.dragging = false;
         this.dragged = false;
-        if (wasDrag || p.look || p.button !== 0) return;
-        const r = this.canvas.getBoundingClientRect();
-        const cc = this.host.camera.camera as CameraComponent;
+        if (wasDrag || p.nav !== 'click' || p.button !== 0) return;
         // G2: the ray from the edit camera's own pose (the entity may hold the drone's pose between frames, g2/floor3)
-        const ray = camRay(this.cam, e.clientX - r.left, e.clientY - r.top, r.width, r.height, cc.fov, cc.horizontalFov);
+        const ray = this.rayAt(e.clientX, e.clientY);
         if (!ray) return;
         this.apply();
         if (this.adding && this.host.onPlace) {
@@ -665,10 +762,25 @@ export class EditView {
     private onWheel = (e: WheelEvent): void => {
         if (this.suspended) return;
         e.preventDefault();
-        const s = wheelSpeed(this.cam.speed, e.deltaY);
-        if (s === this.cam.speed) return;
-        this.cam = { ...this.cam, speed: s };
-        this.host.onSpeed(s);
+        // lane edit4a A1: the wheel with the right button held sets the speed of W A S D (as before); a plain wheel, a touch
+        // pad's two-finger scroll and its pinch (Chrome: ctrlKey) move the view to the point under the cursor
+        if ((e.buttons & 2) !== 0 || this.press?.button === 2) {
+            const s = wheelSpeed(this.cam.speed, e.deltaY);
+            if (s === this.cam.speed) return;
+            this.cam = { ...this.cam, speed: s };
+            this.host.onSpeed(s);
+            return;
+        }
+        if (this.dragging) return;
+        const n = wheelNotches(e.deltaY, e.deltaMode, e.ctrlKey);
+        if (n === 0) return;
+        this.apply();
+        const at = this.pointUnder(e.clientX, e.clientY);
+        if (!at) return;
+        this.glide = null;
+        this.cam = dollyCam(this.cam, at, n);
+        this.lastNav = { kind: 'dolly', at: [...at] };
+        this.apply();
     };
 
     private setSnap(on: boolean): void {
@@ -686,10 +798,14 @@ export class EditView {
             return;
         }
         // I1 (D1): F frames the selected gate again ('frame selected'); the page's own F (full screen) does not see it here
-        if (e.code === 'KeyF' && !this.suspended && !e.repeat && !e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey && !this.host.typing(e.target)) {
+        // lane edit4a A1: Numpad . frames the selection too, Home frames the whole course (Blender's keys)
+        const frameKey = e.code === 'KeyF' || e.code === 'NumpadDecimal' || e.code === 'Home';
+        if (frameKey && !this.suspended && !e.repeat && !e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey && !this.host.typing(e.target)) {
             e.preventDefault();
             e.stopPropagation();
-            if (!this.dragging) this.host.onFrame?.();
+            if (this.dragging) return;
+            if (e.code === 'Home') this.frameAll();
+            else this.host.onFrame?.();
             return;
         }
         if (this.suspended || !CAM_KEYS.has(e.code) || e.ctrlKey || e.metaKey || e.altKey || this.host.typing(e.target)) return;
@@ -720,7 +836,7 @@ export class EditView {
     /**
      * J1 (E1): the selected gate's drawn box on the canvas (CSS px from its corner: x0, y0, x1, y1) and the canvas's size:
      * the corners at the centre +- right and up (and forward for a cube frame) times half the opening. box null: a corner
-     * lies behind the eye. Null: no gate. Read only (course.ts asks it when a drag ends, frame.ts reframeAfterDrag).
+     * lies behind the eye. Null: no gate. Read only (the page probes: a framed gate inside the view).
      */
     gateBox(): { box: [number, number, number, number] | null; w: number; h: number } | null {
         if (!this.standPose) return null;
@@ -785,7 +901,10 @@ export class EditView {
             stand: { pos: [p.x, p.y, p.z], quat: [...fromPcQuat(this.stand.getRotation().x, this.stand.getRotation().y, this.stand.getRotation().z, this.stand.getRotation().w)], scale: this.stand.getLocalScale().x, opening: this.opening, screen: scr(p.x, p.y, p.z) },
             axes: { x: axis(this.stand.right), y: axis(this.stand.up), z: axis(this.stand.forward) },
             gates: this.host.gates().map((g) => scr(g.pos[0], g.pos[1], g.pos[2])),
-            cam: { pos: [...this.cam.pos], speed: this.cam.speed, gap: camGap },
+            cam: { pos: [...this.cam.pos], speed: this.cam.speed, gap: camGap, yaw: this.cam.yaw, pitch: this.cam.pitch },
+            // lane edit4a A1: the last camera move the pilot made (orbit, pan, look, dolly, frame-all) and its pivot or point
+            nav: this.lastNav,
+            glide: this.glide !== null,
             // I3: the camera's field in degrees and whether it is horizontal (the probe's frameF share of the view)
             fov: { deg: cc.fov, horizontal: !!cc.horizontalFov, aspect: Math.round((r.width / (r.height || 1)) * 1000) / 1000 },
             held: [...this.held],
@@ -838,6 +957,7 @@ export class EditView {
         this.canvas.removeEventListener('pointerdown', this.onDown);
         this.canvas.removeEventListener('contextmenu', this.onMenu);
         this.canvas.removeEventListener('wheel', this.onWheel);
+        this.canvas.removeEventListener('dblclick', this.onDouble);
         window.removeEventListener('pointermove', this.onPointerMove, true);
         window.removeEventListener('pointerup', this.onUpCapture, true);
         window.removeEventListener('pointercancel', this.onUpCapture, true);
