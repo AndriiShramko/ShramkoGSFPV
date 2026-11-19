@@ -1,0 +1,15 @@
+{
+  "lane": "edit4s",
+  "stage": "S2",
+  "what": "E9: an untouched generated course saved as the page does (author person 'Andrii Shramko', the generated title), checked by validateServerTrack (store.ts, before the post) and by apps/api/tracks.py parse_track (the server)",
+  "command": "cd tools/bench && npx tsx src/edit4s-e9.ts --walls U:/Temp/gsfpv-train3/walls/release/70b50d42/v1 --scene 70b50d42 --seeds 1-3 --out U:/Temp/gsfpv-train4/edit4s/e9-70b.json",
+  "transform": [1, 0, 0, 0],
+  "rows": [
+    { "scene": "70b50d42", "seed": 1, "gates": 23, "laps": 3, "editorCheckPasses": true, "clientIssues": [], "serverIssues": [] },
+    { "scene": "70b50d42", "seed": 2, "gates": 15, "laps": 3, "editorCheckPasses": true, "clientIssues": [], "serverIssues": [] },
+    { "scene": "70b50d42", "seed": 3, "gates": 24, "laps": 3, "editorCheckPasses": true, "clientIssues": [], "serverIssues": [] }
+  ],
+  "seconds": 551,
+  "notRun": "seeds 4-50 (about 3 minutes a seed in Node) and scene 887f27aa (its scene.voxel.json is not on this computer)",
+  "verdict": "candidates (b) name rule and (c) closing leg over 60 m did not show on these courses; the cause left is (a): the server counted every create, refused or not, before reading the body, at 10 an hour, and the page showed 'not saved this time, press save again' without the reason, so each press used up the hour"
+}
