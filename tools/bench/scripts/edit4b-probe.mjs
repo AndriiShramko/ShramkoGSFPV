@@ -206,7 +206,18 @@ try {
         let prevEye = null;
         return until(async () => { const a = (await snap()).eye; const d = dist(a, prevEye); prevEye = a; return d; }, (d) => d >= 0 && d < 0.001, 6000, 400);
     };
-    const rest = await eyeRest();
+    let rest = await eyeRest();
+    // int4 (car 1's live run failed here): on the live site Save is never pressed, so a course that already has a problem
+    // (gate 1 of step 6 in a wall) left this step nothing to judge. There Undo takes gates back until no gate has a problem,
+    // then the add below makes the sentence that names a gate.
+    const undone = [];
+    for (let i = 0; LIVE && i < 4 && (await snap()).problems > 0; i++) {
+        await press('[data-top="undo"]', 300);
+        rest = await eyeRest();
+        const u = await snap();
+        undone.push({ gates: u.ids?.length ?? null, problems: u.problems });
+    }
+    if (undone.length > 0) res.log.push(`live: ${undone.length} undo before step 10 (a gate in a wall)`);
     const before = await snap();
     const e10 = before.eye;
     // a floor gate the check refuses (gate 1 of step 6 stood in a wall there); an accepted one is undone and the next spot tried

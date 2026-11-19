@@ -287,7 +287,16 @@ try {
     const others = [];
     for (const id of ['undo', 'redo', 'save', 'courses', 'keys']) {
         if (LIVE && id === 'save') { others.push({ id, skipped: 'live' }); continue; }
-        const bx = await boxOf(`.ce-topbar [data-top="${id}"]`);
+        // since train 4 (lane edit4b, car 1) Courses and Keys are items of the top bar's Course menu, no longer buttons of
+        // their own (bar-place.ts COURSE_MENU_HUB): the pilot's path is Course, then the item (int4: car 1's live run
+        // failed here with 'not on screen')
+        const inMenu = id === 'courses' || id === 'keys';
+        if (inMenu) {
+            const cb = await boxOf('.ce-topbar [data-top="course"]');
+            if (!cb) { others.push({ id, ok: false, why: 'no Course button' }); continue; }
+            if (!(await boxOf('.ce-menu[data-menu="course"]'))) await click('top.course', cb.x, cb.y, { after: 500 });
+        }
+        const bx = await boxOf(inMenu ? `.ce-menu[data-menu="course"] [data-item="${id}"]` : `.ce-topbar [data-top="${id}"]`);
         if (!bx) { others.push({ id, ok: false, why: 'not on screen' }); continue; }
         const a = await snap();
         const rec = await click(`top.${id}`, bx.x, bx.y, { after: id === 'save' ? 3000 : 900 });

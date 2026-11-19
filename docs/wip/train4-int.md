@@ -30,7 +30,11 @@ aa18f1e4 of origin/main; the lead's change of 17:50 UTC: car 2 takes the lanes w
       2540dea0 sound6 (resumed after the outage: the sound6 merge was half done; its two conflicts finished, the package
       checked out at the new pin). Car 3: gen4a (no review file, both looks), gen4b (needs gen4a). The car 2 list is
       closed. Every merged lane head is an ancestor of HEAD; pnpm -r typecheck rc 0 on 2540dea0; sonic start tests 44/44.
-- [ ] S2 the seams between car 2 lanes (and with car 1), the one full check, the two failed live checks of car 1
+- [ ] S2 the seams between car 2 lanes (and with car 1), the one full check, the two failed live checks of car 1.
+      Done so far: origin/main's lead note a3806503 merged; seams b3e62a93 (Messages on Shift+L), the K help line for
+      Shift+H, dfeb1d03 (drag cancel closes the live tag; seam 'saved'; edit4a-camera); the two live checks' probes
+      repaired (edit4b-probe step 10 on live, edit-mouse-probe d.controls through the Course menu). Left: gates, build,
+      probes, accept-fly, the two live checks run.
 - [ ] S3 the hand-over (Car 2 parts, U:/Temp/gsfpv-train4/int4.json)
 
 ## Progress
