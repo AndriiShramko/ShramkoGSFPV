@@ -9,9 +9,12 @@ import type { TrackFile } from '@shramko/sonic-fpv';
 import { t } from '../../../i18n';
 import { siteStorage } from '../../store';
 import {
-    DRAFT_DEBOUNCE_MS, addDraft, clockOf, draftToRestore, markSaved, readDrafts, writeDrafts,
+    DRAFT_DEBOUNCE_MS, addDraft, clockOf, draftToRestore, dropDraft, markSaved, readDrafts, writeDrafts,
     type DraftBy, type DraftEntry, type DraftStorage, type OpenedCourse,
 } from '../drafts';
+
+/** the losses the pilot confirmed (asked twice): the course is left on purpose, not lost by accident */
+const DROP_STEPS: ReadonlySet<DraftBy> = new Set(['generate', 'open-other', 'new']);
 
 /** what the keeper needs from the editor (the members of the design's EditorSeam it uses) */
 export interface KeepHost {
@@ -69,7 +72,24 @@ export class DraftKeeper {
 
     /** a step that drops the edited course is about to run: the course as it stands is kept now */
     beforeLoss(by: DraftBy): void {
+        if (DROP_STEPS.has(by)) return this.drop(by);
         if (this.dirty) this.flush(this.pendingBy ?? by);
+    }
+
+    /** review edit4s R1: the pilot leaves this course on purpose: it is kept marked dropped, so the next course is not
+     *  replaced by it (or by an older draft) when the editor opens again */
+    private drop(loss: DraftBy): void {
+        const by = this.pendingBy ?? loss;
+        if (this.timer !== null) clearTimeout(this.timer);
+        this.timer = null;
+        this.pendingBy = null;
+        const track = this.host.trackNow();
+        const list = this.list();
+        if (!track || (!this.dirty && !list.some((e) => !e.saved && !e.dropped))) return;
+        const e: DraftEntry = { t: this.now(), by, title: track.title, sourceId: this.host.sourceId(), gates: track.gates.length, saved: false, track };
+        this.dirty = false;
+        this.wrote(writeDrafts(this.store, this.host.sceneId(), dropDraft(list, e), this.now()));
+        this.report();
     }
 
     /** a save failed: the course as it stands is kept now, changed or not (the failure's words say that it is kept) */

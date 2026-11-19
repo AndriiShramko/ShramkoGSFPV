@@ -156,6 +156,45 @@ describe('edit4s drafts: the keeper', () => {
         k.dispose();
     });
 
+    // review edit4s R1: G pressed twice in the editor drops the changes on purpose; the editor reopens on the new course and
+    // must not bring the dropped one back over it (it stays in Versions), not after a reload either
+    it('a course dropped by Generate or another course does not come back over the next one', () => {
+        for (const by of ['generate', 'open-other']) {
+            store.clear();
+            restored = [];
+            const a = new DraftKeeper(host(), store, () => now);
+            a.opened({ source: 'generated', track: cur, madeAt: null });
+            cur = track(4);
+            a.changed('move');
+            step(DRAFT_DEBOUNCE_MS);
+            a.beforeLoss(by);
+            a.dispose();
+            cur = track(8); // the new generated course
+            const b = new DraftKeeper(host(), store, () => now);
+            expect(b.opened({ source: 'generated', track: cur, madeAt: null })).toBeNull();
+            expect(restored).toHaveLength(0);
+            expect(b.list().some((e) => e.track.gates[0]!.pos[0] === 4)).toBe(true);
+            // a restored draft dropped again without a change stays dropped too
+            b.dispose();
+            const c = new DraftKeeper(host(), store, () => now);
+            c.back(c.list().findIndex((e) => e.track.gates[0]!.pos[0] === 4));
+            c.beforeLoss(by);
+            c.dispose();
+            cur = track(9);
+            const d = new DraftKeeper(host(), store, () => now);
+            expect(d.opened({ source: 'generated', track: cur, madeAt: null })).toBeNull();
+            // the next course's own change comes back as before
+            cur = track(10);
+            d.changed('turn');
+            step(DRAFT_DEBOUNCE_MS);
+            d.dispose();
+            cur = track(9);
+            const e = new DraftKeeper(host(), store, () => now);
+            expect(e.opened({ source: 'generated', track: cur, madeAt: null })?.track.gates[0]!.pos[0]).toBe(10);
+            e.dispose();
+        }
+    });
+
     it('the page hiding writes the waiting draft', () => {
         const k = new DraftKeeper(host(), store, () => now);
         cur = track(7);

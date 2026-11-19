@@ -34,6 +34,9 @@ export interface DraftEntry {
     /** true once this state was saved on the server (kept, not deleted) */
     readonly saved: boolean;
     readonly track: TrackFile;
+    /** true when the pilot dropped this course on purpose (Generate or another course, asked twice): it stays in Versions
+     *  and neither it nor an older draft comes back by itself (review edit4s R1) */
+    readonly dropped?: boolean;
 }
 
 interface SceneDrafts {
@@ -84,9 +87,16 @@ export function readDrafts(store: DraftStorage | null, scene: string): DraftEntr
  */
 export function addDraft(list: readonly DraftEntry[], e: DraftEntry): DraftEntry[] {
     const top = list[0];
-    if (top && courseKey(top.track) === courseKey(e.track) && top.title === e.title && top.saved === e.saved) return [...list];
-    const rest = top && top.by === e.by && !top.saved && e.t - top.t < DRAFT_GAP_MS ? list.slice(1) : list;
+    if (top && !top.dropped && courseKey(top.track) === courseKey(e.track) && top.title === e.title && top.saved === e.saved) return [...list];
+    const rest = top && !top.dropped && top.by === e.by && !top.saved && e.t - top.t < DRAFT_GAP_MS ? list.slice(1) : list;
     return [e, ...rest].slice(0, DRAFTS_KEPT);
+}
+
+/** the list with `e` on top marked dropped (the same course on top is marked, not added twice) */
+export function dropDraft(list: readonly DraftEntry[], e: DraftEntry): DraftEntry[] {
+    const top = list[0];
+    if (top && !top.saved && courseKey(top.track) === courseKey(e.track) && top.title === e.title) return [{ ...top, dropped: true }, ...list.slice(1)];
+    return [{ ...e, dropped: true }, ...list].slice(0, DRAFTS_KEPT);
 }
 
 /** after a save: the entries holding exactly the saved course are marked saved (the list keeps them) */
@@ -180,6 +190,7 @@ export function draftToRestore(list: readonly DraftEntry[], opened: OpenedCourse
         if (e.saved) continue;
         if (own && e.sourceId !== opened.track.id) continue;
         if (opened.madeAt !== null && e.t <= opened.madeAt) continue;
+        if (e.dropped) return null;
         return courseKey(e.track) === k ? null : e;
     }
     return null;
