@@ -20,7 +20,8 @@ Work copy C:/dev/gsfpv-v13-host, branch edit4c from origin/main e3201fec.
       Test tools/bench/test/edit4c-pieces.test.ts. Commit 55fb8b2b.
 - [ ] C3 styles and pole/flag as a format spec (docs/wip/edit4c-format.md), acceptance probe tools/bench/scripts/edit4c-probe.mjs.
   - [x] C3a the format spec docs/wip/edit4c-format.md (look?: plain/fabric/led, logo null; marker pole/flag by side).
-  - [ ] C3b the probe edit4c-probe.mjs (mouse, 1536x730 dsf 1.25, Wroclaw 70b50d42), local build run + live negative.
+  - [x] C3b the probe edit4c-probe.mjs (mouse, 1536x730 dsf 1.25, Wroclaw 70b50d42), local build run + live negative.
+        Commits c830f6ae, 3aada16d (evidence/2026-11-19/edit4c/probe-local-g1.1.json, probe-live-g1.1.json).
   - [ ] C3c gates, the status file's last parts.
 
 Differences from the design (the code wins):
@@ -45,10 +46,30 @@ Differences from the design (the code wins):
   (tracks.py, server.ts) checks structure only, so it needs no change.
 - C2: a double piece turns the course round (in through the first, back through the second): the gate after it may then
   warn 'sharp turn' and block saving until it is turned. The triples come out the way they went in.
+- C3: the gate looks (E13) and the pole and the flag (E12, second half) are NOT built: they change the course format,
+  which lives in packages/sonic-fpv (another repository; the design keeps it out of this train). C3 ships the spec
+  docs/wip/edit4c-format.md only; no submodule PR was opened (no push in this train).
+- C3 probe: the design's step 1 'Home' does not exist (no key frames the whole course; the view opens on gate 1 with
+  the course in front). The probe's step 2 clicks the nearest leg that does not start at the selected gate, so the old
+  page (new gate after the selected one) cannot pass by luck. A click lands where its ray meets the scan (measured: a
+  leg 30 m off behind a wall 6 m from the eye takes the gate to the leg nearest that wall point; this is placeFor's rule).
+- C3 probe: the course is the link g1.1 (COURSE=g1.1) for the verdicts: Shift+G gives a new seed each press (47 and 38
+  gates in two runs), which changes which legs stand on the page. The drawn run uses Shift+G, the pilot's own path.
 
 ## What the owner does
 
-(filled in at the last stage)
+1. Open a scene, take the Keyboard, press key Shift+G for a course, key Shift+B for the editor.
+2. Press Add on the top bar. A list 'What to add' opens under it: Gate, Double vertical, Triple vertical, Double
+   horizontal, Triple horizontal, and a 44 px cross. Gate is chosen.
+3. Click a spot on the scan between two gates: the new gate stands there, numbered between them, turned along the
+   course's line (half way between the way in and the way out). The line on top says which gate was added.
+4. Press Add, pick Double vertical, click a spot: two gates stacked 1.9 m apart; the line says 'Fly in through gate N,
+   turn round, back through the next'. Triple horizontal: three gates in a row 2.1 m apart. One Undo removes the piece.
+5. Pull a gate's arrow toward another gate or into a wall: while he drags, the gate turns orange and a tag beside it
+   says what breaks ('Too sharp a turn to fly into gate 2', 'The way from gate 1 to gate 2 goes through a wall').
+6. He lets go: the tag asks 'Keep it here?' with Keep and 'Put back (key Ctrl+Z)'. Put back returns the gate; Keep (or
+   no answer for 8 s) leaves it, and the gate stays orange until he moves it to a good place.
+7. Key I (or Insert, or the gate bar's duplicate) repeated on a curved course follows the curve, not a straight row.
 
 ## Claims
 
@@ -71,10 +92,29 @@ Differences from the design (the code wins):
    result: 8 passed; NEG OK on origin/main (all eight source files) and on HEAD~ for packages/tracks/src/check.ts alone
    (the turn-round test fails). `npx vitest run --changed origin/main`: 98 files, 961 passed, 10 skipped; fly-parity and
    edit4c-warn (the four locales, PIECE_KEYS): 19 passed.
+4. The pilot's path with the mouse at 1536x730, device scale 1.25, Wroclaw 70b50d42, course g1.1, pointer lock first:
+   a click between gates 14 and 15 makes the new gate 15 between them, 0 deg off the bisector of its legs; Double
+   vertical adds 2 gates 2.0 m apart up, Triple horizontal 3 gates 2.2 m apart in a row, one Undo press removes each;
+   dragging gate 1 by its forward arrow shows the tag ('Too sharp a turn to fly into gate 2') during the drag; the
+   release asks Keep / Put back, Put back gives the exact old pose, Keep leaves it and lists the gate as kept (orange);
+   at 844x390 the Add list fits, no item is covered, its cross is 44 px and closes it. Proof:
+   `COURSE=g1.1 QUERY='&render=off' node tools/bench/scripts/edit4c-probe.mjs http://localhost:6001/en <out.json>` on
+   the release build of 3aada16d. Last result: PASS, 10 of 10 (evidence/2026-11-19/edit4c/probe-local-g1.1.json).
+   Negative control, the same probe on the live site (read-only: nothing saved; the gates added stay in the page):
+   s1 PASS, the nine others FAIL; the same click (same point, same 75.7 m wall hit) puts the gate after gate 1, 89 deg
+   off the line; no Add list, no tag, no Keep question (evidence/2026-11-19/edit4c/probe-live-g1.1.json).
 
 ## Not verified
 
-(filled in at the last stage)
+- No person, phone or real controller took part. Every page check is headless Chrome with a mouse sent by Playwright.
+- The verdict runs use ?render=off (no picture judged); the hit tests and projections are the edit view's own maths.
+- Touch: the Add list, the tag and Keep / Put back were not tried with fingers (the C1w unit test places the box in
+  844x390; the probe's 844x390 step is a resized mouse page, not a phone).
+- The 8 s 'no answer keeps it' is in the pure test only (the probe always answers).
+- Other keyboard layouts were not walked in the page: the new controls are buttons; no new key was added.
+- A generated course from Shift+G: the probe's verdicts use the link g1.1; how a person's own seed lays out on the
+  page differs (see the drawn run below).
+- Gate looks and the pole and flag: spec only, nothing to verify in the page.
 
 ## For the lead
 
