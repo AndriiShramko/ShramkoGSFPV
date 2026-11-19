@@ -9,7 +9,7 @@
 // builds one new flight model. A value is always read back from the store: what the row shows is
 // what the app uses.
 import { actionsOf, boundsOf, helpKey, isCuratedRef, labelKey } from '@gsfpv/prefs';
-import type { ActionId, Ctx, EnumDef, GroupId, KeyHint, NumDef, PrefChange, PrefsStore, SettingDef } from '@gsfpv/prefs';
+import type { ActionId, Ctx, EnumDef, GroupId, KeyHint, MenuLevel, NumDef, PrefChange, PrefsStore, SettingDef } from '@gsfpv/prefs';
 import { PRESETS } from '../../presets';
 import { droneOf, linkSettings, pilotReset, pilotSet, presetResolver } from '../../app/prefs';
 import { h } from '../dom';
@@ -18,8 +18,9 @@ import { t } from '../../i18n';
 import { jsonEditor } from './editors';
 import type { Editor } from './editors';
 import { dataSection } from './data';
-import { focusTarget, formatNumber, fromSlider, matches, shownDefs, shownGroups, snap, toSlider, unitSymbol } from './model';
+import { focusTarget, formatNumber, fromSlider, matches, rowShow, shownDefs, shownGroups, snap, toSlider, unitSymbol } from './model';
 import type { DefTexts, RailId } from './model';
+import { asMenuLevel } from '../../app/menu-levels';
 import './settings.css';
 
 export interface SettingsHost {
@@ -70,11 +71,17 @@ const groupTitle = (g: RailId): string => (g === 'data' ? t('prefs.data') : has(
 interface Row {
     def: SettingDef;
     el: HTMLElement;
+    /** "In the full menu" / "Changed" beside a row above the pilot's menu level */
+    mark: HTMLElement;
+    /** the pilot set this row's value (it differs from the default) */
+    explicit(): boolean;
     focus(): void;
     refresh(): void;
 }
 
 let seq = 0;
+/** "Show all settings" was pressed: every row shows until the page reloads (docs/wip/menu-plan.md 2.3). */
+let showAllRows = false;
 /** Drone preset fields for the per-drone bounds of a number row. */
 const RESOLVER = presetResolver(PRESETS, []);
 
@@ -90,6 +97,7 @@ export class SettingsScreen {
     private readonly pane: HTMLElement;
     private readonly note: HTMLElement;
     private readonly empty: HTMLElement;
+    private readonly showAll: HTMLButtonElement;
     private readonly refreshers: (() => void)[] = [];
     private selected: RailId | null;
     private query = '';
@@ -112,6 +120,7 @@ export class SettingsScreen {
         this.search.addEventListener('input', () => { this.query = this.search.value; this.render(); });
         this.note = h('p', { class: 'set-note', role: 'status', 'aria-live': 'polite', 'data-testid': 'settings-note', hidden: true });
         this.empty = h('p', { class: 'set-empty muted', hidden: true });
+        this.showAll = h('button', { type: 'button', class: 'btn set-show-all', 'data-action': 'settings-show-all', hidden: true, onclick: () => { showAllRows = true; this.render(); } }) as HTMLButtonElement;
 
         const rail = h('nav', { class: 'set-rail', 'aria-label': t('prefs.groups') });
         const pane = h('div', { class: 'set-pane' }, this.empty);
@@ -127,7 +136,7 @@ export class SettingsScreen {
 
         this.root = h('div', { class: 'panel interactive settings', role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'set-title', 'data-testid': 'settings' },
             h('div', { class: 'panel-head' }, title, x),
-            h('div', { class: 'set-tools' }, this.search, this.note),
+            h('div', { class: 'set-tools' }, this.search, this.showAll, this.note),
             h('div', { class: 'set-main' }, rail, pane));
         parent.append(this.root);
         // every change, from here or anywhere (a key, the drone picker, another tab): the rows read the store again
@@ -160,6 +169,8 @@ export class SettingsScreen {
         const r = this.rows.find((x) => x.def.id === id);
         if (!r) return false;
         if (this.query) { this.search.value = ''; this.query = ''; }
+        // a row above the pilot's menu level opens the full list at that row
+        if (!rowShow(r.def, this.level(), { all: showAllRows, searching: false, hit: true, explicit: r.explicit() }).shown) showAllRows = true;
         this.select(r.def.group, false);
         r.el.classList.add('focused');
         r.el.scrollIntoView({ block: 'center' });
@@ -253,6 +264,7 @@ export class SettingsScreen {
         const keyCaps = actionsOf(def).flatMap((a) => this.host.caps?.(a) ?? []);
         const caps = keyCaps.length ? h('span', { class: 'sr-keys', 'aria-hidden': 'true' }, ...keyCaps.map((k) => h('kbd', {}, k.cap))) : null;
         const fromLink = h('span', { class: 'sr-link', hidden: true }, t('prefs.fromLink'));
+        const mark = h('span', { class: 'sr-level', 'data-testid': 'setting-mark', hidden: true });
         const dot = h('span', { class: 'sr-dot', title: t('prefs.changed'), 'aria-hidden': 'true' });
         const reset = h('button', { type: 'button', class: 'sr-reset', 'data-action': 'reset-setting', hidden: true, onclick: () => { const c = ctxOf(); if (c === null) return; pilotReset(this.store, def.id, c); if (def.apply === 'reload') this.host.reload(def.id); } }, t('prefs.reset')) as HTMLButtonElement; // a reset of the language reloads like a change (the page's address names the language)
         // the description: shown on hover and keyboard focus, pinned by a click or tap (ui/toggletip.ts)
@@ -261,15 +273,19 @@ export class SettingsScreen {
         const labelEl = control.labelFor ? h('label', { class: 'sr-name', for: control.labelFor }, label) : h('span', { class: 'sr-name' }, label);
         const el = h('div', { class: 'sr', 'data-id': def.id, 'data-scope': def.scope, 'data-type': def.type, 'data-testid': `setting-${def.id}` },
             h('div', { class: 'sr-head' }, labelEl, caps, tip?.button, tip?.bubble),
-            h('div', { class: 'sr-meta' }, badge, scope, fromLink),
+            h('div', { class: 'sr-meta' }, badge, scope, fromLink, mark),
             h('div', { class: 'sr-control' }, control.el),
             h('div', { class: 'sr-side' }, dot, reset),
             extra?.el);
         if (!enabled) el.classList.add('disabled');
 
+        const isExplicit = (): boolean => {
+            const c = ctxOf();
+            return c !== null && this.store.isExplicit(def.id, c);
+        };
         const refresh = (): void => {
             const c = ctxOf();
-            const explicit = c !== null && this.store.isExplicit(def.id, c);
+            const explicit = isExplicit();
             el.classList.toggle('changed', explicit);
             dot.hidden = !explicit;
             reset.hidden = !explicit;
@@ -287,7 +303,7 @@ export class SettingsScreen {
             extra?.refresh();
         };
         refresh();
-        return { def, el, focus: () => control.focus(), refresh };
+        return { def, el, mark, explicit: isExplicit, focus: () => control.focus(), refresh };
     }
 
     /** A value as a short text (the reset button says what it goes back to). */
@@ -428,6 +444,13 @@ export class SettingsScreen {
     private changed(c: PrefChange): void {
         if (c.id === 'drone.current') for (const s of this.droneSelects) this.fillDrones(s);
         this.refreshAll();
+        // the menu level, or a value set above it (a key, another tab): which rows show
+        this.render();
+    }
+
+    /** The pilot's menu level (Settings, Display, Menu); expert when the store has none. */
+    private level(): MenuLevel {
+        return asMenuLevel(this.store.get('ui.menuLevel'));
     }
 
     private refreshAll(): void {
@@ -466,17 +489,31 @@ export class SettingsScreen {
     private render(): void {
         const searching = this.query.trim() !== '';
         this.root.classList.toggle('searching', searching);
+        const level = this.level();
         let found = 0;
+        let above = 0;
         for (const r of this.rows) {
             const hit = !searching || matches(r.def, this.query, texts);
-            r.el.hidden = !hit;
-            if (hit && searching) found++;
+            const explicit = r.explicit();
+            const s = rowShow(r.def, level, { all: showAllRows, searching, hit, explicit });
+            r.el.hidden = !s.shown;
+            r.mark.hidden = s.mark === null;
+            r.mark.textContent = s.mark === 'inFull' ? t('menu.settings.inFull') : s.mark === 'changed' ? t('menu.settings.changed') : '';
+            if (s.shown && searching) found++;
+            if (!rowShow(r.def, level, { all: showAllRows, searching: false, hit: true, explicit }).shown) above++;
         }
+        this.showAll.hidden = above === 0;
+        this.showAll.textContent = t('menu.settings.showAll', { n: above });
+        // a group with no row at this level leaves the rail too (Data stays, except under a search, as before)
+        const rowsIn = (g: RailId): number => (g === 'data' ? (searching ? 0 : 1) :this.rows.filter((r) => r.def.group === g && !r.el.hidden).length);
+        if (!searching && this.selected !== null && rowsIn(this.selected) === 0) this.selected = [...this.sections.keys()].find((g) => rowsIn(g) > 0) ?? 'data';
         for (const [g, sec] of this.sections) {
-            const visibleRows = g === 'data' ? 0 : this.rows.filter((r) => r.def.group === g && !r.el.hidden).length;
+            const visibleRows = rowsIn(g);
             const sel = !searching && this.selected === g;
             sec.classList.toggle('sel', sel);
-            sec.hidden = searching ? visibleRows === 0 : false;
+            sec.hidden = visibleRows === 0;
+            const rb = this.railButtons.get(g);
+            if (rb) rb.hidden = visibleRows === 0;
             sec.querySelector('.sg-toggle')?.setAttribute('aria-expanded', String(searching || sel));
             const b = this.railButtons.get(g);
             if (b) {

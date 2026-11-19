@@ -50,7 +50,6 @@
   "preflight.ok": "Wszystko gra — lecimy!",
   "warning.title": "Zanim polecisz",
   "warning.text": "Szybki lot i kraksy mogą wywołać chorobę lokomocyjną. Zmierzone na 50 kraksach: efekty błyskają najwyżej 2 razy na sekundę (limit WCAG to 3), a jeśli masz w systemie włączone ograniczanie ruchu, obraz porusza się łagodniej. Jeśli źle się poczujesz, zrób przerwę.",
-  "warning.ok": "Rozumiem",
   "scenes.title": "Wybierz skan",
   "scenes.paste": "Wklej link do SuperSplat albo ID sceny",
   "scenes.go": "Otwórz",

@@ -20,11 +20,15 @@ import { PLAY_DEFS } from './play';
 // train 1 (docs/wip/train1-plan.md): one def file per lane, registered here on the train base so no lane edits this file
 import { COURSE_DEFS } from './course';
 import { ROOMS_DEFS } from './rooms';
+// menu levels (docs/wip/menu-plan.md): the level of every setting, and the menu level setting, first row of Display
+import { MENU_DEFS } from './menu';
+import { withLevels } from './levels';
 
-export const SCHEMA = defineSettings([
+export const SCHEMA = defineSettings(withLevels([
     ...FLIGHT_DEFS,
     ...CRASH_DEFS,
     ...CAMERA_DEFS,
+    ...MENU_DEFS,
     ...DISPLAY_DEFS,
     ...STATS_DEFS,
     ...INPUT_DEFS,
@@ -40,7 +44,9 @@ export const SCHEMA = defineSettings([
     ...PLAY_DEFS,
     ...COURSE_DEFS,
     ...ROOMS_DEFS
-]);
+]));
+
+export { LEVEL_TABLE, withLevels } from './levels';
 
 export { DRONE_IDS } from './drone';
 export { RATE_TYPES, RATE_BOUNDS, validatePid, validateRates, validateThrottle } from './tune';

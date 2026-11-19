@@ -362,3 +362,7 @@ body.cinema .rec-dot { display: none; }
 .consent-card p { margin: 0 0 10px; color: var(--muted); } .consent-card strong { color: var(--fg); } .consent-card a { color: var(--accent); }
 .consent-actions { display: flex; flex-wrap: wrap; gap: 8px; } .consent-actions .btn { min-width: 120px; }
 .pm-cookies { margin: 10px 0 0; text-align: center; } .pm-cookies .linkish { background: none; border: 0; padding: 8px; min-height: 44px; color: var(--muted); font: inherit; font-size: 13px; text-decoration: underline; cursor: pointer; } .pm-cookies .linkish:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+/* "Before you fly": the question "Have you flown FPV before?" (ui/panels.ts warningModal), one answer a row, its name over a short hint */
+.level-ask h3 { margin: 14px 0 6px; font-size: 16px; }
+.level-answer { flex-direction: column; align-items: flex-start; text-align: left; min-height: 44px; gap: 2px; }
+.level-answer .level-name { font-weight: 600; } .level-answer .level-hint { font-size: 13px; font-weight: 400; opacity: .85; }

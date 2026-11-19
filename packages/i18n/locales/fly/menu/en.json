@@ -1,0 +1,15 @@
+{
+  "menu.level.ask": "Have you flown FPV before?",
+  "menu.level.first": "Never. Keep it simple",
+  "menu.level.first.hint": "Few buttons, and the drone helps you fly.",
+  "menu.level.sim": "Yes, in other simulators or for real",
+  "menu.level.sim.hint": "Flight mode, rates, camera angle and your radio, by the names you know.",
+  "menu.level.expert": "Show me everything",
+  "menu.level.expert.hint": "Every button and every setting at once.",
+  "menu.level.later": "You can change this any time: Settings, Display, Menu.",
+  "menu.more": "More ({n})",
+  "menu.showAll": "Always show everything",
+  "menu.settings.showAll": "Show all settings ({n} more)",
+  "menu.settings.inFull": "In the full menu",
+  "menu.settings.changed": "Changed"
+}

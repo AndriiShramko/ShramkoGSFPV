@@ -20,6 +20,7 @@ Car 1
 - gen4a: car 2 (no review file)
 - gen4b: car 2, needs gen4a (review SHIP, but on a tree without gen4a planCourse is the S0 stub that uses only the seed: the level and spread buttons of the Generate dialog would change nothing)
 - edit4a: car 2 (no review file)
+- menu4: merged (review SHIP); the same b-repo-b18.json add/add conflict only, menu4's file taken whole
 - edit4s: car 2 (review Verdict: HOLD)
 - edit4c: car 2 (no review file)
 - sound6: car 2 (no review file)

@@ -10,6 +10,20 @@ export type Apply = 'live' | 'life' | 'reload';
 export type Surface = 'settings' | 'hud' | 'pause' | 'crash' | 'picker' | 'controls' | 'cinema' | 'key' | 'url';
 export type GroupId = 'flight' | 'crash' | 'camera' | 'display' | 'sound' | 'input' | 'drone' | 'tune' | 'scenes' | 'voxels' | 'recording';
 export type Status = 'shipped' | 'planned' | 'test'; // planned: stored and validated, hidden from the UI and the catalogue
+/**
+ * How much of the menus a pilot sees (docs/wip/menu-plan.md, the owner's three kinds of new pilot):
+ * 'first' a pilot who never flew, 'sim' a pilot of other simulators or a real quad, 'expert' everything.
+ * A level shows its own items and those of the levels before it; the rest stays one click away under
+ * "More" and still works by its key and by search.
+ */
+export type MenuLevel = 'first' | 'sim' | 'expert';
+export const MENU_LEVELS: readonly MenuLevel[] = ['first', 'sim', 'expert'];
+
+/** True when a pilot at menu level `viewer` sees an item of level `item` without opening "More". */
+export function levelShows(viewer: MenuLevel, item: MenuLevel): boolean {
+    return MENU_LEVELS.indexOf(item) <= MENU_LEVELS.indexOf(viewer);
+}
+
 export type Unit = 'deg' | 'ms' | 's' | 'm' | 'mps' | 'mps2' | 'x' | 'pct' | 'per_s' | 'blocks' | 'min';
 
 /**
@@ -46,6 +60,8 @@ interface Base<T> {
     action?: ActionId | readonly ActionId[];
     url?: string; // legacy / diagnostic URL parameter (session layer only)
     advanced?: boolean;
+    /** the menu level whose Settings list shows this row (defs/levels.ts LEVEL_TABLE); required on a shipped def */
+    level?: MenuLevel;
     items?: readonly number[]; // brief items it answers (catalogue, tests)
     /**
      * false: the value lasts for this page load only. set() puts it in the session layer; it is
@@ -198,6 +214,9 @@ function problemsOf(d: SettingDef, known: ReadonlySet<string>): string[] {
     if (!APPLIES.includes(d.apply)) p.push(`${id}: unknown apply ${d.apply}`);
     if (!STATUSES.includes(d.status)) p.push(`${id}: unknown status ${d.status}`);
     for (const s of d.shown) if (!SURFACES.includes(s)) p.push(`${id}: unknown surface ${s}`);
+    if (d.level !== undefined && !MENU_LEVELS.includes(d.level)) p.push(`${id}: unknown menu level ${String(d.level)}`);
+    if (d.status === 'shipped' && d.level === undefined) p.push(`${id}: a shipped setting needs a menu level (defs/levels.ts)`);
+    if (d.advanced && d.level !== undefined && d.level !== 'expert') p.push(`${id}: an advanced setting is at menu level expert, not ${d.level}`);
     if (!Number.isInteger(d.since) || d.since < 1 || d.since > SCHEMA_VERSION) p.push(`${id}: since ${d.since} outside 1..${SCHEMA_VERSION}`);
     for (const a of actionsOf(d)) if (!known.has(a)) p.push(`${id}: action ${a} is not in the keymap`);
     if (d.url !== undefined && !URL_RE.test(d.url)) p.push(`${id}: url parameter '${d.url}' is not a plain name`);
