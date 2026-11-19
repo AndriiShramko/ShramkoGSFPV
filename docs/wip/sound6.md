@@ -94,7 +94,16 @@ the design says train6: the lane prompt wins). Design C:/dev/.gsfpv-lanes/design
     them, so the knock also plays under speech (walk2: title 1.4-3.1 s, keys line 3.2-13.1 s, intro.1 13.2-16.4 s,
     "Sound 1 of 3" queued at 12.4 s and started 16.5 s, the knock at 16.5 s, then a second keys line for the trial
     step). Claim 3 is not true in the page until this is fixed.
-  - Left list of S5: (a) host fix: the keys line of a lesson step must not stand between the lesson's lines and its
+  - [x] (a) done in 154f5e59: lessons.ts keysDue(): a flying lesson says its keys every step as before; a listening
+    lesson (world 'none', module 0) once a lesson, at the first step after its first sound or scene (repeat-cue, preview
+    or a scene action). sonic-hints.test.ts: ears-headphones, ears-walls, ears-glossary, no keys before the first sound,
+    then 1 in 5 steps; NEG OK against f9229f76. sonic-lesson-keys.test.ts: the glossary opened by G no longer says the
+    keys with its title. All 60 host files tools/bench/test/sonic*: 864 passed, 10 skipped; fly typecheck 0 errors.
+  - [x] (c) apps/fly/src/sonic/sonic.css: .sonic-start nav a, footer a min-height 44 px (inline-flex); proof: the walk.
+  - [ ] (b) en cue.speed.brake.name "Brake notes" -> "Slow-down notes" (package, uncommitted until listen:words passes),
+    measured with David 1.895 s (es, pl, ru re-measured: unchanged); package tests brake-planner, budget-wired,
+    lesson-schedule, quick-path, locales: 84 passed. listen:words run 2: see its log.
+  - Left list of S5 (run 1's, (a) and (c) done): (a) host fix: the keys line of a lesson step must not stand between the lesson's lines and its
     sound; the cheapest clean rule: in a module-0 listening lesson (ears-*) the keys line is said once a lesson, after
     the first question is answered (or the step's keys are said only at an 'ask' action), keep R8's flying lessons as
     they are; a host test that fails on the old code (lessons.ts hint per step) and the walk's step 4 <= 12 s;

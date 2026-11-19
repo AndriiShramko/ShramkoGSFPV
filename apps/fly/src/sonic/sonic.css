@@ -35,6 +35,8 @@
 .sonic-start a { color: var(--accent, #4ade80); }
 .sonic-start a:focus-visible, .sonic-start input:focus-visible, .sonic-start select:focus-visible, .sonic-start summary:focus-visible, .sonic-start .btn:focus-visible { outline: 3px solid var(--accent, #4ade80); outline-offset: 2px; }
 .sonic-start nav ul, .sonic-start footer ul { display: flex; flex-wrap: wrap; gap: 8px 22px; list-style: none; margin: 10px 0; padding: 0; }
+/* lane sound6: the nav and footer links are controls too: 44 px high to hit with a finger (the owner's rule) */
+.sonic-start nav a, .sonic-start footer a { display: inline-flex; align-items: center; min-height: 44px; }
 .sonic-intro { max-width: 60ch; color: var(--fg, #e8eaed); }
 .sonic-note { padding: 10px 14px; border: 1px solid var(--warn, #fbbf24); border-radius: 10px; color: var(--warn, #fbbf24); }
 .sonic-actions { display: flex; flex-wrap: wrap; gap: 12px; margin: 12px 0; }
