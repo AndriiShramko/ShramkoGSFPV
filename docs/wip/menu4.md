@@ -53,3 +53,13 @@ Plan items checked against today's code (2026-11-19):
 - S1: most replies went to finding why the plan and today differ (setting count, probes that press warning-ok, the ?nowarn pages) and to a neg_control retry (on Windows it needs npx.cmd, not npx); a design note listing the probes per data-action would have saved four replies.
 - S2: about 25 replies, most of them reading screen.ts and menu.ts by slices and choosing one table over a field on 28 menu adds; the mock of ui/pause from app-switches.test.ts made the PauseMenu test cheap. Cheaper: a design entry point that names the test pattern (mocked ui/pause) up front.
 - S3: about 30 replies; most went to the probe's own errors found by running it (items inside a closed details keep a layout box in Chrome, the summary inside its details, the cookie question of a first visit, the headless-launch scan of chrome.test.ts that only the gates ran). Cheaper: a probe template in tools/bench/scripts that already handles the first visit (notice, cookies, Controls, How to fly) and the `{ ...pick.launch }` form.
+- Review: about 20 replies; the most went to two release builds (the first hit the 10 min background limit on a loaded machine) and to the negative control of the Up / Down walk (a vite dev server with the filter removed). Cheaper: start the build with a long limit at once; a fake-dom that knows `closest` would let pause.ts have a unit test.
+
+## Review
+
+Verdict: SHIP (independent check at 10ebc864; full text U:/Temp/gsfpv-train4/reviews/menu4.md).
+- PROVEN, repaired: Claim 2's "Up / Down skip a closed More" had no proof that could fail (menu4-menus.test.ts mocks ui/pause: NEG BAD for pause.ts). Without the skip the focus sticks on "More". New probe step `walk`: head 15 of 15 PASS; with `.filter(walkable)` removed only `walk` FAILS (evidence/2026-11-19/menu4/first-minute-review.json, first-minute-review-neg-walk.json).
+- PROVEN, repaired: the text of step `fits` claimed "no scrolling"; at 1536x730 five of the nine items are below the fold. The text now says what it measures. Not worse than live.
+- PROVEN, pre-existing, for the lead: at 844x390 (touch) the cookie card (app/analytics.ts) lies over "Show me everything" in "Before you fly"; on live it lies over the single "Understood". The head is better than live (2 of 3 answers tappable, 0 of 1 live).
+- DOUBT: in Settings at level first, Reset on a row shown only as "Changed" hides it at once and the focus falls to the page.
+- Claims 1 and 2: 33 of 33 pass, NEG OK for boot.ts. Claim 3: 14 of 14 on a release build of the head, 15 of 15 with `walk`.

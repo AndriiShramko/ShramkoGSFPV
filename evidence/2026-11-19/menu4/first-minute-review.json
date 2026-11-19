@@ -1,0 +1,416 @@
+{
+  "what": "a new pilot's first minute with the mouse (menu4-first-minute-probe.mjs)",
+  "base": "http://localhost:6105/en",
+  "view": {
+    "width": 1536,
+    "height": 730,
+    "deviceScaleFactor": 1.25
+  },
+  "browser": {
+    "kind": "system-chrome",
+    "version": "157.0.8103.52"
+  },
+  "pilots": {
+    "first": {
+      "ask": {
+        "answers": [
+          "warning-first",
+          "warning-sim",
+          "warning-ok"
+        ],
+        "question": "Have you flown FPV before?"
+      },
+      "flow": {
+        "consent": true,
+        "controls": true,
+        "card": true
+      },
+      "pause": {
+        "total": 27,
+        "shown": 9,
+        "ids": [
+          "pause.continue",
+          "pause.restart",
+          "pause.scene",
+          "pause.radio",
+          "pause.howtofly",
+          "pause.settings",
+          "pause.feedback",
+          "pause.flyBySound",
+          "pause.flyBySoundLessons"
+        ],
+        "more": "More (18)",
+        "overlap": null,
+        "outside": [
+          "pause.settings",
+          "pause.feedback",
+          "pause.flyBySound",
+          "pause.flyBySoundLessons",
+          "menu-more"
+        ],
+        "span": 462,
+        "view": 730,
+        "locked": false
+      },
+      "walk": [
+        "pause.restart",
+        "pause.scene",
+        "pause.radio",
+        "pause.howtofly",
+        "pause.settings",
+        "pause.feedback",
+        "pause.flyBySound",
+        "pause.flyBySoundLessons",
+        "menu-more",
+        "A",
+        "pause.continue",
+        "pause.restart"
+      ],
+      "more": {
+        "shown": 27,
+        "total": 27
+      },
+      "settings": {
+        "total": 78,
+        "shown": 11,
+        "showAll": "Show all settings (67 more)",
+        "cross": {
+          "w": 44,
+          "h": 44
+        }
+      },
+      "search": {
+        "found": true,
+        "shown": true,
+        "mark": "In the full menu"
+      },
+      "showAll": {
+        "total": 78,
+        "shown": 78,
+        "showAll": null,
+        "cross": {
+          "w": 44,
+          "h": 44
+        }
+      },
+      "errors": []
+    },
+    "sim": {
+      "answered": true,
+      "flow": {
+        "consent": true,
+        "controls": true,
+        "card": true
+      },
+      "pause": {
+        "total": 27,
+        "shown": 17,
+        "ids": [
+          "pause.continue",
+          "pause.restart",
+          "pause.rewind",
+          "pause.scene",
+          "pause.share",
+          "pause.drone",
+          "pause.radio",
+          "pause.howtofly",
+          "pause.settings",
+          "pause.replays",
+          "pause.rooms",
+          "pause.course",
+          "pause.course.toggle",
+          "pause.sound",
+          "pause.feedback",
+          "pause.flyBySound",
+          "pause.flyBySoundLessons"
+        ],
+        "more": "More (10)",
+        "overlap": null,
+        "outside": [
+          "pause.drone",
+          "pause.radio",
+          "pause.howtofly",
+          "pause.settings",
+          "pause.replays",
+          "pause.rooms",
+          "pause.course",
+          "pause.course.toggle",
+          "pause.sound",
+          "pause.feedback",
+          "pause.flyBySound",
+          "pause.flyBySoundLessons",
+          "menu-more"
+        ],
+        "span": 819,
+        "view": 730,
+        "locked": false
+      },
+      "settings": {
+        "total": 78,
+        "shown": 35,
+        "showAll": "Show all settings (43 more)",
+        "cross": {
+          "w": 44,
+          "h": 44
+        }
+      },
+      "errors": []
+    },
+    "expert": {
+      "answered": true,
+      "flow": {
+        "consent": true,
+        "controls": true,
+        "card": true
+      },
+      "pause": {
+        "total": 27,
+        "shown": 27,
+        "ids": [
+          "pause.continue",
+          "pause.restart",
+          "pause.rewind",
+          "pause.scene",
+          "pause.scene.next",
+          "pause.scene.random",
+          "pause.scene.favourite",
+          "pause.share",
+          "pause.drone",
+          "pause.radio",
+          "pause.howtofly",
+          "pause.settings",
+          "pause.replays",
+          "pause.rooms",
+          "pause.course",
+          "pause.course.toggle",
+          "pause.course.load",
+          "pause.course.save",
+          "pause.course.edit",
+          "pause.measure",
+          "pause.import",
+          "pause.cinema",
+          "pause.record",
+          "pause.sound",
+          "pause.feedback",
+          "pause.flyBySound",
+          "pause.flyBySoundLessons"
+        ],
+        "more": null,
+        "overlap": null,
+        "outside": [
+          "pause.scene.random",
+          "pause.scene.favourite",
+          "pause.share",
+          "pause.drone",
+          "pause.radio",
+          "pause.howtofly",
+          "pause.settings",
+          "pause.replays",
+          "pause.rooms",
+          "pause.course",
+          "pause.course.toggle",
+          "pause.course.load",
+          "pause.course.save",
+          "pause.course.edit",
+          "pause.measure",
+          "pause.import",
+          "pause.cinema",
+          "pause.record",
+          "pause.sound",
+          "pause.feedback",
+          "pause.flyBySound",
+          "pause.flyBySoundLessons"
+        ],
+        "span": 1220,
+        "view": 730,
+        "locked": false
+      },
+      "settings": {
+        "total": 78,
+        "shown": 78,
+        "showAll": null,
+        "cross": {
+          "w": 44,
+          "h": 44
+        }
+      },
+      "errors": []
+    }
+  },
+  "pass": true,
+  "checks": [
+    {
+      "name": "ask: the notice asks the question with three answers",
+      "pass": true,
+      "detail": {
+        "answers": [
+          "warning-first",
+          "warning-sim",
+          "warning-ok"
+        ],
+        "question": "Have you flown FPV before?"
+      }
+    },
+    {
+      "name": "answer: a click on \"Never. Keep it simple\" goes on to the flight",
+      "pass": true,
+      "detail": {
+        "answered": "warning-first"
+      }
+    },
+    {
+      "name": "capture: a click into the scene takes the mouse",
+      "pass": true,
+      "detail": {
+        "consent": true,
+        "controls": true,
+        "card": true
+      }
+    },
+    {
+      "name": "pause: P frees the mouse and shows few items with \"More (n)\" holding the rest",
+      "pass": true,
+      "detail": {
+        "shown": 9,
+        "total": 27,
+        "more": "More (18)",
+        "locked": false
+      }
+    },
+    {
+      "name": "fits: the list of items shown is shorter than the 730 px view and none lies over another",
+      "pass": true,
+      "detail": {
+        "span": 462,
+        "view": 730,
+        "overlap": null,
+        "belowTheFold": [
+          "pause.settings",
+          "pause.feedback",
+          "pause.flyBySound",
+          "pause.flyBySoundLessons",
+          "menu-more"
+        ]
+      }
+    },
+    {
+      "name": "walk: Down stops on the \"More\" line, skips the items inside it and goes on round to Continue",
+      "pass": true,
+      "detail": [
+        "pause.restart",
+        "pause.scene",
+        "pause.radio",
+        "pause.howtofly",
+        "pause.settings",
+        "pause.feedback",
+        "pause.flyBySound",
+        "pause.flyBySoundLessons",
+        "menu-more",
+        "A",
+        "pause.continue",
+        "pause.restart"
+      ]
+    },
+    {
+      "name": "more: a click on \"More (n)\" shows every item",
+      "pass": true,
+      "detail": {
+        "shown": 27,
+        "total": 27
+      }
+    },
+    {
+      "name": "settings: fewer rows than the full list and a \"Show all settings (n more)\" button",
+      "pass": true,
+      "detail": {
+        "total": 78,
+        "shown": 11,
+        "showAll": "Show all settings (67 more)",
+        "cross": {
+          "w": 44,
+          "h": 44
+        }
+      }
+    },
+    {
+      "name": "search: \"uptilt\" shows the camera uptilt row marked \"In the full menu\"",
+      "pass": true,
+      "detail": {
+        "found": true,
+        "shown": true,
+        "mark": "In the full menu"
+      }
+    },
+    {
+      "name": "showAll: a click on \"Show all settings\" shows every row",
+      "pass": true,
+      "detail": {
+        "total": 78,
+        "shown": 78,
+        "showAll": null,
+        "cross": {
+          "w": 44,
+          "h": 44
+        }
+      }
+    },
+    {
+      "name": "close: the 44 px cross closes Settings and a click into the scene takes the mouse again",
+      "pass": true,
+      "detail": {
+        "cross": {
+          "w": 44,
+          "h": 44
+        },
+        "closed": true,
+        "locked": true
+      }
+    },
+    {
+      "name": "first: no page error",
+      "pass": true,
+      "detail": []
+    },
+    {
+      "name": "levels: the three pilots see three different counts in the pause menu and in Settings",
+      "pass": true,
+      "detail": {
+        "pause": [
+          9,
+          17,
+          27
+        ],
+        "settings": [
+          11,
+          35,
+          78
+        ]
+      }
+    },
+    {
+      "name": "expert: today's full menus (no \"More\", no \"Show all settings\")",
+      "pass": true,
+      "detail": {
+        "pause": {
+          "shown": 27,
+          "total": 27,
+          "more": null
+        },
+        "settings": {
+          "total": 78,
+          "shown": 78,
+          "showAll": null,
+          "cross": {
+            "w": 44,
+            "h": 44
+          }
+        }
+      }
+    },
+    {
+      "name": "sim, expert: no page error",
+      "pass": true,
+      "detail": []
+    }
+  ]
+}

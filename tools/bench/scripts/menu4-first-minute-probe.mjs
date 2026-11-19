@@ -7,7 +7,10 @@
 //   answer   a click on "Never. Keep it simple" closes it and the flight page goes on (Controls, then How to fly)
 //   capture  the keyboard on the Controls screen, Start flying on the card, a click into the scene: the pointer lock
 //   pause    P: the pause menu frees the mouse, shows few items and a "More (n)" line holding the rest
-//   fits     every item shown fits the 730 px view with no scrolling, and the items do not lie over each other
+//   fits     the list of items shown is shorter than the 730 px view (one scroll shows it whole; the items below the fold
+//            now are reported, not judged: the panel's rows stand above the list), and the items do not lie over each other
+//   walk     (review) Down from Continue stops on the "More" line, never on an item inside the closed "More", and goes on
+//            round to Continue (without the skip the focus sticks on "More")
 //   more     a click on "More (n)" shows the n items
 //   settings a click on Settings: fewer rows than the full list and a "Show all settings (n more)" button
 //   search   a click into search and "uptilt": the camera uptilt row shows, marked "In the full menu"
@@ -169,8 +172,21 @@ const out = { what: "a new pilot's first minute with the mouse (menu4-first-minu
     r.pause = await pauseLook(page);
     const p = r.pause;
     check('pause: P frees the mouse and shows few items with "More (n)" holding the rest', !!p && !p.locked && p.shown <= 12 && !!p.more && p.total - p.shown >= 10, p && { shown: p.shown, total: p.total, more: p.more, locked: p.locked });
+    // the list fits the view as a whole (one scroll brings it all into sight); the panel's rows above it push part of it
+    // below the fold today, so the items below the fold are reported (belowTheFold), not judged
     check('fits: the list of items shown is shorter than the 730 px view and none lies over another', !!p && p.span > 0 && p.span <= p.view && p.overlap === null, p && { span: p.span, view: p.view, overlap: p.overlap, belowTheFold: p.outside });
     if (shotDir) await page.screenshot({ path: `${shotDir}/menu4-pause-first.png` });
+    // walk (review): Down from Continue visits the items shown and the "More" line, never an item inside the closed "More"
+    await page.locator('.pause-menu [data-action="pause.continue"]').first().focus().catch(() => {});
+    const seen = [];
+    for (let i = 0; i < 12; i++) {
+        await page.keyboard.press('ArrowDown');
+        seen.push(await page.evaluate(() => { const a = document.activeElement; return { id: a?.getAttribute('data-action') ?? a?.tagName ?? null, hidden: !!a && a.tagName !== 'SUMMARY' && !!a.closest('details:not([open])') }; }));
+    }
+    r.walk = seen.map((x) => (x.hidden ? `hidden:${x.id}` : x.id));
+    // without the skip Chrome cannot focus a hidden item, so the focus stuck on "More" and Down went no further
+    const atMore = seen.findIndex((x) => x.id === 'menu-more');
+    check('walk: Down stops on the "More" line, skips the items inside it and goes on round to Continue', atMore >= 0 && seen.slice(atMore).some((x) => x.id === 'pause.continue') && !seen.some((x) => x.hidden), r.walk);
     if (p?.more) await page.locator('[data-action=menu-more]').click();
     await settle(page);
     const after = await pauseLook(page);
