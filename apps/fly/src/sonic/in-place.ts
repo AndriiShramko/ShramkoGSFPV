@@ -6,6 +6,7 @@ import type { FlightContext } from '../app/context';
 import type { FlightSession } from '../session';
 import { Captions } from './captions';
 import { SonicSetup } from './entry';
+import { attachHead } from './head/page';
 import { setSonicEntry } from './entry-state';
 import { InPlaceSwitch, failedLine, firstTimer } from './in-place-model';
 import { KeyNames } from './key-names';
@@ -21,10 +22,14 @@ export function inPlaceSwitch(ctx: FlightContext, lessons: () => void): InPlaceS
         async start() {
             captions ??= new Captions();
             const setup = new SonicSetup(ctx.prefs, locale, captions);
+            attachHead(setup);
             await setup.audio.start();
             return setup.audio.available ? setup : null;
         },
-        stop: (setup) => void setup.audio.close().catch(() => undefined),
+        stop: (setup) => {
+            setup.head?.dispose();
+            void setup.audio.close().catch(() => undefined);
+        },
         setEntry: (e) => {
             // a lesson with other walls hands its session to the shell (feature.ts swapTo), as the ?sonic= page does
             const swap = (ctx as { swapSession?: (next: FlightSession, scene: { id: string }) => void }).swapSession;

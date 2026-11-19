@@ -613,6 +613,10 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
             sayOn: () => void sayLine({ key: 'sonic.say.narratorOn' }, true).catch(() => undefined),
             cueOff: () => audio.engine.cue(NARRATOR_OFF_CUE)
         }), { when: () => mode.active && h.active && !dialogOpen() && !ctx.menu.isOpen }),
+        // lane head4: Shift+H centres head tracking (the pilot faces the screen and presses it); with it off it says how to turn it on
+        ctx.keys.on('sonic.headCentre', (e: Pick<KeyboardEvent, 'repeat'>) => {
+            if (!e.repeat) entry.setup.head?.recentre();
+        }, { when: () => mode.active && h.active && !dialogOpen() && !ctx.menu.isOpen }),
         watchSoundGap(new SoundGap({
             lessonActive: () => mode.active && h.active,
             visible: () => document.visibilityState === 'visible',

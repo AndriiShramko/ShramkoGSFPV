@@ -611,7 +611,10 @@ export class StartScreen {
             select('sonic-key-hints', t('sonic.settings.keyHints'), keyHintsChoice(this.d.setup.host), KEY_HINTS_CHOICES.map((c) => [c, t(`sonic.settings.keyHints.${c}`)]), (v, said) => {
                 setKeyHints(this.d.setup.host, v as KeyHintsChoice);
                 this.sayValue(said);
-            })
+            }),
+            // lane head4: "Turn my head to listen", off unless turned on; the switch speaks first, then the browser asks for the camera,
+            // and the result is said (head/switch.ts); a refusal draws the row off again. Shown where the page made the switch (head/page.ts)
+            ...(this.d.setup.head ? [((head) => check('sonic-head', t('sonichead.setting'), head.on, (v) => void head.set(v).then((on) => on === v || this.render()), t('sonichead.settingWhat')))(this.d.setup.head)] : [])
         ];
         this.stop(summary, () => t('sonic.settings.layers'));
         const layerRows = LAYER_IDS.map((id: LayerId) => {

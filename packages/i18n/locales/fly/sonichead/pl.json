@@ -1,0 +1,16 @@
+{
+  "keys.sonic.headCentre": "Lot na słuch: wyśrodkuj śledzenie głowy (najpierw spójrz na ekran)",
+  "sonichead.setting": "Obracaj głową, by słuchać",
+  "sonichead.settingWhat": "Kamera internetowa śledzi twoją głowę, więc dźwięki zostają na miejscu, gdy ją obracasz. Żaden obraz nie opuszcza tego komputera.",
+  "sonichead.say.ask": "Śledzenie głowy używa kamery internetowej tylko po to, by wiedzieć, dokąd zwrócona jest twoja głowa, więc dźwięki zostają na miejscu, gdy ją obracasz. Żaden obraz nie opuszcza tego komputera. Teraz przeglądarka zapyta o kamerę: wybierz Zezwól.",
+  "sonichead.say.on": "Śledzenie głowy włączone. Spójrz na ekran; aby później znów wyśrodkować, naciśnij klawisz {key}.",
+  "sonichead.say.off": "Śledzenie głowy wyłączone. Kamera jest zamknięta.",
+  "sonichead.say.keyOff": "Śledzenie głowy jest wyłączone. Aby je włączyć, otwórz ustawienia dźwięku i wybierz Obracaj głową, by słuchać.",
+  "sonichead.say.centred": "Wyśrodkowano.",
+  "sonichead.say.lost": "Głowa zgubiona. Dźwięki podążają za dronem, aż twoja twarz wróci.",
+  "sonichead.say.denied": "Śledzenie głowy jest wyłączone: nie zezwolono na kamerę. Aby zezwolić, otwórz ustawienia strony ikoną po lewej od adresu, zezwól na kamerę, potem znów włącz Obracaj głową, by słuchać.",
+  "sonichead.say.no-camera": "Śledzenie głowy jest wyłączone: nie znaleziono kamery internetowej. Podłącz ją, potem znów włącz Obracaj głową, by słuchać.",
+  "sonichead.say.busy": "Śledzenie głowy jest wyłączone: inny program używa kamery. Zamknij go, potem znów włącz Obracaj głową, by słuchać.",
+  "sonichead.say.unsupported": "Śledzenie głowy jest wyłączone: ta przeglądarka nie daje stronie kamery. Spróbuj Chrome, Edge lub Firefox.",
+  "sonichead.say.failed": "Śledzenie głowy jest wyłączone: śledzenie twarzy nie ruszyło. Dźwięki działają bez niego; znów włącz Obracaj głową, by słuchać, aby spróbować ponownie."
+}

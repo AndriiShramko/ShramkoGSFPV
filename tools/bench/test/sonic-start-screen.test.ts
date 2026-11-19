@@ -11,6 +11,12 @@ import type { CaptionSink } from '../../../apps/fly/src/sonic/entry';
 import { mkStore } from '../../../packages/prefs/test/helpers';
 import * as lookPrefs from '../../../apps/fly/src/sonic/look-prefs';
 import { FakeDocument } from './sonic-fake-dom';
+import { headRig } from './sonic-head-fakes';
+import type { HeadRig } from './sonic-head-fakes';
+
+/** lane head4: the head-tracking stand-ins of the last open() */
+let lastRig: HeadRig;
+const EN_HEAD_WHAT = 'The web camera follows your head, so sounds stay in place when you turn it. No picture leaves this computer.';
 import type { FakeElement } from './sonic-fake-dom';
 
 type ScreenMod = typeof import('../../../apps/fly/src/sonic/start-screen');
@@ -94,6 +100,9 @@ function open(o: { locale?: Locale; progress?: Record<string, LessonProgress>; c
     const engine = new SayingEngine();
     const deps: AudioDeps = { makeContext: () => ({ currentTime: 0, sampleRate: 48000, state: 'running' }) as never, unlockSpeech: () => undefined, createEngine: () => engine as unknown as PageEngine };
     const setup = new entryMod.SonicSetup(store, o.locale ?? 'en', new Sink(), { deps });
+    // lane head4: the page's head-tracking switch (head/page.ts attachHead), here on stand-ins
+    lastRig = headRig(store);
+    setup.head = lastRig.head;
     const started: string[] = [];
     const closed = { n: 0 };
     const s = new screenMod.StartScreen({
@@ -316,7 +325,7 @@ const STOPS = [
     ...lessonPaths().full.map((id) => `lesson:${id}`), 'sonic-reset',
     // v13-int step 3: sound from above and below after the target height note; the sound panel and the attitude display after the frame;
     // lane sonic-beacon: the target hum showing the way after sound from above and below
-    'sonic-theme', 'sonic-calm', 'sonic-polarity', 'sonic-rate', 'sonic-captions', 'sonic-sr', 'sonic-narrator', 'sonic-motor', 'sonic-motor-level', 'sonic-height-target', 'sonic-height-direction', 'sonic-beacon', 'sonic-frame', 'sonic-look-soundPanel', 'sonic-look-attitude', 'sonic-key-hints', 'summary',
+    'sonic-theme', 'sonic-calm', 'sonic-polarity', 'sonic-rate', 'sonic-captions', 'sonic-sr', 'sonic-narrator', 'sonic-motor', 'sonic-motor-level', 'sonic-height-target', 'sonic-height-direction', 'sonic-beacon', 'sonic-frame', 'sonic-look-soundPanel', 'sonic-look-attitude', 'sonic-key-hints', 'sonic-head', 'summary',
     'sonic-about', 'sonic-leave'
 ];
 /** The focused control as STOPS names it. */
@@ -359,7 +368,7 @@ describe('C3 (M41-4, W13): the start screen and the mode\'s settings as a spoken
         expect(at('lesson:rings-first')).toBe(`${titleOf('rings-first')}. ${placeOf('rings-first')}, not started, Fast path`);
         // the settings' stops: the screen's own count, 11 before v13-int's three switches (step 3), 15 before lane sonic-beacon's switch, 16 before lane quiet's
         const settings = STOPS.slice(STOPS.indexOf('sonic-theme'), STOPS.indexOf('summary') + 1).length;
-        expect(settings).toBe(17); // 16 before lane quiet's narrator switch
+        expect(settings).toBe(18); // 17 before lane head4's head tracking row, 16 before lane quiet's narrator switch
         expect(at('sonic-theme')).toBe(`Settings. Sound theme: Soft. Item 1 of ${settings}.`);
         expect(at('sonic-motor-level')).toBe(`Motor volume: 0 dB. Item 9 of ${settings}.`);
         expect(at('sonic-height-target')).toBe(`Target height note: on. Item 10 of ${settings}.`);
@@ -555,7 +564,7 @@ describe('C3 (M41-4, W13): the start screen and the mode\'s settings as a spoken
         over.s.show('settings');
         expect(page.map((x) => x.line.params?.text ?? x.line.key)).toEqual(['Settings']);
         doc.key('ArrowDown');
-        expect(page.at(-1)?.line.params?.text).toBe('Sound theme: Soft. Item 1 of 17.');
+        expect(page.at(-1)?.line.params?.text).toBe('Sound theme: Soft. Item 1 of 18.');
         expect(over.engine.said).toEqual([]);
         over.s.dispose();
     });
@@ -601,6 +610,7 @@ describe('v13-int step 3: sound from above and below, the sound panel and the at
         const pe = new PrefsEngine();
         const deps: AudioDeps = { makeContext: () => ({ currentTime: 0, sampleRate: 48000, state: 'running' }) as never, unlockSpeech: () => undefined, createEngine: () => pe as unknown as PageEngine };
         const setup = new entryMod.SonicSetup(store, 'en', new Sink(), { deps });
+        setup.head = headRig(store).head;
         if (o.selfVoice === false) expect(setup.update({ selfVoice: false }).ok).toBe(true);
         const s = new screenMod.StartScreen({ setup, locale: 'en', request: modelMod.parseSonicParam('start'), progress: () => storeMod.allProgress(store), current: () => storeMod.currentLesson(store), onStart: () => undefined }, doc.body as unknown as HTMLElement);
         s.show();
@@ -629,7 +639,7 @@ describe('v13-int step 3: sound from above and below, the sound panel and the at
         for (const sw of SWITCHES) {
             byTestId(doc, 'sonic-about')!.focus();
             byTestId(doc, sw.id)!.focus();
-            expect(lastHeard(engine), sw.id).toEqual({ text: `Settings. ${sw.name}: on${sw.tail}. Item ${sw.n} of 17.`, interrupt: true });
+            expect(lastHeard(engine), sw.id).toEqual({ text: `Settings. ${sw.name}: on${sw.tail}. Item ${sw.n} of 18.`, interrupt: true });
             expect(byTestId(doc, sw.id)!.checked, sw.id).toBe(true);
         }
         // and within the section, the next stop after the long description cuts it (a line that interrupts)
@@ -675,9 +685,9 @@ describe('v13-int step 3: sound from above and below, the sound panel and the at
         expect(byTestId(doc, 'sonic-look-attitude')!.checked).toBe(true);
         doc.key('ArrowDown');
         byTestId(doc, 'sonic-height-direction')!.focus();
-        expect(lastHeard(again.engine).text).toBe(`Settings. Sound from above and below: off. ${DIRECTION_WHAT}. Item 11 of 17.`);
+        expect(lastHeard(again.engine).text).toBe(`Settings. Sound from above and below: off. ${DIRECTION_WHAT}. Item 11 of 18.`);
         byTestId(doc, 'sonic-beacon')!.focus();
-        expect(lastHeard(again.engine).text).toBe(`Target hum shows the way: off. ${BEACON_WHAT}. Item 12 of 17.`);
+        expect(lastHeard(again.engine).text).toBe(`Target hum shows the way: off. ${BEACON_WHAT}. Item 12 of 18.`);
         again.s.dispose();
     });
 
@@ -759,6 +769,24 @@ describe('v13-int review F2, F4: the screen over a flight takes every key it is 
         outside.focus();
         s.hide();
         expect(doc.activeElement).toBe(outside);
+        s.dispose();
+    });
+});
+
+describe('lane head4: "Turn my head to listen" in the settings', () => {
+    it('the last setting, off for a pilot who never set it, said with its description; Enter speaks the explanation before the camera is asked; a refusal draws it off again', async () => {
+        const { s, engine, store } = shown();
+        doc.key('ArrowDown');
+        byTestId(doc, 'sonic-about')!.focus();
+        byTestId(doc, 'sonic-head')!.focus();
+        expect(lastHeard(engine)).toEqual({ text: `Settings. Turn my head to listen: off. ${EN_HEAD_WHAT.replace(/\.$/, '')}. Item 17 of 18.`, interrupt: true });
+        expect(byTestId(doc, 'sonic-head')!.checked).toBe(false);
+        lastRig.camera.refuse = 'NotAllowedError';
+        doc.key('Enter');
+        await vi.waitFor(() => expect(lastRig.log.at(-1)).toBe('say:denied'));
+        expect(lastRig.log).toEqual(['say:ask', 'load', 'gum', 'say:denied']);
+        expect(store.collection('sonic').headTrack).toBeUndefined();
+        expect(byTestId(doc, 'sonic-head')!.checked).toBe(false);
         s.dispose();
     });
 });

@@ -1,0 +1,16 @@
+{
+  "keys.sonic.headCentre": "Fly by Sound: centre head tracking (face the screen first)",
+  "sonichead.setting": "Turn my head to listen",
+  "sonichead.settingWhat": "The web camera follows your head, so sounds stay in place when you turn it. No picture leaves this computer.",
+  "sonichead.say.ask": "Head tracking uses your web camera only to know where your head points, so sounds stay in place when you turn your head. No picture leaves this computer. The browser will now ask to use the camera: choose Allow.",
+  "sonichead.say.on": "Head tracking on. Face the screen; to centre again later, press key {key}.",
+  "sonichead.say.off": "Head tracking off. The camera is closed.",
+  "sonichead.say.keyOff": "Head tracking is off. To turn it on, open the sound settings and choose Turn my head to listen.",
+  "sonichead.say.centred": "Centred.",
+  "sonichead.say.lost": "Head lost. Sounds follow the drone until your face is back.",
+  "sonichead.say.denied": "Head tracking is off: the camera was not allowed. To allow it, open the site settings by the icon left of the address, allow the camera, then turn Turn my head to listen on again.",
+  "sonichead.say.no-camera": "Head tracking is off: no web camera was found. Connect one, then turn Turn my head to listen on again.",
+  "sonichead.say.busy": "Head tracking is off: another program is using the camera. Close it, then turn Turn my head to listen on again.",
+  "sonichead.say.unsupported": "Head tracking is off: this browser gives the page no camera. Try Chrome, Edge or Firefox.",
+  "sonichead.say.failed": "Head tracking is off: the face tracker did not start. The sounds work without it; turn Turn my head to listen on again to retry."
+}

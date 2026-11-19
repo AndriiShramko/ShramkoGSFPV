@@ -11,6 +11,7 @@ import type { AudioDeps } from './audio';
 import type { CaptionMode } from './captions';
 import { loadSonicPrefs, saveSonicPrefs } from './store';
 import type { SonicHost } from './store';
+import type { HeadSwitch } from './head/switch';
 import type { LessonWorld } from './lesson-world';
 import type { FlightSession } from '../session';
 
@@ -68,6 +69,8 @@ export class SonicSetup {
     private visiting: VisitPrefs = {};
     /** told what of a link's sound still stands, each time that changes (sonic/start.ts: the page's address follows it) */
     onVisit: ((visit: VisitPrefs) => void) | null = null;
+    /** lane head4: "Turn my head to listen" (sonic/head/switch.ts), set by head/page.ts attachHead where the setup is made */
+    head: HeadSwitch | null = null;
 
     /** `captions`: the page's region (sonic/captions.ts Captions), or any sink; this file touches no DOM itself. */
     constructor(host: SonicHost, locale: Locale, captions: CaptionSink, o: { deps?: AudioDeps; speech?: SpeechOut | null } = {}) {
