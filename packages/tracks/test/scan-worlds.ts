@@ -23,12 +23,12 @@ export function scannedRoom(): VoxelCollision {
 }
 
 /** A table 0.8 x 0.6 m (top 1 voxel thick at 0.75 m, four legs) with a skull (a shell 3 voxels thick, r 0.15 m) off its
- *  centre, and nothing but air to 1.2 m around; voxel 0.025 m. */
+ *  centre, and nothing but air to 2 m up and 1.2 m around; voxel 0.025 m. */
 export const SKULL: Vec3 = [0.15, 0.9, 0.1];
 export const TABLE_HALF: [number, number] = [0.4, 0.3];
 export function tableAndSkull(): VoxelCollision {
     const r = 0.15, shell = 0.075;
-    return analyticCollision([-1.6, -0.05, -1.5], [1.6, 1.2, 1.5], 0.025, (x, y, z) => {
+    return analyticCollision([-1.6, -0.05, -1.5], [1.6, 2.0, 1.5], 0.025, (x, y, z) => {
         if (inBox(x, y, z, [-TABLE_HALF[0], 0.725, -TABLE_HALF[1]], [TABLE_HALF[0], 0.75, TABLE_HALF[1]])) return true;
         for (const sx of [-1, 1]) for (const sz of [-1, 1]) {
             const lx = sx * (TABLE_HALF[0] - 0.04), lz = sz * (TABLE_HALF[1] - 0.04);
@@ -59,9 +59,9 @@ export function cityFromAbove(): VoxelCollision {
 }
 
 /** A tray of plants 1 x 1 m: soil 4 cm, stems every 0.25 m 0.4 m high, a leaf ball (r 8 cm) on each and one half way;
- *  voxel 0.02 m. */
+ *  voxel 0.02 m; air to 1.5 m up (a gate a whoop passes over the leaves). */
 export function plantTray(): VoxelCollision {
-    return analyticCollision([-0.2, -0.04, -0.2], [1.2, 0.6, 1.2], 0.02, (x, y, z) => {
+    return analyticCollision([-0.2, -0.04, -0.2], [1.2, 1.5, 1.2], 0.02, (x, y, z) => {
         if (x < 0 || z < 0 || x >= 1 || z >= 1) return false;
         if (y < 0.04) return y >= 0;
         const sx = 0.125 + Math.round((x - 0.125) / 0.25) * 0.25, sz = 0.125 + Math.round((z - 0.125) / 0.25) * 0.25;

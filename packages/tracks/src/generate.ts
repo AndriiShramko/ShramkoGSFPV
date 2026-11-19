@@ -115,6 +115,26 @@ export interface CourseOptions {
     readonly craftRadiusM?: number;
     /** course4 C4: what the composition drew and placed (audits and tests) */
     readonly onElements?: (c: Composed) => void;
+    /** gen4a A2 (plan.ts planCourse): where the course may stand, from the scan's analysis. Absent: the walk of before. */
+    readonly place?: CoursePlace;
+}
+
+/** gen4a A2: the zone of a course the pilot asked for (plan.ts). The walk is the plain one (no quality map): out within
+ *  reachM of the start, away from the gates laid, then home toward the start; the ring always closes at the last gate that
+ *  sees the start (not only from half way). */
+export interface CoursePlace {
+    /** a gate's centre may stand here (flown world): the scanned territory, the quality, the kind's rule */
+    readonly at: (p: Vec3) => boolean;
+    /** the course starts at the candidate nearest this point (the analysis core), flown world */
+    readonly start: Vec3;
+    /** the walk's out half keeps within this of the start, flown m */
+    readonly reachM: number;
+    /** the gates the walk wants (LEVELS' gatesMin..gatesMax) */
+    readonly gates: number;
+    /** |height change| / horizontal length of a leg at most */
+    readonly climbMax: number;
+    /** generator.version of the course ('5.<b|m|p><c|w|v>'); '.e2' and '.s<shift>' are added as for the old walk */
+    readonly version: string;
 }
 
 /** CR-1, CR-4: the walk of one generateCourse call, handed to CourseOptions.onWalk */
@@ -341,12 +361,15 @@ function walkCourse(free: FreeSpace, walls: VoxelCollision, opts: CourseOptions,
     const toScan = (w: Vec3): Vec3 => [r3((w[0] - T[1]) / s), r3((w[1] - T[2]) / s), r3((w[2] - T[3]) / s)];
     const toFlown = (q: Vec3): Vec3 => [s * q[0] + T[1], s * q[1] + T[2], s * q[2] + T[3]];
     const sweeper = sweeperOf(walls);
-    const N = courseCount(free.volumeM3, p);
+    const P = opts.place;
+    const N = P ? P.gates : courseCount(free.volumeM3, p);
     const k = p.scale;
 
     // candidates: usable cells roomy enough for a ring, then a farthest-point sample
     let all: number[] = [];
     for (let i = 0; i < free.room.length; i++) if (free.room[i]! >= 0 && clearanceM(free, i) >= (opts.quality ? EYE_FREE_M : RING_MIN_FREE_M) * k) all.push(i);
+    // gen4a A2: only the cells of the asked zone
+    if (P) all = all.filter((i) => P.at(cellCentre(free, i)));
     // G2: only cells in the dense band over a well-scanned tile, when there are enough of them
     const Q = opts.quality;
     let banded = false;
@@ -423,6 +446,18 @@ function walkCourse(free: FreeSpace, walls: VoxelCollision, opts: CourseOptions,
     // 0.256 m; every leg from it hit a wall at the 0.2 m margin of step 0.4 (gate-place-audit walks: wall 360 of 360,
     // no gate laid). The plan's size keeps its start, so its courses and trackDigests stay as they were.
     let startCell = free.startCell;
+    // gen4a A2: the course starts in the scan's best part (the zone's cell nearest the core), not at the spawn
+    if (P) {
+        let bd = Infinity;
+        startCell = -1;
+        for (const i of all) {
+            const d = dist2(cellCentre(free, i), P.start);
+            if (d < bd) {
+                bd = d;
+                startCell = i;
+            }
+        }
+    }
     if (k !== 1 && startCell >= 0 && clearanceM(free, startCell) < RING_MIN_FREE_M * k) {
         const S0 = stepsFrom(free, startCell);
         let best = -1;
@@ -580,6 +615,7 @@ function walkCourse(free: FreeSpace, walls: VoxelCollision, opts: CourseOptions,
         const u: Vec3 = [leg[0] / L, leg[1] / L, leg[2] / L];
         if (prev && dot(u, prev) < p.turnCosMin) return null;
         if (dot(yawForward(nearestYaw(u)), u) < p.axisCosMin) return null;
+        if (P && Math.abs(leg[1]) > P.climbMax * Math.sqrt(leg[0] * leg[0] + leg[2] * leg[2])) return null;
         return u;
     };
     while (gates.length < N && tries < p.tries) {
@@ -594,7 +630,7 @@ function walkCourse(free: FreeSpace, walls: VoxelCollision, opts: CourseOptions,
         // G2: over a quality map the out half spreads over the whole well-scanned box (Wroclaw: every course stayed within
         // 30 m of the start on a street scanned for 300 m)
         const spread = fromS !== null && pots[phase] !== null;
-        const reach2 = spread ? Infinity : OUT_LEGS * OUT_LEGS * p.legMaxM * p.legMaxM;
+        const reach2 = spread ? Infinity : P ? P.reachM * P.reachM : OUT_LEGS * OUT_LEGS * p.legMaxM * p.legMaxM;
         // G2: the step count the next gate should have: the rest of the way shared evenly by the gates still to lay
         const pot = pots[phase] ?? null;
         const left = Math.max(1, ends[phase]! - gates.length);
@@ -734,7 +770,8 @@ function walkCourse(free: FreeSpace, walls: VoxelCollision, opts: CourseOptions,
     // turned home; gates dropped since the walk shift that index down).
     const homeFrom = ends.length > 2 ? (outGates >= 0 ? outGates : ends[last - 1]!) : 0;
     const closeAt = (gs: TrackGate[]): number => {
-        const low = Math.max(1, Math.ceil(gs.length / 2), homeFrom - (gates.length - gs.length) + 1);
+        // gen4a A2 (G4): an asked course always closes, at the last gate that sees the start
+        const low = P ? 1 : Math.max(1, Math.ceil(gs.length / 2), homeFrom - (gates.length - gs.length) + 1);
         // review FY-1: the ring ends only at a gate whose legs home (to the start and on to gate 1) run over a well-scanned
         // scan; judging them after the cut dropped one last gate a time and thinned Wroclaw seed 1 from 24 walked to 18
         for (let n = gs.length; n >= low; n--) {
@@ -789,7 +826,9 @@ function walkCourse(free: FreeSpace, walls: VoxelCollision, opts: CourseOptions,
             proven: (gs, from) => checkTrack(build(gs, nearestYaw(sub(toFlown(gs[0]!.pos), from)), from, 1), walls, T, p.marginM, false, true).ok
         });
         opts.onElements?.(comp);
-        if (comp.gates.length !== single.length || comp.gates.some((g, i) => g.shape.kind !== single[i]!.shape.kind)) {
+        // gen4a A2: an asked course keeps its composed elements only when every gate of them stands in its zone
+        const inZone = !P || comp.gates.every((g) => P.at(toFlown(g.pos as Vec3)));
+        if (inZone && (comp.gates.length !== single.length || comp.gates.some((g, i) => g.shape.kind !== single[i]!.shape.kind))) {
             const yaw = nearestYaw(sub(toFlown(comp.gates[0]!.pos), startW));
             if (checkTrack(build(comp.gates, yaw, startW, laps), walls, T, p.marginM, false, true).ok) {
                 course = comp.gates;
@@ -808,7 +847,7 @@ function walkCourse(free: FreeSpace, walls: VoxelCollision, opts: CourseOptions,
         generator: {
             name: GENERATOR_NAME,
             // course4 review CU-3: '.e1' only when the elements changed the course; an unchanged one keeps its key
-            version: generatorVersion(!!Q, startShift, composed),
+            version: P ? `${P.version}${composed ? '.e2' : ''}${startShift > 0 ? `.s${startShift}` : ''}` : generatorVersion(!!Q, startShift, composed),
             seed,
             params: {
                 marginM: p.marginM,
