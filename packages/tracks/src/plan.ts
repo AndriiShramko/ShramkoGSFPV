@@ -195,6 +195,15 @@ function startOf(a: ScanAnalysis, openingM: number): Vec3 {
     return [a.core[0], Math.max(g + lowEdgeM(a, openingM) + openingM, (g + top) / 2), a.core[2]];
 }
 
+/** the starts tried in turn: startOf, then one opening over the core's roof when that is higher (inside the territory:
+ *  insideAt allows a centre up to two openings over the roofs) */
+function startsOf(a: ScanAnalysis, openingM: number): Vec3[] {
+    const s = startOf(a, openingM);
+    const t = scanTile(a, a.core);
+    const r = t >= 0 ? a.roofTop[t]! : NaN;
+    return Number.isFinite(r) && r + openingM > s[1] + openingM ? [s, [a.core[0], r + openingM, a.core[2]]] : [s];
+}
+
 /** the version letters of a request (request.ts courseLinkId: 'g2.<seed>.<letters>') */
 function letters(r: CourseRequest): string {
     return courseLinkId(r).split('.')[2] ?? '';
@@ -227,14 +236,28 @@ export function planCourse(input: PlanInput, hooks: PlanHooks = {}): PlanAnswer 
         // a shrunk opening shrinks the legs with it (a 1 m plant tray has no 15 D leg for a whoop)
         const shrink = opening / rules.openings[0]!;
         const p = scaledParams(k, COURSE_DEFAULTS);
-        const start = startOf(a, opening);
+        const starts = startsOf(a, opening);
         for (const ask of asks) {
             if (late() || (best && best.track.gates.length >= rules.level.gatesMin)) break;
             const R = ask.rules;
             const box = zoneBox(a, ask.req, R, opening);
             if (!box) continue;
             hooks.onStep?.('free', 0);
-            const free = freeAtMargin(walls, { spawn: start, bounds: box, unitM: a.unitM, kind: a.kind === 'room' ? 'indoor' : 'auto', goodAt: zoneAt(a, ask.req, R, opening, 2) }, p.marginM);
+            const zone2 = zoneAt(a, ask.req, R, opening, 2);
+            const freeFrom = (spawn: Vec3): FreeSpace => freeAtMargin(walls, { spawn, bounds: box, unitM: a.unitM, kind: a.kind === 'room' ? 'indoor' : 'auto', goodAt: zone2 }, p.marginM);
+            let start = starts[0]!;
+            let free = freeFrom(start);
+            // a start in a pocket (under a housefly's body, between its legs) reaches a few cells: the air over the roof
+            // is tried too and the start whose free space holds more zone cells is kept
+            let room = zoneCount(free, k, zone2);
+            for (let si = 1; si < starts.length && room < ZONE_CANDS_PER_GATE * R.gates && !late(); si++) {
+                const f2 = freeFrom(starts[si]!), r2 = zoneCount(f2, k, zone2);
+                if (r2 > room) {
+                    free = f2;
+                    room = r2;
+                    start = starts[si]!;
+                }
+            }
             if (oi === rules.openings.length - 1) ratio = Math.max(ratio, roomRatio(free, k, zoneAt(a, ask.req, R, opening, 2)));
             let tier = 0;
             while (tier < 2 && zoneCount(free, k, zoneAt(a, ask.req, R, opening, tier)) < ZONE_CANDS_PER_GATE * R.gates) tier++;
