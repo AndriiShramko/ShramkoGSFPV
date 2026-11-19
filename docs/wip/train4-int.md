@@ -19,7 +19,9 @@ Car 1 (job int4-car1, work copy C:/dev/gsfpv-v13-int, branch train4 from e3201fe
       tails4-review-start 9/9 PASS, tails4-helper-download 12/12 PASS, head4-accept 12/12 PASS (fake camera clip, render
       off). accept-fly on http://localhost:6180: B6 B7 B9 B10 B11 B12 B13 B14 B15 B16 all PASS (evidence b-fly-*.json).
       No picture taken: no step judged a picture.
-- [ ] S3 the hand-over (U:/Temp/gsfpv-train4/int4-car1.json)
+- [x] S3 the hand-over: Deploy order, Live checks (six new read-only checks in deploy/live-checks.sh, all six FAIL on
+      the live site before the release: the negative control), What the owner should try, Not verified;
+      U:/Temp/gsfpv-train4/int4-car1.json written for this head. dist was already deleted after S2.
 
 ## Progress
 
@@ -62,19 +64,97 @@ so they are car 2's to make real. Where car 1 lanes meet:
 
 ## Deploy order
 
-Car 1
+Car 1 (from the merged lanes' 'For the lead' and `git diff origin/main HEAD -- apps/api deploy packages/sonic-fpv`)
+
+1. The sound package: nothing. The pin of packages/sonic-fpv is unchanged (293ebaea, the one origin/main has); sound6 is
+   in car 2.
+2. The page: one release of this head (apps/fly, the site with its scene templates, the generated catalogue). The build
+   fetches MediaPipe's face model once from storage.googleapis.com (head4; cached in node_modules/.cache/gsfpv-headtrack,
+   checked by sha256), so the build machine needs the network the first time. The release gains /fly/headtrack/ (about
+   18.9 MB unpacked, 8 MB over the wire, downloaded only when a pilot turns "Turn my head to listen" on).
+3. The API files: none. apps/api changes only in a test (apps/api/tests/test_nginx_routes.py); server.py is unchanged.
+   The scene pages' fix (site4) is in the release folder's scene-templates, which the running API already reads.
+4. Rooms: no (nothing under apps/api/rooms changed).
+5. nginx: yes, after the page: upload deploy/nginx.conf, `nginx -t`, reload. One line changes, in
+   `location ~ ^/(en|es|pl|ru)/fly/` only: Permissions-Policy camera=(self) (every other location keeps camera=()). The
+   page alone works (the camera is refused, the setting says so and turns off); nginx alone is harmless.
+6. Walls: no new walls; deploy/release-walls.sh need not run.
 
 ## Live checks
 
-Car 1
+Car 1. After the release and the nginx reload: `LIVE_ONLY=<names> bash deploy/live-checks.sh <outdir>` with the names
+below; the whole file after that as usual.
+
+New in deploy/live-checks.sh (read-only, each honours LIVE_ONLY, a failed probe exits non-zero and FAILs its line):
+- site4-links: site4-links.mjs, every main button of the sound, home, scene and supporter pages (13 steps on the live site)
+- edit4b-course-life: edit4b-probe.mjs on 70b50d42, render off, under the GPU lock (Save is never pressed)
+- menu4-first-minute: menu4-first-minute-probe.mjs, the first visit's question and the short menus
+- tails4-start-moved: tails4-review-start.mjs, the moved starts of 2f1ddf5f, d10c5638, ab5efa0e
+- head4-camera-headers: two HEAD requests, /en/fly/ has camera=(self), /en/privacy/ camera=()
+- head4-accept: head4-accept.mjs with the fake camera clip HEAD4_CLIP (default U:/Temp/gsfpv-train4/head4/head4-clip.mjpeg)
+
+Existing names that cover what changed: accept-fly (head4's Shift+H and tails4's start touch the keys and the session),
+edit-mouse-wroclaw and edit-mode-wroclaw (edit4b changed the top bar and removed key G in the editor), sonic-in-place-tunis
+and sonic-course-wroclaw (head4's start-screen row and SonicSetup.head), mouse-free-probe (menu4's pause menu).
+
+Left out on purpose: tails4-helper-download.mjs (it fakes a USB device and rewrites the helper's socket; the file already
+leaves connect-probe.mjs out for the same reason; the lane proved it locally, S2 again on the release build: PASS).
+
+Negative control before the release, on 833acb8f against the live site (release 89c9c86e, the code before train 4):
+`LIVE_ONLY=site4-links,edit4b-course-life,menu4-first-minute,tails4-start-moved,head4-camera-headers,head4-accept bash
+deploy/live-checks.sh U:/Temp/gsfpv-train4/int4/live-neg`: all six FAIL, LIVE CHECKS: FAIL, exit 1, each on the steps its
+lane repairs (evidence/2026-11-19/int4-car1/live-neg.json): site4-links 12 of 12 steps fail; edit4b-course-life 10 of 12;
+menu4-first-minute 10 of 15; tails4-start-moved 3 of 9 (the three spawnOverGround); head4-accept 10 of 12 (offLoadsNothing
+and otherPageRefuses pass, as on the lane's own live control); head4-camera-headers: /en/fly/ has camera=() today.
+The lanes' own runs on the release build of 4707f7d2 (S2) gave the PASS side of the same probes.
 
 ## What the owner should try
 
-Car 1
+Car 1, in the order of his messages (tails4: train 2's leftovers; menu4: brief line 373; head4: the head tracking plan;
+site4: brief lines 533-536; edit4b: brief lines 541-556). No person, phone, camera or controller took part in any check.
+
+1. The start of three scans (tails4). Open the scans 2f1ddf5f, d10c5638 and ab5efa0e: the drone stands about 1.5 m over
+   the ground in the scan instead of hanging high in empty air. On the Controls screen, the helper's two download links
+   save files that run.
+2. The menu for new pilots (menu4). In a fresh browser profile (or after clearing the site's data) open the flight page:
+   "Before you fly" asks "Have you flown FPV before?" with three answers. Click "Never. Keep it simple", answer the cookie
+   question, click Keyboard, Start flying, click into the scene. Key P: 9 items and a line "More (18)"; click it, the rest
+   opens. Click Settings: 11 rows and "Show all settings (67 more)"; type "uptilt" in the search: the camera uptilt row
+   shows, marked "In the full menu". Later: Settings, Display, first row "Menu": Simple / Sim pilot / Everything. A pilot
+   who visited before is never asked and keeps the full menus.
+3. Turn my head to listen (head4). Headphones on, a web camera. Open /en/fly/?sonic=start, Settings, tick "Turn my head
+   to listen": the voice explains first, then the browser asks for the camera: Allow. Start a lesson, face the screen,
+   key Shift+H: "Centred." Turn your head: a sound ahead of the drone stays where it is in the room. Untick it: "Head
+   tracking off. The camera is closed." and the camera's light goes out. Block instead of Allow: the voice says how to
+   allow it by the icon left of the address.
+4. The site's main buttons (site4). /en/sound/: the top menu's button says "Fly by Sound" and opens the Fly by Sound
+   start; the same on /pl/, /es/, /ru/. On the phone /en/sound/ has a bar at the bottom with that button. The home page's
+   Fly by Sound band has "Start Fly by Sound". A scene page (/en/scenes/39e63ce9/) or a supporter's page: the menu's
+   button flies that scene. /en/sound/#sound-keys, "pl" in the menu: the Polish page at the same place.
+5. The course's life in the editor (edit4b). A scan, Keyboard, click into the scene, take off, Shift+G, Shift+B. Every
+   gate carries its number. Course on the top bar: New empty course, Delete all gates, Generate a new course, Overview,
+   Courses, Keys. Delete all gates asks first; Yes, then Undo brings them back. New empty course: Add gate is on, two
+   clicks on the floor give gates 1 and 2. Fly the course flies at once; the same button, Back to editing, returns. A
+   refused Save that names a gate selects that gate, its number flashes 3 times, the view does not turn. Key G no longer
+   makes a course in the editor (Course, Generate a new course does, with a question).
 
 ## Not verified
 
 Car 1
+- No person, phone, real web camera or real controller took part: head tracking was proven with Chrome's fake camera
+  playing a clip of a still portrait (head4), the phone steps at phone sizes in headless Chrome only.
+- The seams with car 2 lanes (gen4b's Generate dialog in the editor, ux4a's message service, edit4a's drag to edit4c's
+  warnings, sound6's rows beside head4's in the sound start screen, Shift+H in the spoken key help) are car 2's.
+- site4's 'scene' step needs an API; S2 ran it nowhere (the local build had no API); the live check runs it after the
+  release.
+- The positive side of the six new live checks waits for the release; before it only their negative side ran (below).
+- Found by menu4, not repaired (not car 1's files): at 1536x730 the pause panel's rows stand above the item list, so
+  even the 9 items of level first start near the bottom of the view; on a first visit the cookie question lies over the
+  lower middle of the page.
+- tails4's open product questions: the SuperSplat tab's filters, the rooms nickname and the best laps stay per browser
+  (no schema setting carries them in an exported file): a decision for the lead.
+- head4: the .wasm under /fly/headtrack/ has no hash in its name but an immutable cache; a later MediaPipe version must
+  move the folder (HEAD_ASSET_DIR), not overwrite the file.
 
 ## Cost notes
 
@@ -84,4 +164,7 @@ Car 1
 - S2 (car 1): about 25 replies; the most went to the vitest gate failing on four server-start tests because the release
   build ran beside it. Cheaper: run the build after the gates, never at the same time; and give each probe a common
   JSON verdict shape (pass, steps[]) so one line reads them all.
+- S3 (car 1): about 25 replies; the most went to collecting each probe's arguments and read-only claim from its header and
+  to reading four verdict shapes (steps as an array, as a map of PASS/FAIL, with or without pass). Cheaper: each lane
+  writing its live check as the ready live-checks.sh line in 'For the lead', and the common verdict shape noted for S2.
 
