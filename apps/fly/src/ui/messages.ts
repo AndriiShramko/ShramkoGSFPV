@@ -63,7 +63,14 @@ export class MessageCenter {
     /** The list was opened: no problem counts as unread (the count on the top-row button). */
     markRead(): void {
         this.log.markRead();
-        for (const w of this.watchers) w();
+        this.render(); // its problems left the screen (MessageLog.markRead)
+    }
+
+    /** A window pauses the flight (app/builtin/hud.ts): the lines wait under it (MessageLog.setCovered). */
+    setCovered(on: boolean): void {
+        if (on === this.log.isCovered) return;
+        this.log.setCovered(on, performance.now());
+        this.render();
     }
 
     close(id: number): void {

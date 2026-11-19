@@ -93,7 +93,7 @@ h1 { font-size: 22px; margin: 0 0 12px; } h2 { font-size: 18px; margin: 0 0 10px
    third of the height (the script folds older lines into "+N"); narrow or low (.msg-side): the left third. */
 .hud-note.msg-stack { background: none; padding: 0; width: max-content; max-width: min(560px, 33vw); display: flex; flex-direction: column; align-items: stretch; gap: 6px; font-size: 16px; line-height: 1.35; text-align: left; }
 .hud-note.msg-stack[hidden] { display: none; }
-#ui > .hud-note.msg-stack.msg-side { left: max(12px, env(safe-area-inset-left)); top: calc(max(14px, env(safe-area-inset-top)) + 30px + var(--banner-h, 0px)); transform: none; width: min(32vw, 300px); max-height: 60vh; overflow: hidden; }
+#ui > .hud-note.msg-stack.msg-side { left: max(12px, env(safe-area-inset-left)); top: calc(max(14px, env(safe-area-inset-top)) + 30px + var(--banner-h, 0px)); transform: none; width: min(30vw, 300px); max-height: 60vh; overflow: hidden; }
 .msg { display: flex; align-items: flex-start; gap: 4px; background: rgba(0,0,0,.72); color: #fff; padding: 10px 14px; border-radius: 8px; }
 .msg[hidden] { display: none; }
 .msg-body { flex: 1; min-width: 0; overflow-wrap: anywhere; }

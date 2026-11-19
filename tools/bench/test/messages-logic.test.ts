@@ -2,6 +2,32 @@
 import { describe, expect, it } from 'vitest';
 import { LOG_SIZE, MAX_SHOWN_MS, MIN_SHOWN_MS, MessageLog, messagePlace, PROGRESS_IDLE_MS, reportText, shownMs, withFix } from '../../../apps/fly/src/messages-logic';
 
+describe('messages: a window over the flight, the list opened', () => {
+    it('under a window no line is on the screen and no time runs; after it the lines come back', () => {
+        const log = new MessageLog();
+        log.add({ text: 'Walls on' }, 0);
+        log.add({ text: 'No course', kind: 'problem' }, 0);
+        log.setCovered(true, 1000);
+        expect(log.visible(1000).lines).toEqual([]);
+        // a line written under the window waits too; the pointer leaving a line does not restart its time
+        log.add({ text: 'Recording saved', kind: 'done' }, 2000);
+        log.resume(1, 2500);
+        log.setCovered(false, 60_000);
+        expect(log.visible(60_000).lines.map((e) => e.text)).toEqual(['No course', 'Recording saved', 'Walls on']);
+        expect(log.visible(60_000 + MIN_SHOWN_MS - 1500).lines.map((e) => e.text)).toContain('Walls on');
+    });
+    it('opening the list takes the problems off the screen (they stay in the list), the other lines stay', () => {
+        const log = new MessageLog();
+        log.add({ text: 'Walls on' }, 0);
+        log.add({ text: 'No course', kind: 'problem' }, 0);
+        expect(log.unreadProblems()).toBe(1);
+        log.markRead();
+        expect(log.unreadProblems()).toBe(0);
+        expect(log.visible(100).lines.map((e) => e.text)).toEqual(['Walls on']);
+        expect(log.all().map((e) => e.text)).toEqual(['No course', 'Walls on']);
+    });
+});
+
 describe('messages: a problem says what to do', () => {
     it('a problem without a fix line gets the fallback; its own fix and other kinds stay', () => {
         expect(withFix({ text: 'No course', kind: 'problem' }, 'Send it').fix).toBe('Send it');

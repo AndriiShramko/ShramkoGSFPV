@@ -3,7 +3,7 @@
 // tag and the note when the walls are switched.
 import { isFormField } from '../../ui/hud';
 import { t } from '../../i18n';
-import type { Feature } from '../context';
+import type { Feature, PauseReason } from '../context';
 import { lodLine, lodReport } from '../lod';
 import { drawingFor, drawingLine } from '../drawing';
 import { cleanDraw } from '../clean-draw';
@@ -11,6 +11,9 @@ import { onRadioLost } from '../../devices/dji-rc2-source';
 import { messages } from '../../ui/messages';
 import { openMessages, toggleMessages, type MessagesHost } from '../../ui/messages-panel';
 import { openFeedback } from './feedback';
+
+/** The pauses that put a window over the flight view (the message lines wait under them, ui/messages.ts setCovered). */
+const COVERING: ReadonlySet<PauseReason> = new Set<PauseReason>(['menu', 'panel', 'controls', 'export', 'help']);
 
 export const hud: Feature = {
     id: 'hud',
@@ -26,6 +29,12 @@ export const hud: Feature = {
         ctx.keys.on('messages.open', (e) => {
             if (e.repeat) return;
             if (toggleMessages(list)) e.preventDefault();
+        });
+        // the pause menu (the pilot's Esc frees the mouse and opens it) leads to the list: the lines wait under the menu
+        ctx.menu.add({ id: 'pause.messages', action: 'messages.open', labelKey: 'messages.title', order: 74, section: 'tools', run: () => openMessages(list) });
+        // a window over the flight (the windows that free the cursor, builtin/play.ts): the lines wait under it, time stopped
+        ctx.events.on('pause', ({ on, reasons }) => {
+            messages.setCovered(on && reasons.some((r) => COVERING.has(r)));
         });
         // arm kind 'key' (no switch on the radio): the on-screen ARM / DISARM button
         h.onArm = () => ctx.controls.toggleArm();

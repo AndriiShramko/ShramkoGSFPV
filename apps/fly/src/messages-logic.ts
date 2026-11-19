@@ -94,6 +94,7 @@ export function reportText(m: Pick<LoggedMessage, 'text' | 'fix' | 'from' | 'sce
 export class MessageLog {
     private items: LoggedMessage[] = [];
     private nextId = 1;
+    private covered = false;
 
     constructor(readonly size = LOG_SIZE) {}
 
@@ -111,11 +112,13 @@ export class MessageLog {
         else if (same) {
             Object.assign(same, { at: now, kind, text: m.text, fix: m.fix, from: m.from ?? same.from, scene, until, pausedLeft: null });
             if (kind === 'problem') same.unread = true;
+            if (this.covered) this.pause(same.id, now); // a line written under a window waits there too
             return same;
         }
         const e: LoggedMessage = { id: this.nextId++, at: now, kind, text: m.text, fix: m.fix, from: m.from, key: m.key, scene, until, pausedLeft: null, gone: false, unread: kind === 'problem' };
         this.items.push(e);
         if (this.items.length > this.size) this.items.splice(0, this.items.length - this.size);
+        if (this.covered) this.pause(e.id, now);
         return e;
     }
 
@@ -139,11 +142,27 @@ export class MessageLog {
     /** The pointer left: the time left runs on, never less than a second. */
     resume(id: number, now: number): void {
         const e = this.find(id);
+        if (this.covered) return; // the window over the flight keeps every line waiting (setCovered resumes them)
         if (e && e.pausedLeft !== null) { e.until = now + Math.max(1000, e.pausedLeft); e.pausedLeft = null; }
     }
 
-    /** At most `max` lines: problems first, then the newest. */
+    /**
+     * A window over the flight (the pause menu, a panel, Controls): the lines wait under it, none on the screen and
+     * their time stopped, so a line is never covered by a window and never runs out unread behind it.
+     */
+    setCovered(on: boolean, now: number): void {
+        if (on === this.covered) return;
+        this.covered = on;
+        for (const e of this.items) if (this.live(e, now)) (on ? this.pause(e.id, now) : this.resume(e.id, now));
+    }
+
+    get isCovered(): boolean {
+        return this.covered;
+    }
+
+    /** At most `max` lines: problems first, then the newest; none while a window covers the flight. */
     visible(now: number, max = MAX_VISIBLE): VisibleMessages {
+        if (this.covered) return { lines: [], more: 0 };
         const live = this.items.filter((e) => this.live(e, now));
         live.sort((a, b) => (a.kind === 'problem' ? 0 : 1) - (b.kind === 'problem' ? 0 : 1) || b.at - a.at || b.id - a.id);
         return { lines: live.slice(0, max), more: Math.max(0, live.length - max) };
@@ -166,9 +185,15 @@ export class MessageLog {
         return this.items.filter((e) => e.unread).length;
     }
 
-    /** The list was opened: every problem counts as seen. */
+    /**
+     * The list was opened: every problem is seen there, with its "Send to the author", so it leaves the screen
+     * (in the flight the mouse is held: the list is the pilot's way to close a problem without a free cursor).
+     */
     markRead(): void {
-        for (const e of this.items) e.unread = false;
+        for (const e of this.items) {
+            e.unread = false;
+            if (e.kind === 'problem') e.gone = true;
+        }
     }
 
     find(id: number): LoggedMessage | undefined {
