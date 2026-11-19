@@ -10,7 +10,7 @@ tools/bench/src/scan-kinds.json, evidence/2026-11-19/gen4/.
 - [x] S0 contract: request.ts (types, LEVELS, courseLinkId, parseCourseLink), scan.ts (ScanAnalysis interface only),
   plan.ts (planCourse stub = the worker's path of today moved into the package, request ignored except the seed;
   placementStats answers zeros, kind 'unknown'), index.ts exports; request.test.ts (link round trip for all 6
-  combinations; NEG OK: absent request.ts fails). Commit: see `git log --grep "gen4a S0"`.
+  combinations; NEG OK: absent request.ts fails). Commit b142e495.
 - [ ] A1 analysis: scan.ts analyzeScan + scan.test.ts on worlds.ts worlds (room box, table+skull, city blocks on a 2 m
   fuzzy ground slab, plant stems); NEG groundTop over the slab is its top (qualityMap.ground fails); footprint excludes the
   air beside the table; scan-kind-audit.ts over 9 baked scans + 5dfeb49b, 7a475d38, micro-greens -> evidence; thresholds
