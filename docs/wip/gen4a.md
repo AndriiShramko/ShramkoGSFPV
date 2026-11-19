@@ -108,6 +108,18 @@ tools/bench/src/scan-kinds.json, evidence/2026-11-19/gen4/.
     good tiles at the ladder's floor (was 5 gates, 0.4-0.6 good). plan.test 'every gate on a well-scanned tile' (city pro
     wide seed 2; old 0.933): NEG OK against 095a7624; tracks 168 passed. Synthetic old/new comparison: only that plan
     differs (goodcmp.log).
+  - [x] Audit run 4 (code of c8cbfa55; U:/Temp/gsfpv-train4/gen4a/place-run4.json, log place-run4.log): PLANS 216 FAILED
+    21. course 3 (1994c65c pro wide NO-ROOM), room 7 (Winter Garden 7a475d38 pro x6 + medium wide 2: gates outside the
+    ceiling), server 1 (2f1ddf5f pro wide 3), gates 4 (70b50d42 beginner seed 3: 2 gates; eb5f51dc medium seed 3: 6
+    gates; both at the level's opening, the whole ladder walked), nearCore 6 (39e63ce9 medium and pro compact: the
+    compact ask fell back to the whole room, start 4-7 m from a 3.2 m core).
+  - [x] Fixes after run 4: (a) generate.ts asks the zone at the position the gate is STORED at (toScan rounds to the mm):
+    Winter Garden's tile edge at z -7.168 had cell centres a hair inside it stored on it, in the next tile (no ceiling):
+    pro compact 1 now 12 gates all under the ceiling in 3 s (was 9, 7 outside, 12 s). (b) plan.ts walkReach: the free
+    box's half size is the walk's reach + one leg, not the loop laid out straight: 1994c65c pro wide (voxel 0.8 m) had a
+    260 m box of 3.2 m cells: now 24 gates in 1.8 s (was NO-ROOM). 2f1ddf5f pro wide 3 now passes the server (24 gates).
+    A first guess (coarse cells over Winter Garden) was wrong: a trace showed 0.256 m cells in both boxes. plan.test 'stored
+    at' and 'walkReach' NEG OK against c8cbfa55; tracks 170 passed; typecheck clean.
   - [ ] LEFT 3: re-run the audit after the fixes -> evidence/2026-11-19/gen4/place.json (all rules PASS, or each FAIL
     named in Not verified); ms per plan <= FIT_BUDGET_MS (run 1: at most 61 s).
   - [ ] LEFT 4: gates once (typecheck,vitest,architecture,i18n,b18,leaks), status parts, LANE-DONE.

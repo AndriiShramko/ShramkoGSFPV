@@ -3,7 +3,8 @@
 // lane) on the same world, measured by the same placementStats, puts gates under the fuzzy ground's top or leaves the
 // course open.
 import { describe, expect, it } from 'vitest';
-import { CELL_PER_OPENING, COURSE_DEFAULTS, FREE_DEFAULTS, LEVELS, analyzeScan, clipBox, courseLinkId, fitCourse, freeSpace, generateCourse, fitSizeFor, flownCollision, goodForGate, placementStats, planCourse, qualityBounds, qualityMap, validateServerTrack } from '../src';
+import { analyticCollision } from '@gsfpv/collision';
+import { CELL_PER_OPENING, cellCentre, COURSE_DEFAULTS, FREE_DEFAULTS, LEVELS, analyzeScan, clipBox, courseLinkId, fitCourse, freeSpace, generateCourse, fitSizeFor, flownCollision, goodForGate, placementStats, planCourse, planRules, walkReach, qualityBounds, qualityMap, validateServerTrack } from '../src';
 import type { CourseLevel, CourseRequest, PlanInput, SceneTransform, VoxelCollision } from '../src';
 import { IDENTITY } from './worlds';
 import { cityFromAbove, crowdedPocket, plantTray, scannedRoom, tableAndSkull } from './scan-worlds';
@@ -145,7 +146,7 @@ describe('planCourse: the asked course in the scanned part, closed, at the craft
         // the leg rule is asserted: at x20 a whoop's gate is under the format's 0.05 scene units (For the lead, gen4a.md)
         const T: SceneTransform = [20, 0, 0, 0];
         const walls = flownCollision(cityFromAbove(), T);
-        for (const seed of [1, 2, 3]) {
+        for (const seed of [1, 2, 3, 4, 5, 6]) {
             const r = planCourse({ ...input(walls, { seed, level: 'pro', spread: 'compact', anyQuality: false }), transform: T });
             expect(r.ok).toBe(true);
             if (!r.ok) continue;
@@ -154,6 +155,52 @@ describe('planCourse: the asked course in the scanned part, closed, at the craft
             expect(legs).toEqual([]);
             expect(r.stats.gates).toBeGreaterThanOrEqual(LEVELS.pro.gatesMin);
         }
+    });
+
+    // gen4a A3, audit run 4: Winter Garden's tiles are 3.328 m and one edge lies at z -7.168; the walk's zone passed a cell
+    // centre a hair inside it (under the glass), the gate was stored rounded to the mm on the edge, in the tile beyond
+    // it (no ceiling): 7 of 9 pro gates read outside the room
+    it('an asked course: every gate stands in its zone at the position it is stored at (mm rounding at a zone edge)', () => {
+        // scannedRoom's walls on a grid whose cell centres lie 0.4 mm under a mm (a scan's grid starts anywhere)
+        const inRoom = (x: number, y: number, z: number): boolean => x >= 0 && x < 10 && y >= 0 && y < 4 && z >= 0 && z < 8;
+        const walls = analyticCollision([-1.5, -0.5, -1.5004], [11.5, 5, 9.4996], 0.1, (x, y, z) =>
+            x >= -0.2 && x < 10.2 && y >= -0.2 && y < 4.2 && z >= -0.2 && z < 8.2 && !inRoom(x, y, z));
+        const free = freeSpace(walls, { spawn: [5, 2, 4] });
+        const r3 = (v: number): number => Math.round(v * 1000) / 1000;
+        // a row of cell centres whose stored z rounds up past the centre: the zone's edge is the centre itself
+        let C = NaN;
+        for (let iz = 0; iz < free.dims[2]; iz++) {
+            const z = cellCentre(free, iz * free.dims[0] * free.dims[1])[2];
+            if (z > 2 && z < 6 && r3(z) > z) {
+                C = z;
+                break;
+            }
+        }
+        expect(Number.isFinite(C)).toBe(true);
+        const at = (p: readonly number[]): boolean => p[2]! <= C && p[2]! > C - 2 * free.cellM && p[1]! > 0.5 && p[1]! < 3.5 && p[0]! > 0.5 && p[0]! < 9.5;
+        let laid = 0;
+        for (const seed of [1, 2, 3, 4, 5, 6]) {
+            const t = generateCourse(free, walls, { seed, scene: { id: 'abcdef12', version: 1 }, transform: IDENTITY, created: '2026-11-19T00:00:00.000Z', spawn: [5, 2, C - free.cellM], place: { at, start: [5, 2, C - free.cellM], reachM: 20, gates: 6, climbMax: 0.5, version: '5.t' } });
+            laid += t.gates.length;
+            for (const g of t.gates) expect(at(g.pos), `seed ${seed} gate ${g.id} at z ${g.pos[2]} (edge ${C})`).toBe(true);
+        }
+        expect(laid).toBeGreaterThan(0);
+    });
+
+    it('walkReach: a pro wide course on a 1 km scan gets a box of its walk and one leg, not its loop laid out straight', () => {
+        // 1994c65c pro wide (audit run 4): a 260 m box of 3.2 m cells against a 0.43 m gate, no course
+        const scan = { extentM: 1000, coreRadiusM: 60 } as unknown as Parameters<typeof planRules>[2];
+        const R = planRules({ seed: 1, level: 'pro', spread: 'wide', anyQuality: false }, WHOOP_R, scan);
+        const w = walkReach(R, 1);
+        const straight = (R.gates * R.legMaxM) / 2 + R.legMaxM;
+        expect(straight).toBeGreaterThan(200);
+        expect(w.walkR).toBeLessThanOrEqual(R.zoneR);
+        expect(w.boxR).toBeCloseTo(Math.min(straight, w.walkR + R.legMaxM), 6);
+        expect(w.boxR).toBeLessThan(0.5 * straight);
+        // a small room keeps its whole loop: the box is never more than the loop laid out straight
+        const room = planRules({ seed: 1, level: 'beginner', spread: 'compact', anyQuality: false }, WHOOP_R, { extentM: 10, coreRadiusM: 3 } as unknown as Parameters<typeof planRules>[2]);
+        const wr = walkReach(room, 1);
+        expect(wr.boxR).toBeLessThanOrEqual((room.gates * room.legMaxM) / 2 + room.legMaxM + 1e-9);
     });
 
     it('clipBox: a 1 km scan flown at x1 by a whoop gets a box of the course\'s reach, with cells near the gate\'s size', () => {
