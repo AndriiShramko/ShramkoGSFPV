@@ -141,7 +141,11 @@ Nothing yet: stage S0 changes no page. After gen4b: Shift+G opens the 'Generate 
 
 - No person, phone or real controller took part; no page was opened (gen4b wires planCourse into the worker).
 
-- planCourse on real scans (time, gates per level) is not measured yet: stage A3 (gen4-place-audit.ts).
+- planCourse on real scans is measured by audit run 2 (code of 6f9d06f0) only; the fixes of 5190a972 and 9076951a are
+  measured on 9baef54b and Wroclaw (a focused run stopped early) and not yet on Winter Garden (G5) or the other scans:
+  LEFT 3 re-runs the whole audit. The tier fallback and the kept kind rule have no unit test yet (LEFT 3b).
+- The Save of a whoop course flown over x5.6 is refused by the format's gate-size rule (For the lead); not tested here
+  past validateServerTrack.
 
 ## For the lead
 
