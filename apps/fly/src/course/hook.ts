@@ -20,7 +20,8 @@ export interface CourseHook {
     /** lane race, L1: build the room's course here as the pilot's own (a seed of the generator, or a saved course) */
     adopt?: (c: { seed: number } | { id: string; version: number }) => void;
     /** where the course came from; 'none': this scene has no course in this tab */
-    source: 'none' | 'generated' | 'server';
+    /** lane edit4b: 'new', the pilot's own empty course (Course > New empty course), not saved yet */
+    source: 'none' | 'generated' | 'server' | 'new';
     /** the track's id and version; null without a course */
     track: { id: string; version: number } | null;
     /** the generator's seed when the course was generated in this tab or names one; else null */

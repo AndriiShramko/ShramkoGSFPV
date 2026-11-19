@@ -14,6 +14,7 @@ Car 1
 
 - site4: merged (review SHIP), no conflict
 - ux4a: car 2 (review Verdict: HOLD when S1 reached it)
+- edit4b: merged (review SHIP); one conflict, evidence/2026-11-19/b-repo-b18.json (add/add, a gate's output): took edit4b's file whole, S2's gates write it again; no source conflict, so the typecheck waits for the last merge
 - ux4b: car 2 (review Verdict: HOLD)
 - vox4: car 2 (no review file)
 - gen4a: car 2 (no review file)

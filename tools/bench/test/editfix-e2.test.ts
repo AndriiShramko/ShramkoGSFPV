@@ -44,9 +44,11 @@ describe('editfix cause 1: Shift+B in the air opens the edit view, not the fligh
         expect(open).not.toMatch(/crashHold = false;/);
     });
 
-    it('while the course is flown in the mode, Exit stays on the bar and takes a click', () => {
-        expect(CSS).toMatch(/\.ce-topbar\.flying \.ce-tb:not\(\[data-top='exit'\]\) \{ display: none; \}/);
+    // lane edit4b (E5): Back to editing (the Fly the course button while flying) stays beside Exit
+    it('while the course is flown in the mode, Exit and Back to editing stay on the bar and take a click', () => {
+        expect(CSS).toMatch(/\.ce-topbar\.flying \.ce-tb:not\(\[data-top='exit'\]\):not\(\[data-top='fly'\]\) \{ display: none; \}/);
         expect(CSS).toMatch(/\.ce-topbar\.flying \.ce-tb\[data-top='exit'\] \{ pointer-events: auto; \}/);
+        expect(CSS).toMatch(/\.ce-topbar\.flying \.ce-tb\[data-top='fly'\] \{ pointer-events: auto; \}/);
         expect(CSS).not.toMatch(/\.ce-topbar\.flying \.ce-tb \{ display: none; \}/);
     });
 });

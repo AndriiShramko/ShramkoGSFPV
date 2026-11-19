@@ -6,19 +6,29 @@ import { t } from '../../i18n';
 import type { KeyPress } from './keys';
 import { TOP_BUTTONS } from './bar-place';
 import { LineHold } from './line-hold';
+import type { MenuItem } from './seam';
+import './parts/life.css';
 
 export interface TopBarHost {
     key(press: KeyPress): void;
     /** Add gate pressed: the next click on the scene puts a gate (pressed again: no more) */
     add(): void;
-    /** review ED-7: Courses or Keys pressed: the window opens (a phone's drawer too) at that part */
-    show(part: 'courses' | 'keys'): void;
+    /** lane edit4b (E5): Fly the course pressed (true), or Back to editing while flying (false) */
+    fly(on: boolean): void;
+    /** lane edit4b: the items of a top bar menu as they are now (the parts fill them through the editor seam) */
+    menu(id: 'course'): readonly MenuItem[];
 }
 
 export class TopBar {
     readonly root: HTMLElement;
     private readonly line: HTMLElement;
     private readonly addBtn: HTMLButtonElement | null = null;
+    private readonly flyBtn: HTMLButtonElement | null = null;
+    private readonly courseBtn: HTMLButtonElement | null = null;
+    private readonly host: TopBarHost;
+    private isFlying = false;
+    /** the open menu (one at a time) and its closing */
+    private openMenu: { el: HTMLElement; close: () => void } | null = null;
     private readonly hold: LineHold;
     private isAdding = false;
     /** train 3 I2 (D6): the pilot's next key or press after a refusal clears it (a modifier alone or a held key's repeat is no action) */
@@ -42,10 +52,17 @@ export class TopBar {
             btn.addEventListener('click', () => {
                 btn.blur();
                 if (press === 'add') host.add();
-                else if (press === 'courses' || press === 'keys') host.show(press);
+                else if (press === 'fly') host.fly(!this.isFlying);
+                else if (press === 'course') this.toggleMenu();
                 else host.key(press);
             });
             if (press === 'add') this.addBtn = btn;
+            if (press === 'fly') this.flyBtn = btn;
+            if (press === 'course') {
+                this.courseBtn = btn;
+                btn.setAttribute('aria-haspopup', 'menu');
+                btn.setAttribute('aria-expanded', 'false');
+            }
             root.append(btn);
         }
         const line = document.createElement('span');
@@ -53,6 +70,7 @@ export class TopBar {
         root.append(line);
         ui.append(root);
         this.root = root;
+        this.host = host;
         this.line = line;
         this.hold = new LineHold((text, refused) => {
             this.setLine(text ?? t(this.isAdding ? 'course.edit.bar.addHint' : 'course.edit.flyHint'));
@@ -111,8 +129,74 @@ export class TopBar {
         this.hold.tell(text, refused, performance.now());
     }
 
-    /** the drone flies: the bar steps aside (the line stays, it says how to come back) */
+    /** whether the Course menu is open (the editor's keys wait while it is: keys.ts KeyAt.overlay) */
+    menuOpen(): boolean {
+        return this.openMenu !== null;
+    }
+
+    /** lane edit4b: the Course menu under its button, its own 44 px cross; Esc, the cross, a click outside or an item close it */
+    toggleMenu(): void {
+        if (this.openMenu) return this.openMenu.close();
+        const btn = this.courseBtn;
+        if (!btn) return;
+        const el = document.createElement('div');
+        el.className = 'ce-menu interactive';
+        el.setAttribute('role', 'menu');
+        el.dataset.menu = 'course';
+        const x = document.createElement('button');
+        x.type = 'button';
+        x.className = 'ce-menu-x';
+        x.dataset.item = 'close';
+        x.setAttribute('aria-label', t('course.life.ask.close'));
+        x.textContent = '×';
+        el.append(x);
+        for (const it of this.host.menu('course')) {
+            const b = document.createElement('button');
+            b.type = 'button';
+            b.setAttribute('role', 'menuitem');
+            b.dataset.item = it.id;
+            b.textContent = t(it.labelKey);
+            b.addEventListener('click', () => { close(); it.run(); });
+            el.append(b);
+        }
+        const onKey = (e: KeyboardEvent): void => {
+            if (e.code !== 'Escape') return;
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            close();
+        };
+        const onDown = (e: PointerEvent): void => {
+            if (!(e.target instanceof Node) || el.contains(e.target) || btn.contains(e.target)) return;
+            close();
+        };
+        const close = (): void => {
+            if (this.openMenu?.el !== el) return;
+            this.openMenu = null;
+            el.remove();
+            btn.setAttribute('aria-expanded', 'false');
+            window.removeEventListener('keydown', onKey, true);
+            window.removeEventListener('pointerdown', onDown, true);
+        };
+        x.addEventListener('click', close);
+        this.openMenu = { el, close };
+        btn.setAttribute('aria-expanded', 'true');
+        window.addEventListener('keydown', onKey, true);
+        window.addEventListener('pointerdown', onDown, true);
+        this.ui.append(el);
+        // under the button, inside the view (1366x768 and 844x390 alike)
+        const r = btn.getBoundingClientRect();
+        const w = el.offsetWidth;
+        const h = el.offsetHeight;
+        el.style.left = `${Math.round(Math.max(8, Math.min(r.left, window.innerWidth - w - 8)))}px`;
+        el.style.top = `${Math.round(Math.max(8, Math.min(r.bottom + 4, window.innerHeight - h - 8)))}px`;
+        (el.querySelector('[role="menuitem"]') as HTMLElement | null)?.focus();
+    }
+
+    /** the drone flies: the bar steps aside but for Back to editing and Exit (the line says how to come back) */
     flying(on: boolean): void {
+        this.isFlying = on;
+        this.openMenu?.close();
+        if (this.flyBtn) this.flyBtn.textContent = t(on ? 'course.edit.bar.back' : 'course.edit.bar.fly');
         this.root.classList.toggle('flying', on);
         this.place();
         this.hold.reset();
@@ -121,6 +205,7 @@ export class TopBar {
     }
 
     destroy(): void {
+        this.openMenu?.close();
         this.hold.stop();
         window.removeEventListener('keydown', this.onAct, true);
         window.removeEventListener('pointerup', this.onAct, true);
