@@ -165,6 +165,14 @@ export class BakeTimeoutError extends Error {
     }
 }
 
+/** ux4b: the bake was stopped because its session went (a scene switch or a cancelled load): no failure. */
+export class BakeCancelledError extends Error {
+    constructor() {
+        super('walls build stopped: the scene changed');
+        this.name = 'BakeCancelledError';
+    }
+}
+
 /**
  * Stage F1-no-freeze: the most one ladder step may run before the ladder gives it up and takes the next,
  * lighter step (a build never hangs). ESTIMATE: three times the step's estimate (stepSeconds at the
@@ -556,10 +564,15 @@ export async function bakeBase(contentUrl: string, kind: 'meta' | 'lod-meta', de
     onStep?: (step: BaseStep, i: number, n: number) => void;
     /** F1-no-freeze: the time limit of a step (only for a bake that stops on its signal: the worker's) */
     stepTimeout?: (step: BaseStep) => number | undefined;
+    /** ux4b: the session's stop (walls.ts): aborted, the running step stops and no lighter step follows */
+    signal?: AbortSignal;
 } = {}): Promise<BakeResult & { tried: number }> {
     const bake = o.bake ?? bakeCollision;
+    const outer = o.signal;
+    const cancelled = (): Error => new BakeCancelledError();
     onStage('size');
     const size = o.size ?? await sceneSize(contentUrl, kind);
+    if (outer?.aborted) throw cancelled();
     const limits = o.limits !== undefined ? o.limits : gpuLimitsOf(device);
     // the seconds per million this device measured on its last bake (if slower than the trials)
     const steps = planBase(size, { limits, capGb: o.capGb ?? memCapGb(), sPerMillion: o.sPerMillion ?? undefined });
@@ -568,22 +581,33 @@ export async function bakeBase(contentUrl: string, kind: 'meta' | 'lod-meta', de
         if (i > 0) onStage('lighter');
         // stage G1-progress: the progress line's estimate needs the Gaussians this step reads
         o.onStep?.(steps[i], i, steps.length);
-        const stop = o.stepTimeout ? new AbortController() : null;
+        if (outer?.aborted) throw cancelled();
+        const stop = o.stepTimeout || outer ? new AbortController() : null;
+        const onOuter = (): void => stop?.abort();
+        outer?.addEventListener('abort', onOuter, { once: true });
         let timer: ReturnType<typeof setTimeout> | undefined;
         try {
             // a step the plan let through past the estimate (the last level) is tried for real
             const run = bake(contentUrl, kind, device, (s) => onStage(s), { ...o, size, level: steps[i].level, voxelM: steps[i].voxelM, coarsenOnOctree: true, capGb: i === steps.length - 1 ? Number.POSITIVE_INFINITY : o.capGb, limits: i === steps.length - 1 ? null : o.limits, signal: stop?.signal });
             // F1-no-freeze: a step that runs past its limit is stopped and the next, lighter step taken (never a hang)
             const limit = o.stepTimeout?.(steps[i]);
-            const r = limit === undefined ? await run : await Promise.race([run, new Promise<never>((_, reject) => {
-                timer = setTimeout(() => { stop?.abort(); reject(new BakeTimeoutError(`step ${i + 1} of ${steps.length} ran past ${Math.round(limit / 1000)} s`)); }, limit);
-            })]);
+            const racers: Promise<BakeResult>[] = [run];
+            if (limit !== undefined) racers.push(new Promise<never>((_, reject) => {
+                // the time-out first: stop's abort below also wakes the cancel racer, which must lose
+                timer = setTimeout(() => { reject(new BakeTimeoutError(`step ${i + 1} of ${steps.length} ran past ${Math.round(limit / 1000)} s`)); stop?.abort(); }, limit);
+            }));
+            // ux4b: the session's stop ends the wait at once, also for a bake that cannot stop (on the page)
+            if (stop) racers.push(new Promise<never>((_, reject) => { stop.signal.addEventListener('abort', () => reject(cancelled()), { once: true }); }));
+            if (racers.length > 1) run.catch(() => { /* raced: a late failure of a stopped step is dropped */ });
+            const r = racers.length === 1 ? await run : await Promise.race(racers);
             return { ...r, tried: i + 1 };
         } catch (e) {
             last = e;
+            if (outer?.aborted) throw cancelled();
             if (!outOfRoom(e) && !(e instanceof BakeTimeoutError)) throw e;
         } finally {
             clearTimeout(timer);
+            outer?.removeEventListener('abort', onOuter);
         }
     }
     throw last;

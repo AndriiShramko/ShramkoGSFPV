@@ -25,6 +25,7 @@ import { assertWalls } from '../bake';
 import { wallsState } from '../flightwalls';
 import type { WallsState } from '../flightwalls';
 import { SessionLoader, firstWalls, wallsPlaces } from './loader';
+import { LoadCancelled, abortable } from '../app/scene-load';
 import type { WallsFrom } from './loader';
 import type { LoadProgress } from './loader';
 import type { FlyNow, RevealReason } from './reveal';
@@ -129,6 +130,12 @@ export interface SessionOptions {
     wind?: WindSpec | null | Promise<WindSpec | null>;
     /** the gust noise's seed (tests); none = a random one per flight session */
     windSeed?: number;
+    /**
+     * ux4b: the load's stop (app/scene-load.ts LoadRun). Aborted, every fetch of the load (the scene's
+     * lookup, the walls) stops, every await of init rejects with LoadCancelled at once, the session is
+     * disposed (its splats unloaded) and start() rejects with LoadCancelled.
+     */
+    signal?: AbortSignal;
 }
 
 /** Who keeps the flight paused (FlightSession.pause). */
@@ -319,8 +326,13 @@ export class FlightSession {
         if (o.policy) s.policy = { ...o.policy };
         if (o.crashOn !== undefined) s.crashOn = o.crashOn;
         if (o.sceneStart) s.sceneStart = { ch: Array.from(o.sceneStart.ch) };
-        s.loader = new SessionLoader(s, o.onProgress);
+        s.loader = new SessionLoader(s, o.onProgress, o.signal);
+        const signal = o.signal;
+        // a cancel stops this scan at once (the page's renderer stays: only this scan goes)
+        const onAbort = (): void => { if (s.sharedRenderer) s.dispose(); };
+        signal?.addEventListener('abort', onAbort, { once: true });
         try {
+            if (signal?.aborted) throw new LoadCancelled();
             await s.init(canvas, o);
         } catch (e) {
             s.loader.stop();
@@ -328,17 +340,21 @@ export class FlightSession {
             // (the page's own renderer stays: only this scan goes)
             if (s.sharedRenderer) s.dispose();
             else try { s.renderer?.destroy(); } catch { /* half-built */ }
-            throw e;
+            // whatever the cancelled steps threw on their way out, the caller hears one thing: cancelled
+            throw signal?.aborted && !(e instanceof LoadCancelled) ? new LoadCancelled() : e;
+        } finally {
+            signal?.removeEventListener('abort', onAbort);
         }
         return s;
     }
 
     private async init(canvas: HTMLCanvasElement, o: SessionOptions): Promise<void> {
         const loader = this.loader!;
+        const signal = o.signal;
         const tS = performance.now();
         const built = this.builtin;
         // a built-in world brings its scene: nothing is resolved, nothing asked of the CDN
-        this.scene = built ? built.scene : await resolveScene(o.sceneId);
+        this.scene = built ? built.scene : await abortable(resolveScene(o.sceneId, signal ? (u, i) => fetch(u, { ...i, signal }) : fetch), signal);
         this.timings.settingsMs = performance.now() - tS;
         this.presetId = o.preset && PRESETS[o.preset] ? o.preset : DEFAULT_PRESET;
         this.overrides = jsonSafe(o.overrides ?? {});
@@ -372,7 +388,7 @@ export class FlightSession {
             ? Promise.resolve({ collision: built.collision, world: built.contact ?? new VoxelContactWorld(built.collision), sha256: built.sha256, ms: 0 })
             : firstWalls(wallsPlaces(this.scene), (u) => loader.loadWalls(u));
         walls.catch(() => { /* awaited below; this only keeps an early failure from counting as unhandled */ });
-        await splatLoad;
+        await abortable(splatLoad, signal);
         // the chunks stream once the engine runs; until the flight model exists, look from the scan's camera
         const cam = this.scene.camera;
         if (cam) {
@@ -391,7 +407,7 @@ export class FlightSession {
         this.offEngine = () => { app.off('update', onUpdate); app.off('frameend', onFrameEnd); };
         // the page's renderer already runs (E.4); a session that made its own starts it
         if (!this.sharedRenderer) this.renderer.start();
-        const w = await walls;
+        const w = await abortable(walls, signal);
         if (this.disposed) throw new Error('the scene switch was cancelled');
         if (w) {
             this.baseCollision = w.collision;
@@ -405,7 +421,7 @@ export class FlightSession {
         this.spawn = built ? [built.spawn[0], built.spawn[1], built.spawn[2], built.spawn[3]] : this.findSpawn();
         this.windGroundM = this.groundUnderSpawn();
         // the wind (a live one was asked for while the scan loaded): the first life flies in it
-        this.windSpec = await Promise.resolve(o.wind ?? null).catch(() => null);
+        this.windSpec = await abortable(Promise.resolve(o.wind ?? null).catch(() => null), signal);
         if (this.disposed) throw new Error('the scene switch was cancelled');
         this.compileModel();
         this.buildSim();
