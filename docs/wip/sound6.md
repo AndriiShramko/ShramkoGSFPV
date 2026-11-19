@@ -106,24 +106,27 @@ the design says train6: the lane prompt wins). Design C:/dev/.gsfpv-lanes/design
     lesson-schedule, quick-path, locales: 84 passed. listen:words run 2 PASS (en 0 over 0.2, es, pl, ru 0; ru-by-David
     control 575 of 575 over, key control fires); its evidence evidence/listen/VL-4-words.json committed; test/words.test.ts
     18 passed.
-  - Left list of S5 (run 1's, (a) and (c) done): (a) host fix: the keys line of a lesson step must not stand between the lesson's lines and its
-    sound; the cheapest clean rule: in a module-0 listening lesson (ears-*) the keys line is said once a lesson, after
-    the first question is answered (or the step's keys are said only at an 'ask' action), keep R8's flying lessons as
-    they are; a host test that fails on the old code (lessons.ts hint per step) and the walk's step 4 <= 12 s;
-    (b) listen:words run 1 FAILED on one line: en cue.speed.brake.name "Brake notes" heard "Break notes" (0.5 > 0.2; a
-    homophone); es, pl, ru 0 over the bound, both controls fire. Rename the en line to words that cannot be misheard
-    (for example "Slow-down notes"), measure it (test/fixtures/measure-tts.ps1, en only), run listen:words again, then
-    commit the package's evidence/listen/VL-4-words.json (left uncommitted in the package after run 1) and move the pin;
-    (c) the probe's step 1/9: decide links (check buttons only and list links as information, or give the nav and
-    footer links min-height 44 px in apps/fly/src/sonic/sonic.css: the owner's rule says controls, so the CSS);
-    (d) the walk again (both browsers) into evidence/2026-11-19/sound6/sound6-walk.json, the same against the live
-    site (SITE=https://gsfpv.flyreelstudio.eu, read only) as the negative control; (e) the gates once; What the owner
-    does; delete dist.
+  - [x] (d) release build at 7e8fb1f5 (walls copied), walk 8735ce0f: evidence/2026-11-19/sound6/sound6-walk.json: every
+    step PASS, chromium 1-9 and firefox 1-4 (first wall knock 8.0 s after the click in Chromium, 8.8 s in Firefox;
+    no small control at 1536x730 or 844x390; Firefox's engine running, no page error). Negative control, the same probe
+    against the live site (read only): sound6-walk-live.json FAILS chromium 1, 2, 4, 6, 7, 8, 9 and firefox 1, 2, 4
+    (small links; no Quick start; no wall knock within 12 s; ears-walls named no side; the glossary followed; Firefox's
+    engine never started); chromium 3, 5 and firefox 3 pass there (not repaired by this lane).
+  - [ ] (e) the gates once (typecheck, vitest, architecture, i18n, b18, leaks, catalog); then delete dist.
 
 Base: origin/main e3201fec differs from this branch only in STATE.md: not merged.
 
 ## What the owner does
-(filled in by the last stage)
+1. Open https://gsfpv.flyreelstudio.eu/en/fly/?sonic=start (Chrome, Edge or Firefox), headphones on.
+2. The Start screen shows two big buttons: "Quick start" (green, first) and "Full course". Click Quick start.
+3. "Headphone check", one short line ("Headphones on, L on your left ear."), "Sound 1 of 3", and a wall knock about
+   8 s after the click. Press key 1 for left, key 2 for right after each of the three knocks.
+4. The walls lesson plays a wall coming from the left, the right, above and below, each named; never "in front" or
+   "behind". The line of keys ("Next, key N. Back, key B. ...") comes once, after the first sound, not before it.
+5. The small room (walls-hall) opens: the height tone and target, then you fly.
+6. Key X back to Start: Continue first, then Quick start, then Full course. "Full course" still gives every lesson.
+7. If the sound cannot start (an old browser), a note at the top of Start says so, names Chrome or Edge, and has a
+   "Copy link" button.
 
 ## Claims
 1. The package's quick path is headphones, the walls, the small room, then the flying lessons, and it is the default of
@@ -135,22 +138,46 @@ Base: origin/main e3201fec differs from this branch only in STATE.md: not merged
 3. After the press of either path the first wall knock comes within 12 s in every language (measured voices: en 6.9,
    es 7.9, pl 7.1, ru 8.0 s), and the quick path's small room flies within 210 s (205.0 s with David). Proof (in
    C:/dev/ShramkoSonicFPV): `pnpm vitest run test/quick-path.test.ts`: 44 passed at 8daf95d; NEG OK against 58b1d7f.
-   NOT YET TRUE IN THE PAGE: the walk (S5) hears the first knock at 16.5 s, the host's keys line adds 9.9 s (Status S5).
+   In the page (claim 7) 8.0 s in Chromium, 8.8 s in Firefox, after the host's keys rule of claim 6.
 4. The engine starts on a listener that has only setPosition and setOrientation (Firefox's), with the same pose. Proof
    (in C:/dev/ShramkoSonicFPV): `pnpm vitest run test/listener.test.ts`: 5 passed at e4fce05; NEG OK against 8daf95d.
 5. When the sound does not start, the start screen shows what happened and the way on (Chrome or Edge, or a reload) at
    the top of Start with a focused Copy link button, not only in the screen reader's region; the headphone notes show
    no raw key. Proof: `npx vitest run tools/bench/test/sonic-start-screen.test.ts tools/bench/test/sonic-audio.test.ts`:
    68 passed; NEG OK against 453e3ab5.
+6. A listening lesson (no world) says the line of keys once, after its first sound, not before every sound; flying
+   lessons say it every step as before. Proof: `npx vitest run tools/bench/test/sonic-hints.test.ts -t listening`:
+   3 passed; NEG OK against f9229f76.
+7. A new pilot's quick path in the page with the mouse at 1536x730, scale 1.25: Quick start first and visible, sound on
+   after one click, the first wall knock within 12 s (8.0 s Chromium, 8.8 s Firefox), the headphone check passes, the
+   walls named left, right, up, down only, the small room next, Continue / Quick start / Full course on return, every
+   control 44 px at 1536x730 and 844x390. Proof: `cd tools/bench && PORT=6161 npx tsx src/sonic-quick-walk.ts`
+   (release build in dist): pass, evidence/2026-11-19/sound6/sound6-walk.json; against the live site it fails 10 steps
+   (sound6-walk-live.json).
+8. Every spoken line of the package is heard as written by Whisper in en, es, pl, ru (the brake cue's en name now
+   "Slow-down notes"). Proof (in C:/dev/ShramkoSonicFPV, env SHRAMKO_LISTEN_PY and SHRAMKO_LISTEN_CACHE): `pnpm
+   listen:words`: PASS at 53a5675, 0 lines over 0.2 in each language, both controls fire.
 
 ## Not verified
-No person, phone or real controller took part in this lane.
+No person, phone or real controller took part in this lane. The walk ran in headless Chromium and Playwright's Firefox
+with Windows voices; whether a real Firefox on a pilot's machine plays the 3D sound is not heard by anyone; Safari not
+tried.
 
 ## For the lead
 - Files changed outside the owned files: docs/wip/sonic5.md (the decision of W1.6 written in);
   apps/fly/src/sonic/sound-panel.ts (one line: the kind of 'speed.brake'); tools/bench/test/sonicrec-recorder.test.ts;
   the probes tools/bench/src/sonic-{start-keyboard,review-keys,v13-page,int-review,optin-page}.ts (new test ids);
-  tools/bench/test/sonic-audio.test.ts (S4).
+  tools/bench/test/sonic-audio.test.ts (S4); S5: apps/fly/src/sonic/lessons.ts (keysDue), apps/fly/src/sonic/sonic.css
+  (44 px links), tools/bench/test/sonic-hints.test.ts, tools/bench/test/sonic-lesson-keys.test.ts (one expectation),
+  the new probe tools/bench/src/sonic-quick-walk.ts.
+- THE SOUND PACKAGE FIRST: the package's head 53a5675 (branch quick1 of C:/dev/ShramkoSonicFPV, 15 commits on top of
+  its origin/main e334c6e, a fast-forward) must be pushed to the package's main
+  (github.com/AndriiShramko/shramko-fly-by-sound-fpv) BEFORE the page is released; the simulator's pin
+  packages/sonic-fpv is 53a5675. Nothing was pushed. The package's evidence/audio-proofs.json and
+  evidence/demo-check.json stay modified there, uncommitted (an earlier hand's; not re-run by this lane).
+- Deploy order: the sound package push, then the page only (no API files, no rooms, no nginx).
+- Live checks after the deploy: `cd tools/bench && SITE=https://gsfpv.flyreelstudio.eu npx tsx src/sonic-quick-walk.ts`
+  (read only) must then pass every step.
 - A question for the lead: the host's headphone check on the start screen still has a button "Play a sound behind"
   (sonic-hp-behind). It asks nothing, so S1 left it; if the owner's "no behind or in front" covers it too, it is one
   button and its line.
