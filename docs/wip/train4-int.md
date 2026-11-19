@@ -191,3 +191,5 @@ Car 1
   to reading four verdict shapes (steps as an array, as a map of PASS/FAIL, with or without pass). Cheaper: each lane
   writing its live check as the ready live-checks.sh line in 'For the lead', and the common verdict shape noted for S2.
 
+- S1 (car 2, resumed run): 12 replies; most went to the sound6 merge's package pin, whose commit existed only in sound6's
+  copy (fetched from there). Cheaper: the lane writing its package head and where it lives into 'For the lead'.
