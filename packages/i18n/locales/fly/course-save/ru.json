@@ -30,5 +30,21 @@
   "course.save.problem.storage": "Сайт не смог сохранить её сейчас. Ваша трасса сохранена как черновик. Сохраните снова через минуту; если повторится, кнопка «Отзыв» пришлёт нам подробности.",
   "course.save.problem.other": "Сайт не принял трассу ({msg}). Ваша трасса сохранена как черновик. Нажмите «Сохранить снова»; если повторится, кнопка «Отзыв» пришлёт нам подробности.",
   "course.save.again": "Сохранить снова",
-  "course.save.againAt": "Сохранить снова после {time}"
+  "course.save.againAt": "Сохранить снова после {time}",
+  "course.fix.looking": "Ищу мелкие поправки трассы...",
+  "course.fix.found.direction": "ворота {g} повёрнуты не туда",
+  "course.fix.found.wall": "ворота {g} касаются стены",
+  "course.fix.found.leg": "путь от ворот {a} к воротам {b} касается стены",
+  "course.fix.found.legStart": "путь от старта к воротам {b} касается стены",
+  "course.fix.offer": "Перед сохранением: {what}. Внести эти мелкие поправки и сохранить?",
+  "course.fix.offerSome": "Перед сохранением: {what}. Часть можно поправить за вас. Внести эти мелкие поправки?",
+  "course.fix.yes": "Поправить и сохранить",
+  "course.fix.yesOnly": "Поправить",
+  "course.fix.show": "Покажи",
+  "course.fix.close": "Закрыть",
+  "course.fix.done.turned": "ворота {g} повёрнуты на {deg} град.",
+  "course.fix.done.moved": "ворота {g} отодвинуты от стены на {cm} см",
+  "course.fix.done.lifted": "ворота {a} и {b} подняты на {cm} см",
+  "course.fix.done.liftedOne": "ворота {b} подняты на {cm} см",
+  "course.fix.done": "Поправлено: {list}. Клавиша Ctrl+Z отменяет."
 }

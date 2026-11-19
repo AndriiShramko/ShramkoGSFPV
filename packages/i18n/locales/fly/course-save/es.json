@@ -30,5 +30,21 @@
   "course.save.problem.storage": "El sitio no pudo guardarlo ahora. Tu circuito se guarda como borrador. Guarda de nuevo en un minuto; si se repite, el botón Opinión nos envía los detalles.",
   "course.save.problem.other": "El sitio no aceptó el circuito ({msg}). Tu circuito se guarda como borrador. Pulsa Guardar de nuevo; si se repite, el botón Opinión nos envía los detalles.",
   "course.save.again": "Guardar de nuevo",
-  "course.save.againAt": "Guardar de nuevo después de las {time}"
+  "course.save.againAt": "Guardar de nuevo después de las {time}",
+  "course.fix.looking": "Buscando pequeñas correcciones del circuito...",
+  "course.fix.found.direction": "la puerta {g} mira al lado equivocado",
+  "course.fix.found.wall": "la puerta {g} toca una pared",
+  "course.fix.found.leg": "el tramo de la puerta {a} a la puerta {b} toca una pared",
+  "course.fix.found.legStart": "el tramo de la salida a la puerta {b} toca una pared",
+  "course.fix.offer": "Antes de guardar: {what}. ¿Hago estas pequeñas correcciones y guardo?",
+  "course.fix.offerSome": "Antes de guardar: {what}. Una parte se puede corregir por ti. ¿Hago esas pequeñas correcciones?",
+  "course.fix.yes": "Corregir y guardar",
+  "course.fix.yesOnly": "Corregir",
+  "course.fix.show": "Muéstramelo",
+  "course.fix.close": "Cerrar",
+  "course.fix.done.turned": "puerta {g} girada {deg} grados",
+  "course.fix.done.moved": "puerta {g} movida {cm} cm lejos de la pared",
+  "course.fix.done.lifted": "puertas {a} y {b} subidas {cm} cm",
+  "course.fix.done.liftedOne": "puerta {b} subida {cm} cm",
+  "course.fix.done": "Corregido: {list}. La tecla Ctrl+Z lo deshace."
 }

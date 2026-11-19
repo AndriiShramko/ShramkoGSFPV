@@ -30,5 +30,21 @@
   "course.save.problem.storage": "Strona nie mogła jej teraz zapisać. Twoja trasa jest zachowana jako szkic. Zapisz ponownie za minutę; jeśli to się powtórzy, przycisk Opinia wyśle nam szczegóły.",
   "course.save.problem.other": "Strona nie przyjęła trasy ({msg}). Twoja trasa jest zachowana jako szkic. Naciśnij Zapisz ponownie; jeśli to się powtórzy, przycisk Opinia wyśle nam szczegóły.",
   "course.save.again": "Zapisz ponownie",
-  "course.save.againAt": "Zapisz ponownie po {time}"
+  "course.save.againAt": "Zapisz ponownie po {time}",
+  "course.fix.looking": "Szukam drobnych poprawek trasy...",
+  "course.fix.found.direction": "bramka {g} jest odwrócona w złą stronę",
+  "course.fix.found.wall": "bramka {g} dotyka ściany",
+  "course.fix.found.leg": "odcinek od bramki {a} do bramki {b} dotyka ściany",
+  "course.fix.found.legStart": "odcinek od startu do bramki {b} dotyka ściany",
+  "course.fix.offer": "Przed zapisem: {what}. Wprowadzić te drobne poprawki i zapisać?",
+  "course.fix.offerSome": "Przed zapisem: {what}. Część da się poprawić za ciebie. Wprowadzić te drobne poprawki?",
+  "course.fix.yes": "Popraw i zapisz",
+  "course.fix.yesOnly": "Popraw",
+  "course.fix.show": "Pokaż mi",
+  "course.fix.close": "Zamknij",
+  "course.fix.done.turned": "bramka {g} obrócona o {deg} st.",
+  "course.fix.done.moved": "bramka {g} odsunięta od ściany o {cm} cm",
+  "course.fix.done.lifted": "bramki {a} i {b} podniesione o {cm} cm",
+  "course.fix.done.liftedOne": "bramka {b} podniesiona o {cm} cm",
+  "course.fix.done": "Poprawiono: {list}. Klawisz Ctrl+Z to cofa."
 }

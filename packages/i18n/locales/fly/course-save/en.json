@@ -30,5 +30,21 @@
   "course.save.problem.storage": "The site could not store it now. Your course is kept as a draft. Save again in a minute; if it repeats, the Feedback button sends us the details.",
   "course.save.problem.other": "The site did not take the course ({msg}). Your course is kept as a draft. Press Save again; if it repeats, the Feedback button sends us the details.",
   "course.save.again": "Save again",
-  "course.save.againAt": "Save again after {time}"
+  "course.save.againAt": "Save again after {time}",
+  "course.fix.looking": "Checking the course for small corrections...",
+  "course.fix.found.direction": "gate {g} faces the wrong way",
+  "course.fix.found.wall": "gate {g} touches a wall",
+  "course.fix.found.leg": "the way from gate {a} to gate {b} touches a wall",
+  "course.fix.found.legStart": "the way from the start to gate {b} touches a wall",
+  "course.fix.offer": "Before saving: {what}. Make these small corrections and save?",
+  "course.fix.offerSome": "Before saving: {what}. Some of it can be corrected for you. Make those small corrections?",
+  "course.fix.yes": "Correct and save",
+  "course.fix.yesOnly": "Correct",
+  "course.fix.show": "Show me",
+  "course.fix.close": "Close",
+  "course.fix.done.turned": "gate {g} turned {deg} deg",
+  "course.fix.done.moved": "gate {g} moved {cm} cm away from the wall",
+  "course.fix.done.lifted": "gates {a} and {b} raised {cm} cm",
+  "course.fix.done.liftedOne": "gate {b} raised {cm} cm",
+  "course.fix.done": "Corrected: {list}. Key Ctrl+Z undoes it."
 }
