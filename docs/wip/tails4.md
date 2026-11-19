@@ -80,7 +80,7 @@ Nothing to press for this lane: the three repairs show without a step of his.
   gsfpv.rooms.nick are pilot choices kept per browser because the settings schema has no setting for them (no text
   setting, no SuperSplat tab group); gsfpv.course.best (best laps) is a per-browser record. Making any of them travel
   in an exported file needs a schema setting and a migration: a decision for the lead.
-- Delete dist of ebbf066a: done at the end of this lane (see Cost notes).
+- Gates once on 003d52c1: typecheck, vitest, architecture, i18n, catalog, b18, leaks all PASS. dist of ebbf066a deleted.
 
 ## Cost notes
 
