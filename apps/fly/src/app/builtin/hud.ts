@@ -8,12 +8,17 @@ import { lodLine, lodReport } from '../lod';
 import { drawingFor, drawingLine } from '../drawing';
 import { cleanDraw } from '../clean-draw';
 import { onRadioLost } from '../../devices/dji-rc2-source';
+import { messages } from '../../ui/messages';
+import { openFeedback } from './feedback';
 
 export const hud: Feature = {
     id: 'hud',
     install(ctx) {
         const h = ctx.hud;
         h.mount(ctx.ui);
+        // the message service (ui/messages.ts): every line carries the scene; a problem's "Send to the author" opens the report
+        messages.setScene(() => ctx.scene?.id);
+        messages.setReporter((text) => openFeedback(ctx, 'bug', { message: text }));
         // arm kind 'key' (no switch on the radio): the on-screen ARM / DISARM button
         h.onArm = () => ctx.controls.toggleArm();
         // the walls tag itself the OSD reads from the flight (ui/hud.ts update)
