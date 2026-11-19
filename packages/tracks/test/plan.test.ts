@@ -4,8 +4,8 @@
 // course open.
 import { describe, expect, it } from 'vitest';
 import { analyticCollision } from '@gsfpv/collision';
-import { CELL_PER_OPENING, cellCentre, COURSE_DEFAULTS, FREE_DEFAULTS, LEVELS, analyzeScan, clipBox, courseLinkId, fitCourse, freeSpace, generateCourse, fitSizeFor, flownCollision, goodForGate, placementStats, planCourse, planRules, walkReach, qualityBounds, qualityMap, validateServerTrack } from '../src';
-import type { CourseLevel, CourseRequest, PlanInput, SceneTransform, VoxelCollision } from '../src';
+import { CELL_PER_OPENING, cellCentre, COURSE_DEFAULTS, FREE_DEFAULTS, LEVELS, analyzeScan, clipBox, courseLinkId, fitCourse, freeSpace, generateCourse, fitSizeFor, flownCollision, goodForGate, placementStats, planCourse, planRules, walkReach, legsWithinServer, qualityBounds, qualityMap, validateServerTrack } from '../src';
+import type { CourseLevel, CourseRequest, PlanInput, SceneTransform, TrackFile, VoxelCollision } from '../src';
 import { IDENTITY } from './worlds';
 import { cityFromAbove, crowdedPocket, plantTray, scannedRoom, tableAndSkull } from './scan-worlds';
 
@@ -185,6 +185,28 @@ describe('planCourse: the asked course in the scanned part, closed, at the craft
             for (const g of t.gates) expect(at(g.pos), `seed ${seed} gate ${g.id} at z ${g.pos[2]} (edge ${C})`).toBe(true);
         }
         expect(laid).toBeGreaterThan(0);
+    });
+
+    it('legsWithinServer: the server\'s 60 m leg rule, flown m, the closing leg only with laps (Lublin pro wide seed 2: 61 m)', () => {
+        const r = planCourse(input(scannedRoom(), ask('beginner')));
+        expect(r.ok).toBe(true);
+        if (!r.ok) return;
+        const t = r.track;
+        expect(legsWithinServer(t)).toBe(true);
+        const g0 = t.gates[0]!;
+        const moved = (dz: number, laps: number, scale: number): TrackFile => ({ ...t, laps, transform: [scale, 0, 0, 0], gates: [{ ...g0, pos: [0, 0, 0] }, { ...t.gates[1]!, pos: [0, 0, dz] }, { ...t.gates[2]!, pos: [0, 0, 0] }] });
+        expect(legsWithinServer(moved(59.9, 1, 1))).toBe(true);
+        expect(legsWithinServer(moved(60.1, 1, 1))).toBe(false);
+        // flown m: 31 scene units at x2 are 62 m
+        expect(legsWithinServer(moved(31, 1, 2))).toBe(false);
+        // the closing leg counts only for a lapped course; the server's own check agrees
+        const open3 = { ...t, laps: 1, transform: [1, 0, 0, 0] as [number, number, number, number], gates: [{ ...g0, pos: [0, 0, 0] as [number, number, number] }, { ...t.gates[1]!, pos: [0, 0, 40] as [number, number, number] }, { ...t.gates[2]!, pos: [0, 0, 80] as [number, number, number] }] };
+        expect(legsWithinServer(open3)).toBe(true);
+        expect(legsWithinServer({ ...open3, laps: 2 })).toBe(false);
+        for (const x of [open3, { ...open3, laps: 2 }, moved(60.1, 1, 1)]) {
+            const v = validateServerTrack(x);
+            expect(legsWithinServer(x)).toBe(v.ok || !v.issues.some((s) => s.includes('leg')));
+        }
     });
 
     it('walkReach: a pro wide course on a 1 km scan gets a box of its walk and one leg, not its loop laid out straight', () => {

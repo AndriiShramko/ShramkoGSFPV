@@ -19,6 +19,7 @@ import { RING_MIN_DRONE_DIAMETERS, SMALLEST_DRONE_RADIUS_M, freeAtMargin, scaled
 import { FREE_DEFAULTS, clearanceM, cellCentre } from './freespace';
 import type { FreeSpace } from './freespace';
 import { flownStart } from './check';
+import { MAX_LEG_M } from './server';
 import { analyzeScan, scanTile } from './scan';
 import type { ScanAnalysis } from './scan';
 import { LEVELS, VOXEL_VIEW_GATES, courseLinkId } from './request';
@@ -33,8 +34,6 @@ export const CITY_LOW_M = 4;
 export const ZONE_CANDS_PER_GATE = 8;
 /** compact: the zone's radius is at least this many shortest legs (ESTIMATE, design: 3 legs) */
 export const COMPACT_LEGS = 3;
-/** the most a leg may be, flown m (server.ts / apps/api/tracks.py MAX_LEG_M) */
-const MAX_LEG_M = 60;
 /** gen4a A3: walks per zone tier (the asked seed, then seeds derived from it) while the course stays under gatesMin (a
  *  street walk turns corners and no late gate sees the start: Wroclaw beginner seed 1 closed at 1 gate) */
 export const WALK_VARIANTS = 3;
@@ -250,6 +249,24 @@ export function walkReach(R: PlanRules, shrink: number): WalkReach {
     return { walkR, boxR: Math.min(reach, walkR + legMax) };
 }
 
+/**
+ * Every leg of a track within the server's MAX_LEG_M, flown m: validateServerTrack's own leg rule (each gate to the next,
+ * and the last to the first when the course has laps). planCourse keeps no course the Save would refuse: Lublin pro wide
+ * seed 2 walked a 61 m leg from gate 1 to gate 2 (audit run 5); its other rules (a whoop's gate size in scene units over
+ * x5.6) are the format's, not the walk's, and are not asked here.
+ */
+export function legsWithinServer(track: TrackFile): boolean {
+    const s = track.transform[0];
+    const g = track.gates;
+    const legs: [number, number][] = g.slice(1).map((_, i) => [i, i + 1]);
+    if ((track.laps ?? 1) > 1 && g.length > 1) legs.push([g.length - 1, 0]);
+    return legs.every(([a, b]) => {
+        const p = g[a]!.pos, q = g[b]!.pos;
+        const dx = p[0]! - q[0]!, dy = p[1]! - q[1]!, dz = p[2]! - q[2]!;
+        return Math.sqrt(dx * dx + dy * dy + dz * dz) * s <= MAX_LEG_M;
+    });
+}
+
 /** where the walk starts: over the core, half way between its ground and its roof or ceiling (a street at eye height;
  *  the walk takes the nearest zone cell) */
 function startOf(a: ScanAnalysis, openingM: number): Vec3 {
@@ -357,7 +374,7 @@ export function planCourse(input: PlanInput, hooks: PlanHooks = {}): PlanAnswer 
                     const t0 = now ? now() : 0;
                     const track = generateCourse(free, walls, { seed: walkSeed(request.seed, v), scene: input.scene, transform, created: input.created, spawn: start, params, place, elements, craftRadiusM: input.craftRadiusM });
                     if (now) lastMs = now() - t0;
-                    if (track.gates.length > 0 && track.gates.length > bestGates()) best = { track, opening };
+                    if (track.gates.length > 0 && track.gates.length > bestGates() && legsWithinServer(track)) best = { track, opening };
                 };
                 // a tier with too few cells is not walked unless it is the pass's last; each tier's derived seeds are walked
                 // before the tier loosens
