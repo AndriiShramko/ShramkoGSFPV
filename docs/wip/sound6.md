@@ -7,8 +7,17 @@ the design says train6: the lane prompt wins). Design C:/dev/.gsfpv-lanes/design
 
 ## Status
 - [x] S0 close sonic5 by the lead's decision of 2026-11-19 (docs/wip/sonic5.md W1.6, W1-build closed).
-- [ ] S1 the question about behind and in front gone from every lesson (package: SIDES, APPROACHES, turn-listen,
-  shapes-cube, quiz.where-options, headphones.q-front-back deleted; versions bumped; voices measured; test a).
+- [x] S1 the question about behind and in front gone from every lesson: package quick1 92bb012 (simulator commit of this
+  line). The ears game asks left or right only (runner.ts SIDES, options SIDES.length); ears-walls brings the wall from
+  left and right (sounds.ts APPROACHES); a shape in ears-shapes is named without a side (the design missed it: the old
+  fallback said dir.front); turn-listen's intro hum from the right (its start already puts ring-1 at +104 deg on attempt
+  1 and -76 deg on attempt 2; the design's text "on one side" fits it, start yaw unchanged); the cube's lines say near
+  and far; headphones.q-front-back deleted. Versions ears-game 4, ears-walls 3, ears-shapes 3, turn-listen 3,
+  shapes-cube 4. Ten lines measured with David, Helena, Paulina, Irina (test/fixtures/measure-tts.ps1, only the changed
+  keys; the prompt's tools/measure-tts.ps1 does not exist). Test test/quick-path.test.ts 36 passed; NEG OK against
+  bd79c96 (6 failed). 30 package test files that name these lessons, lines or fixtures: all pass except
+  test/words.test.ts (its evidence evidence/listen/VL-4-words.json must be rewritten by `pnpm listen:words`: left for
+  S5, after the lines of S2). Three tsc 0 errors. Pin not moved yet (S2 moves it with the host change).
 - [ ] S2 the quick path as the default, the full course second (package: paths.json, ears-headphones, ears-walls,
   walls-hall, prefs default; host: Quick start / Full course buttons; tests c and host a-c); the glossary entry of the
   cue 'speed.brake' with its measured lines.
@@ -32,3 +41,5 @@ No person, phone or real controller took part in this lane.
 
 ## Cost notes
 - S0: reading the design, the sonic5 status and the brief took 4 replies; nothing would make it cheaper.
+- S1: the count-based tests (lesson-schedule's measured counts, lessons' versions, progress steps) took 5 replies; the
+  design could list them. Finding ring-1's position took 5 replies (a print script): a world dump helper would help.
