@@ -1,0 +1,267 @@
+{
+  "probe": "sonic-quick-walk",
+  "target": "https://gsfpv.flyreelstudio.eu",
+  "at": "2026-11-19T17:25:33.952Z",
+  "pass": false,
+  "failed": [
+    "chromium 1",
+    "chromium 2",
+    "chromium 4",
+    "chromium 6",
+    "chromium 7",
+    "chromium 8",
+    "chromium 9",
+    "firefox 1",
+    "firefox 2",
+    "firefox 4"
+  ],
+  "steps": [
+    {
+      "browser": "chromium",
+      "n": 1,
+      "name": "the start screen fits at 1536x730 (scale 1.25)",
+      "pass": false,
+      "value": {
+        "overflowX": 0,
+        "buttons": 44,
+        "small": [
+          "Start",
+          "Headphones",
+          "Lessons",
+          "Settings",
+          "sonic-about",
+          "sonic-leave"
+        ],
+        "outside": [],
+        "overlaps": []
+      }
+    },
+    {
+      "browser": "chromium",
+      "n": 2,
+      "name": "\"Quick start\" is the first button of Start and visible",
+      "pass": false,
+      "value": {
+        "order": [
+          "sonic-start-beginning"
+        ],
+        "visible": false
+      }
+    },
+    {
+      "browser": "chromium",
+      "n": 3,
+      "name": "a mouse click on it: sound running within 2 s, no sound problem shown",
+      "pass": true,
+      "value": {
+        "states": [
+          "running"
+        ],
+        "problem": null,
+        "clicked": "[data-testid=\"sonic-start\"] .sonic-actions button"
+      }
+    },
+    {
+      "browser": "chromium",
+      "n": 4,
+      "name": "the first wall cue within 12 s of the click",
+      "pass": false,
+      "value": {
+        "seconds": null,
+        "hook": true,
+        "speech": [
+          {
+            "text": "",
+            "voice": null,
+            "called": 1,
+            "started": 531,
+            "ended": 531
+          },
+          {
+            "text": "Headphone check",
+            "voice": "Microsoft David - English (United States)",
+            "called": 867,
+            "started": 1013,
+            "ended": 2710
+          },
+          {
+            "text": "Next, key N. Back, key B. Repeat, key Z.",
+            "voice": "Microsoft David - English (United States)",
+            "called": 872,
+            "started": 2775,
+            "ended": 12690
+          },
+          {
+            "text": "Let's check your headphones. Wired headp",
+            "voice": "Microsoft David - English (United States)",
+            "called": 876,
+            "started": 12759,
+            "ended": 20860
+          },
+          {
+            "text": "You will hear a sound on the left or on ",
+            "voice": "Microsoft David - English (United States)",
+            "called": 879,
+            "started": 20926,
+            "ended": 31742
+          },
+          {
+            "text": "Tell me where each sound is.",
+            "voice": "Microsoft David - English (United States)",
+            "called": 880,
+            "started": 31794,
+            "ended": 34244
+          }
+        ]
+      }
+    },
+    {
+      "browser": "chromium",
+      "n": 5,
+      "name": "the headphone check answered on its three questions -> passed",
+      "pass": true,
+      "value": {
+        "lesson": "ears-headphones"
+      }
+    },
+    {
+      "browser": "chromium",
+      "n": 6,
+      "name": "ears-walls names left, right, up, down and never front or behind",
+      "pass": false,
+      "value": {
+        "passed": false,
+        "dirs": [],
+        "banned": []
+      }
+    },
+    {
+      "browser": "chromium",
+      "n": 7,
+      "name": "walls-hall opens after it",
+      "pass": false,
+      "value": {
+        "lesson": "ears-glossary",
+        "phase": "flying",
+        "seconds": 240
+      }
+    },
+    {
+      "browser": "chromium",
+      "n": 8,
+      "name": "back at Start: Continue, Quick start, Full course",
+      "pass": false,
+      "value": {
+        "order": [
+          "sonic-start-continue",
+          "sonic-start-beginning"
+        ]
+      }
+    },
+    {
+      "browser": "chromium",
+      "n": 9,
+      "name": "at 844x390 the start screen fits and keeps that order",
+      "pass": false,
+      "value": {
+        "overflowX": 0,
+        "buttons": 45,
+        "small": [
+          "Start",
+          "Headphones",
+          "Lessons",
+          "Settings",
+          "sonic-about",
+          "sonic-leave"
+        ],
+        "outside": [],
+        "overlaps": [],
+        "order": [
+          "sonic-start-continue",
+          "sonic-start-beginning"
+        ]
+      }
+    },
+    {
+      "browser": "firefox",
+      "n": 1,
+      "name": "the start screen fits at 1536x730 (scale 1.25)",
+      "pass": false,
+      "value": {
+        "overflowX": 0,
+        "buttons": 44,
+        "small": [
+          "Start",
+          "Headphones",
+          "Lessons",
+          "Settings",
+          "sonic-about",
+          "sonic-leave"
+        ],
+        "outside": [],
+        "overlaps": []
+      }
+    },
+    {
+      "browser": "firefox",
+      "n": 2,
+      "name": "\"Quick start\" is the first button of Start and visible",
+      "pass": false,
+      "value": {
+        "order": [
+          "sonic-start-beginning"
+        ],
+        "visible": false
+      }
+    },
+    {
+      "browser": "firefox",
+      "n": 3,
+      "name": "a mouse click on it: sound running within 2 s, no sound problem shown",
+      "pass": true,
+      "value": {
+        "states": [
+          "running"
+        ],
+        "problem": null,
+        "clicked": "[data-testid=\"sonic-start\"] .sonic-actions button"
+      }
+    },
+    {
+      "browser": "firefox",
+      "n": 4,
+      "name": "the first wall cue within 12 s of the click",
+      "pass": false,
+      "value": {
+        "seconds": null,
+        "hook": false,
+        "speech": [
+          {
+            "text": "",
+            "voice": null,
+            "called": 0,
+            "started": null,
+            "ended": null
+          },
+          {
+            "text": "Fly by Sound",
+            "voice": null,
+            "called": 96,
+            "started": 472,
+            "ended": 2379
+          }
+        ]
+      }
+    },
+    {
+      "browser": "firefox",
+      "n": 0,
+      "name": "engine state and errors (information)",
+      "pass": true,
+      "value": {
+        "engine": null,
+        "errors": []
+      }
+    }
+  ]
+}
