@@ -118,6 +118,7 @@
   "sonic.start.scanWhat": "Wolny lot nad tym skanem w rozmiarze x{size}: słyszysz jego ściany i swoją wysokość. Bez obręczy, bez zegara.",
   "sonic.key.Backslash": "ukośnik wsteczny",
   "sonic.say.helpNarrator": "Naciśnij {key}, aby wyłączyć lub włączyć narratora. Bez narratora lecisz tylko na słuch.",
+  "sonic.say.helpHead": "Naciśnij {key}, aby wyśrodkować śledzenie głowy: najpierw spójrz na ekran.",
   "sonic.say.narratorOn": "Narrator włączony.",
   "sonic.say.narratorTip": "Ukończyłeś tor na słuch. Gdy znasz już klawisze, naciśnij {key}, aby wyłączyć narratora i lecieć tylko na słuch.",
   "sonic.say.lessonNarrator": "Na tę lekcję narrator jest włączony. Po jej końcu znów się wyłączy.",

@@ -91,6 +91,8 @@ export const KEY_HELP: readonly (readonly [line: string, action: ActionId, aria?
     ['sonic.say.helpHome', 'sonic.home'],
     // lane quiet (message 54): the apostrophe, the narrator off and on
     ['sonic.say.helpNarrator', 'sonic.narrator'],
+    // lane head4 (int4, the seam with the mode's key help): Shift+H centres head tracking (with it off, the key says how to turn it on)
+    ['sonic.say.helpHead', 'sonic.headCentre'],
     ['help.status', 'sonic.status'],
     ['help.glossary', 'sonic.glossary'],
     ['help.reset', 'respawn.start'],
