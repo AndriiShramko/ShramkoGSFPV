@@ -47,10 +47,12 @@ describe('edit4c C1: a new gate takes the place and the angle of the course', ()
         const s = openEditor(c, off, 0); // gate 1 selected, as after opening: the old code put the gate after it
         const g3 = c.gates[2]!.pos;
         const g4 = c.gates[3]!.pos;
-        // 1.5 m off the middle of the leg 3 -> 4, seen from 6 m away along the floor (no wall hit: addPoint's 6 m ahead)
+        // 1.5 m off the middle of the leg 3 -> 4, a wall 7.5 m away (addPoint pulls 1.5 m back), seen along the leg so the ray
+        // passes no leg before the wall (C3: a ray through a leg puts the gate on that leg, tested below)
         const mid: V3 = [(g3[0] + g4[0]) / 2 - 1.5 * 0.447, 2, (g3[2] + g4[2]) / 2 - 1.5 * 0.894];
-        const o: V3 = [mid[0] - 6, mid[1], mid[2]];
-        const p = placeFor(s, TR, { o, d: [1, 0, 0], hit: null }, 0);
+        const d: V3 = [2 / Math.sqrt(5), 0, 1 / Math.sqrt(5)];
+        const o: V3 = [mid[0] - 6 * d[0], mid[1], mid[2] - 6 * d[2]];
+        const p = placeFor(s, TR, { o, d, hit: 7.5 }, 0);
         expect(p.after).toBe(2);
         expect(Math.hypot(p.pos[0] - mid[0], p.pos[1] - mid[1], p.pos[2] - mid[2])).toBeLessThan(1e-9);
         const inH = headingOfDir(mid[0] - g3[0], mid[2] - g3[2]);
@@ -70,6 +72,26 @@ describe('edit4c C1: a new gate takes the place and the angle of the course', ()
         expect(placeInCourse(pts, 2, [11, 2, -9])).toBe(2);
         expect(placeInCourse([[0, 2, 0]], 0, [5, 2, 5])).toBe(0);
         expect(placeInCourse([], -1, [5, 2, 5])).toBe(-1);
+    });
+
+    it('C3: a click whose ray passes a leg before the wall puts the gate on that leg, facing along it', () => {
+        const c = course([[0, 2, 0], [0, 2, -10], [10, 2, -15], [20, 2, -10], [25, 2, 0]]);
+        const s = openEditor(c, off, 0);
+        const g3 = c.gates[2]!.pos;
+        const g4 = c.gates[3]!.pos;
+        // seen from 15 m east of the leg 3 -> 4's middle; the ray goes on and meets a wall 29 m off, by gate 2 (measured on
+        // a Shift+G course: the old rule put the gate at that wall, after gate 2 here)
+        const o: V3 = [30, 2, -12.5];
+        const p = placeFor(s, TR, { o, d: [-1, 0, 0], hit: 29 }, 0);
+        expect(p.after).toBe(2);
+        expect(Math.hypot(p.pos[0] - 15, p.pos[1] - 2, p.pos[2] + 12.5)).toBeLessThan(1e-6);
+        expect(angleBetween(headingOf(p.quat as [number, number, number, number]), headingOfDir(g4[0] - g3[0], g4[2] - g3[2]))).toBeLessThan(5);
+        // a wall in front of the leg: the wall point stands (pulled 1.5 m back), as before
+        const w = placeFor(s, TR, { o, d: [-1, 0, 0], hit: 10 }, 0);
+        expect(Math.hypot(w.pos[0] - 21.5, w.pos[1] - 2, w.pos[2] + 12.5)).toBeLessThan(1e-6);
+        // a leg passing by the eye is not the one clicked: the next leg along the ray is (gate 2 -> 3, 10 m off)
+        const b = placeFor(s, TR, { o: [15, 2, -12.5], d: [-1, 0, 0], hit: 14 }, 0);
+        expect(b.after).toBe(1);
     });
 
     it('three duplicates on a curved course follow the curve to the next gate (not a straight row), each facing along it', () => {

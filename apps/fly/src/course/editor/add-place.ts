@@ -7,7 +7,7 @@
 // gate, a copy of its kind and opening, selected afterwards, one undo step, refused on a full course (max-gates).
 import { PIECE_BAR_M, PIECE_OPENING_M } from '@gsfpv/tracks';
 import type { EditAction, EditorState, PieceKind } from '@gsfpv/tracks';
-import { courseFacing, placeInCourse } from './course-line';
+import { courseFacing, legOnRay, placeInCourse } from './course-line';
 import { openingOf, type Flown, type Q4, type V3 } from './drag';
 
 /** the new gate stands this far in front of the wall the click hit, flown m (an estimate: room for the drone before the wall) */
@@ -125,8 +125,11 @@ export interface Placement {
 export function placeFor(state: EditorState, tr: Flown, click: AddClick, lift: number): Placement {
     const s = tr[0];
     const points: V3[] = state.course.gates.map((g) => [s * g.pos[0] + tr[1], s * g.pos[1] + tr[2], s * g.pos[2] + tr[3]]);
-    const pos = addPoint(click.o, click.d, click.hit, lift);
-    const after = placeInCourse(points, state.selected, pos);
+    // C3: a click on a leg seen in front of the scan puts the gate on that leg (course-line.ts legOnRay)
+    const seen = click.hit !== null && Number.isFinite(click.hit) && click.hit > 0 ? click.hit : ADD_RAY_M;
+    const leg = legOnRay(points, click.o, click.d, seen);
+    const pos = leg ? leg.at : addPoint(click.o, click.d, click.hit, lift);
+    const after = leg ? leg.after : placeInCourse(points, state.selected, pos);
     const prev = points[after] ?? null;
     const next = points[after + 1] ?? null;
     const far = (p: V3 | null): boolean => !!p && Math.hypot(pos[0] - p[0], pos[2] - p[2]) >= ADD_COURSE_MIN_M;

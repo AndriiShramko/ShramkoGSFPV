@@ -195,17 +195,19 @@ try {
     {
         let tries = [];
         let found = null;
-        for (let n = 0; n < 5 && !found; n++) {
+        let judged = null;
+        for (let n = 0; n < 3 && !judged; n++) {
             const s = await snap();
-            const ls = await legs(s);
+            // legs not starting at the selected gate first (there the old page's 'after the selected one' would match by
+            // luck), then those that do (the old page still faces them from the eye, 83-89 deg off on the live site)
+            const own = await legs(s);
+            const ls = [...own, ...(await legs(s, true)).filter((l) => l.i === s.selected)];
             if (!ls.length) {
-                // the near legs start at the selected gate: select the farthest gate on the page first, as the pilot would
-                // to add elsewhere (the old page then puts the new gate after it, not into the leg clicked)
                 const far = (s.gates || []).map((p, i) => ({ p, i })).filter(({ p, i }) => i !== s.selected && p[2] > 0 && p[0] > 40 && p[0] < W - 40 && p[1] > 110 && p[1] < H - 90).sort((x, y) => y.p[2] - x.p[2])[0];
-                if (n === 0 && far) { await click(far.p[0], far.p[1], 800); tries.push({ selectedFar: far.i, now: (await snap()).selected }); } else await backOff();
+                if (far) { await click(far.p[0], far.p[1], 800); tries.push({ selectedFar: far.i, now: (await snap()).selected }); } else await backOff();
                 continue;
             }
-            for (const leg of ls.slice(0, 3)) {
+            for (const leg of ls.slice(0, 6)) {
                 const { a, b, armed } = await addAt('gate', leg.mid);
                 const k = b.selected;
                 const grew = (b.list?.length ?? 0) === (a.list?.length ?? 0) + 1;
@@ -221,13 +223,24 @@ try {
                     t.wasLeg = [a.list[leg.i]?.id, a.list[leg.i + 1]?.id];
                     t.between = t.neighbours[0] === t.wasLeg[0] && t.neighbours[1] === t.wasLeg[1];
                 }
+                // the scan in front of the leg: the click's ray met a wall (or nothing: 6 m ahead, add-place.ts ADD_AHEAD_M)
+                // well before the leg, so the pilot clicked that wall, not the leg; the gate rightly goes there. Not judged.
+                const reach = t.hitM ?? 6;
+                t.legDepth = leg.depth;
+                t.hidden = reach < 0.8 * Math.min(s.gates[leg.i][2], s.gates[leg.i + 1][2]);
                 tries.push(t);
                 if (grew) await undoOnce();
-                if (t.between && t.offDeg <= 15) { found = t; break; }
+                // a click that added nothing (it met a handle or a gate under the point) is tried again elsewhere
+                if (!t.hidden && t.armed && t.grew) { judged = t; break; }
             }
-            if (!found) await backOff();
+            if (!judged) {
+                // every leg tried stood behind the scan: select the farthest gate on the page (the view frames it) and go on
+                const far = (s.gates || []).map((p, i) => ({ p, i })).filter(({ p, i }) => i !== s.selected && p[2] > 0 && p[0] > 40 && p[0] < W - 40 && p[1] > 110 && p[1] < H - 90).sort((x, y) => y.p[2] - x.p[2])[0];
+                if (far) { await click(far.p[0], far.p[1], 800); tries.push({ selectedFar: far.i, now: (await snap()).selected }); }
+            }
         }
-        judge('s2.add', !!found, { found, tries: tries.slice(0, 6) });
+        found = judged && judged.between && judged.offDeg <= 15 ? judged : null;
+        judge('s2.add', !!found, { judged, tries: tries.slice(0, 10) });
     }
 
     // s3 / s4: the pieces, each removed by one Undo press
@@ -256,11 +269,14 @@ try {
         let gi = null;
         for (let n = 0; n < 4 && gi === null; n++) {
             const g = s.gates || [];
-            const cand = g.map((p, i) => ({ p, i })).filter(({ p, i }) => i + 1 < g.length && p[2] > 0 && p[0] > 200 && p[0] < W - 200 && p[1] > 160 && p[1] < H - 160 && g[i + 1][2] > 0)
+            // any gate on the page with a next gate: a click selects it and the view frames it (E1); its handles must then
+            // stand well inside the page
+            const cand = g.map((p, i) => ({ p, i })).filter(({ p, i }) => i + 1 < g.length && p[2] > 0 && p[0] > 40 && p[0] < W - 40 && p[1] > 110 && p[1] < H - 90 && g[i + 1][2] > 0)
                 .sort((x, y) => Math.hypot(x.p[0] - W / 2, x.p[1] - H / 2) - Math.hypot(y.p[0] - W / 2, y.p[1] - H / 2));
-            for (const c of cand.slice(0, 3)) {
-                if (s.selected !== c.i) { await click(c.p[0], c.p[1], 300); s = (await until(snap, (x) => x.selected === c.i, 2500)).v; }
-                if (s.selected === c.i) { gi = c.i; break; }
+            for (const c of cand.slice(0, 4)) {
+                if (s.selected !== c.i && (await onCanvas(c.p[0], c.p[1]))) { await click(c.p[0], c.p[1], 300); s = (await until(snap, (x) => x.selected === c.i, 2500)).v; await sleep(600); s = await snap(); }
+                const st = s.stand?.screen;
+                if (s.selected === c.i && st && st[2] > 0 && st[0] > 150 && st[0] < W - 150 && st[1] > 140 && st[1] < H - 140) { gi = c.i; break; }
             }
             if (gi === null) { await backOff(); s = await snap(); }
         }
