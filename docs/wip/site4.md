@@ -59,7 +59,7 @@ Probe: `node tools/bench/scripts/site4-links.mjs https://gsfpv.flyreelstudio.eu 
 6. The cookie banner never covers the start button of /es/sound/ at 320x568 and 320x640. Proof: probe step banner. Last: PASS local (banner docked at y 72..262, button at y 405), FAIL live.
 7. The same rules are checked on every build by the site smoke. Proof: `pnpm --filter @gsfpv/site verify`. Last (stage 2): 296 of 296; with the old page files 269 of 296, the 27 failing are the new checks.
 8. `mainCta` and `consentDock` are unit-tested. Proof: `npx vitest run apps/site/test/main-cta.test.ts`. Last: 7 pass, NEG OK against origin/main.
-9. The gates typecheck, vitest, architecture, i18n, catalog, b18, leaks pass on this tree. Proof: gates.py (see the stage 3 commit). Last result: below in For the lead.
+9. The gates typecheck, vitest, architecture, i18n, catalog, b18, leaks pass on this tree. Proof: `gates.py --only typecheck,vitest,architecture,i18n,catalog,b18,leaks`. Last result: all PASS except vitest, 1 of 5340 failed: tools/bench/test/chrome.test.ts caught the probe's launch call not spreading `pick.launch`; the probe was repaired, then `npx vitest run tools/bench/test/chrome.test.ts`: 14 of 14 pass (the gates were not run a second time; the probe's lang step was re-run on the live site and still fails there, as it should).
 
 ## Not verified
 

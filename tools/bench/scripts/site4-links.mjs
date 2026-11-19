@@ -25,7 +25,8 @@ if (!BASE || !OUT) {
 const DESK = { viewport: { width: 1536, height: 730 }, deviceScaleFactor: 1.25 };
 const PHONE = { viewport: { width: 375, height: 812 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true };
 
-const browser = await chromium.launch(pickBrowser({ expected: chromium.executablePath() }).launch);
+const pick = pickBrowser({ expected: chromium.executablePath() });
+const browser = await chromium.launch({ ...pick.launch });
 const steps = [];
 const step = (name, pass, detail) => {
     steps.push({ name, pass, detail });
