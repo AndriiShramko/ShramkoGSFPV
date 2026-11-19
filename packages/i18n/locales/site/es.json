@@ -10,6 +10,7 @@
     "sections": "Secciones",
     "language": "Idioma",
     "fly": "Volar ya",
+    "flySound": "Fly by Sound",
     "anchors": {
       "locations": "Lugares",
       "features": "Funciones",
@@ -853,7 +854,8 @@
   },
   "sticky": {
     "cta": "Volar ya",
-    "note": "Gratis, en tu navegador"
+    "note": "Gratis, en tu navegador",
+    "soundNote": "Con auriculares, gratis, en tu navegador"
   },
   "consent": {
     "title": "Cookies de analítica",

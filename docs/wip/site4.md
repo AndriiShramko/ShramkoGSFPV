@@ -6,6 +6,8 @@ Owner's words: brief lines 533-536 (the Fly by Sound page's top menu says "Fly n
 
 - [x] Stage 1: the audit (probe on the live site) and the design (this file): 51f7dac4
 - [ ] Stage 2: the repairs, each with a check in apps/site/scripts/verify.mjs or a unit test that fails on origin/main
+  - [x] 2a: MainCta in config/site.ts, header + bottom bar per page, home band button, lang anchor, consent dock; unit test apps/site/test/main-cta.test.ts (7 pass, NEG OK)
+  - [ ] 2b: verify.mjs checks (static + browser) with their negative control
 - [ ] Stage 3: the acceptance (tools/bench/scripts/site4-links.mjs on a local build, the same probe on the live site must fail), the gates, the status parts
 
 ## Audit (stage 1)

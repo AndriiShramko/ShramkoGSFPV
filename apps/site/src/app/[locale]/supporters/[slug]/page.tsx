@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { AUTHOR, flyPath, posterUrl } from "@/config/site";
+import { AUTHOR, flyPath, mainCta, posterUrl } from "@/config/site";
 import type { Locale } from "@/i18n/routing";
 import AuthorSign from "@/components/AuthorSign";
 import Footer from "@/components/Footer";
@@ -43,7 +43,7 @@ function Person({ locale, p }: { locale: Locale; p: Supporter }) {
   return (
     <>
       <JsonLd locale={locale} description={t("meta.description")} />
-      <Header locale={locale} page={page} onLanding={false} />
+      <Header locale={locale} page={page} onLanding={false} cta={mainCta(locale, "fly", fly)} />
       <main id="main" tabIndex={-1} className="outline-none">
         {draft ? (
           <div role="note" className="border-b border-warn/40 bg-warn/10" data-testid="supporter-draft">
@@ -185,7 +185,7 @@ function Person({ locale, p }: { locale: Locale; p: Supporter }) {
         </div>
       </main>
       <Footer locale={locale} page={page} />
-      <StickyCTA locale={locale} label={t("sticky.cta")} note={t("sticky.note")} />
+      <StickyCTA locale={locale} label={t("sticky.cta")} note={t("sticky.note")} cta={mainCta(locale, "fly", fly)} />
     </>
   );
 }

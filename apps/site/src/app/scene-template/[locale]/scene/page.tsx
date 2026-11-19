@@ -3,6 +3,7 @@ import { setRequestLocale } from "next-intl/server";
 import type { Locale } from "@/i18n/routing";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
+import { mainCta } from "@/config/site";
 import { ExternalMark } from "@/components/kit";
 import { Each, If, Unless, rawSlot, sceneWords, slot } from "@/components/scenepage/slots";
 
@@ -24,7 +25,8 @@ function ScenePage({ locale }: { locale: Locale }) {
   const ui = sceneWords(locale);
   return (
     <>
-      <Header locale={locale} page={`scenes/${slot("path")}`} onLanding={false} />
+      {/* the header's main button flies THIS scene: the same address as the first screen's button */}
+      <Header locale={locale} page={`scenes/${slot("path")}`} onLanding={false} cta={mainCta(locale, "fly", slot("flyHref"))} />
       <main id="main" tabIndex={-1} className="outline-none">
         <div className="relative isolate overflow-hidden border-b border-line">
           <div aria-hidden="true" className="hero-fallback absolute inset-0 -z-10" />

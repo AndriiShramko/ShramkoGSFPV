@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { useTranslations } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { AGENT_PROMPT, AUTHOR, GOOD_FIRST_ISSUES, REPO, REPO_BLOB, flyPath } from "@/config/site";
+import { AGENT_PROMPT, AUTHOR, GOOD_FIRST_ISSUES, REPO, REPO_BLOB, flyPath, soundStartPath } from "@/config/site";
 import type { Locale } from "@/i18n/routing";
 import { Ext, Section } from "@/components/kit";
 import BgVideo from "@/components/BgVideo";
@@ -208,7 +208,11 @@ function Landing({ locale }: { locale: Locale }) {
               {t("soundBand.h2")}
             </h2>
             <p className="mt-4 max-w-2xl text-lg text-ink/85">{t("soundBand.text")}</p>
-            <p className="mt-6">
+            {/* the band's main button starts the mode itself; the link tells who it is for */}
+            <p className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3">
+              <a href={soundStartPath(locale)} data-track="fly_click" data-p="sound-band" className="btn-primary inline-flex min-h-12 items-center px-5">
+                {t("sound.start.button")}
+              </a>
               <a href={`/${locale}/sound/#sound-who`} data-track="cta_click" data-p="sound-band" className="link inline-flex min-h-11 items-center text-lg">
                 {t("soundBand.link")}
                 <span aria-hidden="true" className="ml-2">→</span>
