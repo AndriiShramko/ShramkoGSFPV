@@ -25,6 +25,23 @@ const BASE: Record<Exclude<VoxelStyle, 'height'>, RGB> = { solid: [0.66, 0.86, 0
 // height ramp, low to high: indigo, blue, cyan, green, yellow, orange
 const RAMP: RGB[] = [[0.3, 0.22, 0.8], [0.1, 0.45, 1], [0, 0.85, 0.92], [0.35, 0.95, 0.4], [1, 0.86, 0.2], [1, 0.4, 0.15]];
 
+/**
+ * The glow (emissive, times the vertex colour) of the lit styles. Over the scan ('over') the voxels glow so they read on any scan;
+ * alone (the voxels-only view, voxux4 V3) the glow is low, so the layer's two lights shade the three face directions of a cube apart.
+ */
+export const VOXEL_GLOW: Record<'over' | 'alone', Record<VoxelStyle, number>> = {
+    over: { solid: 0.12, wire: 1, height: 1, floaters: 0.3 },
+    alone: { solid: 0.05, wire: 1, height: 0.12, floaters: 0.12 }
+};
+
+/** The voxels-only view's fog (linear, into the background colour): from FOG_NEAR_M, or half the reach when that is shorter, to the reach. */
+export const FOG_NEAR_M = 30;
+export interface VoxelFog { start: number; end: number }
+export function voxelFog(reachM: number): VoxelFog {
+    const end = reachM > 0 && Number.isFinite(reachM) ? reachM : 200;
+    return { start: Math.min(FOG_NEAR_M, end / 2), end };
+}
+
 /** The ramp's colour at t in [0, 1] (clamped). */
 export function heightColor(t: number): RGB {
     const x = Math.max(0, Math.min(1, t)) * (RAMP.length - 1);

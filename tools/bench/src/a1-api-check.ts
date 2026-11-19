@@ -11,7 +11,9 @@ export const USED: Record<string, string[]> = {
     AppOptions: ['graphicsDevice', 'componentSystems', 'resourceHandlers'],
     Entity: ['addComponent', 'camera', 'render', 'gsplat', 'findComponents'],
     GraphNode: ['setPosition', 'setRotation', 'setLocalPosition', 'setLocalEulerAngles', 'setLocalScale', 'setEulerAngles', 'addChild', 'getPosition', 'children', 'destroy'],
-    Scene: ['gsplat', 'ambientLight', 'layers'],
+    Scene: ['gsplat', 'ambientLight', 'layers', 'fog'],
+    // voxux4 V3: the voxels-only view's fog (voxel-overlay.ts applyFog)
+    FogParams: ['type', 'color', 'start', 'end', 'density'],
     // engine 2.23.2 (v0.7 lane R): lodMode is deprecated and no longer set; splatBudgetMode and stochastic are new
     GSplatParams: ['lodUpdateAngle', 'lodBehindPenalty', 'splatBudgetMode', 'minContribution', 'alphaClip', 'radialSorting', 'splatBudget', 'colorUpdateAngle', 'renderer', 'currentRenderer', 'stochastic'],
     GSplatComponent: ['lodRangeMin', 'lodRangeMax', 'resource', 'asset'],
@@ -19,7 +21,7 @@ export const USED: Record<string, string[]> = {
     GSplatOctree: ['lodLevels'],
     CameraComponent: ['fov', 'horizontalFov', 'nearClip', 'farClip', 'clearColor', 'toneMapping'],
     RenderComponent: ['material', 'type', 'layers'],
-    StandardMaterial: ['useLighting', 'diffuse', 'emissive', 'useTonemap'],
+    StandardMaterial: ['useLighting', 'diffuse', 'emissive', 'useTonemap', 'useFog'],
     Material: ['depthTest', 'depthWrite', 'update', 'redWrite', 'greenWrite', 'blueWrite', 'alphaWrite'],
     LayerComposition: ['getLayerByName'],
     GraphicsDevice: ['isWebGPU', 'maxPixelRatio'],

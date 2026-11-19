@@ -2,7 +2,7 @@
 // the chunk's positions, normals and grid UVs; floaters take the floater colour in every style;
 // the height style follows y; a recolour touches only the colour bytes. Controls included.
 import { describe, expect, it } from 'vitest';
-import { packChunk, writeColors, voxelColor, heightColor, VOXEL_STYLES, QUAD_ABOVE_CEILING, QUAD_FLOATER } from '../src/voxel-colors';
+import { packChunk, writeColors, voxelColor, heightColor, voxelFog, FOG_NEAR_M, VOXEL_GLOW, VOXEL_STYLES, QUAD_ABOVE_CEILING, QUAD_FLOATER } from '../src/voxel-colors';
 import type { VoxelLayout } from '../src/voxel-colors';
 
 // the overlay's VertexFormat order: position, normal, uv0, colour -> 36 bytes
@@ -88,5 +88,18 @@ describe('packChunk', () => {
         const big = chunk(16384 + 1);
         expect(packChunk(big, L, 'solid', 0, 1).indices).toBeInstanceOf(Uint32Array);
         expect(() => packChunk(chunk(2), { ...L, nrm: 13 }, 'solid', 0, 1)).toThrow(/aligned/);
+    });
+});
+
+describe('the voxels-only look (voxux4 V3): low glow, fog to the plan\'s reach', () => {
+    it('alone, the lit styles glow less than over the scan, so the lights shade the faces apart', () => {
+        for (const s of ['solid', 'floaters', 'height'] as const) expect(VOXEL_GLOW.alone[s]).toBeLessThan(VOXEL_GLOW.over[s]);
+        expect(VOXEL_GLOW.alone.solid).toBeLessThanOrEqual(0.05);
+    });
+    it('the fog starts at 30 m and ends at the reach; a short reach starts it halfway; a bad reach falls back', () => {
+        expect(voxelFog(400)).toEqual({ start: FOG_NEAR_M, end: 400 });
+        expect(voxelFog(40)).toEqual({ start: 20, end: 40 });
+        expect(voxelFog(Number.NaN)).toEqual({ start: FOG_NEAR_M, end: 200 });
+        expect(voxelFog(0).end).toBeGreaterThan(voxelFog(0).start);
     });
 });

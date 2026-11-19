@@ -6,7 +6,7 @@
 // flying on the voxels is just flying. With a collision ceiling (v0.7) the voxels above it are drawn
 // in their own colour (no longer walls), and its panel's preview adds a translucent plane at the height.
 import { VoxelOverlay, VOXEL_STYLES } from '@gsfpv/render-pc';
-import type { VoxelStyle } from '@gsfpv/render-pc';
+import type { VoxelFog, VoxelStyle } from '@gsfpv/render-pc';
 import { FLOATER_MIN_BLOCKS_MAX, ceilingCut, chunkDims, overlapKeys, overlayChunkSize, planChunksAround, validCeiling } from '@gsfpv/collision';
 import type { CeilingCut, PlannedChunk, VoxelCollision } from '@gsfpv/collision';
 import { KEEPER_EVERY_MS, drawnShare, fillLeftS, keeperStep, trimFillSamples, type FillSample } from './voxel-keeper';
@@ -70,6 +70,8 @@ export interface VoxelStats {
     triangles: number;
     /** V1: depth-only copies of the gates and other World items drawn before the voxels */
     depthItems: number;
+    /** voxux4 V3: the fog of the voxels-only view (m), null when the scene's own fog holds (not alone) */
+    fog: VoxelFog | null;
     /** the plan's reach: per voxel up to fineRadiusM, per block up to radiusM (m) */
     fineRadiusM: number;
     radiusM: number;
@@ -578,6 +580,8 @@ export class VoxelController {
         const plan = planChunksAround(col, this.size, this.occupied, p.x, p.y, p.z, { radius, fineQuads: this.fineQuads * d, coarseQuads: this.coarseQuads * d, known: this.known, avgFine, avgCoarse, whole, groups: whole, farQuads: this.farQuads * d, knownFar: this.knownFar, avgFar });
         this.plan = { fineRadius: plan.fineRadius, radius: plan.radius };
         this.planFar = plan.chunks.reduce((f, c) => Math.max(f, c.farDist ?? c.dist), 0);
+        // V3 (voxux4): the voxels-only view fogs into the background where the farthest planned chunk ends
+        this.overlay?.setFogReach(Math.max(plan.radius, this.planFar));
         this.lastPlan = plan.chunks;
         this.planned = true;
         this.wanted = new Map(plan.chunks.map((c) => [c.key, c.lod]));
@@ -628,6 +632,7 @@ export class VoxelController {
             quads: o?.quads ?? 0,
             triangles: o?.triangles ?? 0,
             depthItems: o?.depthItems ?? 0,
+            fog: o?.fog ?? null,
             fineRadiusM: this.plan.fineRadius,
             radiusM: this.plan.radius,
             whole: this.whole,
