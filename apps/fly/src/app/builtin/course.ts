@@ -49,6 +49,7 @@ import { flyShows, modeStep, openStep, type EditMode } from '../../course/editor
 import { setKeyboardArm, stopKeyboardArm } from '../../devices/keyboard';
 import { SeamBus, type ChangeBy, type EditorSeam, type MenuItem } from '../../course/editor/seam';
 import { installParts } from '../../course/editor/parts';
+import { askOpen } from '../../course/editor/parts/life-ask';
 import { COURSE_MENU_HUB } from '../../course/editor/bar-place';
 import { Vec3 } from 'playcanvas';
 import type { EditAction, EditOutcome } from '@gsfpv/tracks';
@@ -1555,6 +1556,12 @@ export const course: Feature = {
         addEventListener('keydown', (e: KeyboardEvent) => {
             // lane editor3 E3: while the drone flies the keys belong to the flight
             if (!ed || !panel || mode === 'fly') return;
+            const target = e.target;
+            const inWindow = target instanceof Node && panel.root.contains(target);
+            // review of lane edit4b: an open question or Course menu takes its own keys (Esc closes it first)
+            const overlay = askOpen() || top?.menuOpen() === true;
+            const route = keyRoute(e, { typing: panel.typing(target), inWindow, onButton: target instanceof HTMLButtonElement, overlay });
+            if (route === 'pass') return;
             if (e.code === 'Escape' && view?.adding) {
                 e.preventDefault();
                 e.stopPropagation();
@@ -1562,10 +1569,6 @@ export const course: Feature = {
                 top?.adding(false);
                 return;
             }
-            const target = e.target;
-            const inWindow = target instanceof Node && panel.root.contains(target);
-            const route = keyRoute(e, { typing: panel.typing(target), inWindow, onButton: target instanceof HTMLButtonElement });
-            if (route === 'pass') return;
             e.preventDefault();
             e.stopPropagation();
             if (route === 'blur') return void (target as HTMLElement).blur?.();

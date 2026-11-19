@@ -259,6 +259,29 @@ try {
     judge('10-pointed', LIVE ? refused : !!save?.ok,
         { how, eyeRest: rest.ok, wrong: w ?? null, pointed: p.b?.pointed ?? null, selected: p.selected, flash: p.flash, problems: p.problems, said: p.said, save });
 
+    // 12 (the independent check's step): Esc closes the thing that is open first. Esc on the open Course menu closes the
+    // menu only; on the question Delete changes nothing and Esc answers No; the edit view stays open with every gate (the
+    // editor's own Esc would leave it, or after a warning drop the unsaved gates)
+    {
+        const a = await snap();
+        await press('[data-top="course"]', 400);
+        const menuOpen = (await snap()).menu > 0;
+        await page.keyboard.press('Escape');
+        await sleep(500);
+        const m = await snap();
+        await press('[data-top="course"]', 400);
+        await press('.ce-menu [data-item="clear"]', 500);
+        const asked = await until(snap, (x) => x.ask > 0, 1500);
+        await page.keyboard.press('Delete');
+        await sleep(300);
+        await page.keyboard.press('Escape');
+        await sleep(600);
+        const q = await snap();
+        judge('12-esc-closes-first', menuOpen && m.menu === 0 && m.open && m.mode === 'edit' && asked.ok && q.ask === 0 && q.open
+            && JSON.stringify(q.ids) === JSON.stringify(a.ids),
+            { menuOpen, menuEsc: { menu: m.menu, open: m.open, said: m.said }, asked: asked.ok, askEsc: { ask: q.ask, open: q.open, gates: q.ids?.length ?? null, said: q.said }, gates0: a.ids?.length ?? null });
+    }
+
     // 11 at 844x390: the menu and the question inside the view, crosses 44 px
     W2 = 844; H2 = 390;
     await page.setViewportSize({ width: W2, height: H2 });

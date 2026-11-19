@@ -129,6 +129,11 @@ export class TopBar {
         this.hold.tell(text, refused, performance.now());
     }
 
+    /** whether the Course menu is open (the editor's keys wait while it is: keys.ts KeyAt.overlay) */
+    menuOpen(): boolean {
+        return this.openMenu !== null;
+    }
+
     /** lane edit4b: the Course menu under its button, its own 44 px cross; Esc, the cross, a click outside or an item close it */
     toggleMenu(): void {
         if (this.openMenu) return this.openMenu.close();

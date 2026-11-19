@@ -131,6 +131,9 @@ export interface KeyAt {
     readonly typing: boolean;
     readonly inWindow: boolean;
     readonly onButton: boolean;
+    /** review of lane edit4b: a question (parts/life-ask.ts) or a top bar menu is open; it takes the keys itself (Esc closes it,
+     *  Enter answers the focused button), so the editor's keys wait: Esc never leaves the editor, Delete never deletes a gate */
+    readonly overlay?: boolean;
 }
 
 /**
@@ -139,6 +142,7 @@ export interface KeyAt {
  * canvas (Esc inside the window; the next Esc leaves the editor), 'save' is Enter in a text field, 'edit' runs editorKey.
  */
 export function keyRoute(e: KeyPress, at: KeyAt): 'pass' | 'blur' | 'save' | 'edit' {
+    if (at.overlay) return 'pass';
     if (at.typing) {
         if (e.code === 'Escape') return 'blur';
         if (e.code === 'Enter' || e.code === 'NumpadEnter') return 'save';
