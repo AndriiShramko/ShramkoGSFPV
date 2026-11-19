@@ -106,6 +106,8 @@ h1 { font-size: 22px; margin: 0 0 12px; } h2 { font-size: 18px; margin: 0 0 10px
 .msg-more[hidden] { display: none; }
 button.msg-more { border: 0; min-height: 44px; cursor: pointer; font: inherit; font-size: 15px; text-decoration: underline; }
 /* the Messages list (ui/messages-panel.ts) and its top-row button with the count of problems not read */
+/* above the walls menu (z 40): the list is the top window, so Esc (panel-head closeTop, the highest layer) closes it first */
+.panel.messages-panel { z-index: 50; }
 .messages-panel .msg-list { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
 .msg-item { display: flex; gap: 10px; align-items: flex-start; padding: 8px 10px; border-radius: 8px; background: rgba(255,255,255,.05); font-size: 16px; line-height: 1.35; }
 .msg-item.msg-problem { border-left: 4px solid #ffb300; }
