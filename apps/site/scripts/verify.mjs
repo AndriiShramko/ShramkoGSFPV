@@ -901,9 +901,10 @@ for (const mode of ["ok", "fail"]) {
   {
     const { ctx } = await newCtx({ width: 1440, height: 900 });
     const page = await ctx.newPage();
-    await page.goto(`${BASE}/en/sound/#sound-keys`, { waitUntil: "load" });
-    await page.waitForTimeout(300);
-    const u = await clickTo(page, page.locator("header a[data-lang='pl']"));
+    await page.goto(`${BASE}/en/sound/#sound-keys`, { waitUntil: "networkidle" });
+    // a navigation request carries no #anchor: the address the page lands on does
+    await page.locator("header a[data-lang='pl']").click();
+    const u = await page.waitForURL(/\/pl\/sound\//, { timeout: 8000 }).then(() => new URL(page.url())).catch(() => null);
     ok("en/sound/#sound-keys: the header's language switch to pl keeps the page and the anchor", !!u && u.pathname === "/pl/sound/" && u.hash === "#sound-keys", u ? u.pathname + u.hash : "no navigation");
     await ctx.close();
   }
