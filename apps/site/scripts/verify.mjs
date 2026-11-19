@@ -138,7 +138,49 @@ for (const l of LOCALES) {
     const B = DICT[l].soundBand;
     const bandHtml = band > 0 ? home.slice(band, home.indexOf("</section>", band)) : "";
     ok(`${l}/: the Fly by Sound band sits after the first screen and before #locations, with its h2 and the link to /${l}/sound/#sound-who`, band > home.indexOf('id="top"') && band < home.indexOf('id="locations"') && bandHtml.includes(`>${B.h2}<`) && bandHtml.includes(`href="/${l}/sound/#sound-who"`) && bandHtml.includes(B.link));
+    // lane site4: the band's main button starts the sound mode itself
+    const bandStart = primaryLinks(bandHtml)[0];
+    ok(`${l}/: the Fly by Sound band's main button "${DICT[l].sound.start.button}" opens the sound start (?sonic=start)`, !!bandStart && isSoundStart(bandStart.href, l) && bandStart.text === DICT[l].sound.start.button, bandStart ? `${bandStart.href} "${bandStart.text}"` : "no main button in the band");
   }
+}
+
+// ---------- main buttons (lane site4, docs/wip/site4.md) ----------
+// Every page's main button (the header's primary button, the phone's bottom bar) leads where the page promises: the sound pages to
+// the sound start, the same address as the page's own start button; a person's page to that person's scene; a scene page to that scene.
+function primaryLinks(html) {
+  const ent = (s) => s.replace(/&amp;/g, "&").replace(/&#x27;|&#39;/g, "'").replace(/&quot;/g, '"').replace(/ /g, " ");
+  return [...html.matchAll(/<a ([^>]*class="btn-primary[^"]*"[^>]*)>([\s\S]*?)<\/a>/g)].map((m) => ({
+    href: ent(m[1].match(/href="([^"]*)"/)?.[1] ?? ""),
+    text: ent(m[2].replace(/<[^>]+>/g, "")).trim(),
+  }));
+}
+function isSoundStart(href, l) {
+  const [path, query = ""] = href.split("?");
+  return path === `/${l}/fly/` && new URLSearchParams(query).get("sonic") === "start";
+}
+const part = (html, open, close) => {
+  const i = html.indexOf(open);
+  return i < 0 ? "" : html.slice(i, html.indexOf(close, i) + close.length);
+};
+for (const l of LOCALES) {
+  const snd = readFileSync(join(OUT, l, "sound", "index.html"), "utf8");
+  const head = primaryLinks(part(snd, "<header", "</header>"))[0];
+  const bar = primaryLinks(part(snd, '<aside aria-label', "</aside>"))[0];
+  const start = primaryLinks(part(snd, '<main id="main"', "</main>"))[0];
+  const label = DICT[l].nav.flySound;
+  ok(`${l}/sound/: the header's main button is "${label}" and opens the page's own start (?sonic=start)`, !!head && !!start && head.href === start.href && isSoundStart(head.href, l) && head.text === label, head ? `${head.href} "${head.text}" | start ${start?.href}` : "no header button");
+  ok(`${l}/sound/: the phone's bottom bar is "${label}" to the same start`, !!bar && !!start && bar.href === start.href && bar.text === label, bar ? `${bar.href} "${bar.text}"` : "no bottom bar");
+  ok(`${l}/sound/: the page's start button is marked data-keep-clear (the cookie banner never covers it)`, /<a [^>]*data-keep-clear[^>]*class="btn-primary/.test(part(snd, '<main id="main"', "</main>")));
+  for (const p of PEOPLE.filter((x) => x.status === "joined" && x.scene)) {
+    const html = readFileSync(join(OUT, l, "supporters", p.slug, "index.html"), "utf8");
+    const want = `/${l}/fly/?scene=${p.scene}`;
+    const h = primaryLinks(part(html, "<header", "</header>"))[0];
+    const b = primaryLinks(part(html, '<aside aria-label', "</aside>"))[0];
+    ok(`${l}/supporters/${p.slug}/: the header's main button and the bottom bar fly the person's scene ${p.scene}`, h?.href === want && b?.href === want, `${h?.href} | ${b?.href}`);
+  }
+  const tpl = join(OUT, "scene-templates", `scene.${l}.html`);
+  const sceneHead = existsSync(tpl) ? primaryLinks(part(readFileSync(tpl, "utf8"), "<header", "</header>"))[0] : undefined;
+  ok(`scene-templates/scene.${l}.html: the header's main button flies that scene ({{flyHref}}, the same as the first screen's button)`, sceneHead?.href === "{{flyHref}}", sceneHead?.href ?? "no template or no header button");
 }
 const sitemap = readFileSync(join(OUT, "sitemap.xml"), "utf8");
 {
@@ -836,6 +878,53 @@ for (const mode of ["ok", "fail"]) {
       .catch(() => false);
     ok('roadmap: "Suggest an idea" opens the feedback form on Idea (without JavaScript the link goes to #contact)', href === "#contact" && form, `href=${href} ideaChecked=${form}`);
     await ctx.close();
+  }
+}
+
+// Main buttons clicked (lane site4): the sound page's menu button opens the sound start on a wide screen (header) and a phone
+// (bottom bar); a language switch keeps the anchor; the cookie banner never lies over the sound page's start button.
+{
+  const clickTo = async (page, loc) => {
+    const [req] = await Promise.all([page.waitForRequest((r) => r.isNavigationRequest() && r.frame() === page.mainFrame(), { timeout: 8000 }).catch(() => null), loc.click()]);
+    return req ? new URL(req.url()) : null;
+  };
+  for (const [w, h, where] of [[1536, 730, "header"], [375, 667, "aside"]]) {
+    for (const l of ["en", "pl"]) {
+      const { ctx } = await newCtx({ width: w, height: h });
+      const page = await ctx.newPage();
+      await page.goto(`${BASE}/${l}/sound/`, { waitUntil: "load" });
+      const u = await clickTo(page, page.locator(`${where} a.btn-primary`).first());
+      ok(`${l}/sound/ at ${w}x${h}: the menu's main button (${where}) opens /${l}/fly/ with sonic=start`, !!u && u.pathname === `/${l}/fly/` && u.searchParams.get("sonic") === "start", u ? u.pathname + u.search : "no navigation");
+      await ctx.close();
+    }
+  }
+  {
+    const { ctx } = await newCtx({ width: 1440, height: 900 });
+    const page = await ctx.newPage();
+    await page.goto(`${BASE}/en/sound/#sound-keys`, { waitUntil: "load" });
+    await page.waitForTimeout(300);
+    const u = await clickTo(page, page.locator("header a[data-lang='pl']"));
+    ok("en/sound/#sound-keys: the header's language switch to pl keeps the page and the anchor", !!u && u.pathname === "/pl/sound/" && u.hash === "#sound-keys", u ? u.pathname + u.hash : "no navigation");
+    await ctx.close();
+  }
+  if (GA_ID) {
+    for (const [w, h] of [[320, 568], [320, 640], [375, 667]]) {
+      const { ctx } = await newCtx({ width: w, height: h }, {}, "ask");
+      const page = await ctx.newPage();
+      await page.goto(`${BASE}/es/sound/`, { waitUntil: "load" });
+      const banner = page.locator("[role='region'][aria-label]").filter({ has: page.locator("button") }).last();
+      await banner.waitFor({ state: "visible", timeout: 5000 }).catch(() => {});
+      await page.waitForTimeout(300);
+      const r = await page.evaluate(() => {
+        const b = document.querySelector("main a.btn-primary");
+        const box = b?.getBoundingClientRect();
+        if (!b || !box) return { hit: false, why: "no start button" };
+        const top = document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2);
+        return { hit: !!top && b.contains(top), why: `${top?.tagName}.${String(top?.className).slice(0, 40)} at ${Math.round(box.top)}` };
+      });
+      ok(`es/sound/ at ${w}x${h}, cookie banner open: the start button is not under the banner`, (await banner.isVisible()) && r.hit, r.why);
+      await ctx.close();
+    }
   }
 }
 
