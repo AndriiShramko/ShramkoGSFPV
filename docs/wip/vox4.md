@@ -11,6 +11,8 @@ picture of the scan with holes through it; the voxels look flat), 577-578 (Lubli
   - [x] V-2b per-vertex ambient occlusion: apps/fly/src/voxel-ao.ts (vertexAo, quadAo, cellWindow, chunkAo), the worker shades levels 0 and 1, packChunk multiplies RGB by AO_SHADE, the overlay Entry keeps the array for writeColors (commit 729e0730)
 - [ ] V-3 acceptance probe tools/bench/scripts/vox4-probe.mjs (drawn run, 1536x730 dsf 1.25, mouse), live negative control;
   its Lublin step reads stats.nearWalls (expect 'thin' at the spawn) and the panel line voxels.nearThin, not the design's 60 % pixel block
+  - [x] probe written (steps 1-6; step 5 compares fog on/off in one build, AO has no frame cost)
+  - [ ] build, one locked drawn run: local then live (the negative control), evidence, shots looked at
 
 ## Experiment V-2 (the Lublin hole, 2f1ddf5f, 2026-11-19)
 
