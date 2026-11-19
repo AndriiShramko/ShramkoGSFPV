@@ -79,6 +79,31 @@ the design says train6: the lane prompt wins). Design C:/dev/.gsfpv-lanes/design
   ?render=off: the engine running after a press; only if it plays, the site note names Firefox too.
 - [ ] S5 pin moved, package suite + listen:words, simulator gates, acceptance probe sonic-quick-walk; the Firefox page
   check of S4.
+  - [x] Package full suite at e4fce05: 1422 passed, 1 failed (test/words.test.ts, its evidence waits for listen:words), 4
+    skipped. listen:words needs SHRAMKO_LISTEN_PY=U:/venvs/shramko-listen/Scripts/python.exe and
+    SHRAMKO_LISTEN_CACHE=U:/cache/shramko-listen (without them it stops at once); run 1 of this stage was still transcribing at the end of S5 run 1 (log U:/Temp/gsfpv-train4/sound6/listen-words.log; read its last line "words rc=" before starting it again).
+  - [x] Release build at 0ba5bc66 in dist (walls copied); probe tools/bench/src/sonic-quick-walk.ts written (commit
+    70ecaf3d + this one: speech timings in step 4, wait up to 60 s). Run (PORT=6161, temp walk1.json / walk2.json):
+    chromium 2, 3, 5, 6, 7, 8 PASS; firefox 2, 3 PASS (the engine runs in Playwright's Firefox 1543 after the click,
+    no page error: S4's fix works there). FAIL chromium/firefox 1 and chromium 9: the nav links (Start, Headphones,
+    Lessons, Settings) and the footer links sonic-about, sonic-leave are under 44 px high (links, not buttons; not
+    this lane's change). FAIL 4: the first wall knock comes 16.5 s after the click, not 6.9 s as S3 counted.
+  - Cause of 4 (code, apps/fly/src/sonic/lessons.ts 709-723, case 'say'): the host says its keys line
+    ("Next, key N. Back, key B. Repeat, key Z.", 9.9 s with David in headless Chrome) at the first line of EVERY
+    lesson step; lessonSchedule (S3's count) does not hold host lines, and the runner's sound step does not wait for
+    them, so the knock also plays under speech (walk2: title 1.4-3.1 s, keys line 3.2-13.1 s, intro.1 13.2-16.4 s,
+    "Sound 1 of 3" queued at 12.4 s and started 16.5 s, the knock at 16.5 s, then a second keys line for the trial
+    step). Claim 3 is not true in the page until this is fixed.
+  - Left list of S5: (a) host fix: the keys line of a lesson step must not stand between the lesson's lines and its
+    sound; the cheapest clean rule: in a module-0 listening lesson (ears-*) the keys line is said once a lesson, after
+    the first question is answered (or the step's keys are said only at an 'ask' action), keep R8's flying lessons as
+    they are; a host test that fails on the old code (lessons.ts hint per step) and the walk's step 4 <= 12 s;
+    (b) if listen:words passed: commit the package's evidence/listen/VL-4-words.json (package commit), move the pin;
+    (c) the probe's step 1/9: decide links (check buttons only and list links as information, or give the nav and
+    footer links min-height 44 px in apps/fly/src/sonic/sonic.css: the owner's rule says controls, so the CSS);
+    (d) the walk again (both browsers) into evidence/2026-11-19/sound6/sound6-walk.json, the same against the live
+    site (SITE=https://gsfpv.flyreelstudio.eu, read only) as the negative control; (e) the gates once; What the owner
+    does; delete dist.
 
 Base: origin/main e3201fec differs from this branch only in STATE.md: not merged.
 
@@ -95,6 +120,7 @@ Base: origin/main e3201fec differs from this branch only in STATE.md: not merged
 3. After the press of either path the first wall knock comes within 12 s in every language (measured voices: en 6.9,
    es 7.9, pl 7.1, ru 8.0 s), and the quick path's small room flies within 210 s (205.0 s with David). Proof (in
    C:/dev/ShramkoSonicFPV): `pnpm vitest run test/quick-path.test.ts`: 44 passed at 8daf95d; NEG OK against 58b1d7f.
+   NOT YET TRUE IN THE PAGE: the walk (S5) hears the first knock at 16.5 s, the host's keys line adds 9.9 s (Status S5).
 4. The engine starts on a listener that has only setPosition and setOrientation (Firefox's), with the same pose. Proof
    (in C:/dev/ShramkoSonicFPV): `pnpm vitest run test/listener.test.ts`: 5 passed at e4fce05; NEG OK against 8daf95d.
 5. When the sound does not start, the start screen shows what happened and the way on (Chrome or Edge, or a reload) at
@@ -126,3 +152,6 @@ No person, phone or real controller took part in this lane.
   names a test id would save 4. One edit script per file group, then one run of tools/bench/test/sonic*, worked well.
 - S4: 30 replies; the package's tsconfig.node.json (no DOM) refusing a test that imports engine.ts cost 4, and edit
   scripts whose anchors matched twice cost 3: a design naming the test tsconfig, and anchors checked with grep -c first.
+- S5 run 1: 40 replies; finding how the page shows a lesson's sound (runner action 'cue' -> engine.cue -> hook
+  oneShots) took 8, and listen:words' missing Python env 3: the design could name the hook fields a probe reads and the
+  package's listen env paths.

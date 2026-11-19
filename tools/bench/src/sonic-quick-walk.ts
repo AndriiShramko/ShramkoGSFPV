@@ -58,6 +58,18 @@ const INIT = `(() => {
     window.AudioContext = Spy;
   }
   addEventListener('click', () => { window.__qw.click = performance.now(); }, true);
+  window.__qw.utt = [];
+  try {
+    const synth = window.speechSynthesis;
+    const speak = synth.speak.bind(synth);
+    synth.speak = (u) => {
+      const row = { text: String(u.text).slice(0, 40), called: performance.now(), started: null, ended: null, voice: u.voice ? u.voice.name : null };
+      if (window.__qw.utt.length < 40) window.__qw.utt.push(row);
+      u.addEventListener('start', () => { row.started = performance.now(); });
+      u.addEventListener('end', () => { row.ended = performance.now(); });
+      return speak(u);
+    };
+  } catch (e) {}
   setInterval(() => {
     const h = window.__gsfpv && window.__gsfpv.sonic;
     if (!h) return;
@@ -159,14 +171,15 @@ async function firstSteps(page: Page, origin: string, who: string): Promise<bool
     await sleep(Math.max(0, 2000 - (Date.now() - tClick)));
     const after = await look(page).catch(() => null);
     step(who, 3, 'a mouse click on it: sound running within 2 s, no sound problem shown', running && !after?.problem, { states, problem: after?.problem ?? null, clicked: target });
-    let wall: { click: number | null; wall: number | null; hook: boolean } = { click: null, wall: null, hook: false };
-    while (Date.now() - tClick < 14000) {
-        wall = await page.evaluate(() => (window as unknown as { __qw: { click: number | null; wall: number | null; hook: boolean } }).__qw);
+    type Qw = { click: number | null; wall: number | null; hook: boolean; utt: { text: string; called: number; started: number | null; ended: number | null; voice: string | null }[] };
+    let wall: Qw = { click: null, wall: null, hook: false, utt: [] };
+    while (Date.now() - tClick < 60000) {
+        wall = await page.evaluate(() => (window as unknown as { __qw: Qw }).__qw);
         if (wall.wall !== null) break;
         await sleep(100);
     }
     const sec = wall.wall !== null && wall.click !== null ? Math.round((wall.wall - wall.click) / 100) / 10 : null;
-    step(who, 4, 'the first wall cue within 12 s of the click', sec !== null && sec <= 12, { seconds: sec, hook: wall.hook });
+    step(who, 4, 'the first wall cue within 12 s of the click', sec !== null && sec <= 12, { seconds: sec, hook: wall.hook, speech: wall.utt.slice(0, 6).map((u) => ({ text: u.text, voice: u.voice, called: wall.click === null ? null : Math.round(u.called - wall.click), started: u.started === null || wall.click === null ? null : Math.round(u.started - wall.click), ended: u.ended === null || wall.click === null ? null : Math.round(u.ended - wall.click) })) });
     return running;
 }
 
