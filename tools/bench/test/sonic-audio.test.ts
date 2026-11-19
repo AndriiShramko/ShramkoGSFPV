@@ -114,6 +114,7 @@ describe('SonicAudio: one context from one press', () => {
         expect(contexts).toHaveLength(0);
         expect(engines[0]!.started).toHaveLength(0);
         expect(a.available).toBe(false);
+        expect(a.failure).toBe('no-web-audio');
         expect(a.running).toBe(false);
     });
 
@@ -124,6 +125,7 @@ describe('SonicAudio: one context from one press', () => {
         engines[0]!.start = async () => { throw new Error('no audio device'); };
         await a.start();
         expect(a.available).toBe(false);
+        expect(a.failure).toBe('engine-failed');
         warn.mockRestore();
     });
 

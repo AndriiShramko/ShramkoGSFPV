@@ -12,7 +12,7 @@
 // lessonPaths() (a fast path of 8).
 import { describe, expect, it } from 'vitest';
 import { SHIPPED_LESSON_IDS, createLessonRunner, getLesson, lessonPaths } from '../../../packages/sonic-fpv/src';
-import { buildModel, continueLesson, ladder, lessonPlace, parseSonicParam, stateOf } from '../../../apps/fly/src/sonic/start-model';
+import { buildModel, continueLesson, firstOf, ladder, lessonPlace, parseSonicParam, stateOf } from '../../../apps/fly/src/sonic/start-model';
 import { LESSON_SCENE_PREFIX, isLessonScene, lessonFlightWorld } from '../../../apps/fly/src/sonic/lesson-world';
 import { enableZoom } from '../../../apps/fly/src/sonic/zoom';
 
@@ -36,7 +36,7 @@ describe('the lessons on the screen', () => {
         }
     });
 
-    it('the ladder is in order and the fast path marks its lessons (8 since v0.13: the headphones, hover, walls, corridor, a tunnel, two of rings, free flight)', () => {
+    it('the ladder is in order and the fast path marks its lessons (8; lane sound6 S2: the headphones, the walls by ear, the small room, corridor, a tunnel, two of rings, free flight)', () => {
         expect(ladder().map((l) => l.order)).toEqual([...Array(SHIPPED_LESSON_IDS.length).keys()]);
         const fast = buildModel({}, null, 'fast').modules.flatMap((x) => x.lessons).filter((l) => l.fastPath).map((l) => l.id);
         expect(lessonPaths().fast).toHaveLength(8);
@@ -72,7 +72,8 @@ describe('where the pilot stands', () => {
         expect(continueLesson(progress, 'hover-height', 'full')).toBe('hover-height');
         // the lesson left off on is passed: the first of the path not passed
         expect(continueLesson(progress, 'walls-hall', 'full')).toBe('ears-glossary');
-        expect(continueLesson(progress, null, 'fast')).toBe('hover-height');
+        // lane sound6 S2: the fast path's second lesson is ears-walls (hover-height left it)
+        expect(continueLesson(progress, null, 'fast')).toBe('ears-walls');
         // everything on the path passed: the last lesson, not nothing
         const all = Object.fromEntries(lessonPaths().fast.map((id) => [id, done()]));
         expect(continueLesson(all, null, 'fast')).toBe('free-garden');
@@ -80,10 +81,11 @@ describe('where the pilot stands', () => {
         expect(continueLesson({ 'ears-headphones': done(1, false) }, 'no-such-lesson', 'full')).toBe('ears-headphones');
     });
 
-    it('Start opens the first lesson of the path', () => {
-        expect(buildModel({}, null, 'full').beginningId).toBe('ears-headphones');
-        expect(buildModel({}, null, 'fast').beginningId).toBe('ears-headphones');
-        expect(lessonPaths().fast[0]).toBe('ears-headphones');
+    it('Quick start and Full course open the first lesson of their path (lane sound6 S2: firstOf)', () => {
+        expect(firstOf('full')).toBe('ears-headphones');
+        expect(firstOf('fast')).toBe('ears-headphones');
+        expect(firstOf('fast')).toBe(lessonPaths().fast[0]);
+        expect(firstOf('full')).toBe(lessonPaths().full[0]);
     });
 
     it('v0.13 (C2, W7): a lesson left without passing is skipped, until it is passed, unless it is the one the pilot is on again', () => {

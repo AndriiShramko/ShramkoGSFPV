@@ -80,20 +80,30 @@ describe('H1: the keys of the moment at the start of every step, once a step; th
         said.forEach((k, i) => { if (k === 'sonic.say.lessonKeys') expect(said[i - 1]).not.toBe('sonic.say.lessonKeys'); });
     }, 120000);
 
-    it('in a lesson of many steps (the glossary) every step that speaks names the keys once', async () => {
-        const r = await open('ears-glossary');
-        const steps = new Set<number>();
-        for (let i = 0; i < 4; i++) {
-            await r.run(800, null);
-            steps.add(r.host.runner!.view().step);
-            expect(r.press('scene.next')).toBe(true);
-        }
-        await r.run(800, null);
-        steps.add(r.host.runner!.view().step);
-        expect(steps.size).toBeGreaterThan(2);
-        expect(keyLines(r).length).toBeGreaterThanOrEqual(steps.size - 1);
-        expect(keyLines(r).length).toBeLessThanOrEqual(steps.size);
-    }, 120000);
+    // lane sound6 (the owner's words of 2026-11-19: the sound at once, short explanations): a listening lesson (no world) says the
+    // keys once, at the first step after its first sound or scene; the runner waits for the host's speech before a sound, so a line
+    // of keys with the title kept the first wall knock 16.5 s away in the page
+    const firstSound = (r: Rig) => r.engine.cues.some((e) => e.kind === 'repeat-cue' || e.kind === 'preview') || r.host.scene !== null;
+    for (const id of ['ears-headphones', 'ears-walls', 'ears-glossary']) {
+        it(`a listening lesson (${id}): no keys before its first sound, then once a lesson however many steps follow`, async () => {
+            const r = await open(id);
+            // the glossary's intro is a step of its own that waits for N; the other two play their first sound by themselves
+            for (let tries = 0; tries < 3 && !firstSound(r); tries++) {
+                if (tries > 0) expect(r.press('scene.next')).toBe(true);
+                for (let i = 0; i < 200 && !firstSound(r); i++) await r.run(100, null);
+            }
+            expect(firstSound(r)).toBe(true);
+            expect(keyLines(r)).toHaveLength(0);
+            const steps = new Set<number>([r.host.runner!.view().step]);
+            for (let i = 0; i < 4; i++) {
+                expect(r.press('scene.next')).toBe(true);
+                await r.run(800, null);
+                steps.add(r.host.runner!.view().step);
+            }
+            expect(steps.size).toBeGreaterThan(2);
+            expect(keyLines(r)).toHaveLength(1);
+        }, 120000);
+    }
 
     it('off: no line of keys at all; the choice is kept in the prefs collection (absent is brief)', async () => {
         const r = await open('rings-first', (rr) => { rr.keyHints = false; });

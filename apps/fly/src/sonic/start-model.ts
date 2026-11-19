@@ -1,8 +1,8 @@
 // What the start screen shows, as data (v0.12, docs/wip/v12-plan.md 4.2 step 8; spec sections 3 and 6): the lessons by
 // module with where the pilot stands in each, the lesson Start and Continue open, and what ?sonic= asked for. Pure, so
 // Node tests hold it; the DOM is start-screen.ts. Every lesson can be opened directly (the ladder only recommends), so
-// the model lists all of them whatever the path; the path decides only which lesson the Start buttons open and which
-// lessons are marked as being on it.
+// the model lists all of them whatever the path; the path decides only how the lessons are counted and which are marked
+// as being on it; Quick start and Full course open firstOf their path (lane sound6 S2).
 // v0.13 (lane v13-host C2, the owner's M41-2; W7): a lesson left without passing is 'skipped' (the runner's progress.skipped, which the
 // prefs keep since v0.13), and every lesson has its place, "Lesson N of 28", counted as the runner's view counts it (on the pilot's path
 // when the lesson is on it, else on the full one), so the screen and the lesson say the same number.
@@ -44,8 +44,6 @@ export interface ModuleRow {
 
 export interface StartModel {
     readonly modules: readonly ModuleRow[];
-    /** the lesson "Start from the beginning" opens: the first of the path */
-    readonly beginningId: string;
     /** the lesson "Continue where I stopped" opens, or null when the pilot has not begun */
     readonly continueId: string | null;
 }
@@ -89,6 +87,11 @@ export function continueLesson(progress: Readonly<Record<string, ProgressOf>>, c
     return list.find((id) => !progress[id]?.passed) ?? list[list.length - 1] ?? null;
 }
 
+/** The first lesson of `path`: what "Quick start" (fast) and "Full course" (full) open (lane sound6 S2). */
+export function firstOf(path: 'full' | 'fast'): string {
+    return lessonPaths()[path][0] ?? ladder()[0]!.id;
+}
+
 export function buildModel(progress: Readonly<Record<string, ProgressOf & { readonly bestTimeMs?: number | null }>>, current: string | null, path: 'full' | 'fast'): StartModel {
     const byModule = new Map<ModuleId, LessonRow[]>();
     for (const l of ladder()) {
@@ -100,7 +103,7 @@ export function buildModel(progress: Readonly<Record<string, ProgressOf & { read
         byModule.set(l.module, list);
     }
     const modules = [...byModule.entries()].sort((a, b) => a[0] - b[0]).map(([module, lessons]) => ({ module, name: { key: `module.${module}.name` }, lessons }));
-    return { modules, beginningId: (lessonPaths()[path][0] ?? ladder()[0]!.id), continueId: continueLesson(progress, current, path) };
+    return { modules, continueId: continueLesson(progress, current, path) };
 }
 
 /**
