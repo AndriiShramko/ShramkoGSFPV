@@ -128,6 +128,18 @@ expect PASS 11/11 except that step 10 is judged on the refused floor gate there 
 the floor gates live only in the page). If edit4s changes what the top bar's Save does (today: it opens the window's save
 part at the name), the probe's step 10 Save path (.ce-name, .ce-save-mine) needs its new handles.
 
+## Review
+
+Independent check of the lane (review file U:/Temp/gsfpv-train4/reviews/edit4b.md). Verdict: SHIP after one repair.
+- PROVEN and repaired (8e42361a): the editor's window keydown listener ran before the Course menu's and the question's
+  own listeners, so Esc on the open menu armed "Esc again leaves without saving" (one Esc left an unchanged editor) and
+  Delete on the open question deleted a gate. keys.ts KeyAt.overlay (askOpen or TopBar.menuOpen) lets them take their
+  keys. Test tools/bench/test/edit4b-review.test.ts (NEG OK); probe step 12 (12-esc-closes-first): FAIL on the lane head
+  (evidence/2026-11-19/edit4b/review-before.json), PASS 12/12 on the repaired build (review-after.json, render off).
+- Rerun: claims 1 and 4 (edit4b-life, edit4b-numbers: pass, both NEG OK against origin/main), claim 5 (the probe).
+- DOUBT, not held: Space in the edit view arms an empty course (testFlight refuses it with a line, Space does not; the
+  lap timer is safe with no gate); Esc out of a New empty course leaves the flight with that empty course.
+
 ## Cost notes
 
 - B1: the most replies went to finding that S0 did not exist and writing its pieces; bash heredocs broke two patch
@@ -138,3 +150,4 @@ part at the name), the probe's step 10 Save path (.ce-name, .ce-save-mine) needs
 - B3: most replies went to step 10 (a sentence naming a gate): an overlapping gate is not refused, the top bar's Save
   opens the name first, and a new gate is framed by the hub; a design line naming the refusing path (Save mine with a
   wall gate) would have saved six runs. The GPU lock waited about 15 minutes for another lane.
+- Review: two release builds (7 min each) to prove the Esc bug on the page before and after the repair; a unit-level DOM test of the listener order would have saved one build.
