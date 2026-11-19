@@ -88,7 +88,7 @@ Notes (design vs code):
    architecture, i18n PASS; vitest 5317 tests passed, but 3 files failed to start rooms.py within their wait under the
    load of 15 lanes (rooms-open-vote, rooms-race, rooms-socket; alone: 15 of 15 passed; this lane touches no rooms
    file); b18 failed on the word for an unset value in this file, fixed, b18 alone then PASS; leaks: one hit,
-   MERGED_KEY = 'gsfpv.library.merged.v1' in scene-host.ts, a localStorage key name already on origin/main (false
+   the constant MERGED_KEY in scene-host.ts, a localStorage key name already on origin/main (false
    positive: the file is in this diff).
 
 ## Not verified
@@ -115,6 +115,28 @@ Live checks after deploy: the same probe against the live site must pass 8 of 8;
 Gates: the leaks gate flags scene-host.ts MERGED_KEY (a storage key name from origin/main, not a secret); the rooms
 tests time out starting rooms.py under load and pass alone.
 
+## Review
+
+Verdict: SHIP (independent check, 2026-11-19; full text U:/Temp/gsfpv-train4/reviews/ux4b.md).
+- Diff read: scene-host load/runLoad/showPicker, scene-load, loading, session, loader, bake, walls, game-pilot. No path
+  outside the feature broken found: key Esc on the card is a window capture listener that yields to any #ui .panel
+  or open dialog (the pause menu, the list), the keys manager listens in the bubble phase; ctx.scene stays the scene
+  flown until swapSession, so the "back" load and a pick of that scene in the list are right.
+- Re-run: claims 2 and 3 (38 tests passed); NEG OK game-pilot.ts vs origin/main (app-play.test.ts), NEG OK
+  scene-host.ts + loading.ts vs B-1 (scene-load.test.ts). Claim 4: the probe on a release of 668e48b0, drawn, 1536x730
+  dsf 1.25: 9 of 9 PASS (evidence/2026-11-19/ux4b/review-cancel-local.json).
+- Added step 9 (the reviewer's): a scene picked, key Esc while it loads, key Esc on the list: Esc cancelled in 4 ms
+  (why 'pilot'), the scene flown before (39e63ce9) flew again in 6.2 s with "Back to", no asset of the picked scene.
+  It cannot pass on origin/main (no 'cancelled' state, no load-cancel there). Steps 2, 5 and 9 now also require the
+  lines "Loading stopped" and "Back to" (they were recorded, not judged; true in this run).
+- DOUBT (not proven, does not hold): a Cancel through the pause menu's Change scan during loading.finish() (the
+  card's last moment, its Cancel already hidden) lets the scene come in and opens no list; a held key Esc (repeat)
+  could cancel and then close the list (the list's Esc does not skip repeats).
+- Not checked by the review: a cancel during a walls bake in a browser, the touch tap, vox4's splat-load guard.
+- Gates of the review's changes: b18 PASS; leaks: the one hit left is scene-host.ts MERGED_KEY, the same line as on
+  origin/main (CI's gitleaks scans the whole history and passes it): false positive. The status file no longer
+  quotes that literal (it was a second hit).
+
 ## Cost notes
 
 - B-1: most replies went to reading the load path across five files; a design excerpt with the exact await lines
@@ -126,3 +148,4 @@ tests time out starting rooms.py under load and pass alone.
   without a load under way). Logging the error stack and requiring each step's precondition from the start would
   have saved one build and one drawn run. accept-fly takes the GPU lock itself: wrapped in the lock it waited on
   me until its `timeout` cut it (20 min lost); never wrap it.
+- Review: about 25 replies; most went to waiting on the build and the GPU lock for one drawn probe run. A prebuilt release of the lane head would have saved the build wait.

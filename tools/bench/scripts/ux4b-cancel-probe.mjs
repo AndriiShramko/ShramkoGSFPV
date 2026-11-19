@@ -9,6 +9,8 @@
 //   6 the list again, Lublin picked, key N during its load: another scene loads, no Lublin entity or asset afterwards;
 //   7 at 844x390 (a phone held across; ?render=off, Lublin's requests held 8 s so the card stays) Cancel is in view and
 //     not covered.
+//   8 no page error while the list stands after a Cancel;
+//   9 (the review) a scene picked, key Esc while it loads, key Esc on the list: the scene flown before flies again.
 // The scan is drawn for steps 1-6 (a download is what is cancelled): wrap the run in the GPU lock. Read-only on any site:
 // nothing is saved, sent or created (a pick, Cancel, the cross and key N only).
 //   node tools/bench/scripts/ux4b-cancel-probe.mjs <address with /en> <out.json>
@@ -141,7 +143,7 @@ try {
         await p.page.mouse.click(b2.x, b2.y);
     }
     const c2 = await until(p.st, (s) => !s.card && s.picker, 1000, 50);
-    judge('2.cancel-closes', b2 && c2.ok && c2.v.sw && c2.v.sw.state === 'cancelled', { ms: c2.ms, card: c2.v.card, picker: c2.v.picker, sw: c2.v.sw, said: /Loading stopped/.test(c2.v.text) });
+    judge('2.cancel-closes', b2 && c2.ok && c2.v.sw && c2.v.sw.state === 'cancelled' && /Loading stopped/.test(c2.v.text), { ms: c2.ms, card: c2.v.card, picker: c2.v.picker, sw: c2.v.sw, said: /Loading stopped/.test(c2.v.text) });
     const lublin = new Set(p.reqs.filter((r) => r[0] >= pk.t0 - 200 && r[0] <= tCancel).map((r) => folder(r[1])).filter((f) => !before.has(f)));
     res.lublinFolders = [...lublin].slice(0, 12);
     await sleep(1000);
@@ -157,7 +159,7 @@ try {
     res.errsWhileCancelled = errs.filter((t) => t >= tCancel).length;
     if (x5) await p.page.mouse.click(x5.x, x5.y);
     const c5 = await until(p.st, (s) => s.sw && s.sw.state === 'done' && s.sw.to === FROM && !s.card, 240000, 500);
-    judge('5.back-to-from', x5 && c5.ok && c5.v.scene === FROM, { ms: c5.ms, sw: c5.v.sw, scene: c5.v.scene, said: /Back to/.test(c5.v.text), cross: x5 && { w: x5.w, h: x5.h } });
+    judge('5.back-to-from', x5 && c5.ok && c5.v.scene === FROM && /Back to/.test(c5.v.text), { ms: c5.ms, sw: c5.v.sw, scene: c5.v.scene, said: /Back to/.test(c5.v.text), cross: x5 && { w: x5.w, h: x5.h } });
     // 6 Lublin again (Wroclaw when step 5 left the craft on Lublin), key N while that load is still under way
     await p.page.mouse.click(768, 365);
     await sleep(500);
@@ -173,6 +175,24 @@ try {
     const s6 = await p.st();
     const l6 = (s6.assets || []).filter((u) => u.includes(want6));
     judge('6.n-replaces', underWay && c6.ok && s6.scene !== want6 && l6.length === 0 && (s6.entities ?? 0) <= 1, { picked: want6, pickHow: pk6.how, underWay, atN: at6.sw, ms: c6.ms, sw: c6.v.sw, scene: s6.scene, pickedAssets: l6, entities: s6.entities });
+    // 9 (the review's step) the keyboard pilot's "never mind": a scene picked, key Esc while it loads (the card's Cancel),
+    // then key Esc on the list: the scene flown before flies again, nothing of the picked one is left
+    await p.page.mouse.click(768, 365);
+    await sleep(500);
+    const flown9 = s6.scene;
+    const want9 = flown9 === TO ? FROM : TO;
+    await pickLublin(p, want9);
+    const u9 = await until(p.st, (s) => s.sw && s.sw.state === 'loading' && s.sw.to === want9 && s.card, 3000, 100);
+    await sleep(1500);
+    await p.page.keyboard.press('Escape');
+    const e9 = await until(p.st, (s) => !s.card && s.picker, 1000, 50);
+    const sw9 = e9.v.sw;
+    await sleep(800);
+    await p.page.keyboard.press('Escape');
+    const b9 = await until(p.st, (s) => s.sw && s.sw.state === 'done' && s.sw.to === flown9 && !s.card && !s.picker, 240000, 500);
+    const l9 = (b9.v.assets || []).filter((u) => u.includes(want9));
+    judge('9.esc-esc-back', u9.ok && e9.ok && sw9 && sw9.state === 'cancelled' && sw9.why === 'pilot' && b9.ok && b9.v.scene === flown9 && /Back to/.test(b9.v.text) && l9.length === 0 && (b9.v.entities ?? 0) <= 1,
+        { picked: want9, flown: flown9, underWay: u9.ok, escCard: { ok: e9.ok, ms: e9.ms, sw: sw9 }, back: { ok: b9.ok, ms: b9.ms, sw: b9.v.sw, scene: b9.v.scene, said: /Back to/.test(b9.v.text) }, pickedAssets: l9, entities: b9.v.entities });
     await p.ctx.close();
     }
 
