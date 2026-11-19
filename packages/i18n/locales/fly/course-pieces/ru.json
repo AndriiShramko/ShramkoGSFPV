@@ -1,0 +1,23 @@
+{
+  "course.piece.warn.sharpTurn": "Слишком крутой поворот, чтобы влететь в ворота {gate}",
+  "course.piece.warn.tooClose": "Ворота {gate} стоят слишком близко к воротам {other}",
+  "course.piece.warn.wallInOpening": "В проёме ворот {gate} стоит стена",
+  "course.piece.warn.legLong": "От ворот {gate} до ворот {other} больше {max} м",
+  "course.piece.warn.legWall": "Путь от ворот {gate} до ворот {other} идёт сквозь стену",
+  "course.piece.warn.legWallStart": "Путь от старта до ворот {other} идёт сквозь стену",
+  "course.piece.ask": "Оставить здесь?",
+  "course.piece.keep": "Оставить",
+  "course.piece.putBack": "Вернуть (клавиша Ctrl+Z)",
+  "course.piece.close": "Закрыть: ворота остаются здесь",
+  "course.piece.kept": "Оставлено, где вы поставили. Ворота {gate} будут оранжевыми, пока проблема не уйдёт.",
+  "course.piece.more": "и ещё {n}",
+  "course.piece.addTitle": "Что добавить",
+  "course.piece.addClose": "Закрыть: ничего не добавлять",
+  "course.piece.item.gate": "Ворота",
+  "course.piece.item.doubleVertical": "Двойные вертикальные",
+  "course.piece.item.tripleVertical": "Тройные вертикальные",
+  "course.piece.item.doubleHorizontal": "Двойные горизонтальные",
+  "course.piece.item.tripleHorizontal": "Тройные горизонтальные",
+  "course.piece.hint": "Щёлкните по месту для: {piece} (Esc: ничего не добавлять)",
+  "course.piece.added": "Добавлено: {piece}, ворота с {from} по {to}. Влетайте в ворота {from}, разворот, назад через следующие."
+}

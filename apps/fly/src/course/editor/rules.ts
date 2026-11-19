@@ -5,7 +5,7 @@
 import type { CourseProblem } from '@gsfpv/tracks';
 import { ADMIN_AUTHOR_NAME } from '../../admin/tracks/model';
 
-export type EditPaint = 'selected' | 'bad' | 'selected-bad' | 'later';
+export type EditPaint = 'selected' | 'bad' | 'selected-bad' | 'later' | 'warn';
 
 /** 0-based indices of the gates a problem names (a leg in a wall marks both of its ends; the start is no gate). */
 export function badGates(problems: readonly CourseProblem[], ids: readonly string[]): Set<number> {
@@ -29,9 +29,11 @@ export function badGates(problems: readonly CourseProblem[], ids: readonly strin
  * selected gate has one mark in every tool, the yellow 'selected', also when the check refuses it ('selected-bad' drew it
  * orange); red only for the other gates the check refuses (the top bar names the selected one's problem).
  */
-export function editPaints(ids: readonly string[], selected: number, problems: readonly CourseProblem[]): EditPaint[] {
+export function editPaints(ids: readonly string[], selected: number, problems: readonly CourseProblem[], warned: ReadonlySet<number> = new Set()): EditPaint[] {
     const bad = badGates(problems, ids);
-    return ids.map((_, i) => (i === selected ? 'selected' : bad.has(i) ? 'bad' : 'later'));
+    // lane edit4c C1w (E11): a gate with a live warning (dragged into a place that breaks the course, or kept there) is orange,
+    // also the selected one: the warning's tag names it; red (refused by the walls check) outranks it on the other gates
+    return ids.map((_, i) => (i === selected ? (warned.has(i) ? 'warn' : 'selected') : bad.has(i) ? 'bad' : warned.has(i) ? 'warn' : 'later'));
 }
 
 /** The course ids this browser has a completed lap on: the best-lap keys are `<id>.v<n>.<scene>...` (course/link.ts bestKey). */

@@ -1,0 +1,430 @@
+{
+ "address": "http://localhost:6001/en",
+ "scene": "70b50d42",
+ "size": [
+  1536,
+  730
+ ],
+ "dsf": 1.25,
+ "live": false,
+ "date": "2026-11-19T16:43:52.272Z",
+ "steps": {
+  "s1.open": {
+   "verdict": "PASS",
+   "mode": "edit",
+   "gates": 39,
+   "onPage": 8,
+   "under": [
+    "CANVAS.#view",
+    "CANVAS.#view",
+    "CANVAS.#view",
+    "BUTTON.ce-gb"
+   ],
+   "screen": [
+    [
+     1035,
+     387,
+     15.98
+    ],
+    [
+     1218,
+     378,
+     19.71
+    ],
+    [
+     1261,
+     364,
+     30.96
+    ],
+    [
+     1260,
+     364,
+     31.71
+    ],
+    [
+     1258,
+     364,
+     32.45
+    ],
+    [
+     1305,
+     361,
+     39.57
+    ],
+    [
+     1444,
+     361,
+     36.78
+    ],
+    [
+     1472,
+     327,
+     36.28
+    ],
+    [
+     2605,
+     351,
+     16.6
+    ],
+    [
+     2911,
+     352,
+     14.35
+    ],
+    [
+     3070,
+     351,
+     13.45
+    ],
+    [
+     3252,
+     350,
+     12.55
+    ]
+   ],
+   "selected": 0,
+   "stand": [
+    1035,
+    387,
+    15.98
+   ],
+   "lock": "CANVAS"
+  },
+  "s2.add": {
+   "verdict": "PASS",
+   "judged": {
+    "leg": 1,
+    "clickedAt": [
+     829,
+     201
+    ],
+    "armed": true,
+    "grew": true,
+    "newIndex": 2,
+    "wantIndex": 2,
+    "hitM": 33.555712418424,
+    "offDeg": 0,
+    "neighbours": [
+     "g2",
+     "g3"
+    ],
+    "wasLeg": [
+     "g2",
+     "g3"
+    ],
+    "between": true,
+    "legDepth": 27.49,
+    "hidden": false
+   },
+   "tries": [
+    {
+     "leg": 1,
+     "clickedAt": [
+      829,
+      201
+     ],
+     "armed": true,
+     "grew": true,
+     "newIndex": 2,
+     "wantIndex": 2,
+     "hitM": 33.555712418424,
+     "offDeg": 0,
+     "neighbours": [
+      "g2",
+      "g3"
+     ],
+     "wasLeg": [
+      "g2",
+      "g3"
+     ],
+     "between": true,
+     "legDepth": 27.49,
+     "hidden": false
+    }
+   ]
+  },
+  "s3.piece": {
+   "verdict": "PASS",
+   "choice": "double-vertical",
+   "armed": true,
+   "chose": true,
+   "covered": null,
+   "added": 2,
+   "gaps": [
+    {
+     "up": 2,
+     "side": 0
+    }
+   ],
+   "refused": null,
+   "said": "The new gate is red. The way from gate 3 to gate 4 goes through a wall. Pull the arrows of gate 3 until the straight way between them is clear, or delete it wit"
+  },
+  "s3.undo": {
+   "verdict": "PASS",
+   "pressed": true,
+   "gates": [
+    39,
+    41,
+    39
+   ]
+  },
+  "s4.piece": {
+   "verdict": "PASS",
+   "choice": "triple-horizontal",
+   "armed": true,
+   "chose": true,
+   "covered": null,
+   "added": 3,
+   "gaps": [
+    {
+     "up": 0,
+     "side": 2.2
+    },
+    {
+     "up": 0,
+     "side": 2.2
+    }
+   ],
+   "refused": null,
+   "said": "The new gate is red. The way from gate 3 to gate 4 goes through a wall. Pull the arrows of gate 4 until the straight way between them is clear, or delete it wit"
+  },
+  "s4.undo": {
+   "verdict": "PASS",
+   "pressed": true,
+   "gates": [
+    39,
+    42,
+    39
+   ]
+  },
+  "s5.tag": {
+   "verdict": "PASS",
+   "gate": 1,
+   "axis": "x",
+   "px": 196,
+   "tag": {
+    "codes": [
+     "leg-wall"
+    ],
+    "lines": [
+     "The way from the start to gate 1 goes through a wall"
+    ],
+    "box": [
+     764,
+     66,
+     399,
+     42
+    ],
+    "dragging": true
+   },
+   "why": null
+  },
+  "s6.putBack": {
+   "verdict": "PASS",
+   "asked": true,
+   "ask": "Keep it here?KeepPut back (key Ctrl+Z)",
+   "moved": [
+    2.988,
+    2.4,
+    -5.722
+   ],
+   "back": [
+    3.6,
+    2.4,
+    -7.2
+   ],
+   "before": [
+    3.6,
+    2.4,
+    -7.2
+   ],
+   "barAfter": "off"
+  },
+  "s7.keep": {
+   "verdict": "PASS",
+   "asked": true,
+   "stayed": true,
+   "moved": true,
+   "kept": [
+    "g1"
+   ],
+   "id": "g1",
+   "barAfter": "off",
+   "why": null,
+   "px": 220
+  },
+  "s8.small": {
+   "verdict": "PASS",
+   "fits": true,
+   "clear": true,
+   "cross44": true,
+   "closed": true,
+   "list": {
+    "box": [
+     13,
+     167,
+     452,
+     192
+    ],
+    "items": [
+     {
+      "text": "Gate",
+      "box": [
+       18,
+       218,
+       220,
+       44
+      ],
+      "clear": true
+     },
+     {
+      "text": "Double vertical",
+      "box": [
+       240,
+       218,
+       220,
+       44
+      ],
+      "clear": true
+     },
+     {
+      "text": "Triple vertical",
+      "box": [
+       18,
+       264,
+       220,
+       44
+      ],
+      "clear": true
+     },
+     {
+      "text": "Double horizontal",
+      "box": [
+       240,
+       264,
+       220,
+       44
+      ],
+      "clear": true
+     },
+     {
+      "text": "Triple horizontal",
+      "box": [
+       18,
+       310,
+       220,
+       44
+      ],
+      "clear": true
+     },
+     {
+      "text": "×",
+      "box": [
+       416,
+       172,
+       44,
+       44
+      ],
+      "clear": true
+     }
+    ],
+    "cross": [
+     416,
+     172,
+     44,
+     44
+    ],
+    "view": [
+     844,
+     390
+    ]
+   }
+  }
+ },
+ "ready": {
+  "status": "ready",
+  "s": 3
+ },
+ "lockAfterClick": "CANVAS",
+ "course": {
+  "ok": true,
+  "s": 7,
+  "gates": 39
+ },
+ "backOffs": [
+  {
+   "onPage": 1,
+   "mode": "edit",
+   "open": true
+  },
+  {
+   "onPage": 1,
+   "mode": "edit",
+   "open": true
+  },
+  {
+   "onPage": 1,
+   "mode": "edit",
+   "open": true
+  },
+  {
+   "onPage": 1,
+   "mode": "edit",
+   "open": true
+  },
+  {
+   "onPage": 1,
+   "mode": "edit",
+   "open": true
+  },
+  {
+   "onPage": 1,
+   "mode": "edit",
+   "open": true
+  }
+ ],
+ "tags": [
+  {
+   "label": "first",
+   "axis": "x",
+   "px": 196,
+   "tag": {
+    "codes": [
+     "leg-wall"
+    ],
+    "lines": [
+     "The way from the start to gate 1 goes through a wall"
+    ],
+    "box": [
+     764,
+     66,
+     399,
+     42
+    ],
+    "dragging": true
+   }
+  },
+  {
+   "label": "second",
+   "axis": "x",
+   "px": 220,
+   "tag": {
+    "codes": [
+     "leg-wall"
+    ],
+    "lines": [
+     "The way from the start to gate 1 goes through a wall"
+    ],
+    "box": [
+     790,
+     60,
+     399,
+     42
+    ],
+    "dragging": true
+   }
+  }
+ ],
+ "fails": [],
+ "log": []
+}

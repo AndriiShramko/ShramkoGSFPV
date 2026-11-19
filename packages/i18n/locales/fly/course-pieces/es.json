@@ -1,0 +1,23 @@
+{
+  "course.piece.warn.sharpTurn": "Giro demasiado cerrado para entrar en la puerta {gate}",
+  "course.piece.warn.tooClose": "La puerta {gate} está demasiado cerca de la puerta {other}",
+  "course.piece.warn.wallInOpening": "Hay una pared dentro de la puerta {gate}",
+  "course.piece.warn.legLong": "De la puerta {gate} a la puerta {other} hay más de {max} m",
+  "course.piece.warn.legWall": "El camino de la puerta {gate} a la puerta {other} atraviesa una pared",
+  "course.piece.warn.legWallStart": "El camino de la salida a la puerta {other} atraviesa una pared",
+  "course.piece.ask": "¿La dejas aquí?",
+  "course.piece.keep": "Dejar",
+  "course.piece.putBack": "Volver atrás (tecla Ctrl+Z)",
+  "course.piece.close": "Cerrar: la puerta se queda aquí",
+  "course.piece.kept": "Se queda donde la pusiste. La puerta {gate} sigue naranja hasta que se resuelva.",
+  "course.piece.more": "y {n} más",
+  "course.piece.addTitle": "Qué añadir",
+  "course.piece.addClose": "Cerrar: no añadir nada",
+  "course.piece.item.gate": "Puerta",
+  "course.piece.item.doubleVertical": "Doble vertical",
+  "course.piece.item.tripleVertical": "Triple vertical",
+  "course.piece.item.doubleHorizontal": "Doble horizontal",
+  "course.piece.item.tripleHorizontal": "Triple horizontal",
+  "course.piece.hint": "Haz clic en el lugar para: {piece} (Esc: no añadir nada)",
+  "course.piece.added": "{piece} añadida: puertas {from} a {to}. Entra por la puerta {from}, da la vuelta y vuelve por la siguiente."
+}
