@@ -783,7 +783,8 @@ describe('lane head4: "Turn my head to listen" in the settings', () => {
         expect(byTestId(doc, 'sonic-head')!.checked).toBe(false);
         lastRig.camera.refuse = 'NotAllowedError';
         doc.key('Enter');
-        await vi.waitFor(() => expect(lastRig.log.at(-1)).toBe('say:denied'));
+        // the lazy import of head/tracking can take past vitest's 1 s default under the full suite's load (review head4)
+        await vi.waitFor(() => expect(lastRig.log.at(-1)).toBe('say:denied'), { timeout: 10_000 });
         expect(lastRig.log).toEqual(['say:ask', 'load', 'gum', 'say:denied']);
         expect(store.collection('sonic').headTrack).toBeUndefined();
         expect(byTestId(doc, 'sonic-head')!.checked).toBe(false);

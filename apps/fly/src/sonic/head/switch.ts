@@ -74,7 +74,9 @@ export class HeadSwitch {
         }
         this.wanted = true;
         const r = await this.start();
-        if (r !== 'on') this.refused(r, false);
+        // the page opened the camera by itself: the pilot is told so (review head4 R1; queued after what the page says first)
+        if (r === 'on') await this.d.say('on', { interrupt: false });
+        else this.refused(r, false);
     }
 
     /** The pilot switched the setting: on speaks, asks, says the result (true: it runs); off stops the camera and says so. */

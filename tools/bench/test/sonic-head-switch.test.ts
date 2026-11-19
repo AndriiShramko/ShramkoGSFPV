@@ -86,7 +86,7 @@ describe('head tracking setting (lane head4, H2)', () => {
         expect(rig.log.filter((x) => x === 'gum')).toHaveLength(2);
     });
 
-    it('left on: at load it starts silently only when the browser already allows the camera; otherwise it is turned off, nothing asked', async () => {
+    it('left on: at load it starts only when the browser already allows the camera, and says it is on; otherwise it is turned off, nothing asked', async () => {
         const store = mkStore();
         setHeadTrack(store, true);
         const asked = headRig(store);
@@ -98,7 +98,8 @@ describe('head tracking setting (lane head4, H2)', () => {
         const allowed = headRig(store);
         allowed.permission = 'granted';
         await allowed.head.resume();
-        expect(allowed.log).toEqual(['load', 'gum', 'tracker.start']);
+        // review head4 R1: the camera opened by the page itself is said (the pilot hears it is on)
+        expect(allowed.log).toEqual(['load', 'gum', 'tracker.start', 'say:on']);
         expect(allowed.head.running).toBe(true);
     });
 

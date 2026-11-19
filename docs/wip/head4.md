@@ -71,6 +71,7 @@ Stages (adapted from plan 1.4; at most 4; see "Differences from the design"):
 5. Move out of the camera's view: "Head lost. Sounds follow the drone until your face is back." (once, with the narrator
    on); the sound glides back to the drone's own front in about a second.
 6. Untick the setting (or close or hide the tab): "Head tracking off. The camera is closed." The camera's light goes out.
+   Left on, the next visit opens the camera by itself (the browser already allows it) and says "Head tracking on..." again.
 7. If you choose Block in step 3, the voice says the camera was not allowed and how to allow it by the icon left of the
    address; the setting is off again.
 
@@ -186,7 +187,31 @@ Stages (adapted from plan 1.4; at most 4; see "Differences from the design"):
   and the ILD side gain, would make the ILD boost follow the head too; the host would then pass the pose instead of
   turning the listener.
 
+## Review
+
+Verdict: SHIP (independent check, one run; full findings in the reviewer's own file outside the repository).
+
+- R1 PROVEN, repaired: HeadSwitch.resume (head/switch.ts) opened the camera at load, for a setting left on with the camera
+  already allowed, and said nothing: after a reload the pilot heard only "Head lost..." while the camera light came on. It
+  now says the "on" line, queued after what the page says first. Test sonic-head-switch.test.ts ("left on: at load ...
+  says it is on"), 13 of 13, NEG OK against the lane's head. The reviewer's reload step (turn on by the mouse, reload,
+  8 s): FAIL on the lane's release build, PASS on the repaired tree (dev server).
+- Rechecked: claims 1, 2 (51 of 51 with the tracker and start-screen tests), two mutation controls fire (a wrong
+  listener sign: 3 tests fail; the explanation removed before the camera ask: 5 fail); claim 6, the lane's acceptance
+  probe on a fresh release build under serve-csp: 12 of 12 PASS.
+- Gates after the repair (typecheck, vitest, b18): typecheck and b18 PASS; vitest 1 failed of 5360 plus two files that
+  could not start rooms.py. All three passed alone (34 of 34). The failed one, the head row case of
+  sonic-start-screen.test.ts, waited on the lazy head import with vitest's 1 s default; it now waits up to 10 s (the
+  assertion is unchanged; a timing change, no negative control of its own). rooms-race and rooms-socket: no file of this
+  lane, the full suite's load.
+- DOUBT, not holding: the design quotes no lines of the owner's brief for head tracking (its source is a researcher's
+  message), so the owner's rules were the measure. "Head lost" is said on the start screen too, where no drone sound
+  plays yet. Pressing key Shift+H with the face out of view says nothing until a face is seen.
+
 ## Cost notes
+
+- Review: the most replies went to running the reviewer's step on a dev server (Git Bash path rewriting, a cold first
+  load); a rebuild of the release after the repair, or a probe that takes the page path as an argument, would be cheaper.
 
 - H4: the most replies went to the probe's first run (the listener read before any sound had started; Chrome's fake
   camera answer reporting 'granted' before the ask) and to a pinned key list the gates found (catalog.test.ts); a line in
