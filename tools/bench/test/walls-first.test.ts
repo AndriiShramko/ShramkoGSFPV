@@ -134,7 +134,7 @@ describe('the course, C and V lead the pilot on (no "walls are missing")', () =>
     const voxels = text('apps/fly/src/app/builtin/voxels.ts');
     it('generating, loading and editing a course on a scan without walls build the walls first', () => {
         expect(course).not.toContain("t('course.noWalls')");
-        expect(course).toMatch(/if \(!w\) return wallsFirst\(\(\) => generate\(seed\)\)/);
+        expect(course).toMatch(/if \(!w\) return wallsFirst\(\(\) => generate\(seed(, how)?\)\)/);
         expect(course).toMatch(/if \(!w\) return wallsFirst\(\(\) => void loadServer\(/);
         expect(course).toContain("t('course.wallsFirst')");
     });

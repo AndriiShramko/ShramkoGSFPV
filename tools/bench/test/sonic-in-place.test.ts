@@ -375,8 +375,12 @@ describe('one course: the intro, Shift+G in Fly by Sound, no key N in the free f
         const at = COURSE.indexOf("ctx.keys.on('course.generate'");
         expect(at).toBeGreaterThan(0);
         const handler = COURSE.slice(at, COURSE.indexOf('});', at));
-        expect(handler).toMatch(/generate\(pressSeed\(\)\)/);
+        // lane gen4b: the key goes through the Generate dialog's opener; in the sound mode pressAction answers 'direct' and the
+        // opener builds at once with the press's seed (generate-dialog.test.ts holds pressAction)
+        expect(handler).toMatch(/openGenerateDialog\('flight'\)/);
         expect(handler).not.toMatch(/ctx\.sonic/);
+        const opener = COURSE.slice(COURSE.indexOf('const openGenerateDialog'), COURSE.indexOf('hook.generateDialog ='));
+        expect(opener).toMatch(/if \(act === 'direct'\) \{[^}]*generate\(seed \?\? \(from === 'flight' \? pressSeed\(\) : randomSeed\(\)\)\)/);
         // the sound mode's N and its course lines reach the same action (hook.sound.generate)
         expect(COURSE).toMatch(/generate: \(\) => generate\(pressSeed\(\)\)/);
         // P3: no change event left (nothing listened to it; the mode reads inUse() every frame)

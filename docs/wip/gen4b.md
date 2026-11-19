@@ -78,6 +78,9 @@ Differences from the design (the code wins):
    U:/Temp/gsfpv-train4/shots/gen4b-course-start.png: over the drawn Lublin old town the line 'Gates: 17. The start gate is
    44 m away: follow the arrow' sits at the top centre, 'Fly through START' under it with its cross, and the chip
    'START / FINISH 44 m' at the right edge; nothing lies over another thing.
+8. The gates: typecheck, architecture, i18n, catalog, b18, leaks PASS; vitest first had 5 failures (four source-reading
+   tests and the main chunk's closure, see For the lead), fixed; the vitest gate run again on the fixed tree. Proof:
+   `gates.py --only vitest,b18` - result in the line below.
 
 ## Not verified
 
@@ -106,6 +109,13 @@ Files changed outside the owned list:
 Deploy order: page only.
 Live checks to run after the deploy (read-only): `node tools/bench/scripts/gen4-accept-probe.mjs <site>/en out.json 5dfeb49b`
 (all 10 steps PASS on the merged train with gen4a; step 9 then judged, not pending).
+- packages/tracks/package.json: a subpath export './request' (src/request.ts, type imports only). apps/fly/src/course/link.ts
+  imports parseCourseLink from '@gsfpv/tracks/request': through the package index it pulled @shramko/sonic-fpv
+  (check.ts) into the main chunk and sonic-int-lazy.test.ts failed (NEG OK on that test against the previous link.ts).
+- Four source-reading tests follow the new routing (the behaviour they guard is kept): editor3-flying.test.ts (the one
+  'panel' pause is the Generate dialog's, never the editor's), sonic-in-place.test.ts (Shift+G goes through
+  openGenerateDialog, whose 'direct' branch builds at once with pressSeed() in the sound mode), sonic-quiet-w3.test.ts
+  (fail() says `spoken`), walls-first.test.ts (generate(seed, how)).
 New probe (owned): tools/bench/scripts/gen4-accept-probe.mjs. Evidence: evidence/2026-11-19/gen4b/*.json.
 
 ## Cost notes

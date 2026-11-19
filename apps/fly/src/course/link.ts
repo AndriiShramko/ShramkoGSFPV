@@ -1,8 +1,8 @@
 // The course as a link (train 1, lane tracks, T2): `&course=g1.<seed in base 36>`. The deterministic generator rebuilds
 // the same course from the seed on the same walls; on other walls it builds another one (or none), and the page says so.
 // The local best lap per track id, version and drone lives in localStorage (one small JSON object).
-import { parseCourseLink } from '@gsfpv/tracks';
-import type { CourseLink } from '@gsfpv/tracks';
+import { parseCourseLink } from '@gsfpv/tracks/request';
+import type { CourseLink } from '@gsfpv/tracks/request';
 
 const PARAM = 'course';
 const RE = /^g1\.([0-9a-z]{1,7})$/;
