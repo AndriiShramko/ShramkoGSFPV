@@ -4,7 +4,7 @@ Owner's words: brief lines 533-536 (the Fly by Sound page's top menu says "Fly n
 
 ## Status
 
-- [x] Stage 1: the audit (probe on the live site) and the design (this file)
+- [x] Stage 1: the audit (probe on the live site) and the design (this file): 51f7dac4
 - [ ] Stage 2: the repairs, each with a check in apps/site/scripts/verify.mjs or a unit test that fails on origin/main
 - [ ] Stage 3: the acceptance (tools/bench/scripts/site4-links.mjs on a local build, the same probe on the live site must fail), the gates, the status parts
 
