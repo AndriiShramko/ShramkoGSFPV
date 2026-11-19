@@ -98,20 +98,20 @@ async function open(W, H, dsf, query, hold) {
     return { ctx, page, reqs, st, box, readyMs: ready.ms, lock: await page.evaluate(() => !!document.pointerLockElement) };
 }
 
-/** key P, a click on "Change scan", a click on Lublin's card (scrolled into view, as a person scrolls), or its id typed */
-async function pickLublin(p) {
+/** key P, a click on "Change scan", a click on the scene's card (scrolled into view, as a person scrolls), or its id typed */
+async function pickLublin(p, id = TO) {
     await p.page.keyboard.press('KeyP');
     const ch = await p.page.waitForSelector('[data-action="pause.scene"]', { timeout: 8000 });
     await ch.scrollIntoViewIfNeeded();
     await ch.click();
     await p.page.waitForSelector('[data-testid="scenes-in-flight"]', { timeout: 8000 });
     await sleep(500);
-    const card = await p.page.$(`[data-testid="scenes-in-flight"] .scene-card[data-scene="${TO}"]`);
+    const card = await p.page.$(`[data-testid="scenes-in-flight"] .scene-card[data-scene="${id}"]`);
     const t0 = Date.now();
     if (card) { await card.scrollIntoViewIfNeeded(); await card.click(); return { t0: Date.now(), how: 'card', clickMs: Date.now() - t0 }; }
     const input = await p.page.$('[data-testid="scenes-in-flight"] .scene-input');
     await input.click();
-    await input.type(TO);
+    await input.type(id);
     await p.page.keyboard.press('Enter');
     return { t0: Date.now(), how: 'typed' };
 }
@@ -158,19 +158,21 @@ try {
     if (x5) await p.page.mouse.click(x5.x, x5.y);
     const c5 = await until(p.st, (s) => s.sw && s.sw.state === 'done' && s.sw.to === FROM && !s.card, 240000, 500);
     judge('5.back-to-from', x5 && c5.ok && c5.v.scene === FROM, { ms: c5.ms, sw: c5.v.sw, scene: c5.v.scene, said: /Back to/.test(c5.v.text), cross: x5 && { w: x5.w, h: x5.h } });
-    // 6 Lublin again, key N during its load
+    // 6 Lublin again (Wroclaw when step 5 left the craft on Lublin), key N while that load is still under way
     await p.page.mouse.click(768, 365);
     await sleep(500);
-    const pk6 = await pickLublin(p);
-    await until(p.st, (s) => s.sw && s.sw.state === 'loading' && s.sw.to === TO, 3000, 100);
+    const want6 = (await p.st()).scene === TO ? FROM : TO;
+    const pk6 = await pickLublin(p, want6);
+    await until(p.st, (s) => s.sw && s.sw.state === 'loading' && s.sw.to === want6, 3000, 100);
     await sleep(2000);
     const at6 = await p.st();
+    const underWay = !!(at6.sw && at6.sw.state === 'loading' && at6.sw.to === want6);
     await p.page.keyboard.press('KeyN');
-    const c6 = await until(p.st, (s) => s.sw && s.sw.state === 'done' && s.sw.to !== TO && !s.card, 240000, 500);
+    const c6 = await until(p.st, (s) => s.sw && s.sw.state === 'done' && s.sw.reason === 'next' && !s.card, 90000, 500);
     await sleep(1500);
     const s6 = await p.st();
-    const l6 = (s6.assets || []).filter((u) => isLublin(u, lublin));
-    judge('6.n-replaces', c6.ok && s6.scene !== TO && l6.length === 0 && (s6.entities ?? 0) <= 1, { pickHow: pk6.how, atN: at6.sw, ms: c6.ms, sw: c6.v.sw, scene: s6.scene, lublinAssets: l6, entities: s6.entities });
+    const l6 = (s6.assets || []).filter((u) => u.includes(want6));
+    judge('6.n-replaces', underWay && c6.ok && s6.scene !== want6 && l6.length === 0 && (s6.entities ?? 0) <= 1, { picked: want6, pickHow: pk6.how, underWay, atN: at6.sw, ms: c6.ms, sw: c6.v.sw, scene: s6.scene, pickedAssets: l6, entities: s6.entities });
     await p.ctx.close();
     }
 
