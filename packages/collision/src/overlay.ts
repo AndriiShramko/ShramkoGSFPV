@@ -8,7 +8,7 @@
 
 import type { VoxelCollision } from './vendor/voxel-collision';
 import type { BlockComponents } from './components';
-import { buildChunkBlockFaces, buildChunkFaces, chunkDims } from './mesh';
+import { buildChunkBlockFaces, buildChunkFaces, chunkAt, chunkDims } from './mesh';
 import { blockAboveCut, rowAboveCut } from './ceiling';
 import type { CeilingCut } from './ceiling';
 
@@ -52,6 +52,25 @@ export function chunkKey(dims: readonly number[], x: number, y: number, z: numbe
 export function chunkOfKey(dims: readonly number[], key: number): [number, number, number] {
     const x = key % dims[0], r = (key - x) / dims[0], y = r % dims[1];
     return [x, y, (r - y) / dims[1]];
+}
+
+/** A chunk of the grid next to a world point (chunksNear). */
+export interface NearChunk { key: number; x: number; y: number; z: number }
+
+/**
+ * The chunks of the grid within `reach` chunks of a world point (27 for reach 1 inside the grid),
+ * and whether the point's own chunk is in the grid (voxux4 V2: what is drawn right around the craft).
+ */
+export function chunksNear(col: VoxelCollision, size: number, x: number, y: number, z: number, reach = 1): { inside: boolean; chunks: NearChunk[] } {
+    const dims = chunkDims(col, size);
+    const a = chunkAt(col, x, y, z, size);
+    const c = [a.x, a.y, a.z];
+    const inside = c.every((v, a) => v >= 0 && v < dims[a]);
+    const chunks: NearChunk[] = [];
+    for (let cz = Math.max(0, c[2] - reach); cz <= Math.min(dims[2] - 1, c[2] + reach); cz++)
+        for (let cy = Math.max(0, c[1] - reach); cy <= Math.min(dims[1] - 1, c[1] + reach); cy++)
+            for (let cx = Math.max(0, c[0] - reach); cx <= Math.min(dims[0] - 1, c[0] + reach); cx++) chunks.push({ key: chunkKey(dims, cx, cy, cz), x: cx, y: cy, z: cz });
+    return { inside, chunks };
 }
 
 /** Keys of the chunks (of `size` voxels) holding at least one occupied block, ascending. */

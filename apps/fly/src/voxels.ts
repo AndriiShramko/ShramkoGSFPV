@@ -7,7 +7,7 @@
 // in their own colour (no longer walls), and its panel's preview adds a translucent plane at the height.
 import { VoxelOverlay, VOXEL_STYLES } from '@gsfpv/render-pc';
 import type { VoxelFog, VoxelStyle } from '@gsfpv/render-pc';
-import { FLOATER_MIN_BLOCKS_MAX, ceilingCut, chunkDims, overlapKeys, overlayChunkSize, planChunksAround, validCeiling } from '@gsfpv/collision';
+import { FLOATER_MIN_BLOCKS_MAX, ceilingCut, chunkDims, chunksNear, groupKey, overlapKeys, overlayChunkSize, planChunksAround, validCeiling } from '@gsfpv/collision';
 import type { CeilingCut, PlannedChunk, VoxelCollision } from '@gsfpv/collision';
 import { KEEPER_EVERY_MS, drawnShare, fillLeftS, keeperStep, trimFillSamples, type FillSample } from './voxel-keeper';
 import type { FlightSession } from './session';
@@ -117,6 +117,24 @@ export interface VoxelStats {
     uploadMs: number;
     uploadMaxMs: number;
     error: string | null;
+    /** voxux4 V2: the chunks right around the camera (27 inside the grid), null before the walls are ready */
+    near: NearChunkState[] | null;
+}
+
+/** What the view holds of one chunk next to the camera (VoxelStats.near). */
+export interface NearChunkState {
+    key: number;
+    /** it holds a wall cell (the walls after the floater filter) */
+    occupied: boolean;
+    /** the level the plan wants it at / drawn at (null: none); a far group mesh covering it counts as its level */
+    wanted: number | null;
+    loaded: number | null;
+    /** its mesh waits in the upload queue or at the worker */
+    pending: boolean;
+    /** faces at the drawn level, when measured */
+    quads: number | null;
+    /** the group mesh (negative key) that draws it, if any */
+    group: number | null;
 }
 
 export class VoxelController {
@@ -661,8 +679,39 @@ export class VoxelController {
             uploads: o?.uploads ?? 0,
             uploadMs: o?.uploadMs ?? 0,
             uploadMaxMs: o?.uploadMaxMs ?? 0,
-            error: this.error
+            error: this.error,
+            near: this.nearState()
         };
+    }
+
+    /** VoxelStats.near: the plan and the drawing of the chunks right around the camera. */
+    private nearState(): NearChunkState[] | null {
+        const col = this.col;
+        if (!col || !this.occupied) return null;
+        const p = this.session.renderer.camera.getPosition();
+        const dims = chunkDims(col, this.size);
+        const inFlight = (k: number): boolean => [...this.inFlight].some((id) => id.startsWith(`${k}:`));
+        return chunksNear(col, this.size, p.x, p.y, p.z).chunks.map((c) => {
+            let key = c.key;
+            let group: number | null = null;
+            if (!this.wanted.has(key) && !this.loaded.has(key)) {
+                for (const g of [2, 4, 8]) {
+                    const gk = groupKey(dims, g, Math.floor(c.x / g), Math.floor(c.y / g), Math.floor(c.z / g));
+                    if (this.wanted.has(gk) || this.loaded.has(gk)) { key = gk; group = gk; break; }
+                }
+            }
+            const loaded = this.loaded.get(key) ?? null;
+            const q = loaded === null ? undefined : loaded <= 1 ? this.known[loaded === 0 ? 'fine' : 'coarse'].get(c.key) : this.knownFar.get(loaded)?.get(c.key);
+            return {
+                key: c.key,
+                occupied: this.occupied!.has(c.key),
+                wanted: this.wanted.get(key) ?? null,
+                loaded,
+                pending: !!this.overlay?.pending(String(key)) || inFlight(key),
+                quads: group === null ? q ?? null : null,
+                group
+            };
+        });
     }
 
     /** Everything wanted is drawn (tests and screenshots wait for it). */
