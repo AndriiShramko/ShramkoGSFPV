@@ -25,7 +25,13 @@ against the code as it is: EditView gets the walls ray through its own host (Edi
   - [x] gates (typecheck, vitest, architecture, i18n, catalog, b18, leaks) on 6b90afbf: all PASS but vitest, whose only two
     failures are rooms-race and rooms-open-vote ('rooms.py did not start' under the load of 15 lanes); both pass alone
     (2 files, 13 passed). This lane changes no rooms file.
-  - LEFT 1: find why a press on a part hitAt names is sometimes not taken (drawn run 2 step 9; ?render=off runs: steps 9, 10,
+  - [ ] LEFT 1 finding (run 3): the gizmo's own press test and partAt read the same event coordinates (e.offsetX) and the
+    same shapes in one synchronous call, so a press can differ from the hover only by its point. The probe pressed the
+    first point of a part met walking out from the centre, i.e. its very edge (run 2: the y ring at r 10 px, the box
+    ends at r 8), at fractional CSS px; the synthetic press lands up to a fraction of a px off. Probe fix: whole px, and
+    only a point whose 2 px neighbours name the same part; the press records the page's own coordinates (rec.down).
+    The ?render=off repeats are not valid for the arrows: their flip and glance state is set in the gizmo's prerender.
+  - (old text) LEFT 1: find why a press on a part hitAt names is sometimes not taken (drawn run 2 step 9; ?render=off runs: steps 9, 10,
     11 at random; once hitAt named move/x and 0.3 s later turn/ring:y at the same point with nothing moved). Suspect: the
     gizmos size and place their shapes in the engine's frame update while the camera entity holds the drone's pose
     (view-mouse.ts apply() comments 'the entity may hold the drone's pose between frames'), so the shapes the press tests

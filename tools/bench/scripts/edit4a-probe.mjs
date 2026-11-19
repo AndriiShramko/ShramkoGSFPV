@@ -103,7 +103,10 @@ async function drag(x, y, dx, dy, { shift = false, mid = null } = {}) {
     // took after the first moves: a part named here but not taken is a press that went to the view
     const state = () => page.evaluate(() => { const v = window.__gsfpvEditView && window.__gsfpvEditView(); return v ? { grabbed: v.grabbed, dragging: v.dragging, ring: v.ring, nav: v.nav && v.nav.kind, sets: v.sets, stand: v.stand && v.stand.screen } : null; });
     const rec = { at: [Math.round(x), Math.round(y)], pre: await page.evaluate(([x, y]) => (window.__gsfpvEditHit ? [window.__gsfpvEditHit(x, y), window.__gsfpvEditHit(x, y, true)] : null), [x, y]), before: await state() };
+    // the press as the page got it: its own coordinates and what the hit test names there (a capture listener of the probe)
+    await page.evaluate(() => { if (window.__probeDown) return; window.__probeDown = {}; window.addEventListener('pointerdown', (e) => { window.__probeDown = { client: [e.clientX, e.clientY], offset: [e.offsetX, e.offsetY], hit: window.__gsfpvEditHit ? window.__gsfpvEditHit(e.clientX, e.clientY) : null }; }, true); });
     await page.mouse.down();
+    rec.down = await page.evaluate(() => window.__probeDown);
     await page.mouse.move(x + dx / 4, y + dy / 4, { steps: 4 });
     rec.taken = await state();
     await page.mouse.move(x + dx, y + dy, { steps: 10 });
@@ -129,13 +132,16 @@ const scanParts = () => page.evaluate(() => {
     if (!v || !v.stand || !hit) return null;
     const [cx, cy] = v.stand.screen;
     const out = {}; const seen = {};
+    // whole CSS px, and only where the part also lies 2 px to each side: a point at a part's very edge (drawn run 2 step 9
+    // pressed the y ring 10 px from the centre, beside the box) can be missed by a press that lands a fraction of a px off
+    const core = (x, y, key) => [[2, 0], [-2, 0], [0, 2], [0, -2]].every(([dx, dy]) => (hit(x + dx, y + dy) || []).join('/') === key);
     for (let r = 4; r <= 170; r += 2) for (let a = 0; a < 360; a += 5) {
-        const x = cx + r * Math.cos((a * Math.PI) / 180), y = cy + r * Math.sin((a * Math.PI) / 180);
+        const x = Math.round(cx + r * Math.cos((a * Math.PI) / 180)), y = Math.round(cy + r * Math.sin((a * Math.PI) / 180));
         const p = hit(x, y);
         if (!p) continue;
         seen[p.join('/')] = (seen[p.join('/')] || 0) + 1;
         const k = p[0] === 'move' && p[1] === 'x' ? 'arrowX' : p[0] === 'size' ? 'box' : p[0] === 'turn' && /y$/.test(p[1]) ? 'ringY' : null;
-        if (k && !out[k]) out[k] = { at: [Math.round(x), Math.round(y)], r, a, part: p };
+        if (k && !out[k] && core(x, y, p.join('/'))) out[k] = { at: [x, y], r, a, part: p };
     }
     return { centre: [cx, cy], ...out, seen };
 });
