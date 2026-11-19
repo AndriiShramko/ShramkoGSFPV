@@ -80,6 +80,26 @@ tools/bench/src/scan-kinds.json, evidence/2026-11-19/gen4/.
     (loopR). Seeds 1-3: 24, 14, 24 gates, validateServerTrack ok. plan.test '2 km city' (cityFromAbove at x20, pro, seeds
     1-3: no leg issue, >= gatesMin): NEG OK against 6f9d06f0; tracks 165 passed; typecheck clean. Found on the way: at
     x20 the format refuses a whoop's gate (side 0.021 < 0.05 scene units): For the lead.
+  - [x] Audit run 2 (code of 6f9d06f0; U:/Temp/gsfpv-train4/gen4a/place-run2.json): PLANS 216 FAILED 39 (run 1: 96);
+    course 212/216, time 216/216, x1 18/18, cityLow 18/18, inside/ground/loop/opening all PASS. FAIL: detail 13 (Forest
+    Floor ab5efa0e plants, goodShare 0.4-0.75), gates 13 (Wroclaw 70b50d42 beginner 6: 1 gate; 9baef54b medium 4: 1
+    gate; 39e63ce9 beginner wide 2; eb5f51dc medium 1), room 8 (Winter Garden 7a475d38 medium/pro: gates outside the
+    glass), NO-ROOM 4 (1994c65c pro wide 3, 70b50d42 pro wide 1), server 1 (fixed in 5190a972).
+  - [x] Fixes after run 2 (plan.ts only; commit after 5190a972): (a) the tiers are walked in turn at the same opening
+    before it shrinks (a zone with enough cells can be a broken sheet): 9baef54b medium 14/14/12 gates (was 1), Wroclaw
+    16 of 18 plans PASS (focused run, stopped early: U:/Temp/gsfpv-train4/gen4a/place-run3a.log); (b) the kind rule is
+    never dropped for room, cityAbove and plants (topTier 1; Winter Garden's gates outside came from tier 2), and only a
+    scan with no course at all under it is laid again with tier 2 (plan.test plant tray at x1 keeps its course). Tried
+    and reverted: the most open start near the core (generate.ts): it shrank the room's beginner course. tracks 165 passed.
+  - [ ] LEFT 3a: Wroclaw 70b50d42 beginner seed 1 (compact and wide): 1 gate. Trace: tier 2 walks 8 gates and the close
+    keeps 1 (cutClose 7: no later gate has a straight clear leg to the start; legWell is always true in place mode); tiers
+    0-1 stop at 1-3 ('turn' refusals: the eye band at 0.4 m cells is sparse within 6 m of a gate). Run 1 (0.8-1.2 m cells,
+    no clip) gave 5 shrunk. Ideas: let the close accept a gate whose leg home has a free gateExit turn like the walk's legs;
+    or a beginner street zone band of one cell more.
+  - [ ] LEFT 3b: unit tests for (a) and (b) that fail on 5190a972 (a room world where tier 2 puts a gate over the ceiling;
+    a sheet zone); if none can be built cheaply, name the audit rows as the proof in Claims.
+  - [ ] LEFT 3c: Forest Floor detail (goodShare under 0.8 compact / 0.6 wide): read whether the plants zone or the
+    quality map is the cause.
   - [ ] LEFT 3: re-run the audit after the fixes -> evidence/2026-11-19/gen4/place.json (all rules PASS, or each FAIL
     named in Not verified); ms per plan <= FIT_BUDGET_MS (run 1: at most 61 s).
   - [ ] LEFT 4: gates once (typecheck,vitest,architecture,i18n,b18,leaks), status parts, LANE-DONE.
@@ -105,7 +125,13 @@ Nothing yet: stage S0 changes no page. After gen4b: Shift+G opens the 'Generate 
    the level's opening (10 / 6 / 4 D of a 65 mm whoop) in a room; a city from above gets no gate within 4 m of its fuzzy
    ground where the old path (qualityMap + fitCourse) fails the same rules; a skull on a table and a plant tray at x1 get a
    course. Proof: `npx vitest run packages/tracks/test/plan.test.ts`; last result 6 passed; NEG OK.
-5. The g1 path is unchanged: `npx vitest run packages/tracks/test`; last result 161 passed.
+5. The g1 path is unchanged: `npx vitest run packages/tracks/test`; last result 165 passed (the g1 tests unchanged).
+6. A 1 km scan flown at x1 by a whoop gets a course: the free box is clipped to the course's reach with cells near the
+   gate's size (clipBox), and the analysis' territory is the free space's one 'scanned' rule. Proof: `npx vitest run
+   packages/tracks/test/plan.test.ts -t clipBox` (1 passed); on the real scans the audit: Laval eb5f51dc 8 gates in 1.7 s,
+   5dfeb49b at x1 8 gates in 7.8 s (both NO-ROOM or 1 gate before); audit run 2: course 212/216, x1 18/18, time 216/216.
+7. Every leg of an asked course, the closing one too, keeps the server's 60 m. Proof: `npx vitest run
+   packages/tracks/test/plan.test.ts -t "2 km city"`; last result 1 passed; NEG OK against 6f9d06f0.
 
 ## Not verified
 
@@ -134,6 +160,10 @@ Nothing yet: stage S0 changes no page. After gen4b: Shift+G opens the 'Generate 
 - Deploy order: page only (packages/tracks is bundled into the page and its worker).
 
 ## Cost notes
+
+- A3 (run 2, left): about 50 replies; most went to Wroclaw beginner (toggling one change at a time on a 15 s trace, then
+  a direct run on run 1's files). Cheaper: when a fix regresses a scan, run the old commit's files on it FIRST (git show
+  into place, one trace) and diff the walk info, before toggling suspects one by one.
 
 - A3 (run 1, left): about 50 replies; most went to the synthetic no-room world (a pocket under 1 m x unit is no
   territory; the free box cut at the footprint made it 'badly scanned') and to waiting on the 216-plan audit (30-60 s a
