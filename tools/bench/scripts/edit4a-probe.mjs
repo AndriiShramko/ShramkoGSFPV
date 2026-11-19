@@ -109,7 +109,12 @@ async function drag(x, y, dx, dy, { shift = false, mid = null } = {}) {
 }
 const boxOf = (sel) => page.evaluate((s) => [...document.querySelectorAll(s)].filter((e) => e.getClientRects().length && !e.hidden && getComputedStyle(e).visibility !== 'hidden').map((e) => { const b = e.getBoundingClientRect(); return [Math.round(b.left), Math.round(b.top), Math.round(b.width), Math.round(b.height)]; }), sel);
 /** the gates on screen, in front, away from the selected one's gizmo, nearest first */
-const onScreen = (s, w = W, h = H, skip = []) => (s.gates || []).map((g, i) => ({ g, i })).filter(({ g, i }) => i !== s.selected && !skip.includes(i) && g[2] > 0 && g[0] > 40 && g[0] < w - 40 && g[1] > 90 && g[1] < h - 60 && (!s.stand || Math.hypot(g[0] - s.stand.screen[0], g[1] - s.stand.screen[1]) > 170)).sort((a, b) => a.g[2] - b.g[2]);
+const onScreen = (s, w = W, h = H, skip = [], away = 170) => (s.gates || []).map((g, i) => ({ g, i })).filter(({ g, i }) => i !== s.selected && !skip.includes(i) && g[2] > 0 && g[0] > 40 && g[0] < w - 40 && g[1] > 90 && g[1] < h - 60 && (!s.stand || Math.hypot(g[0] - s.stand.screen[0], g[1] - s.stand.screen[1]) > away)).sort((a, b) => a.g[2] - b.g[2]);
+/** the candidates a person can click: the scene itself (the canvas) under the gate's point, not a bar over it */
+const pickable = async (cands) => {
+    const ok = await page.evaluate((pts) => pts.map(([x, y]) => (document.elementFromPoint(x, y) || {}).tagName === 'CANVAS'), cands.map((c) => c.g));
+    return cands.filter((_, i) => ok[i]);
+};
 /** points of the selected gate's gizmo, walking out from its centre with the view's own hit test (hitAt) */
 const scanParts = () => page.evaluate(() => {
     const v = window.__gsfpvEditView ? window.__gsfpvEditView() : null;
@@ -187,7 +192,7 @@ try {
     judge('2.home', (s2.gates || []).length > 0 && out2.length === 0 && dist(s0.eye, s2.eye) > 0.1, { nav: s2.nav, eyeMoved: r3(dist(s0.eye, s2.eye)), outside: out2.slice(0, 5) });
 
     // 3 click a gate: it is selected, the eye stays
-    const c3 = onScreen(s2);
+    const c3 = await pickable(onScreen(s2));
     const g3 = c3.find((c) => c.i === 3) ?? c3[0];
     let E3 = s2.eye;
     if (!g3) judge('3.select', false, { why: 'no gate on screen away from the selected one' });
@@ -316,7 +321,7 @@ try {
     await key('Home');
     await sleep(1200);
     const s11 = await snap();
-    const c11 = onScreen(s11);
+    const c11 = await pickable(onScreen(s11));
     const g7 = c11.find((c) => c.i === Number(env.GATE11 ?? 7)) ?? c11[0];
     if (!g7) judge('11.another', false, { why: 'no other gate on screen' });
     else {
@@ -336,7 +341,7 @@ try {
     // 12 double click a third gate: selected and framed (its centre in the middle third of the canvas)
     {
         const a = await snap();
-        const c = onScreen(a, W, H, g7 ? [g7.i] : []);
+        const c = await pickable(onScreen(a, W, H, g7 ? [g7.i] : []));
         const g = c[0];
         if (!g) judge('12.double', false, { why: 'no third gate on screen' });
         else {
@@ -360,8 +365,15 @@ try {
         await key('Home');
         await sleep(1200);
         const a = await snap();
-        const c = onScreen(a, w, h);
-        if (c[0]) { await click(c[0].g[0], c[0].g[1], 1200); }
+        // the gizmo's arrows end 115 px out (handle-look.ts handleBands): a press further away is on the scene
+        const c = await pickable(onScreen(a, w, h, [], 125));
+        const tried = [];
+        for (const { g, i } of c.slice(0, 3)) {
+            await click(g[0], g[1], 1200);
+            const got = (await snap()).selected;
+            tried.push([i, g, got]);
+            if (got === i) break;
+        }
         const p = await partsOf();
         const hp = p && (p.arrowX || p.ringY || p.box);
         if (hp) { await page.mouse.move(hp.at[0], hp.at[1], { steps: 4 }); await sleep(400); }
@@ -375,8 +387,7 @@ try {
         }
         const outside = all.filter(([, r]) => r[0] < 0 || r[1] < 0 || r[0] + r[2] > w || r[1] + r[3] > h).map(([k]) => k);
         const s = await snap();
-        // the layout is judged: the click selects whichever gate it shows (small gates lie close at this size)
-        judge('13.laptop', !!c[0] && s.selected !== null && s.selected !== a.selected && !!hp && rects.topbar.length === 1 && rects.gatebar.length === 1 && !!s.hoverTag && over.length === 0 && outside.length === 0, { selected: s.selected, hovered: s.hover, rects, over, outside });
+        judge('13.laptop', tried.some((t) => t[0] === t[2]) && !!hp && rects.topbar.length === 1 && rects.gatebar.length === 1 && !!s.hoverTag && over.length === 0 && outside.length === 0, { before: a.selected, tried, candidates: c.length, selected: s.selected, line: s.topLine, hovered: s.hover, rects, over, outside });
     }
 } catch (e) {
     res.error = String(e).slice(0, 400);
