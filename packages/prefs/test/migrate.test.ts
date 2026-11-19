@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { LEGACY_KEYS, LEGACY_PREFIXES, MACHINE_LOCAL_KEYS, MAIN_VOXEL_DEFAULTS, MIGRATIONS, MemoryBackend, PrefsStore, SCHEMA, canonicalJson, localStorageKeys, localStorageLegacy, migrateLegacy, normalizeDoc, parseLegacyLastLog, readLegacy, runMigrations, validateCollection } from '../src';
+import { LEGACY_KEYS, LEGACY_PREFIXES, MACHINE_LOCAL_KEYS, MACHINE_LOCAL_PREFIXES, isMachineLocal, MAIN_VOXEL_DEFAULTS, MIGRATIONS, MemoryBackend, PrefsStore, SCHEMA, canonicalJson, localStorageKeys, localStorageLegacy, migrateLegacy, normalizeDoc, parseLegacyLastLog, readLegacy, runMigrations, validateCollection } from '../src';
 import { FakeStorage, REPO, T0, mkStore, resolver } from './helpers';
 
 // ------------------------------------------------------------------ v0.2 shapes, as v0.2 wrote them
@@ -38,6 +38,22 @@ const V02: Record<string, string> = {
     'gsfpv.governor.start': JSON.stringify({ v: 1, id: 'desktop-weak|intel xe-lp', step: 2 }),
     // train 1c lane rc2: the RC bridge switch of this browser (machine-local, never migrated)
     'gsfpv.rcBridge': '1',
+    // train 4 lane tails4: the dotted keys of apps/fly (machine-local, never migrated) and the rooms host prefix
+    'gsfpv.hint.macro': '1',
+    'gsfpv.course.best': JSON.stringify({ 'k3f9a.v1.39e63ce9.0.-.-.pavo20pro-3s': 41.27 }),
+    'gsfpv.course.offered': JSON.stringify(['39e63ce9']),
+    'gsfpv.course.voter': 'v_8kQ2mZ7xR4tY1wB6',
+    'gsfpv.course.votes': JSON.stringify(['k3f9a']),
+    'gsfpv.course.tokens': JSON.stringify({ k3f9a: 'tok_e1f2a3b4c5d6' }),
+    'gsfpv.rooms.nick': 'Kestrel',
+    'gsfpv.hint.gpu': 'off',
+    'gsfpv.hint.gpu.soft': 'off',
+    'gsfpv.hint.gpu.said': 'switch',
+    'gsfpv.sonicrec.profile': JSON.stringify({ id: 'p_3vN8qL2kW9', nickname: null, minor: false, guardianConfirmed: false, headphones: 'yes', surveysSeen: [] }),
+    'gsfpv.library.merged.v1': '1',
+    'gsfpv.superspl.failed.v1': JSON.stringify(['0badc0de']),
+    'gsfpv.superspl.filters.v1': JSON.stringify({ sort: 'views', time: 'all', walkable: true, downloadable: false }),
+    'gsfpv.rooms.host.r7Kq2': 'hk_9f8e7d6c5b4a',
     'gsfpv.profiles.v1': JSON.stringify({ [POCKET.deviceKey]: POCKET, [PAD.deviceKey]: PAD, [ALIEN.deviceKey]: ALIEN }),
     'gsfpv.stickMode': '1',
     'gsfpv.lastInput': JSON.stringify({ kind: 'hid', key: POCKET.deviceKey }),
@@ -59,14 +75,17 @@ const V02: Record<string, string> = {
  */
 const SOURCES = [join(REPO, 'apps', 'fly', 'src'), join(REPO, 'packages', 'scenes', 'src'), join(REPO, 'packages', 'input', 'src')];
 /**
- * packages/render-pc/src writes one key too (governor.ts 'gsfpv.governor.start', review LP-2). Its keys are read with
- * more than one dotted part; the other sources keep the one-part pattern (a wider pattern there finds keys of other
- * lanes not classified yet, docs/wip/laptop3.md "For the lead").
+ * packages/render-pc/src writes one key too (governor.ts 'gsfpv.governor.start', review LP-2). Since train 4 (lane
+ * tails4) every source is read with more than one dotted part: the one-part pattern of before missed the fourteen dotted
+ * keys of apps/fly and the rooms host prefix (train3-lead.md 'Not verified').
  */
 const DOTTED_SOURCES = [join(REPO, 'packages', 'render-pc', 'src')];
+/** the scan before train 4: one part in SOURCES; kept only for the control that shows what it missed */
 const ONE_PART = /['"`](gsfpv\.[A-Za-z]+(?:\.v\d+)?)(\.\$\{|['"`])/g;
 const DOTTED = /['"`](gsfpv\.[A-Za-z]+(?:\.[A-Za-z]+)*(?:\.v\d+)?)(\.\$\{|['"`])/g;
-function keysInSource(dirs: string[] = SOURCES, dotted: string[] = DOTTED_SOURCES): Set<string> {
+/** dotted strings in the sources that are not storage keys */
+const NOT_KEYS = ['gsfpv.prefs.v1' /* the v0.3 document itself, once the page uses it */, 'gsfpv.flyreelstudio.eu' /* scene-facts.ts SITE_HOST */];
+function keysInSource(dirs: string[] = SOURCES, dotted: string[] = DOTTED_SOURCES, sourceRe: RegExp = DOTTED): Set<string> {
     const out = new Set<string>();
     const walk = (dir: string, re: RegExp) => {
         for (const n of readdirSync(dir)) {
@@ -75,13 +94,14 @@ function keysInSource(dirs: string[] = SOURCES, dotted: string[] = DOTTED_SOURCE
             else if (/\.tsx?$/.test(n)) for (const m of readFileSync(p, 'utf8').matchAll(re)) out.add(m[2] === '.${' ? `${m[1]}.*` : m[1]);
         }
     };
-    for (const d of dirs) walk(d, ONE_PART);
+    for (const d of dirs) walk(d, sourceRe);
     for (const d of dotted) walk(d, DOTTED);
-    out.delete('gsfpv.prefs.v1'); // the v0.3 document itself, once the page uses it
+    for (const k of NOT_KEYS) out.delete(k);
     return out;
 }
-/** What the sources may write: the legacy keys, one pattern per legacy prefix, and the machine-local keys. */
-const classified = (local: Readonly<Record<string, string>> = MACHINE_LOCAL_KEYS) => [...Object.values(LEGACY_KEYS), ...Object.values(LEGACY_PREFIXES).map((p) => `${p}*`), ...Object.keys(local)].sort();
+/** What the sources may write: the legacy keys, one pattern per legacy or machine-local prefix, and the machine-local keys. */
+const classified = (local: Readonly<Record<string, string>> = MACHINE_LOCAL_KEYS, localPrefixes: Readonly<Record<string, string>> = MACHINE_LOCAL_PREFIXES) =>
+    [...Object.values(LEGACY_KEYS), ...[...Object.values(LEGACY_PREFIXES), ...Object.keys(localPrefixes)].map((p) => `${p}*`), ...Object.keys(local)].sort();
 const V02_KEYS = () => Object.keys(V02);
 
 describe('legacy migration v0 -> v1 (A.5)', () => {
@@ -91,7 +111,7 @@ describe('legacy migration v0 -> v1 (A.5)', () => {
         const known = classified();
         for (const k of keysInSource()) expect(known, k).toContain(k);
         const fixture = new Set(Object.keys(V02).map((k) => {
-            const p = Object.values(LEGACY_PREFIXES).find((x) => k.startsWith(x));
+            const p = [...Object.values(LEGACY_PREFIXES), ...Object.keys(MACHINE_LOCAL_PREFIXES)].find((x) => k.startsWith(x));
             return p ? `${p}*` : k;
         }));
         expect([...fixture].sort()).toEqual(classified());
@@ -127,6 +147,40 @@ describe('legacy migration v0 -> v1 (A.5)', () => {
             expect(m.found).not.toContain(k);
         }
         expect(canonicalJson(m.doc)).not.toContain('41.3');
+    });
+
+    /** train 4 lane tails4: the keys train3-lead.md 'Not verified' names, which the one-part scan could not see */
+    const DOTTED_FLY_KEYS = ['gsfpv.hint.macro', 'gsfpv.course.best', 'gsfpv.course.offered', 'gsfpv.course.voter', 'gsfpv.course.votes', 'gsfpv.course.tokens', 'gsfpv.rooms.nick', 'gsfpv.hint.gpu', 'gsfpv.hint.gpu.soft', 'gsfpv.hint.gpu.said', 'gsfpv.sonicrec.profile', 'gsfpv.library.merged.v1', 'gsfpv.superspl.failed.v1', 'gsfpv.superspl.filters.v1'];
+
+    it('the dotted keys of apps/fly are each found, machine-local with a reason, never read, never in the document; the tour probe key is gone', () => {
+        const found = keysInSource();
+        for (const k of DOTTED_FLY_KEYS) {
+            expect(found.has(k), k).toBe(true);
+            expect(MACHINE_LOCAL_KEYS[k]?.length ?? 0, k).toBeGreaterThan(20);
+        }
+        expect(found.has('gsfpv.rooms.host.*')).toBe(true);
+        expect(MACHINE_LOCAL_PREFIXES['gsfpv.rooms.host.']?.length ?? 0).toBeGreaterThan(20);
+        expect(isMachineLocal('gsfpv.rooms.host.r7Kq2')).toBe(true);
+        expect(isMachineLocal('gsfpv.rooms.host.')).toBe(false);
+        // removed: app/tour.ts touched session storage under a key nobody wrote; it touches s.length now
+        expect(found.has('gsfpv.tour.probe')).toBe(false);
+        const asked: string[] = [];
+        const m = migrateLegacy((k) => { asked.push(k); return V02[k] ?? null; }, {}, V02_KEYS);
+        for (const k of [...DOTTED_FLY_KEYS, 'gsfpv.rooms.host.r7Kq2']) {
+            expect(asked, k).not.toContain(k);
+            expect(m.found, k).not.toContain(k);
+        }
+        const doc = canonicalJson(m.doc);
+        for (const secret of ['tok_e1f2a3b4c5d6', 'hk_9f8e7d6c5b4a', 'v_8kQ2mZ7xR4tY1wB6', 'p_3vN8qL2kW9', 'Kestrel']) expect(doc).not.toContain(secret);
+    });
+
+    it('control: the one-part scan of before misses every dotted key, and without their entries the sources are unclassified', () => {
+        const old = keysInSource(SOURCES, DOTTED_SOURCES, ONE_PART);
+        for (const k of DOTTED_FLY_KEYS) expect(old.has(k), k).toBe(false);
+        expect(old.has('gsfpv.rooms.host.*')).toBe(false);
+        const known = classified(Object.fromEntries(Object.entries(MACHINE_LOCAL_KEYS).filter(([k]) => !DOTTED_FLY_KEYS.includes(k))), {});
+        const loose = [...keysInSource()].filter((k) => !known.includes(k)).sort();
+        expect(loose).toEqual([...DOTTED_FLY_KEYS, 'gsfpv.rooms.host.*'].sort());
     });
 
     it('control: without its exemption the bake speed would be an unclassified key', () => {
@@ -205,7 +259,7 @@ describe('legacy migration v0 -> v1 (A.5)', () => {
         expect(s.isExplicit('voxels.opacity')).toBe(false);
         // the pilot's last switch (off, on the scan flown last) wins over the admin's value on every scan
         expect([s.get('scene.walls', { scene: '39e63ce9' }), s.get('scene.walls', { scene: '9d09ab82' })]).toEqual(['off', 'off']);
-        expect(s.migrated?.found.sort()).toEqual(Object.keys(V02).filter((k) => !Object.hasOwn(MACHINE_LOCAL_KEYS, k)).sort());
+        expect(s.migrated?.found.sort()).toEqual(Object.keys(V02).filter((k) => !isMachineLocal(k)).sort());
     });
 
     it('legacy keys are left untouched, through boot, changes and a reset', () => {

@@ -26,9 +26,25 @@ docs/wip/train2b-lead.md 'Not verified', docs/wip/train3-lead.md 'Not verified' 
       passed, NEG OK (neg_control.py, the 3 files). Typecheck collision, fly, bench 0; vitest --changed 104 files 941
       passed; a6-reference holds its hash. Evidence t2-spawn-heights.json and t2-spawn-heights-old.json.
       T3 list: docs/wip/train3-lead.md line 147 (keys and their files); packages/prefs/test/migrate.test.ts.
-- [ ] T3 storage keys: the 13 keys nobody reads or migrates, each migrated or removed, with a test.
+- [x] T3 storage keys (this commit). The source scan of packages/prefs/test/migrate.test.ts now reads every source
+      with dotted parts (it read one part before, so it could not see them). It found the 13 of train3-lead.md and 3
+      more (gsfpv.library.merged.v1, gsfpv.superspl.failed.v1, gsfpv.superspl.filters.v1). Removed: gsfpv.tour.probe
+      (app/tour.ts read a key nobody wrote, only to touch session storage; it touches s.length now). The other 15
+      keys and the prefix gsfpv.rooms.host.* are per-browser facts, records, tokens or secrets by their own sources,
+      so none moves into the settings document: each is now listed in packages/prefs/src/migrate.ts
+      MACHINE_LOCAL_KEYS / the new MACHINE_LOCAL_PREFIXES with its reason, and readLegacy (isMachineLocal) never
+      reads them. Test: migrate.test.ts 27 passed (2 new: each key found, classified, never read, its secrets not in
+      the document; control: the old one-part scan misses all 15 and without the entries they are loose). NEG OK
+      (neg_control.py, migrate.ts + tour.ts). Typecheck prefs, fly 0; vitest related 91 files 1283 passed.
 
 ## What the owner does
+
+Nothing to press for this lane: the three repairs show without a step of his.
+- T1: on the Controls screen, the helper's two download links save files that run (the same bytes as the repository).
+- T2: opening scans 2f1ddf5f, d10c5638 or ab5efa0e, the drone stands 1.5 m over ground instead of hanging high
+  in empty air outside the scan.
+- T3: nothing he sees; an exported settings file still never carries course tokens, room secrets or the recording
+  profile.
 
 ## Claims
 
@@ -39,6 +55,10 @@ docs/wip/train2b-lead.md 'Not verified', docs/wip/train3-lead.md 'Not verified' 
 2. The craft no longer starts in empty air on 2f1ddf5f, d10c5638 and ab5efa0e: every one of the 13 scans with walls
    starts at most 6 m over ground. Proof: `cd tools/bench && npx tsx src/tails4-spawn-heights.ts` (and `--old` must
    fail). Last result: PASS 13/13, --old FAIL 3/13; `npx vitest run packages/collision/test/start.test.ts` 6 passed.
+
+3. Every localStorage/sessionStorage key the page writes is classified: a legacy key that migrates, or a machine-local
+   key with its reason that is never read into the settings document; the dead gsfpv.tour.probe is gone. Proof:
+   `npx vitest run packages/prefs/test/migrate.test.ts`. Last result: 27 passed; neg_control.py NEG OK.
 
 ## Not verified
 
@@ -53,6 +73,14 @@ docs/wip/train2b-lead.md 'Not verified', docs/wip/train3-lead.md 'Not verified' 
   'Left (C3-every-scan)') are a course question, not a start one: not done here.
 - Files outside tools/bench: packages/collision/src/start.ts (new), packages/collision/src/index.ts (export),
   apps/fly/src/session/index.ts (findSpawn calls placeStart). Deploy: page only.
+- T3 files: packages/prefs/src/migrate.ts (MACHINE_LOCAL_KEYS +14, MACHINE_LOCAL_PREFIXES, isMachineLocal),
+  packages/prefs/test/migrate.test.ts, apps/fly/src/app/tour.ts. Deploy: page only. No live check needed (no key
+  changes its value or place).
+- Product questions left open (T3): gsfpv.superspl.filters.v1 (the SuperSplat tab's sort and filters) and
+  gsfpv.rooms.nick are pilot choices kept per browser because the settings schema has no setting for them (no text
+  setting, no SuperSplat tab group); gsfpv.course.best (best laps) is a per-browser record. Making any of them travel
+  in an exported file needs a schema setting and a migration: a decision for the lead.
+- Delete dist of ebbf066a: done at the end of this lane (see Cost notes).
 
 ## Cost notes
 
@@ -60,3 +88,5 @@ docs/wip/train2b-lead.md 'Not verified', docs/wip/train3-lead.md 'Not verified' 
   not where the prompt points). A lane prompt that quotes the leftover lines with their file:line would save 6 replies.
 - T2: about 25 replies; most went to measuring before guessing (one probe over all 13 scans answered which scans are
   wrong and why in one run) and to 2f1ddf5f's holes. A walls-bounds/ground helper in tools/bench would save 4.
+- T3: about 20 replies; most went to the 3 keys the wider scan found beyond the 13 (my first grep skipped '.v1' keys)
+  and to neg_control.py needing npx.cmd on Windows. Grepping with the test's own regex first would save 3.
