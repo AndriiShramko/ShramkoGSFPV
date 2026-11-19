@@ -93,16 +93,25 @@ describe('the course editor', () => {
         expect(edit(s, { kind: 'size', steps: Math.ceil(MAX_OPENING_M / 0.1) }, off)).toMatchObject({ ok: false, reason: { code: 'size-max' } });
     });
 
-    it('inserts a gate after the selected one, ahead along its axis, under a new id; deletes down to the least', () => {
+    it('inserts a gate after the selected one, on the line to the next (the last: ahead along its axis), under a new id; deletes down to the least', () => {
         const s = openEditor(course, off, 1);
         const g = course.gates[1]!;
+        const nx = course.gates[2]!;
         const ins = run(s, [{ kind: 'insert' }]);
         expect(ins.course.gates.length).toBe(course.gates.length + 1);
         expect(ins.selected).toBe(2);
         const added = ins.course.gates[2]!;
         expect(new Set(ins.course.gates.map((x) => x.id)).size).toBe(ins.course.gates.length);
-        const ahead = quatRotate(g.quat, [0, 0, -1]);
-        expect(close(added.pos, [g.pos[0] + ahead[0] * INSERT_AHEAD_M, g.pos[1] + ahead[1] * INSERT_AHEAD_M, g.pos[2] + ahead[2] * INSERT_AHEAD_M], 1e-3)).toBe(true);
+        // lane edit4c C1: on the course's line towards the next gate, at most INSERT_AHEAD_M along it, nearer to the next
+        const dist = (a: readonly number[], b: readonly number[]): number => Math.hypot(a[0]! - b[0]!, a[1]! - b[1]!, a[2]! - b[2]!);
+        expect(dist(added.pos, g.pos)).toBeLessThanOrEqual(INSERT_AHEAD_M + 1e-3);
+        expect(dist(added.pos, g.pos)).toBeGreaterThan(0.5);
+        expect(dist(added.pos, nx.pos)).toBeLessThan(dist(g.pos, nx.pos));
+        const lastAt = course.gates.length - 1;
+        const last = course.gates[lastAt]!;
+        const end = run(openEditor(course, off, lastAt), [{ kind: 'insert' }]).course.gates[lastAt + 1]!;
+        const ahead = quatRotate(last.quat, [0, 0, -1]);
+        expect(close(end.pos, [last.pos[0] + ahead[0] * INSERT_AHEAD_M, last.pos[1] + ahead[1] * INSERT_AHEAD_M, last.pos[2] + ahead[2] * INSERT_AHEAD_M], 1e-3)).toBe(true);
         let d = s;
         for (let i = course.gates.length; i > MIN_GATES; i--) d = run(d, [{ kind: 'delete' }]);
         expect(d.course.gates.length).toBe(MIN_GATES);

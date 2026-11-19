@@ -94,7 +94,7 @@ export type EditAction =
     | { readonly kind: 'insert' }
     /** F2 (lane editor3's Add gate): a gate after the selected one at `pos` and `quat`, the course's own frame (as
      *  TrackGate.pos and .quat); the selected gate's shape; selected afterwards. Refused as insert is (max-gates, placement). */
-    | { readonly kind: 'add'; readonly pos: Vec3; readonly quat: Quat }
+    | { readonly kind: 'add'; readonly pos: Vec3; readonly quat: Quat; /** lane edit4c C1: the gate it follows (-1 first); default the selected */ readonly after?: number }
     | { readonly kind: 'delete' }
     /** the selected gate earlier (-1) or later (+1) in the order */
     | { readonly kind: 'order'; readonly step: number }
@@ -153,6 +153,60 @@ const yawOfGate = (q: Quat): number => {
     const ex = quatRotate(q, [1, 0, 0]);
     return (Math.atan2(ex[2], ex[0]) * 180) / Math.PI;
 };
+
+/** the yaw (degrees, as yawQuat) of an upright gate passed along `d` (its -Z along the floor part of d) */
+const yawOfDir = (d: Vec3): number => (Math.atan2(d[0], -d[2]) * 180) / Math.PI;
+
+/** the way a gate is passed (its -Z), turned to point along `chord` when the gate may be passed either way */
+function passAxis(g: TrackGate, chord: Vec3): Vec3 {
+    const a = quatRotate(g.quat, [0, 0, -1]);
+    const dot = a[0] * chord[0] + a[1] * chord[1] + a[2] * chord[2];
+    return dot < 0 ? [-a[0], -a[1], -a[2]] : a;
+}
+
+/** samples of the course's curve between two gates (enough for a few cm on a 60 m leg) */
+const LINE_SAMPLES = 64;
+
+/**
+ * Lane edit4c C1 (E11, brief 545-546): the point `dist` (course frame) along the course's line from gate a to gate b, and
+ * the line's direction there. The line is the cubic Hermite curve that leaves a along its axis and enters b along b's axis
+ * (the way a pilot flies the leg), so repeated duplicates follow a curved course instead of making a straight row. Never
+ * further than half the curve (the copy stays between the two gates). Null when the gates stand on one spot.
+ */
+export function alongLine(a: TrackGate, b: TrackGate, dist: number): { pos: Vec3; dir: Vec3 } | null {
+    const p0 = a.pos;
+    const p1 = b.pos;
+    const chord: Vec3 = [p1[0] - p0[0], p1[1] - p0[1], p1[2] - p0[2]];
+    const c = Math.hypot(chord[0], chord[1], chord[2]);
+    if (!(c > 1e-6)) return null;
+    const t0 = passAxis(a, chord);
+    const t1 = passAxis(b, chord);
+    const at = (u: number): Vec3 => {
+        const u2 = u * u;
+        const u3 = u2 * u;
+        const h00 = 2 * u3 - 3 * u2 + 1;
+        const h10 = u3 - 2 * u2 + u;
+        const h01 = -2 * u3 + 3 * u2;
+        const h11 = u3 - u2;
+        const k = (j: 0 | 1 | 2): number => h00 * p0[j] + h10 * c * t0[j] + h01 * p1[j] + h11 * c * t1[j];
+        return [k(0), k(1), k(2)];
+    };
+    const pts: Vec3[] = [];
+    for (let i = 0; i <= LINE_SAMPLES; i++) pts.push(at(i / LINE_SAMPLES));
+    const cum = [0];
+    for (let i = 1; i <= LINE_SAMPLES; i++) cum.push(cum[i - 1]! + Math.hypot(pts[i]![0] - pts[i - 1]![0], pts[i]![1] - pts[i - 1]![1], pts[i]![2] - pts[i - 1]![2]));
+    const want = Math.min(dist, cum[LINE_SAMPLES]! / 2);
+    let i = 1;
+    while (i < LINE_SAMPLES && cum[i]! < want) i++;
+    const seg = cum[i]! - cum[i - 1]!;
+    const f = seg > 1e-12 ? (want - cum[i - 1]!) / seg : 0;
+    const A = pts[i - 1]!;
+    const B = pts[i]!;
+    const pos: Vec3 = [A[0] + (B[0] - A[0]) * f, A[1] + (B[1] - A[1]) * f, A[2] + (B[2] - A[2]) * f];
+    const dl = Math.hypot(B[0] - A[0], B[1] - A[1], B[2] - A[2]);
+    const dir: Vec3 = dl > 1e-12 ? [(B[0] - A[0]) / dl, (B[1] - A[1]) / dl, (B[2] - A[2]) / dl] : t0;
+    return { pos, dir };
+}
 
 /** the opening of a gate shape, its own frame's metres */
 const openingOf = (s: ObjectShape): number => (s.kind === 'ring' ? s.diameter : s.kind === 'square' || s.kind === 'cube-frame' ? s.side : 0);
@@ -229,16 +283,25 @@ export function edit(state: EditorState, action: EditAction, check: CourseCheck)
         next[sel] = { ...g, shape: withOpening(g.shape, r3(flown / s)) };
     } else if (action.kind === 'insert') {
         if (n >= MAX_GATES_EDIT) return refuse(state, { code: 'max-gates', max: MAX_GATES_EDIT });
-        const ahead = quatRotate(g.quat, [0, 0, -1]);
-        const k = INSERT_AHEAD_M / s;
-        const pos: Vec3 = [r3(g.pos[0] + ahead[0] * k), r3(g.pos[1] + ahead[1] * k), r3(g.pos[2] + ahead[2] * k)];
-        next.splice(sel + 1, 0, { ...g, id: nextGateId(gates), pos });
+        const on = gates[sel + 1] ? alongLine(g, gates[sel + 1]!, INSERT_AHEAD_M / s) : null;
+        if (on) {
+            const pos: Vec3 = [r3(on.pos[0]), r3(on.pos[1]), r3(on.pos[2])];
+            const quat = isDive(g.quat) || Math.hypot(on.dir[0], on.dir[2]) < 1e-6 ? g.quat : roundQuat(yawQuat(yawOfDir(on.dir)));
+            next.splice(sel + 1, 0, { ...g, id: nextGateId(gates), pos, quat });
+        } else {
+            // the last gate: the course goes on ahead along its axis (editor3, tracks-plan 2.11)
+            const ahead = quatRotate(g.quat, [0, 0, -1]);
+            const k = INSERT_AHEAD_M / s;
+            const pos: Vec3 = [r3(g.pos[0] + ahead[0] * k), r3(g.pos[1] + ahead[1] * k), r3(g.pos[2] + ahead[2] * k)];
+            next.splice(sel + 1, 0, { ...g, id: nextGateId(gates), pos });
+        }
         selected = sel + 1;
     } else if (action.kind === 'add') {
         if (n >= MAX_GATES_EDIT) return refuse(state, { code: 'max-gates', max: MAX_GATES_EDIT });
         const pos: Vec3 = [r3(action.pos[0]), r3(action.pos[1]), r3(action.pos[2])];
-        next.splice(sel + 1, 0, { ...g, id: nextGateId(gates), pos, quat: roundQuat(action.quat) });
-        selected = sel + 1;
+        const after = action.after === undefined ? sel : Math.max(-1, Math.min(n - 1, Math.trunc(action.after)));
+        next.splice(after + 1, 0, { ...g, id: nextGateId(gates), pos, quat: roundQuat(action.quat) });
+        selected = after + 1;
     } else if (action.kind === 'delete') {
         if (n <= MIN_GATES) return refuse(state, { code: 'min-gates', min: MIN_GATES });
         next.splice(sel, 1);

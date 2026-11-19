@@ -44,7 +44,7 @@ import type { RayFn } from '../../course/editor/camera';
 import { EditView } from '../../course/editor/view-mouse';
 import { GateBar } from '../../course/editor/gate-bar';
 import { TopBar } from '../../course/editor/top-bar';
-import { ADD_RAY_M, addAction, addFacing, addLift, addPoint, facingFrom } from '../../course/editor/add-place';
+import { ADD_RAY_M, addAction, addLift, facingFrom, placeFor } from '../../course/editor/add-place';
 import { flyShows, modeStep, openStep, type EditMode } from '../../course/editor/fly-mode';
 import { stopKeyboardArm } from '../../devices/keyboard';
 import type { Ray } from '../../course/editor/pick';
@@ -1039,15 +1039,15 @@ export const course: Feature = {
             top?.adding(false);
             if (!ed) return;
             const hit = camRay ? camRay(ray.o, ray.d, ADD_RAY_M) : null;
-            const at = addPoint(ray.o, ray.d, hit, addLift(ed, flownTransform(), edMargin));
-            // G1: lane course3's EditAction add (after the selected gate, its kind and opening, one undo step)
-            // G2: facing along the course, from the selected gate (course frame -> flown: s * pos + offset)
+            // G1: lane course3's EditAction add (its kind and opening, one undo step). Lane edit4c C1 (E11): placeFor puts it
+            // after the gate whose leg passes nearest to the click, facing the course's line there (add-place.ts)
             const tr = flownTransform();
-            const sel = ed.course.gates[ed.selected];
-            const prev: [number, number, number] | null = sel ? [sel.pos[0] * tr[0] + tr[1], sel.pos[1] * tr[0] + tr[2], sel.pos[2] * tr[0] + tr[3]] : null;
-            const out = edit(ed, addAction(at, addFacing(ray.o, at, prev), tr), keepProblems);
+            const { pos: at, quat, after } = placeFor(ed, tr, { o: ray.o, d: ray.d, hit }, addLift(ed, flownTransform(), edMargin));
+            const out = edit(ed, addAction(at, quat, tr, after), keepProblems);
+            const pg = ed.course.gates[after];
+            const prev: [number, number, number] | null = pg ? [pg.pos[0] * tr[0] + tr[1], pg.pos[1] * tr[0] + tr[2], pg.pos[2] * tr[0] + tr[3]] : null;
             // G2 measurement: what the floor click gave (read by the probe through __gsfpvEditView().place)
-            lastPlace = { o: ray.o, d: ray.d, hit, at, prev, tr: [tr[0], tr[1], tr[2], tr[3]], camEye: camView ? [...camView.eye] : null };
+            lastPlace = { o: ray.o, d: ray.d, hit, at, prev, after, quat, tr: [tr[0], tr[1], tr[2], tr[3]], camEye: camView ? [...camView.eye] : null };
             if (!out.ok) {
                 ed = out.state;
                 edHook.refused = out.reason.code;
