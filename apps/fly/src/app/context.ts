@@ -74,7 +74,7 @@ export interface SceneSwitcher {
     load(id: string, reason: SceneSwitchReason, render?: SceneRender): Promise<boolean>;
     /** the scene picker over the flight (the pause menu's "Change scan"); a pick loads in the page */
     openPicker(): void;
-    /** a switch is under way */
+    /** the next scene is being chosen (key N waits); a load under way is not busy: a new pick or N replaces it */
     readonly busy: boolean;
 }
 

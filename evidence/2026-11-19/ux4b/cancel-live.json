@@ -1,0 +1,160 @@
+{
+ "base": "https://gsfpv.flyreelstudio.eu/en",
+ "from": "70b50d42",
+ "to": "2f1ddf5f",
+ "steps": {
+  "1.cancel-shown": {
+   "ok": false,
+   "ms": 2020,
+   "box": null
+  },
+  "2.cancel-closes": {
+   "ok": false,
+   "ms": 1038,
+   "card": true,
+   "picker": false,
+   "sw": {
+    "state": "loading",
+    "from": "70b50d42",
+    "to": "2f1ddf5f",
+    "reason": "pick"
+   },
+   "said": false
+  },
+  "3.no-late-requests": {
+   "ok": false,
+   "lublinFolders": 5,
+   "late": [],
+   "lateN": 0
+  },
+  "4.nothing-left": {
+   "ok": false,
+   "lublinAssets": [],
+   "entities": 0,
+   "assets": [],
+   "walls": "none"
+  },
+  "5.back-to-from": {
+   "ok": false,
+   "ms": 240315,
+   "sw": {
+    "state": "done",
+    "from": "70b50d42",
+    "to": "2f1ddf5f",
+    "reason": "pick",
+    "ms": 16365
+   },
+   "scene": "2f1ddf5f",
+   "said": false,
+   "cross": null
+  },
+  "6.n-replaces": {
+   "ok": false,
+   "picked": "70b50d42",
+   "pickHow": "card",
+   "underWay": true,
+   "atN": {
+    "state": "loading",
+    "from": "2f1ddf5f",
+    "to": "70b50d42",
+    "reason": "pick"
+   },
+   "ms": 90401,
+   "sw": {
+    "state": "done",
+    "from": "2f1ddf5f",
+    "to": "70b50d42",
+    "reason": "pick",
+    "ms": 21553
+   },
+   "scene": "70b50d42",
+   "pickedAssets": [
+    "https://d28zzqy0iyovbz.cloudfront.net/70b50d42/v1/lod-meta.json",
+    "https://d28zzqy0iyovbz.cloudfront.net/70b50d42/v1/9_8/meta.json",
+    "https://d28zzqy0iyovbz.cloudfront.net/70b50d42/v1/9_10/meta.json",
+    "https://d28zzqy0iyovbz.cloudfront.net/70b50d42/v1/9_11/meta.json",
+    "https://d28zzqy0iyovbz.cloudfront.net/70b50d42/v1/9_9/meta.json",
+    "https://d28zzqy0iyovbz.cloudfront.net/70b50d42/v1/9_12/meta.json",
+    "https://d28zzqy0iyovbz.cloudfront.net/70b50d42/v1/9_14/meta.json",
+    "https://d28zzqy0iyovbz.cloudfront.net/70b50d42/v1/9_3/meta.json",
+    "https://d28zzqy0iyovbz.cloudfront.net/70b50d42/v1/9_0/meta.json",
+    "https://d28zzqy0iyovbz.cloudfront.net/70b50d42/v1/9_1/meta.json",
+    "https://d28zzqy0iyovbz.cloudfront.net/70b50d42/v1/9_2/meta.json",
+    "https://d28zzqy0iyovbz.cloudfront.net/70b50d42/v1/9_5/meta.json",
+    "https://d28zzqy0iyovbz.cloudfront.net/70b50d42/v1/9_6/meta.json",
+    "https://d28zzqy0iyovbz.cloudfront.net/70b50d42/v1/9_7/meta.json",
+    "https://d28zzqy0iyovbz.cloudfront.net/70b50d42/v1/9_13/meta.json",
+    "https://d28zzqy0iyovbz.cloudfront.net/70b50d42/v1/9_4/meta.json",
+    "https://d28zzqy0iyovbz.cloudfront.net/70b50d42/v1/9_15/meta.json",
+    "https://d28zzqy0iyovbz.cloudfront.net/70b50d42/v1/8_4/meta.json",
+    "https://d28zzqy0iyovbz.cloudfront.net/70b50d42/v1/7_4/meta.json",
+    "https://d28zzqy0iyovbz.cloudfront.net/70b50d42/v1/7_7/meta.json",
+    "https://d28zzqy0iyovbz.cloudfront.net/70b50d42/v1/7_9/meta.json",
+    "https://d28zzqy0iyovbz.cloudfront.net/70b50d42/v1/6_0/meta.json",
+    "https://d28zzqy0iyovbz.cloudfront.net/70b50d42/v1/6_2/meta.json",
+    "https://d28zzqy0iyovbz.cloudfront.net/70b50d42/v1/6_5/meta.json",
+    "https://d28zzqy0iyovbz.cloudfront.net/70b50d42/v1/5_0/meta.json",
+    "https://d28zzqy0iyovbz.cloudfront.net/70b50d42/v1/5_2/meta.json",
+    "https://d28zzqy0iyovbz.cloudfront.net/70b50d42/v1/2_25/meta.json",
+    "https://d28zzqy0iyovbz.cloudfront.net/70b50d42/v1/1_42/meta.json",
+    "https://d28zzqy0iyovbz.cloudfront.net/70b50d42/v1/3_18/meta.json",
+    "https://d28zzqy0iyovbz.cloudfront.net/70b50d42/v1/3_22/meta.json",
+    "https://d28zzqy0iyovbz.cloudfront.net/70b50d42/v1/3_16/meta.json",
+    "https://d28zzqy0iyovbz.cloudfront.net/70b50d42/v1/2_24/meta.json",
+    "https://d28zzqy0iyovbz.cloudfront.net/70b50d42/v1/3_20/meta.json"
+   ],
+   "entities": 1
+  },
+  "7.cancel-phone": {
+   "ok": false,
+   "box": null
+  },
+  "8.no-errors-after-cancel": {
+   "ok": false,
+   "phone": 250,
+   "desktop": 337,
+   "picker": false
+  }
+ },
+ "log": [
+  "pageerror: Cannot read properties of undefined (reading 'armed') @ at iW.send (https://gsfpv.flyreelstudio.eu/fly/assets/main-Ddvis4nQ.js:16642:86674) <     at hz.emitGame (https://gsfpv.flyreelstudio.eu/fly/assets/main-Ddvis4nQ.js:16640:225791)"
+ ],
+ "ready": {
+  "ms": 9290,
+  "lockAfterClick": true
+ },
+ "pick": {
+  "t0": 1795100847627,
+  "how": "card",
+  "clickMs": 164
+ },
+ "beforeCancel": {
+  "sw": {
+   "state": "loading",
+   "from": "70b50d42",
+   "to": "2f1ddf5f",
+   "reason": "pick"
+  },
+  "assets": [],
+  "entities": 0
+ },
+ "lublinFolders": [
+  "https://d28zzqy0iyovbz.cloudfront.net/2f1ddf5f/v1/",
+  "https://d28zzqy0iyovbz.cloudfront.net/2f1ddf5f/v2/",
+  "https://d28zzqy0iyovbz.cloudfront.net/2f1ddf5f/v3/",
+  "https://d28zzqy0iyovbz.cloudfront.net/2f1ddf5f/v4/",
+  "https://d28zzqy0iyovbz.cloudfront.net/2f1ddf5f/v5/"
+ ],
+ "errsWhileCancelled": 337,
+ "pass": false,
+ "fails": [
+  "1.cancel-shown",
+  "2.cancel-closes",
+  "3.no-late-requests",
+  "4.nothing-left",
+  "5.back-to-from",
+  "6.n-replaces",
+  "7.cancel-phone",
+  "8.no-errors-after-cancel"
+ ]
+}

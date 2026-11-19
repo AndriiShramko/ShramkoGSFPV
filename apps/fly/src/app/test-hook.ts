@@ -91,6 +91,7 @@ export interface TestHook {
     cinema?: { on: () => boolean; toggle: () => void; canRecord: boolean; start: () => Promise<string>; stop: () => Promise<RecorderInfo | null>; last: RecorderInfo | null; lastBytes: Uint8Array | null; creditStripStd: () => number };
     /** E.4 in-page scene switching: the host (go, load, pick, log of switches) and the switch under way or last done */
     scenes?: unknown;
+    /** state 'loading' | 'done' | 'failed' | 'cancelled' (lane ux4b: why 'pilot' for Cancel, 'replaced' for a new pick or key N) */
     sceneSwitch?: Record<string, unknown>;
 }
 

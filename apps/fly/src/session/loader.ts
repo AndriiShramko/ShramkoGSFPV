@@ -174,9 +174,13 @@ export class SessionLoader {
     private reveal: RevealReason | null = null;
     private stopWatch: (() => void) | null = null;
 
-    constructor(host: LoaderHost, onProgress?: (p: LoadProgress) => void) {
+    /** ux4b: the load's stop (SessionOptions.signal): the walls' downloads end with it */
+    private readonly signal: AbortSignal | null;
+
+    constructor(host: LoaderHost, onProgress?: (p: LoadProgress) => void, signal?: AbortSignal) {
         this.host = host;
         this.onProgress = onProgress ?? null;
+        this.signal = signal ?? null;
         if (this.onProgress) {
             this.progressTimer = window.setInterval(() => this.emit(), PROGRESS_EVERY_MS);
             this.emit();
@@ -189,7 +193,7 @@ export class SessionLoader {
         this.wallsBytes = w;
         const tC = performance.now();
         const net = async (u: string, init?: RequestInit): Promise<Response> => {
-            const r = await fetch(u, init);
+            const r = await fetch(u, this.signal ? { ...init, signal: this.signal } : init);
             if (!u.endsWith('.voxel.bin')) return r;
             if (r.status === 304) {
                 w.cached = true;

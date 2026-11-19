@@ -6,5 +6,9 @@
   "load.view.loading": "plików w drodze: {n}",
   "load.view.soon": "pokażemy najpóźniej za {s} s",
   "load.reveal.pilot": "Wybrano „Leć teraz”: reszta skanu wczytuje się w trakcie lotu.",
-  "load.reveal.stall": "Przez 30 s nic nie dotarło, więc widzisz to, co już jest; reszta wczytuje się w trakcie lotu."
+  "load.reveal.stall": "Przez 30 s nic nie dotarło, więc widzisz to, co już jest; reszta wczytuje się w trakcie lotu.",
+  "load.cancel": "Anuluj",
+  "load.cancel.key": "klawisz Esc",
+  "load.cancel.done": "Wczytywanie przerwane. Wybierz inną scenę albo zamknij listę, aby wrócić.",
+  "load.cancel.back": "Z powrotem w {title}"
 }

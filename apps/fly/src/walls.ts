@@ -25,7 +25,8 @@ export type RefineMode = 'auto' | 'offer' | 'off';
 
 export interface WallsHook {
     /** parked: a refine was due, but the walls are switched off */
-    state: 'checking' | 'none' | 'offer' | 'parked' | 'baking' | 'queued' | 'in-use' | 'refused' | 'failed';
+    /** 'stopped' (ux4b): the session went while its bake ran; the bake was ended, nothing failed */
+    state: 'checking' | 'none' | 'offer' | 'parked' | 'baking' | 'queued' | 'in-use' | 'refused' | 'failed' | 'stopped';
     source: 'shipped' | 'published' | 'bake' | 'cache' | 'import' | 'none';
     voxelM: number | null;
     readonly sha: string | null;
@@ -131,6 +132,8 @@ export function mountWalls(o: WallsOptions): WallsHook {
     let fake: GpuLimits | null | undefined;
     const limits = (): GpuLimits | null => (fake !== undefined ? fake : gpuLimitsOf(device));
     const cacheP = WallCache.open();
+    // ux4b: this session's stop: dispose() (a scene switch, a cancelled load) ends every bake it started
+    const stop = new AbortController();
     let busy = false;
     let pollTimer = 0;
     let hideTimer = 0;
@@ -242,6 +245,7 @@ export function mountWalls(o: WallsOptions): WallsHook {
         },
         fakeLimits: (l) => { fake = l; },
         dispose: () => {
+            stop.abort();
             clearInterval(progTimer);
             clearInterval(pollTimer);
             clearTimeout(hideTimer);
@@ -498,7 +502,7 @@ export function mountWalls(o: WallsOptions): WallsHook {
             const r = await bakeBase(s.scene.contentUrl, s.scene.contentKind, device, onStageOf, {
                 size: w.size ?? undefined, limits: fake, sPerMillion: loadBakeSpeed(),
                 // F1-no-freeze: in a worker (the page stays free), and a step past its limit gives way to the next, lighter one
-                bake: bakeOffThread,
+                bake: bakeOffThread, signal: stop.signal,
                 stepTimeout: (step) => (offThreadStoppable() ? stepTimeoutMs(step, spm) : undefined),
                 onStep: (step, i) => { prog?.replan(wallsSteps(step.gaussians, spm), i > 0 ? 'wallsLighter' : 'walls'); tickProgress(); }
             });
@@ -523,6 +527,8 @@ export function mountWalls(o: WallsOptions): WallsHook {
             o.beacon('bake_done');
             showKeep(kept);
         } catch (e) {
+            // the session went (dispose): its bake stopped, nothing failed and nobody is told
+            if (stop.signal.aborted) { w.state = 'stopped'; return; }
             w.state = 'failed';
             if (e instanceof BakeRefusedError) {
                 o.hook.bake = { ok: false, refused: true, reason: e.reason, gaussians: e.size?.gaussians ?? 0, limit: e.maxGaussians };
@@ -557,7 +563,7 @@ export function mountWalls(o: WallsOptions): WallsHook {
         try {
             // the refine's estimate is planRefine's: this machine's speed, else the first guess
             startProgress('refine', w.size?.gaussians ?? 0, loadBakeSpeed() ?? DEFAULT_S_PER_MILLION);
-            const r = await bakeOffThread(s.scene.contentUrl, s.scene.contentKind, device, onStageOf, { voxelM, size: w.size ?? undefined, shipped, limits: fake });
+            const r = await bakeOffThread(s.scene.contentUrl, s.scene.contentKind, device, onStageOf, { voxelM, size: w.size ?? undefined, shipped, limits: fake, signal: stop.signal });
             w.bakes++;
             saveBakeSpeed(r.ms.total / 1000, r.gaussians);
             const sha = r.sha256 ?? await wallsSha(r.json, r.bin);
@@ -573,6 +579,7 @@ export function mountWalls(o: WallsOptions): WallsHook {
             o.beacon('refine_done', { cm: cm(voxelM) });
             showKeep(kept);
         } catch (e) {
+            if (stop.signal.aborted) { w.state = 'stopped'; return; }
             w.state = 'failed';
             o.hook.bake = e instanceof BakeRefusedError ? { ok: false, kind: 'refine', refused: true, reason: e.reason } : { ok: false, kind: 'refine', error: String((e as Error)?.message ?? e) };
             w.lastBake = o.hook.bake;
