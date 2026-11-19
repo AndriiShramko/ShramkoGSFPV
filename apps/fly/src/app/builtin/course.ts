@@ -1433,6 +1433,10 @@ export const course: Feature = {
             dragFrame = 0;
             if (dragBase) ed = dragBase;
             dragBase = null;
+            // int4 (the seam of edit4a's cancel and edit4c's live tag): the gate is back where it was, so the tag that
+            // described the place under the pointer goes with the drag (no 'Keep it here?' either: nothing moved)
+            warns?.endDrag();
+            warnBar?.close();
             showEd();
         };
         const viewForward = (): [number, number] => {
@@ -1714,6 +1718,8 @@ export const course: Feature = {
             saveHook = { problem: null, key: null, again: null };
             panel?.offerAgain(null);
             keeper?.saved(body);
+            // int4 (the seam of edit4b and edit4s): the parts hear the save too (life.ts: a later loss question no longer says 'unsaved')
+            bus?.emit('saved', { id: r.id, version: r.version });
             hook.saved = r.id;
             hook.source = 'server';
             hook.track = { id: r.id, version: r.version };
@@ -1759,6 +1765,7 @@ export const course: Feature = {
                 saving = false;
             }
             keeper?.saved(body as unknown as TrackFile);
+            bus?.emit('saved', { id: serverId, version: r.version });
             hook.saved = serverId;
             hook.source = 'server';
             hook.track = { id: serverId, version: r.version };

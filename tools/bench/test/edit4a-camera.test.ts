@@ -152,8 +152,13 @@ describe('edit4a A1: the view moves only when the pilot moves it (source)', () =
     it('course.ts frames a gate only on the pilot own F, Numpad . or double click (the onFrame binding)', () => {
         // the old code framed on every new selection (showEd), after Tab, Delete, duplicate (applyKey aim), a refused Save
         // (showWrong aim) and after a drag that left the middle of the view (reframeOnDragEnd)
-        expect(course.match(/frameSel\(\)/g) ?? []).toHaveLength(1);
+        // int4 (the seam of edit4a and edit4b): the second call is the seam's frameSelection, which only the click on
+        // edit4b's arrow to a gate out of view asks for (course/editor/parts/point.ts): the pilot's own press as well
+        expect(course.match(/frameSel\(\)/g) ?? []).toHaveLength(2);
         expect(course).toMatch(/onFrame: \(\) => frameSel\(\)/);
+        expect(course).toMatch(/bus\.provide\('frameSelection', \(\) => \{ frameSel\(\); \}\)/);
+        const point = read('course/editor/parts/point.ts').replace(/^\s*\/\/.*$/gm, '');
+        expect(point.match(/call\('frameSelection'\)/g) ?? []).toHaveLength(1);
         expect(course).not.toMatch(/\baim\(\)/);
         expect(course).not.toMatch(/reframeOnDragEnd|framedId/);
     });
