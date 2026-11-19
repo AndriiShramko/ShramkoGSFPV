@@ -106,7 +106,9 @@ describe('the course editor', () => {
         let d = s;
         for (let i = course.gates.length; i > MIN_GATES; i--) d = run(d, [{ kind: 'delete' }]);
         expect(d.course.gates.length).toBe(MIN_GATES);
-        expect(edit(d, { kind: 'delete' }, off)).toMatchObject({ ok: false, reason: { code: 'min-gates' } });
+        // lane edit4b (E4): a course may be emptied while it is edited; then there is no gate to delete
+        expect(d.selected).toBe(-1);
+        expect(edit(d, { kind: 'delete' }, off)).toMatchObject({ ok: false, reason: { code: 'no-gate' } });
     });
 
     it('reorders the selected gate and refuses past the ends', () => {
