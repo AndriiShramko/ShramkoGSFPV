@@ -111,6 +111,11 @@ against the code as it is: EditView gets the walls ray through its own host (Edi
    the arrows), cancel (the gate stays 0.7 m away), 11 the click glides the eye 22.9 m, 13 the gate bar lies over the
    editor's window. It PASSES 1, 8 and 12 (the old editor also opened, moved along x and framed on a click).
    Proof: evidence/2026-11-19/edit4a/accept-live.json.
+11. The gates on the tree of 2e290cbb (files staged): `python -X utf8 C:/Users/andri/.claude/skills/gsfpv/scripts/gates.py
+   --repo C:/dev/gsfpv-loadq --only typecheck,vitest,architecture,i18n,b18,leaks`: typecheck, architecture, i18n, b18, leaks
+   PASS; vitest 408 files passed, 1 failed: tools/bench/test/rooms-race.test.ts ('rooms.py did not start' inside its 10 s
+   start wait while 15 lanes load the machine). Alone: the first try failed the same way, the second passed (7 passed).
+   This lane changes no rooms or apps/api file (`git diff --stat origin/main -- apps/api apps/rooms` is empty).
 10. The gate bar never lies over the editor's window or the top bar (barPlace keep, A3). Proof: `npx vitest run
    tools/bench/test/editor3-gatebar.test.ts` (4 passed); NEG OK against 2f835eef (the new case fails on the old files).
 
@@ -165,3 +170,5 @@ against the code as it is: EditView gets the walls ray through its own host (Edi
 - A3 run 3: reading the engine's gizmo code showed in a few replies that press and hover share coordinates and shapes, so
   the miss had to be the probe's edge point; the build (dist had been deleted) and the GPU wait took the most time.
   Keeping dist between runs of one stage (delete it only at LANE-DONE) would save a build.
+- A3 run 4 (last): 12 replies; the build and the gates (about 10 minutes) took the most time. The probe records only PASS
+  per step, so the claims' numbers had to come from run 1: writing each step's measured numbers into the JSON would save that.
