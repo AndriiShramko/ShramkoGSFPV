@@ -131,6 +131,8 @@ export interface CoursePlace {
     readonly reachM: number;
     /** the gates the walk wants (LEVELS' gatesMin..gatesMax) */
     readonly gates: number;
+    /** the most gates the course may have with its composed elements (LEVELS' gatesMax; absent: SERVER_MAX_GATES) */
+    readonly maxGates?: number;
     /** |height change| / horizontal length of a leg at most */
     readonly climbMax: number;
     /** generator.version of the course ('5.<b|m|p><c|w|v>'); '.e2' and '.s<shift>' are added as for the old walk */
@@ -822,7 +824,7 @@ function walkCourse(free: FreeSpace, walls: VoxelCollision, opts: CourseOptions,
         const comp = composeElements({
             gates: course, closed: laps > 1, start: startW, toFlown: (q) => toFlown(q), toScan, s, k, marginM: p.marginM, sweeper,
             axisOf: (g) => { const q = g.quat; const w = q[0], y = q[2]; return [r6(-2 * w * y), 0, r6(-(1 - 2 * y * y))]; },
-            legWell, rng: (opts.rng ?? createRng)((seed ^ 0x5eed1) >>> 0), maxGates: SERVER_MAX_GATES,
+            legWell, rng: (opts.rng ?? createRng)((seed ^ 0x5eed1) >>> 0), maxGates: Math.min(SERVER_MAX_GATES, P?.maxGates ?? SERVER_MAX_GATES),
             proven: (gs, from) => checkTrack(build(gs, nearestYaw(sub(toFlown(gs[0]!.pos), from)), from, 1), walls, T, p.marginM, false, true).ok
         });
         opts.onElements?.(comp);

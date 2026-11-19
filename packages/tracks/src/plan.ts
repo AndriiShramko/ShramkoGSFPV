@@ -261,7 +261,7 @@ export function planCourse(input: PlanInput, hooks: PlanHooks = {}): PlanAnswer 
             if (oi === rules.openings.length - 1) ratio = Math.max(ratio, roomRatio(free, k, zoneAt(a, ask.req, R, opening, 2)));
             let tier = 0;
             while (tier < 2 && zoneCount(free, k, zoneAt(a, ask.req, R, opening, tier)) < ZONE_CANDS_PER_GATE * R.gates) tier++;
-            const place: CoursePlace = { at: zoneAt(a, ask.req, R, opening, tier), start, reachM: R.zoneR, gates: R.gates, climbMax: R.level.climbMax, version };
+            const place: CoursePlace = { at: zoneAt(a, ask.req, R, opening, tier), start, reachM: R.zoneR, gates: R.gates, maxGates: R.level.gatesMax, climbMax: R.level.climbMax, version };
             const params = { ...p, legMinM: R.legMinM * shrink, legMaxM: R.legMaxM * shrink, spacingM: R.legMinM * shrink, turnCosMin: R.level.turnCosMin, axisCosMin: R.level.axisCosMin, gatesMin: R.level.gatesMin, gatesMax: Math.max(R.gates, R.level.gatesMax) };
             hooks.onStep?.('lay', lastMs);
             const t0 = now ? now() : 0;
