@@ -113,6 +113,22 @@ describe('planCourse: the asked course in the scanned part, closed, at the craft
         expect(fitSizeFor(1, 0)).toBeNull();
     });
 
+    it('a 2 km city flown by a whoop: every leg of the pro courses, the closing one too, keeps the server\'s 60 m', () => {
+        // 1994c65c pro compact seed 1: a walk out to the 127 m zone closed over 60 m (validateServerTrack refused it). Only
+        // the leg rule is asserted: at x20 a whoop's gate is under the format's 0.05 scene units (For the lead, gen4a.md)
+        const T: SceneTransform = [20, 0, 0, 0];
+        const walls = flownCollision(cityFromAbove(), T);
+        for (const seed of [1, 2, 3]) {
+            const r = planCourse({ ...input(walls, { seed, level: 'pro', spread: 'compact', anyQuality: false }), transform: T });
+            expect(r.ok).toBe(true);
+            if (!r.ok) continue;
+            const v = validateServerTrack(r.track);
+            const legs = v.ok ? [] : v.issues.filter((s) => s.includes('leg to the next gate'));
+            expect(legs).toEqual([]);
+            expect(r.stats.gates).toBeGreaterThanOrEqual(LEVELS.pro.gatesMin);
+        }
+    });
+
     it('clipBox: a 1 km scan flown at x1 by a whoop gets a box of the course\'s reach, with cells near the gate\'s size', () => {
         // Laval eb5f51dc: the whole-scan box gave 3.2 m cells against a 0.85 m gate (no usable cell, no course)
         const box = { min: [-900, -350, -500] as [number, number, number], max: [400, 100, 500] as [number, number, number] };

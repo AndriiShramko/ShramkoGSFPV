@@ -273,6 +273,11 @@ export function planCourse(input: PlanInput, hooks: PlanHooks = {}): PlanAnswer 
             const zone2 = zoneAt(a, ask.req, R, opening, 2);
             const legMax = R.legMaxM * shrink;
             const reach = (R.gates * legMax) / 2 + legMax;
+            // the walk keeps within the diameter of a circle of the loop's own length (gates x the mean leg / pi; the start is on
+            // the loop, not at its centre): a 127 m zone let a pro
+            // course wander out and its closing leg pass the server's 60 m (1994c65c); never under half of 60 m (two gates
+            // within it of the start are within 60 m of each other)
+            const loopR = Math.max((R.gates * (R.legMinM * shrink + legMax) * 0.5) / Math.PI, MAX_LEG_M / 2);
             const freeFrom = (spawn: Vec3): FreeSpace => freeAtMargin(walls, { spawn, bounds: clipBox(box, spawn, reach, opening, walls.voxelResolution), unitM: a.unitM, kind: a.kind === 'room' ? 'indoor' : 'auto', goodAt: zone2, enclosureMin: 0 }, p.marginM);
             let start = starts[0]!;
             let free = freeFrom(start);
@@ -290,7 +295,7 @@ export function planCourse(input: PlanInput, hooks: PlanHooks = {}): PlanAnswer 
             if (oi === rules.openings.length - 1) ratio = Math.max(ratio, roomRatio(free, k, zoneAt(a, ask.req, R, opening, 2)));
             let tier = 0;
             while (tier < 2 && zoneCount(free, k, zoneAt(a, ask.req, R, opening, tier)) < ZONE_CANDS_PER_GATE * R.gates) tier++;
-            const place: CoursePlace = { at: zoneAt(a, ask.req, R, opening, tier), start, reachM: R.zoneR, gates: R.gates, maxGates: R.level.gatesMax, climbMax: R.level.climbMax, version };
+            const place: CoursePlace = { at: zoneAt(a, ask.req, R, opening, tier), start, reachM: Math.min(R.zoneR, loopR), gates: R.gates, maxGates: R.level.gatesMax, climbMax: R.level.climbMax, version };
             const params = { ...p, legMinM: R.legMinM * shrink, legMaxM: R.legMaxM * shrink, spacingM: R.legMinM * shrink, turnCosMin: R.level.turnCosMin, axisCosMin: R.level.axisCosMin, gatesMin: R.level.gatesMin, gatesMax: Math.max(R.gates, R.level.gatesMax) };
             hooks.onStep?.('lay', lastMs);
             const t0 = now ? now() : 0;

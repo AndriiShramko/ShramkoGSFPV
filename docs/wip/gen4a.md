@@ -74,7 +74,12 @@ tools/bench/src/scan-kinds.json, evidence/2026-11-19/gen4/.
     territory (footprint, ground, ceiling, roof) is the one 'scanned' rule. 8 gates in 7.8 s (was 1 gate in 123 s). (c)
     a street start sits at eye height (startOf), not half way to a 'ceiling' of sky floaters 88 m up (Laval). plan.test
     clipBox test; tracks 164 passed.
-  - [ ] LEFT 2: 'server' FAIL on 1994c65c pro compact seed 1 (validateServerTrack: read its reason).
+  - [x] LEFT 2: 'server' FAIL on 1994c65c pro compact seed 1: 'gates[19]: the leg to the next gate must be at most 60
+    m' (the closing leg; the walk wandered out to the 127 m zone). generate.ts closeAt (place only) skips an end whose leg
+    to gate 1 is over server.ts MAX_LEG_M; plan.ts keeps the walk within max(gates x mean leg / pi, 30 m) of the start
+    (loopR). Seeds 1-3: 24, 14, 24 gates, validateServerTrack ok. plan.test '2 km city' (cityFromAbove at x20, pro, seeds
+    1-3: no leg issue, >= gatesMin): NEG OK against 6f9d06f0; tracks 165 passed; typecheck clean. Found on the way: at
+    x20 the format refuses a whoop's gate (side 0.021 < 0.05 scene units): For the lead.
   - [ ] LEFT 3: re-run the audit after the fixes -> evidence/2026-11-19/gen4/place.json (all rules PASS, or each FAIL
     named in Not verified); ms per plan <= FIT_BUDGET_MS (run 1: at most 61 s).
   - [ ] LEFT 4: gates once (typecheck,vitest,architecture,i18n,b18,leaks), status parts, LANE-DONE.
@@ -116,6 +121,11 @@ Nothing yet: stage S0 changes no page. After gen4b: Shift+G opens the 'Generate 
 
 - Files outside the owned list: packages/tracks/test/scan-worlds.ts (new: the four synthetic scans shared by scan.test.ts
   and plan.test.ts; worlds.ts itself is not touched; A2 gave the skull and plant worlds air above them, 2 m and 1.5 m).
+- The track format checks a gate's size in SCENE units (format.ts shape: side/diameter >= 0.05, bar/tube >= 0.005;
+  apps/api/tracks.py line ~211 the same), while legs are checked in flown m (x transform scale). A 65 mm whoop's 4 D
+  square is 0.34 m with a 0.028 m bar flown: at a Scene size over x5.6 its bar, over x6.8 its side, is under the limit, so
+  the Save refuses every whoop course on the skull flown at x15 (the owner's G1 case). Need (format owner + API deploy):
+  check sizes as size x transform[0] in both files. Not changed here (not this lane's files).
 - LEVELS.elements is read only as on/off (beginner: none; medium and pro: elements.ts's own draw of all kinds):
   composeElements takes no kind list and elements.ts is not this lane's file. Need: a `kinds` filter in ComposeInput.
 - generate.ts changes beyond the option: none on the old path (place absent: every line as before; 161 tests green).

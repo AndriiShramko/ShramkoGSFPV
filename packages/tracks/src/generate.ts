@@ -24,7 +24,7 @@ import type { FreeSpace } from './freespace';
 import { createRng } from './rng';
 import { composeElements } from './elements';
 import type { Composed } from './elements';
-import { SERVER_MAX_GATES } from './server';
+import { MAX_LEG_M, SERVER_MAX_GATES } from './server';
 import type { Rng } from './rng';
 
 export const GENERATOR_NAME = 'gsfpv-course';
@@ -778,6 +778,9 @@ function walkCourse(free: FreeSpace, walls: VoxelCollision, opts: CourseOptions,
         // scan; judging them after the cut dropped one last gate a time and thinned Wroclaw seed 1 from 24 walked to 18
         for (let n = gs.length; n >= low; n--) {
             const end = toFlown(gs[n - 1]!.pos);
+            // gen4a A3: an asked course's closing leg (last gate to gate 1, flown on every lap) keeps the server's leg limit
+            // (1994c65c pro compact seed 1 closed over 60 m and the Save refused it)
+            if (P && len(sub(end, toFlown(gs[0]!.pos))) > MAX_LEG_M) continue;
             if (sweeper.free(end, startW, p.marginM) && legWell(end, startW) && legWell(end, toFlown(gs[0]!.pos))) return n;
         }
         return 0;
