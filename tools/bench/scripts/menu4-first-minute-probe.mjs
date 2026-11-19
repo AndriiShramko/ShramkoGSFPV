@@ -36,7 +36,7 @@ if (shotDir) mkdirSync(shotDir, { recursive: true });
 
 const VIEW = { width: 1536, height: 730 };
 const pick = pickBrowser({ expected: chromium.executablePath() });
-const browser = await chromium.launch(pick.launch);
+const browser = await chromium.launch({ ...pick.launch }); // headless unless BENCH_VISIBLE=1 (chrome.mjs)
 const checks = [];
 const check = (name, pass, detail) => {
     checks.push({ name, pass: !!pass, detail: detail ?? null });
