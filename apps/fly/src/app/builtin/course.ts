@@ -453,6 +453,11 @@ export const course: Feature = {
                 worker.onmessage = onWorker;
                 worker.onerror = (e) => {
                     disarm();
+                    // lane ux4a: a worker whose script did not load never answers: the next Shift+G starts a new one
+                    // (it waited for the 150 s watchdog before, the line saying "Shift+G builds another one")
+                    worker?.terminate();
+                    worker = null;
+                    job++;
                     busy = false;
                     checking = null;
                     fail(e.message || 'worker error', t('course.failed'));
