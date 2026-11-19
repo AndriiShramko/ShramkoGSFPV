@@ -127,8 +127,10 @@ tools/bench/src/scan-kinds.json, evidence/2026-11-19/gen4/.
   - [x] Fix after run 5 (plan.ts): legsWithinServer (the server's own leg rule, flown m) and planCourse keeps no course that
     breaks it; Lublin pro wide 2 now 24 gates, server ok. A guard on the composed elements alone was tried and reverted (the
     long leg is the walk's). plan.test 'legsWithinServer' NEG OK against 5fd34aaa; tracks 171 passed; typecheck clean.
-  - [ ] LEFT 3: re-run the audit after the fixes -> evidence/2026-11-19/gen4/place.json (all rules PASS, or each FAIL
-    named in Not verified); ms per plan <= FIT_BUDGET_MS (run 1: at most 61 s).
+  - [x] LEFT 3 done: audit run 6 (code of b34b5386) -> evidence/2026-11-19/gen4/place.json: PLANS 216 FAILED 12. course,
+    inside, ground, detail, loop, opening, server, time 216/216; cityLow 18/18 (Lublin), room 18/18 (Winter Garden), x1
+    18/18 (5dfeb49b). The 12 FAILs are named in Not verified (gates 6, nearCore 6). Max ms per plan 42.6 s (Winter Garden; FIT_BUDGET_MS 120 s
+    holds for all 216). Log U:/Temp/gsfpv-train4/gen4a/place-run6.log.
   - [ ] LEFT 4: gates once (typecheck,vitest,architecture,i18n,b18,leaks), status parts, LANE-DONE.
 
 Differences from the design: planCourse and placementStats live in plan.ts (design section 3), not in request.ts
@@ -156,8 +158,8 @@ does not refuse: the dialog names the Scene size where the course fits (gen4b's 
 4. planCourse lays a closed course (start = finish), with no gate outside the scanned territory or under the ground, at
    the level's opening (10 / 6 / 4 D of a 65 mm whoop) in a room; a city from above gets no gate within 4 m of its fuzzy
    ground where the old path (qualityMap + fitCourse) fails the same rules; a skull on a table and a plant tray at x1 get a
-   course. Proof: `npx vitest run packages/tracks/test/plan.test.ts`; last result 6 passed; NEG OK.
-5. The g1 path is unchanged: `npx vitest run packages/tracks/test`; last result 165 passed (the g1 tests unchanged).
+   course. Proof: `npx vitest run packages/tracks/test/plan.test.ts`; last result 16 passed (b34b5386); NEG OK.
+5. The g1 path is unchanged: `npx vitest run packages/tracks/test`; last result 171 passed (b34b5386; the g1 tests unchanged).
 6. A 1 km scan flown at x1 by a whoop gets a course: the free box is clipped to the course's reach with cells near the
    gate's size (clipBox), and the analysis' territory is the free space's one 'scanned' rule. Proof: `npx vitest run
    packages/tracks/test/plan.test.ts -t clipBox` (1 passed); on the real scans the audit: Laval eb5f51dc 8 gates in 1.7 s,
@@ -170,6 +172,11 @@ does not refuse: the dialog names the Scene size where the course fits (gen4b's 
 9. A pro wide course on a 1 km scan gets a free box of its walk's reach and one leg (walkReach), not of its loop laid out
    straight. Proof: `npx vitest run packages/tracks/test/plan.test.ts -t walkReach`; last result 1 passed; NEG OK against
    c8cbfa55. On the real scan 1994c65c pro wide seed 1: 24 gates in 1.8 s (NO-ROOM before).
+10. On the 12 catalogue scans x 3 levels x 2 spreads x seeds 1-3 (216 plans, a 65 mm whoop) every plan gets a closed
+   course inside the scanned territory, over the ground, at the level's opening, that the server accepts, within 120 s;
+   Winter Garden's gates all stand under its ceiling, Lublin's none near its fuzzy ground, the skull at x1 has a course.
+   Proof: `cd tools/bench && npx tsx src/gen4-place-audit.ts`; last result (b34b5386) PLANS 216 FAILED 12, the 12 named
+   in Not verified (evidence/2026-11-19/gen4/place.json).
 
 ## Not verified
 
@@ -179,6 +186,16 @@ does not refuse: the dialog names the Scene size where the course fits (gen4b's 
 
 - No person, phone or real controller took part; no page was opened (gen4b wires planCourse into the worker).
 
+- Audit run 6 (evidence/2026-11-19/gen4/place.json) FAILs 12 of 216 plans, left as they are:
+  (a) gates 6: a course under the level's gatesMin at the level's own opening, after the whole opening ladder and 3 walk
+  seeds per tier were tried with the quality rule kept (G3 wins over the count: the tiers that drop the quality rule are
+  walked only when no course at all was laid). Wroclaw 70b50d42 beginner seed 3 (compact and wide): 2 gates of 5;
+  Laval eb5f51dc medium seeds 2 and 3 (compact and wide): 6 gates of 8. Every one is closed, inside, on good tiles,
+  server ok. The pilot gets a short course, not a refusal; another seed gives a full one (seeds 1-2 / 1 pass).
+  (b) nearCore 6: 39e63ce9 (the CC BY fixture, kind room) compact medium and pro, seeds 1-3: the start is 3.7-7.4 m from a
+  core of radius 3.2 m. The compact ask kept under gatesMin in the core's zone and was laid over the whole room (A2's
+  designed fallback: 'a bare room's core is a corner'); the start is then the zone cell nearest the core. Not measured:
+  whether any whoop-gate cell under the ceiling lies within 3.2 m of that core (a free-space trace of the compact ask).
 - The kept kind rule for cityAbove and plants (9076951a) has no synthetic-world unit test; the audit rows of Lublin
   (cityLow) and Winter Garden (room) are its proof.
 - The Save of a whoop course flown over x5.6 is refused by the format's gate-size rule (For the lead); not tested here
@@ -206,6 +223,9 @@ does not refuse: the dialog names the Scene size where the course fits (gen4b's 
 
 ## Cost notes
 
+- A3 (run 3, left): about 60 replies; most went to a wrong first cause for Winter Garden (coarse cells): a box change
+  'fixed' it by moving the cell grid. Cheaper: trace the zone predicate at the stored gate position and the walk's
+  WalkInfo FIRST (env-gated lines), before changing a size; wait on the 20-minute audit with one until-loop.
 - A3 (run 2, left): about 50 replies; most went to Wroclaw beginner (toggling one change at a time on a 15 s trace, then
   a direct run on run 1's files). Cheaper: when a fix regresses a scan, run the old commit's files on it FIRST (git show
   into place, one trace) and diff the walk info, before toggling suspects one by one.
