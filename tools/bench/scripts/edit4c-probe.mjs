@@ -29,6 +29,7 @@ const env = process.env;
 const W = 1536;
 const H = 730;
 const DSF = 1.25;
+const STRICT = env.STRICT === '1';
 const LIVE = !/localhost|127\.0\.0\.1/.test(base);
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const r2 = (x) => Math.round(x * 100) / 100;
@@ -112,11 +113,12 @@ async function legs(s, any = false) {
         const len = Math.hypot(b[0] - a[0], b[1] - a[1]);
         const mid = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
         if (len < 70 || !(await onCanvas(mid[0], mid[1]))) continue;
-        // no other leg drawn within 30 px of the point: a click there could mean that leg as well
+        // a leg 4 m off at least (nearer is beside the pilot: course-line.ts ON_LEG_NEAR_M). Another leg drawn within 30 px
+        // is allowed: the ray passes the clicked leg exactly, the other only near (legOnRay takes the nearest); STRICT=1 skips it
         const segPx = (p, q) => { const vx = q[0] - p[0], vy = q[1] - p[1]; const l2 = vx * vx + vy * vy || 1; const t = Math.max(0, Math.min(1, ((mid[0] - p[0]) * vx + (mid[1] - p[1]) * vy) / l2)); return Math.hypot(mid[0] - p[0] - vx * t, mid[1] - p[1] - vy * t); };
         let crossed = false;
-        for (let j = 0; j + 1 < g.length && !crossed; j++) if (j !== i && g[j][2] > 0 && g[j + 1][2] > 0 && segPx(g[j], g[j + 1]) < 30) crossed = true;
-        if (crossed) continue;
+        for (let j = 0; j + 1 < g.length && !crossed; j++) if (Math.abs(j - i) > 1 && g[j][2] > 0 && g[j + 1][2] > 0 && segPx(g[j], g[j + 1]) < 30) crossed = STRICT;
+        if (crossed || Math.min(a[2], b[2]) < 4) continue;
         out.push({ i, len: Math.round(len), mid: mid.map(Math.round), depth: r2(Math.max(a[2], b[2])) });
     }
     // the nearest legs first: a click lands where its ray meets the scan (measured: legs 47 m off were behind a wall 6 m
@@ -215,10 +217,9 @@ try {
         let judged = null;
         for (let n = 0; n < 4 && !judged; n++) {
             const s = await snap();
-            // legs not starting at the selected gate first (there the old page's 'after the selected one' would match by
-            // luck), then those that do (the old page still faces them from the eye, 83-89 deg off on the live site)
-            const own = await legs(s);
-            const ls = [...own, ...(await legs(s, true)).filter((l) => l.i === s.selected)];
+            // only legs not starting at the selected gate: there the old page's 'after the selected one' matches by luck
+            // (measured: the live site passed leg 1 -> 2 with gate 1 selected, 3 deg off); none on the page: select a far gate
+            const ls = await legs(s);
             if (!ls.length) {
                 const far = (s.gates || []).map((p, i) => ({ p, i })).filter(({ p, i }) => i !== s.selected && p[2] > 0 && p[0] > 40 && p[0] < W - 40 && p[1] > 110 && p[1] < H - 90).sort((x, y) => y.p[2] - x.p[2])[0];
                 if (far) { await click(far.p[0], far.p[1], 800); await settle(); tries.push({ selectedFar: far.i, now: (await snap()).selected }); } else await backOff();
@@ -291,9 +292,9 @@ try {
             const cand = g.map((p, i) => ({ p, i })).filter(({ p, i }) => i + 1 < g.length && p[2] > 0 && p[0] > 40 && p[0] < W - 40 && p[1] > 110 && p[1] < H - 90 && g[i + 1][2] > 0)
                 .sort((x, y) => Math.hypot(x.p[0] - W / 2, x.p[1] - H / 2) - Math.hypot(y.p[0] - W / 2, y.p[1] - H / 2));
             for (const c of cand.slice(0, 4)) {
-                if (s.selected !== c.i && (await onCanvas(c.p[0], c.p[1]))) { await click(c.p[0], c.p[1], 300); s = (await until(snap, (x) => x.selected === c.i, 2500)).v; await sleep(600); s = await snap(); }
+                if (s.selected !== c.i && (await onCanvas(c.p[0], c.p[1]))) { await click(c.p[0], c.p[1], 300); s = (await until(snap, (x) => x.selected === c.i, 2500)).v; await settle(); s = await snap(); }
                 const st = s.stand?.screen;
-                if (s.selected === c.i && st && st[2] > 0 && st[0] > 150 && st[0] < W - 150 && st[1] > 140 && st[1] < H - 140) { gi = c.i; break; }
+                if (s.selected === c.i && st && st[2] > 0 && st[0] > 100 && st[0] < W - 100 && st[1] > 120 && st[1] < H - 110) { gi = c.i; break; }
             }
             if (gi === null) { await backOff(); s = await snap(); }
         }
