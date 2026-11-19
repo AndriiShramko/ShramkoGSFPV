@@ -17,7 +17,7 @@ Work copy C:/dev/gsfpv-v13-host, branch edit4c from origin/main e3201fec.
       packages/tracks pieces.ts (PIECES table, pieceLayout), editor.ts EditAction 'piece', check.ts entryDeg + TURN_PAIR_M
       (a piece's turn round is a way in), warn.ts uses entryDeg, add-place.ts pieceLift/pieceAction, piece-menu.ts
       AddChooser (shown while Add is armed), pieces-texts.ts ADD_CHOICES and keys, pieces.css, course.ts wiring.
-      Test tools/bench/test/edit4c-pieces.test.ts. Commit: see git log ("edit4c C2").
+      Test tools/bench/test/edit4c-pieces.test.ts. Commit 55fb8b2b.
 - [ ] C3 styles and pole/flag as a format spec (docs/wip/edit4c-format.md), acceptance probe tools/bench/scripts/edit4c-probe.mjs.
 
 Differences from the design (the code wins):
