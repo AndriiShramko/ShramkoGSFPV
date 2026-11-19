@@ -24,7 +24,7 @@ Stages (adapted from plan 1.4; at most 4; see "Differences from the design"):
   still portrait through Chrome's --use-file-for-fake-video-capture): PASS, evidence/2026-11-19/head4/tracker.json.
   Test tools/bench/test/sonic-head-tracker.test.ts (6), NEG OK on origin/main and on 777c5893 (the loading line).
   Commits d7c8f19d and head4 H3 (see git log).
-- [ ] H4 deploy/nginx.conf camera=(self) on the simulator page only, the serve-csp run (the prompt path works, other pages
+- [x] H4 deploy/nginx.conf camera=(self) on the simulator page only, the serve-csp run (the prompt path works, other pages
   refuse), the acceptance, the parts below completed, the gates.
   - [x] H4a nginx camera=(self) in `location ~ ^/(en|es|pl|ru)/fly/` only; tests apps/api/tests/test_nginx_routes.py
     (camera_of, 2 new tests, 19 OK) and tools/bench/test/sonicrec-headers.test.ts (5 OK), both NEG OK on origin/main;
@@ -33,7 +33,11 @@ Stages (adapted from plan 1.4; at most 4; see "Differences from the design"):
     1536x730 at 1.25, 12 steps): PASS, evidence/2026-11-19/head4/accept.json; the same probe on the live site: 10 steps
     FAIL (the lane's), 2 PASS (true before: nothing loads, other pages refuse), evidence/2026-11-19/head4/accept-live.json.
     The privacy sentence in four languages: docs/wip/head4-privacy.json.
-  - [ ] H4c the gates.
+  - [x] H4c the gates (typecheck, vitest, architecture, i18n, b18, leaks, catalog, api-unittest), once: all PASS but vitest,
+    1 failed of 5360 (packages/prefs/test/catalog.test.ts pins the sound mode's keys; H2 had not added Shift+H). Fixed
+    (sonic.headCentre and Shift+H in its lists, the control's count 7 -> 8): 10 of 10, NEG OK on origin/main's keymap.ts;
+    the full vitest was not run again (the one changed input is that test file; the other 409 files passed).
+    Commits aabad1af (H4a), 3b55b890 (H4b), head4 H4c (see git log).
 
 ### Differences from the design
 
@@ -168,7 +172,8 @@ Stages (adapted from plan 1.4; at most 4; see "Differences from the design"):
 - H4 files outside the head folder: deploy/nginx.conf, deploy/README.md (the nginx table and the curl check),
   apps/api/tests/test_nginx_routes.py (camera_of and two tests), tools/bench/src/sonicrec-headers.ts and
   tools/bench/src/sonicrec-serve.ts (their microphone controls replace the new policy text),
-  tools/bench/test/sonicrec-headers.test.ts; new tools/bench/scripts/head4-accept.mjs.
+  tools/bench/test/sonicrec-headers.test.ts, packages/prefs/test/catalog.test.ts (the sound keys list gets Shift+H);
+  new tools/bench/scripts/head4-accept.mjs, docs/wip/head4-privacy.json.
 - Deploy order: page and nginx together (the release, then deploy/nginx.conf: upload, nginx -t, reload). nginx alone is
   harmless (no page asks for the camera before this release); the page alone says "the camera was not allowed" and
   turns the setting off. No API files, no rooms; the sound package is not changed.
@@ -182,6 +187,10 @@ Stages (adapted from plan 1.4; at most 4; see "Differences from the design"):
   turning the listener.
 
 ## Cost notes
+
+- H4: the most replies went to the probe's first run (the listener read before any sound had started; Chrome's fake
+  camera answer reporting 'granted' before the ask) and to a pinned key list the gates found (catalog.test.ts); a line in
+  agent-map naming catalog.test.ts beside keymap.test.ts for a new sonic key would have saved the gate round.
 
 - H3: the most replies went to the probe's own bugs (a fit that could not start, a relative clip path Chrome could not
   open, a favicon 404) and to the MediaPipe mock not reaching the worker from tools/bench; a core taking its landmarker as
