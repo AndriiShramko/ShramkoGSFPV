@@ -10,5 +10,14 @@
   "course.piece.putBack": "Cofnij (klawisz Ctrl+Z)",
   "course.piece.close": "Zamknij: bramka zostaje tutaj",
   "course.piece.kept": "Zostaje tam, gdzie stoi. Bramka {gate} jest pomarańczowa, dopóki problem nie zniknie.",
-  "course.piece.more": "i jeszcze {n}"
+  "course.piece.more": "i jeszcze {n}",
+  "course.piece.addTitle": "Co dodać",
+  "course.piece.addClose": "Zamknij: nic nie dodawaj",
+  "course.piece.item.gate": "Bramka",
+  "course.piece.item.doubleVertical": "Podwójna pionowa",
+  "course.piece.item.tripleVertical": "Potrójna pionowa",
+  "course.piece.item.doubleHorizontal": "Podwójna pozioma",
+  "course.piece.item.tripleHorizontal": "Potrójna pozioma",
+  "course.piece.hint": "Kliknij miejsce dla: {piece} (Esc: nic nie dodawaj)",
+  "course.piece.added": "Dodano: {piece}, bramki od {from} do {to}. Wleć przez bramkę {from}, zawróć i wróć przez następną."
 }

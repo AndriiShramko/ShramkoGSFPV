@@ -10,5 +10,14 @@
   "course.piece.putBack": "Volver atrás (tecla Ctrl+Z)",
   "course.piece.close": "Cerrar: la puerta se queda aquí",
   "course.piece.kept": "Se queda donde la pusiste. La puerta {gate} sigue naranja hasta que se resuelva.",
-  "course.piece.more": "y {n} más"
+  "course.piece.more": "y {n} más",
+  "course.piece.addTitle": "Qué añadir",
+  "course.piece.addClose": "Cerrar: no añadir nada",
+  "course.piece.item.gate": "Puerta",
+  "course.piece.item.doubleVertical": "Doble vertical",
+  "course.piece.item.tripleVertical": "Triple vertical",
+  "course.piece.item.doubleHorizontal": "Doble horizontal",
+  "course.piece.item.tripleHorizontal": "Triple horizontal",
+  "course.piece.hint": "Haz clic en el lugar para: {piece} (Esc: no añadir nada)",
+  "course.piece.added": "{piece} añadida: puertas {from} a {to}. Entra por la puerta {from}, da la vuelta y vuelve por la siguiente."
 }

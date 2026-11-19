@@ -40,6 +40,24 @@ const r3 = (n: number): number => Math.round(n * 1000) / 1000;
 const v3 = (a: Vec3): Vec3 => [r3(a[0]), r3(a[1]), r3(a[2])];
 const angleDeg = (a: Vec3, b: Vec3): number => Math.acos(Math.max(-1, Math.min(1, dot(unit(a), unit(b))))) / DEG;
 
+/**
+ * Lane edit4c C2 (E12): a gate nearer than this to the gate before it that faces the other way is flown on a turn round
+ * (a stacked piece's loop, a hairpin of a row: pieces.ts, 1.9 m and 2.1 m between centres), flown m (an estimate).
+ */
+export const TURN_PAIR_M = 3;
+
+/**
+ * The angle a gate is entered at, degrees: its way through `axis` against the straight leg in. Lane edit4c C2: a gate within
+ * TURN_PAIR_M of the gate before it (`prevAxis` its way through, null for the start) whose way is that gate's way reversed
+ * (within AXIS_TOLERANCE_DEG) is entered after a turn round, so its leg in is the way out of that gate, reversed.
+ */
+export function entryDeg(axis: Vec3, legIn: Vec3, prevAxis: Vec3 | null): number {
+    const straight = angleDeg(axis, legIn);
+    if (!prevAxis || len(legIn) > TURN_PAIR_M) return straight;
+    const back = angleDeg(axis, mul(prevAxis, -1));
+    return back <= AXIS_TOLERANCE_DEG ? Math.min(straight, back) : straight;
+}
+
 /** `p` (in the frame `col` is queried in) lies inside the walls' voxel grid; a flipped grid is queried at (-x, -y, z). */
 export function insideGrid(col: VoxelCollision, p: Vec3): boolean {
     const f = col.flipXY ? -1 : 1;
@@ -278,7 +296,7 @@ export function checkTrack(track: TrackFile, col: VoxelCollision, transform: rea
         const next = i + 1 < gates.length ? gates[i + 1]!.pos : null;
         const legIn = sub(g.pos, prev);
         const legOut = next ? sub(next, g.pos) : legIn;
-        const inDeg = angleDeg(axis, legIn);
+        const inDeg = entryDeg(axis, legIn, i > 0 ? mul(frame(gates[i - 1]!).ez, -1) : null);
         const outDeg = angleDeg(axis, legOut);
         let clear = true;
         let free = CAP_M;

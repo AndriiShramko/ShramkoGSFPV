@@ -3,6 +3,7 @@
 // TextRef into words with t(), the unit test checks the keys against the four locale files.
 import type { Warning, WarningCode } from './warn';
 import { LEG_LONG_M } from './warn';
+import { PIECES, type PieceKind } from '@gsfpv/tracks';
 
 /** A text to show: its locale key and the values put into it. */
 export interface TextRef {
@@ -30,9 +31,33 @@ export const KEPT_KEY = 'course.piece.kept';
 /** the tag's last line when more warnings than it shows stand */
 export const MORE_KEY = 'course.piece.more';
 
+/** C2: what Add puts: a plain gate or a ready piece (packages/tracks pieces.ts) */
+export type AddChoice = 'gate' | PieceKind;
+/** C2: the choices of the Add list, in its order: a plain gate first, then the pieces of the table */
+export const ADD_CHOICES: readonly AddChoice[] = ['gate', ...PIECES.map((p) => p.kind)];
+/** C2: the Add list's title and the name of each choice */
+export const ADD_TITLE_KEY = 'course.piece.addTitle';
+/** C2: the Add list's cross (adding ends) */
+export const ADD_CLOSE_KEY = 'course.piece.addClose';
+export const ADD_CHOICE_KEYS: Readonly<Record<AddChoice, string>> = {
+    gate: 'course.piece.item.gate',
+    'double-vertical': 'course.piece.item.doubleVertical',
+    'triple-vertical': 'course.piece.item.tripleVertical',
+    'double-horizontal': 'course.piece.item.doubleHorizontal',
+    'triple-horizontal': 'course.piece.item.tripleHorizontal'
+};
+/** C2: the top bar's line while a piece is chosen (where to click), and what a placed piece did */
+export const PIECE_HINT_KEY = 'course.piece.hint';
+export const PIECE_ADDED_KEY = 'course.piece.added';
+
 /** Every key this lane uses (the unit test finds each in en es pl ru). */
 export const PIECE_KEYS: readonly string[] = [
     ...Object.values(WARN_KEYS),
+    ADD_TITLE_KEY,
+    ADD_CLOSE_KEY,
+    ...Object.values(ADD_CHOICE_KEYS),
+    PIECE_HINT_KEY,
+    PIECE_ADDED_KEY,
     WARN_LEG_WALL_START_KEY,
     ASK_KEY,
     KEEP_KEY,

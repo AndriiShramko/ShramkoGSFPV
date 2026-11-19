@@ -43,3 +43,58 @@
     font-size: 24px;
     line-height: 1;
 }
+
+/* lane edit4c C2: what Add puts (piece-menu.ts), under the top bar's Add button while Add is armed; 44 px rows fit 844x390 */
+.ce-add {
+    position: absolute;
+    left: 8px;
+    top: 56px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    width: 220px;
+    box-sizing: border-box;
+    padding: 4px 4px 4px 4px;
+    background: rgb(12, 16, 22);
+    border: 1px solid #3a4656;
+    border-radius: 8px;
+    color: #f2f4f7;
+    font-size: 16px;
+    z-index: 6;
+}
+.ce-add[hidden] { display: none; }
+.ce-add-title { min-height: 44px; display: flex; align-items: center; padding: 0 52px 0 8px; font-weight: 600; }
+.ce-add-item {
+    min-height: 44px;
+    padding: 0 10px;
+    text-align: left;
+    background: #1b2330;
+    border: 1px solid #3a4656;
+    border-radius: 6px;
+    color: #f2f4f7;
+    font-size: 16px;
+    cursor: pointer;
+}
+.ce-add-item[aria-checked='true'] { border-color: #a6ff1a; background: #26331a; }
+.ce-add-item:hover, .ce-add-item:focus-visible { border-color: #a6ff1a; }
+.ce-add-x {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    background: #1b2330;
+    border: 1px solid #3a4656;
+    border-radius: 6px;
+    color: #f2f4f7;
+    font-size: 24px;
+    line-height: 1;
+    cursor: pointer;
+}
+/* a low view (a phone held sideways): two columns, so the list stays above the bottom */
+@media (max-height: 500px) {
+    .ce-add { flex-direction: row; flex-wrap: wrap; width: 452px; max-width: calc(100vw - 16px); }
+    .ce-add-title { width: 100%; }
+    .ce-add-item { width: calc(50% - 1px); box-sizing: border-box; }
+}

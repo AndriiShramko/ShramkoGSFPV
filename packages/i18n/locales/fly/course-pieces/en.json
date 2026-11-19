@@ -10,5 +10,14 @@
   "course.piece.putBack": "Put back (key Ctrl+Z)",
   "course.piece.close": "Close: the gate stays here",
   "course.piece.kept": "Kept where you put it. Gate {gate} stays orange until the problem is gone.",
-  "course.piece.more": "and {n} more"
+  "course.piece.more": "and {n} more",
+  "course.piece.addTitle": "What to add",
+  "course.piece.addClose": "Close: add nothing",
+  "course.piece.item.gate": "Gate",
+  "course.piece.item.doubleVertical": "Double vertical",
+  "course.piece.item.tripleVertical": "Triple vertical",
+  "course.piece.item.doubleHorizontal": "Double horizontal",
+  "course.piece.item.tripleHorizontal": "Triple horizontal",
+  "course.piece.hint": "Click the place for: {piece} (Esc: add nothing)",
+  "course.piece.added": "{piece} added: gates {from} to {to}. Fly in through gate {from}, turn round, back through the next."
 }

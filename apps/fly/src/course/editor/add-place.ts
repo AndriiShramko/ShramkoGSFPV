@@ -5,7 +5,8 @@
 //
 // The change itself is lane course3's EditAction { kind: 'add', pos, quat } (packages/tracks editor.ts): after the selected
 // gate, a copy of its kind and opening, selected afterwards, one undo step, refused on a full course (max-gates).
-import type { EditAction, EditorState } from '@gsfpv/tracks';
+import { PIECE_BAR_M, PIECE_OPENING_M } from '@gsfpv/tracks';
+import type { EditAction, EditorState, PieceKind } from '@gsfpv/tracks';
 import { courseFacing, placeInCourse } from './course-line';
 import { openingOf, type Flown, type Q4, type V3 } from './drag';
 
@@ -89,6 +90,17 @@ export function addAction(at: V3, quat: Q4, tr: Flown, after?: number): Extract<
     const s = tr[0];
     const a: Extract<EditAction, { kind: 'add' }> = { kind: 'add', pos: [(at[0] - tr[1]) / s, (at[1] - tr[2]) / s, (at[2] - tr[3]) / s], quat: [quat[0], quat[1], quat[2], quat[3]] };
     return after === undefined ? a : { ...a, after };
+}
+
+/** Lane edit4c C2: how far above a floor hit a piece's first gate's centre goes (as addLift, with the piece's own square), flown m */
+export function pieceLift(margin = 0): number {
+    return PIECE_OPENING_M / 2 + PIECE_BAR_M + Math.max(0, margin) + ADD_FLOOR_M;
+}
+
+/** Lane edit4c C2: the change that puts piece `piece` with its first gate at flown `at` turned by `quat`, after gate `after` */
+export function pieceAction(piece: PieceKind, at: V3, quat: Q4, tr: Flown, after: number): Extract<EditAction, { kind: 'piece' }> {
+    const a = addAction(at, quat, tr, after);
+    return { kind: 'piece', piece, pos: a.pos, quat: a.quat, after };
 }
 
 /** A click with Add armed: the eye `o`, the unit ray `d` and the wall hit along it (null: none), flown frame. */

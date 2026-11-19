@@ -14,6 +14,7 @@ import type { Course } from './format';
 import { toTrackV1 } from './format';
 import { RING_TUBE_M, SQUARE_BAR_M } from './generate';
 import { SERVER_MAX_GATES, MAX_GATE_SIZE_M } from './server';
+import { PIECE_BAR_M, PIECE_OPENING_M, pieceLayout, type PieceKind } from './pieces';
 
 /** tracks-plan 2.11 key table: arrows 0.1 m (Shift 1 m), Q / E 15 degrees, Insert 4 m ahead (estimates of the plan) */
 export const MOVE_STEP_M = 0.1;
@@ -95,6 +96,9 @@ export type EditAction =
     /** F2 (lane editor3's Add gate): a gate after the selected one at `pos` and `quat`, the course's own frame (as
      *  TrackGate.pos and .quat); the selected gate's shape; selected afterwards. Refused as insert is (max-gates, placement). */
     | { readonly kind: 'add'; readonly pos: Vec3; readonly quat: Quat; /** lane edit4c C1: the gate it follows (-1 first); default the selected */ readonly after?: number }
+    // lane edit4c C2 (E12): a ready piece (pieces.ts), its first gate at pos turned by quat (course frame), all its gates
+    // one undo step after the gate `after` (-1 first; default the selected), its last gate selected
+    | { readonly kind: 'piece'; readonly piece: PieceKind; readonly pos: Vec3; readonly quat: Quat; readonly after?: number }
     | { readonly kind: 'delete' }
     /** the selected gate earlier (-1) or later (+1) in the order */
     | { readonly kind: 'order'; readonly step: number }
@@ -302,6 +306,18 @@ export function edit(state: EditorState, action: EditAction, check: CourseCheck)
         const after = action.after === undefined ? sel : Math.max(-1, Math.min(n - 1, Math.trunc(action.after)));
         next.splice(after + 1, 0, { ...g, id: nextGateId(gates), pos, quat: roundQuat(action.quat) });
         selected = after + 1;
+    } else if (action.kind === 'piece') {
+        const poses = pieceLayout(action.piece, action.pos, action.quat, 1 / s);
+        if (n + poses.length > MAX_GATES_EDIT) return refuse(state, { code: 'max-gates', max: MAX_GATES_EDIT });
+        const after = action.after === undefined ? sel : Math.max(-1, Math.min(n - 1, Math.trunc(action.after)));
+        const shape: ObjectShape = { kind: 'square', side: r3(PIECE_OPENING_M / s), bar: r3(PIECE_BAR_M / s) };
+        const made: TrackGate[] = [];
+        for (const p of poses) {
+            const pos: Vec3 = [r3(p.pos[0]), r3(p.pos[1]), r3(p.pos[2])];
+            made.push({ ...g, id: nextGateId([...gates, ...made]), shape, pos, quat: roundQuat(p.quat), direction: 'forward' });
+        }
+        next.splice(after + 1, 0, ...made);
+        selected = after + made.length;
     } else if (action.kind === 'delete') {
         if (n <= MIN_GATES) return refuse(state, { code: 'min-gates', min: MIN_GATES });
         next.splice(sel, 1);

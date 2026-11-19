@@ -35,7 +35,7 @@ import { sayVia } from '../say-via';
 import type { CueEvent } from '@shramko/sonic-fpv';
 import { soundCourseSeed } from './sonic-flight';
 import { S } from '@gsfpv/sim-core';
-import { MAX_GATES_EDIT, canSave, checkTrack, edit, flownCollision, flownStart, marginOf, nearestWall, openEditor, toTrackV1, upgradeTrack, wallsCheck } from '@gsfpv/tracks';
+import { MAX_GATES_EDIT, canSave, checkTrack, edit, flownCollision, flownStart, marginOf, nearestWall, openEditor, pieceSpec, toTrackV1, upgradeTrack, wallsCheck } from '@gsfpv/tracks';
 import { CheckQueue, checkOnPage } from '../../course/editor/check-core';
 import type { FromCheckWorker } from '../../course/editor/check-core';
 import { aimAt, gateCamera, type GateView } from '../../course/editor/camera';
@@ -45,15 +45,16 @@ import { EditView } from '../../course/editor/view-mouse';
 import { GateBar } from '../../course/editor/gate-bar';
 import { WarnBar } from '../../course/editor/warn-bar';
 import { LiveWarnings } from '../../course/editor/warn-live';
-import { KEPT_KEY } from '../../course/editor/pieces-texts';
+import { ADD_CHOICE_KEYS, KEPT_KEY, PIECE_ADDED_KEY, PIECE_HINT_KEY, type AddChoice } from '../../course/editor/pieces-texts';
+import { AddChooser } from '../../course/editor/piece-menu';
 import { TopBar } from '../../course/editor/top-bar';
-import { ADD_RAY_M, addAction, addLift, facingFrom, placeFor } from '../../course/editor/add-place';
+import { ADD_RAY_M, addAction, addLift, facingFrom, pieceAction, pieceLift, placeFor } from '../../course/editor/add-place';
 import { flyShows, modeStep, openStep, type EditMode } from '../../course/editor/fly-mode';
 import { stopKeyboardArm } from '../../devices/keyboard';
 import type { Ray } from '../../course/editor/pick';
 import { camFrom } from '../../course/editor/fly-cam';
 import { gateFlownPose, placeGate, placeInState, type FlownPose } from '../../course/editor/drag';
-import type { CourseCheck, EditorState } from '@gsfpv/tracks';
+import type { CourseCheck, EditorState, PieceKind } from '@gsfpv/tracks';
 import { myTokens, myVotes, rememberToken, rememberVote, voterId } from '../../course/store';
 import { EditorPanel } from '../../course/editor/panel';
 import { editorKey, forwardOf, keyOffLine, keyRoute } from '../../course/editor/keys';
@@ -155,6 +156,9 @@ export const course: Feature = {
         /** lane edit4c C1w (E11): the warning box at the gate and the live warnings' state (kept gates stay orange) */
         let warnBar: WarnBar | null = null;
         let warns: LiveWarnings | null = null;
+        /** lane edit4c C2 (E12): the list of what Add puts while it is armed, and the chosen thing */
+        let chooser: AddChooser | null = null;
+        let addWhat: AddChoice = 'gate';
         /** the course the open question is about (any other course on screen closes it) */
         let askedCourse: unknown = null;
         let mode: EditMode = 'edit';
@@ -967,6 +971,17 @@ export const course: Feature = {
             }, camFrom([ep.x, ep.y, ep.z], [ep.x + ef.x, ep.y + ef.y, ep.z + ef.z]));
             bar = new GateBar(ctx.ui, { key: (p) => applyKey(p), where: () => view?.standScreen() ?? null, tool: () => view?.tool ?? 'move', setTool: (tl) => view?.setTool(tl), dragging: () => view?.isDragging() ?? false });
             top = new TopBar(ctx.ui, { key: (p) => applyKey(p), add: () => toggleAdd(), show: (part) => panel?.reveal(part) });
+            chooser = new AddChooser(ctx.ui, {
+                choose: (what) => chooseAdd(what),
+                close: () => {
+                    if (view) view.adding = false;
+                    showAdding(false);
+                },
+                anchor: () => {
+                    const b = top?.root.querySelector('[data-top="add"]')?.getBoundingClientRect();
+                    return { top: top?.root.getBoundingClientRect().bottom ?? 0, left: b?.left ?? 8 };
+                }
+            });
             warns = new LiveWarnings({ flown: () => flownTransform(), walls: () => ctx.session.collision ?? null, margin: () => edMargin });
             warnBar = new WarnBar(ctx.ui, {
                 where: () => view?.standScreen() ?? null,
@@ -981,7 +996,7 @@ export const course: Feature = {
                 }
             });
             // read only, for the page probes (tools/bench/src/editor3-smoke.ts); lane edit4c: the warning box and the kept gates
-            (window as unknown as { __gsfpvEditView?: () => unknown }).__gsfpvEditView = () => (view ? { ...view.debug(), mode, bar: bar?.debug() ?? null, warn: warnBar ? { ...warnBar.debug(), kept: warns?.keptIds() ?? [] } : null, place: lastPlace, wrong: lastWrong, course: ed ? { gates: ed.course.gates, start: (ed.course as { start?: unknown }).start ?? null, problems: ed.problems } : null, camTaken, crashCleared, crashActive: ctx.crash.active, drone: [S.px, S.py, S.pz].map((i) => Math.round((ctx.session.runner.sim.s[i] ?? 0) * 100) / 100), override: ctx.session.cameraOverride } : null);
+            (window as unknown as { __gsfpvEditView?: () => unknown }).__gsfpvEditView = () => (view ? { ...view.debug(), mode, bar: bar?.debug() ?? null, warn: warnBar ? { ...warnBar.debug(), kept: warns?.keptIds() ?? [] } : null, add: chooser?.debug() ?? null, place: lastPlace, wrong: lastWrong, course: ed ? { gates: ed.course.gates, start: (ed.course as { start?: unknown }).start ?? null, problems: ed.problems } : null, camTaken, crashCleared, crashActive: ctx.crash.active, drone: [S.px, S.py, S.pz].map((i) => Math.round((ctx.session.runner.sim.s[i] ?? 0) * 100) / 100), override: ctx.session.cameraOverride } : null);
             // lane editor3 H1, read only: the shown handles' shape under a page point (the probe finds the ring it presses)
             (window as unknown as { __gsfpvEditHit?: (x: number, y: number, own?: boolean) => unknown }).__gsfpvEditHit = (x, y, own) => view?.hitAt(x, y, own === true) ?? null;
             // I1, read only: the eye's distance, the gate's height, the rings' minor axes and the handle parts' rectangles
@@ -1031,6 +1046,8 @@ export const course: Feature = {
             warnBar?.destroy();
             warnBar = null;
             warns = null;
+            chooser?.destroy();
+            chooser = null;
             top?.destroy();
             top = null;
             mode = 'edit';
@@ -1062,14 +1079,32 @@ export const course: Feature = {
             // lane editor3 H1, the owner's rule: no refusal with a number; a full course says in words what to delete
             if (!view.adding && ed && ed.course.gates.length >= MAX_GATES_EDIT) return say(t('course.edit.r.maxGates'), true);
             view.adding = !view.adding;
-            top?.adding(view.adding);
+            showAdding(view.adding);
             if (view.adding) say(t('course.edit.bar.addHint'));
+        };
+        /** lane edit4c C2 (E12): Add is armed or no more: the top bar's Add button and the list of what it puts (a plain gate first) */
+        const showAdding = (on: boolean): void => {
+            addWhat = 'gate';
+            top?.adding(on);
+            chooser?.show(on, addWhat);
+        };
+        /** C2: a press in the Add list: the next click puts that (a full course says so first, as Add does) */
+        const chooseAdd = (what: AddChoice): void => {
+            if (!view || !ed) return;
+            const need = what === 'gate' ? 1 : pieceSpec(what).count;
+            if (ed.course.gates.length + need > MAX_GATES_EDIT) return say(t('course.edit.r.maxGates'), true);
+            view.adding = true;
+            addWhat = what;
+            top?.adding(true);
+            say(what === 'gate' ? t('course.edit.bar.addHint') : t(PIECE_HINT_KEY, { piece: t(ADD_CHOICE_KEYS[what]) }));
         };
         /** lane editor3 E3: a click with Add gate armed: a gate at the wall that ray hits (or ahead), after the selected one */
         const placeAt = (ray: Ray): void => {
-            top?.adding(false);
+            const what = addWhat;
+            showAdding(false);
             if (!ed) return;
             const hit = camRay ? camRay(ray.o, ray.d, ADD_RAY_M) : null;
+            if (what !== 'gate') return placePiece(ray, hit, what);
             // G1: lane course3's EditAction add (its kind and opening, one undo step). Lane edit4c C1 (E11): placeFor puts it
             // after the gate whose leg passes nearest to the click, facing the course's line there (add-place.ts)
             const tr = flownTransform();
@@ -1097,6 +1132,30 @@ export const course: Feature = {
             // here moved the edit eye to gateCamera's pose, which starts at the drone and stops at the first wall: g2/full3
             // measured the eye 2 m from the drone on the floor (Tunis viewAfter [1.53, 0.45, 0.87]): the drone's view, no gate.
             say(t('course.edit.did', { what: t('course.edit.bar.add'), gate: gateLine(st, scale()) }));
+        };
+        /** lane edit4c C2 (E12): a click with a piece chosen: its first gate where placeFor puts a gate, facing the course's
+         *  line, the rest stacked or in a row from it (packages/tracks pieces.ts), all one undo step */
+        const placePiece = (ray: Ray, hit: number | null, what: PieceKind): void => {
+            if (!ed) return;
+            const tr = flownTransform();
+            const { pos: at, quat, after } = placeFor(ed, tr, { o: ray.o, d: ray.d, hit }, pieceLift(edMargin));
+            const out = edit(ed, pieceAction(what, at, quat, tr, after), keepProblems);
+            lastPlace = { o: ray.o, d: ray.d, hit, at, prev: null, after, quat, tr: [tr[0], tr[1], tr[2], tr[3]], camEye: camView ? [...camView.eye] : null, piece: what };
+            if (!out.ok) {
+                ed = out.state;
+                edHook.refused = out.reason.code;
+                showEd();
+                return say(refusalText(ed.course, out.reason), true);
+            }
+            const st = out.state;
+            ed = st;
+            edChanged = true;
+            askedFor = null;
+            edHook.refused = null;
+            addedId = st.course.gates[st.selected]?.id ?? null;
+            checks?.ask(st.course, flownTransform(), edMargin);
+            showEd();
+            say(t(PIECE_ADDED_KEY, { piece: t(ADD_CHOICE_KEYS[what]), from: after + 2, to: st.selected + 1 }));
         };
         /** lane editor3 E3: armed flies (the drone's camera, the course from gate 1), disarmed or crashed edits again */
         const editFrame = (): void => {
@@ -1127,6 +1186,7 @@ export const course: Feature = {
                 panel?.root.classList.add('ce-flying');
                 dragBase = null;
                 view?.suspend(true);
+                showAdding(false);
                 bar?.hide(true);
                 top?.flying(true);
                 if (panel) panel.root.style.display = 'none';
@@ -1402,7 +1462,7 @@ export const course: Feature = {
                 e.preventDefault();
                 e.stopPropagation();
                 view.adding = false;
-                top?.adding(false);
+                showAdding(false);
                 return;
             }
             const target = e.target;

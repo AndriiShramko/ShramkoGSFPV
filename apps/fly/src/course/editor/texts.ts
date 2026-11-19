@@ -102,6 +102,8 @@ export const ACTION_KEYS: Record<EditAction['kind'], string> = {
     size: 'course.edit.key.sized',
     insert: 'course.edit.key.insert',
     add: 'course.edit.bar.add',
+    // lane edit4c C2: a ready piece is put by Add too (its own words come from course.piece.added)
+    piece: 'course.edit.bar.add',
     delete: 'course.edit.key.delete',
     order: 'course.edit.key.order',
     undo: 'course.edit.key.undo',

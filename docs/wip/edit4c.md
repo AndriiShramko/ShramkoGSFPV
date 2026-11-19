@@ -13,7 +13,11 @@ Work copy C:/dev/gsfpv-v13-host, branch edit4c from origin/main e3201fec.
       warn-live.ts LiveWarnings (pure state: 10 a second, kept gates orange until fixed), warn-bar.ts WarnBar (the box,
       44 px cross, Put back = the undo key's row), warn.ts warnPlace/warnedGates, rules.ts paint 'warn', pieces-texts.ts,
       pieces.css. Test tools/bench/test/edit4c-warn.test.ts. Commit 398ccd1b.
-- [ ] C2 pieces: double and triple vertical, double and triple horizontal (one undo step each), Add menu items.
+- [x] C2 pieces: double and triple vertical, double and triple horizontal (one undo step each), Add list items.
+      packages/tracks pieces.ts (PIECES table, pieceLayout), editor.ts EditAction 'piece', check.ts entryDeg + TURN_PAIR_M
+      (a piece's turn round is a way in), warn.ts uses entryDeg, add-place.ts pieceLift/pieceAction, piece-menu.ts
+      AddChooser (shown while Add is armed), pieces-texts.ts ADD_CHOICES and keys, pieces.css, course.ts wiring.
+      Test tools/bench/test/edit4c-pieces.test.ts. Commit: see git log ("edit4c C2").
 - [ ] C3 styles and pole/flag as a format spec (docs/wip/edit4c-format.md), acceptance probe tools/bench/scripts/edit4c-probe.mjs.
 
 Differences from the design (the code wins):
@@ -27,6 +31,17 @@ Differences from the design (the code wins):
 - A duplicate goes along the course's curve (a cubic Hermite leaving the gate along its axis, entering the next along
   its axis), at most half way, so repeated duplicates bend with the course; the last gate's duplicate goes ahead along
   its axis as before.
+- C2: the design's 'Add menu' (top-bar.ts menu(), S0) does not exist. Add still arms a plain gate with ONE press (editor3's
+  path and its probes unchanged); while armed, a list 'What to add' (piece-menu.ts) under the Add button offers Gate and
+  the four pieces, with its 44 px cross (= Esc = Add again). A piece is EditAction 'piece' (not S0's 'replace', which does
+  not exist either).
+- C2: the walls check's entry rule (axis within 35 deg of the STRAIGHT leg in) refused every piece: a stack's second gate
+  is reached straight up, a row's sideways. check.ts entryDeg: a gate within TURN_PAIR_M 3 m of the gate before it whose
+  way is that gate's way reversed (within 35 deg) is entered after a turn round, judged against that reversed way. Only
+  closer-than-3-m opposite pairs are affected (the generator makes none: its tunnel gates face one way); the server
+  (tracks.py, server.ts) checks structure only, so it needs no change.
+- C2: a double piece turns the course round (in through the first, back through the second): the gate after it may then
+  warn 'sharp turn' and block saving until it is turned. The triples come out the way they went in.
 
 ## What the owner does
 
@@ -44,6 +59,15 @@ Differences from the design (the code wins):
    the top bar, inside 1536x730 and 844x390. Proof: `npx vitest run tools/bench/test/edit4c-warn.test.ts`. Last result:
    6 passed; NEG OK against e8a812f5 (rules.ts, warn.ts, warn-live.ts, pieces-texts.ts). Related tests (editor3-*,
    editfix-e4, course-finish, i18n parity, edit4c-*): 28 files, 204 passed.
+3. Each of the four pieces puts 2 or 3 new 1.5 m square gates after the gate it follows, ids unique, every second one
+   turned round, stacked 1.9 m up or 2.1 m apart in a row, frames not 'too-close'; one undo removes all of them;
+   validateServerTrack takes the course; a full course refuses with max-gates; the walls check finds every piece gate's
+   direction right and no sharp-turn warning fires on them (and a far opposite pair is still judged by its straight leg);
+   the lap judge counts a double vertical's 2 gates flown as a loop and gives no lap when the high gate is passed the
+   wrong way; the Add list is Gate + the 4 pieces. Proof: `npx vitest run tools/bench/test/edit4c-pieces.test.ts`. Last
+   result: 8 passed; NEG OK on origin/main (all eight source files) and on HEAD~ for packages/tracks/src/check.ts alone
+   (the turn-round test fails). `npx vitest run --changed origin/main`: 98 files, 961 passed, 10 skipped; fly-parity and
+   edit4c-warn (the four locales, PIECE_KEYS): 19 passed.
 
 ## Not verified
 
@@ -55,7 +79,13 @@ Differences from the design (the code wins):
   addFacing; import line; C1w: the WarnBar and LiveWarnings made beside the gate bar and destroyed with it, dragTo asks
   them during the drag and on the release, showEd paints with warns.painted and closes an open question on another
   edit, __gsfpvEditView gets `warn`), apps/fly/src/course/view.ts (one PAINT entry 'warn' orange),
-  packages/tracks/test/editor.test.ts (the insert test asserts the new line).
+  packages/tracks/test/editor.test.ts (the insert test asserts the new line). C2: course.ts again (the AddChooser made
+  and destroyed beside the top bar, showAdding/chooseAdd/placePiece, `add` in __gsfpvEditView), course/editor/texts.ts
+  (ACTION_KEYS gets `piece`, one line), packages/tracks/src/index.ts (exports pieces.ts), packages/tracks/src/check.ts
+  (entryDeg, TURN_PAIR_M: the design lists check.ts as this lane's, read-mostly).
+- Deploy: page only (no API, rooms, nginx or sound package file).
+- Seam wanted (C2): Services.pieceMenu = ADD_CHOICES with chooseAdd; when S0's top-bar menu lands, the AddChooser can be
+  replaced by its items (one file, piece-menu.ts).
 - The WarnBar's page behaviour (the tag during a real mouse drag, Keep / Put back / 8 s) is first seen by the C3 probe;
   C1w has only the pure tests.
 - Seam wanted (when S0 lands): Services.placeFor = add-place.ts placeFor bound to the state; EditAction 'add' carries
@@ -67,3 +97,6 @@ Differences from the design (the code wins):
   check.ts's direction rule first would have saved three replies.
 - C1w: most replies went to finding the page seams in course.ts (drag path, showEd, the bar lifecycle, the top bar's
   root); a short map of course.ts's editor closures in docs/agent-map.md would have saved four.
+- C2: most replies went to the check's 35 deg entry rule refusing every piece (found by reading check.ts, then a rule) and
+  to small fixes (npx needs npx.cmd inside neg_control.py; a DOM module imported by a test pulls i18n's `location`); a
+  note in the design that the straight-leg rule forbids turn-round pieces would have saved three.

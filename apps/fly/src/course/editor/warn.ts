@@ -3,7 +3,7 @@
 // the gate `index` stands at `pose` (flown frame, the gizmo's stand-in), the rest of the course where it is; the walls are
 // the flown-frame walls (or null before they load: then no wall warning). A warning never refuses anything.
 import { quatRotate } from '@shramko/sonic-fpv';
-import { AXIS_TOLERANCE_DEG, MARGIN_M, MAX_LEG_M, freeRadius, sweepFree } from '@gsfpv/tracks';
+import { AXIS_TOLERANCE_DEG, MARGIN_M, MAX_LEG_M, entryDeg, freeRadius, sweepFree } from '@gsfpv/tracks';
 import type { Course } from '@gsfpv/tracks';
 import type { VoxelCollision } from '@gsfpv/collision';
 import { openingOf, type Flown, type FlownPose, type V3 } from './drag';
@@ -58,11 +58,12 @@ export function placeWarnings(course: Course, index: number, pose: FlownPose, fl
     const out: Warning[] = [];
 
     // the moved gate's leg in and the next gate's leg in change: either gate may no longer be entered forward
+    // (lane edit4c C2: the check's own entryDeg, so a piece's turn round is no sharp turn)
+    const axisOf = (j: number): V3 => quatRotate((j === index ? pose.quat : course.gates[j]!.quat) as [number, number, number, number], [0, 0, -1]);
     for (const j of [index, index + 1]) {
         if (j >= n) continue;
         const prev = before(j);
-        const axis = quatRotate((j === index ? pose.quat : course.gates[j]!.quat) as [number, number, number, number], [0, 0, -1]);
-        if (prev && turnDeg(sub(pts[j]!, prev), axis) > SHARP_TURN_DEG) out.push({ code: 'sharp-turn', gate: j });
+        if (prev && entryDeg(axisOf(j), sub(pts[j]!, prev), j > 0 ? axisOf(j - 1) : null) > SHARP_TURN_DEG) out.push({ code: 'sharp-turn', gate: j });
     }
     for (let k = 0; k < n; k++) {
         if (k === index) continue;
