@@ -12,7 +12,7 @@ against the code as it is: EditView gets the walls ray through its own host (Edi
 
 - [x] A1 camera and clicks: orbit, pan, dolly, Home, Numpad ., double click; no automatic camera move (commit 5755d0e8)
 - [x] A2 one gizmo: move arrows, size boxes and turn rings at once; nearest handle owns the press; hover tag; no tool buttons;
-  Esc / right click cancels a drag (commit A2C)
+  Esc / right click cancels a drag (commit b74bd0a8)
   - the drawn check of the hover (design A2 page probe) is folded into A3 step 7: one build and one GPU run for both
 - [ ] A3 acceptance: tools/bench/scripts/edit4a-probe.mjs (mouse, 1536x730 dsf 1.25), the live run as the negative control
 
