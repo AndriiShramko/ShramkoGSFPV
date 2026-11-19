@@ -17,6 +17,7 @@
 import { createRequire } from 'node:module';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
+import { inflateSync } from 'node:zlib';
 import { fileURLToPath } from 'node:url';
 import { pickBrowser } from '../src/chrome.mjs';
 
@@ -47,24 +48,31 @@ async function clickEl(page, sel) {
     await page.mouse.click(b.x + b.width / 2, b.y + b.height / 2);
 }
 async function openScene(page, id) {
-    await page.goto(`${base}/fly/?scene=${id}&nowarn=1`);
+    await page.goto(`${base}/fly/?scene=${id}&nowarn=1${process.env.QUERY ? '&' + process.env.QUERY : ''}`);
     await page.waitForFunction(() => ['ready', 'error'].includes(window.__gsfpv?.status), null, { timeout: 240000 });
     try {
         await page.waitForSelector('.screen.radio [data-action="radio-keyboard"]', { timeout: 15000 });
         await clickEl(page, '.screen.radio [data-action="radio-keyboard"]');
     } catch { /* no controls screen: the pilot chose before */ }
     await sleep(500);
-    // the pointer lock first, by a click into the scene
-    await page.mouse.click(768, 420);
-    await sleep(300);
     return until(page, () => window.__gsfpv?.voxels?.stats?.()?.voxelCm ?? 0, (v) => v > 0, 400000);
+}
+/** a person's Esc while the scene holds the mouse: the browser itself lets the pointer lock go (the page gets no key) */
+async function freeMouse(page) {
+    const was = await page.evaluate(() => { const l = !!document.pointerLockElement; if (l) document.exitPointerLock(); return l; });
+    if (was) await sleep(600);
+    return was;
 }
 /** the walls chip, then "Voxels only" (or another mode), with the mouse; the panel is left open */
 async function pickMode(page, mode) {
+    await freeMouse(page);
     const open = await page.evaluate(() => !!document.querySelector('[data-testid=walls-more]')?.open);
     if (!open) { await clickEl(page, '[data-testid=walls-summary]'); await sleep(500); }
     await clickEl(page, `[data-action=voxels-mode-${mode}]`);
     await sleep(500);
+    const d = await page.evaluate(() => ({ open: !!document.querySelector('[data-testid=walls-more]')?.open, mode: window.__gsfpv.voxels.stats().mode, lock: !!document.pointerLockElement }));
+    (r.picks ??= []).push({ want: mode, opened: !open, ...d });
+    console.log('pick ' + JSON.stringify(r.picks.at(-1)));
 }
 const settled = (page) => until(page, () => { const v = window.__gsfpv.voxels; return typeof v.settled === 'function' ? v.settled() : v.settled; }, (v) => !!v, 120000);
 /** the craft (and so the camera) held at a pose: yaw about +y (rad), the camera pitch (deg) */
@@ -88,14 +96,35 @@ async function canvasShot(page, file) {
     await tagEl.evaluate((e) => e.remove());
     return png.toString('base64');
 }
-/** pixels of a screenshot (base64 PNG) read in the page: for each [x, y] in CSS px, [r, g, b] */
-const pixels = (page, b64, pts) => page.evaluate(async ({ b64, pts }) => {
-    const img = await createImageBitmap(await (await fetch(`data:image/png;base64,${b64}`)).blob());
-    const c = new OffscreenCanvas(img.width, img.height), g = c.getContext('2d');
-    g.drawImage(img, 0, 0);
-    const k = img.width / innerWidth, d = g.getImageData(0, 0, img.width, img.height).data;
-    return pts.map(([x, y]) => { const i = (Math.floor(y * k) * img.width + Math.floor(x * k)) * 4; return [d[i], d[i + 1], d[i + 2]]; });
-}, { b64, pts });
+/** a screenshot PNG (8-bit RGB or RGBA, not interlaced: what Chrome writes) decoded in Node (the page's CSP keeps data: out) */
+function decodePng(buf) {
+    let p = 8, w = 0, h = 0, ch = 4;
+    const idat = [];
+    while (p < buf.length) {
+        const len = buf.readUInt32BE(p), type = buf.toString('ascii', p + 4, p + 8), d = buf.subarray(p + 8, p + 8 + len);
+        if (type === 'IHDR') { w = d.readUInt32BE(0); h = d.readUInt32BE(4); ch = d[9] === 6 ? 4 : 3; if (d[8] !== 8 || d[12] !== 0) throw new Error('png: not 8-bit / interlaced'); }
+        if (type === 'IDAT') idat.push(d);
+        p += 12 + len;
+    }
+    const raw = inflateSync(Buffer.concat(idat)), stride = w * ch, out = Buffer.alloc(h * stride);
+    for (let y = 0; y < h; y++) {
+        const f = raw[y * (stride + 1)], src = y * (stride + 1) + 1, o = y * stride;
+        for (let x = 0; x < stride; x++) {
+            const a = x >= ch ? out[o + x - ch] : 0, b = y ? out[o - stride + x] : 0, c = x >= ch && y ? out[o - stride + x - ch] : 0;
+            const v = raw[src + x];
+            let q = 0;
+            if (f === 1) q = a; else if (f === 2) q = b; else if (f === 3) q = (a + b) >> 1;
+            else if (f === 4) { const pp = a + b - c, pa = Math.abs(pp - a), pb = Math.abs(pp - b), pc = Math.abs(pp - c); q = pa <= pb && pa <= pc ? a : pb <= pc ? b : c; }
+            out[o + x] = (v + q) & 255;
+        }
+    }
+    return { w, h, ch, data: out };
+}
+/** pixels of a screenshot (base64 PNG): for each [x, y] in CSS px of the 1536 px wide view, [r, g, b] */
+const pixels = async (_page, b64, pts) => {
+    const img = decodePng(Buffer.from(b64, 'base64')), k = img.w / 1536;
+    return pts.map(([x, y]) => { const i = (Math.floor(y * k) * img.w + Math.floor(x * k)) * img.ch; return [img.data[i], img.data[i + 1], img.data[i + 2]]; });
+};
 const grid = (nx, ny, top = 0, bottom = 730) => { const p = []; for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) p.push([Math.round(((i + 0.5) / nx) * 1536), Math.round(top + ((j + 0.5) / ny) * (bottom - top))]); return p; };
 const bgColour = (page) => page.evaluate(() => { const c = window.__gsfpv.session.renderer.camera.camera.clearColor; return [c.r, c.g, c.b].map((v) => Math.round(v * 255)); });
 const near3 = (a, b) => Math.abs(a[0] - b[0]) <= 3 && Math.abs(a[1] - b[1]) <= 3 && Math.abs(a[2] - b[2]) <= 3;
@@ -131,7 +160,8 @@ const faces = (page, pts) => page.evaluate((pts) => {
         if (!h) return { kind: 'none', dist: null };
         const fx = frac(f * h.x, col.gridMinX), fy = frac(f * h.y, col.gridMinY), fz = frac(h.z, col.gridMinZ), e = 0.02;
         const kind = fy < e && fx > 0.08 && fz > 0.08 ? (dy < 0 ? 'top' : 'bottom') : (fx < e || fz < e) && fy > 0.08 ? 'side' : 'other';
-        return { kind, dist: Math.hypot(h.x - o.x, h.y - o.y, h.z - o.z) };
+        const fw = cam.forward;
+        return { kind, dist: Math.hypot(h.x - o.x, h.y - o.y, h.z - o.z), depth: (h.x - o.x) * fw.x + (h.y - o.y) * fw.y + (h.z - o.z) * fw.z };
     });
 }, pts);
 async function frameMs(page, ms) {
@@ -149,7 +179,13 @@ try {
     // ---- Wroclaw: steps 1, 2, 4, 5, 6 (1536x730)
     const w = await openScene(page, WROCLAW);
     r.wroclawWalls = { ok: w.ok, s: Math.round((Date.now() - t0) / 1000) };
+    // the walls chip and "Voxels only" before the flight: once the scene holds the mouse, a person's Esc lets it go and
+    // opens the pause menu, which is modal and lies over the walls chip at 1536x730 (For the lead in docs/wip/vox4.md)
     await pickMode(page, 'only');
+    // then the pointer lock, by a click into the scene (the pilot looks around in voxels only)
+    await page.mouse.click(1100, 300);
+    await sleep(500);
+    r.sceneClick = await page.evaluate(() => ({ lock: !!document.pointerLockElement, mode: window.__gsfpv.voxels.stats().mode, panelOpen: !!document.querySelector('[data-testid=walls-more]')?.open }));
     const st = await settled(page);
     await sleep(1500);
     const spawn = await installHold(page);
@@ -174,24 +210,66 @@ try {
     const pts = grid(48, 24, 40, 700);
     const shot = await canvasShot(page, '');
     const [px, fc] = [await pixels(page, shot, pts), await faces(page, pts)];
-    const fogEnd = await page.evaluate(() => window.__gsfpv.session.renderer.app.scene.fog?.end ?? null);
+    const fog = await page.evaluate(() => { const f = window.__gsfpv.session.renderer.app.scene.fog; return f ? { type: f.type, start: f.start, end: f.end } : null; });
+    const fogEnd = fog && fog.type !== 'none' ? fog.end : 1000;
     const mean = (a) => (a.length ? a.reduce((s, v) => s + v, 0) / a.length : null);
-    const sel = (fn) => px.filter((_, i) => fn(fc[i])).map(luma);
-    const top = mean(sel((h) => h.kind === 'top' && h.dist < 30)), side = mean(sel((h) => h.kind === 'side' && h.dist < 30));
-    const far = fogEnd ? sel((h) => h.kind !== 'none' && h.dist >= 0.8 * fogEnd) : [];
-    const nearAll = sel((h) => h.kind !== 'none' && h.dist < 30);
+    const sel = (p, f, fn) => p.filter((_, i) => fn(f[i])).map(luma);
+    const top = mean(sel(px, fc, (h) => h.kind === 'top' && h.dist < 30)), side = mean(sel(px, fc, (h) => h.kind === 'side' && h.dist < 30));
+    const nearAll = sel(px, fc, (h) => h.kind !== 'none' && h.dist < 30);
+    // the fog, measured as what it changes: the same pixels with the scene's fog on and for a moment off. Voxels within
+    // 30 m keep their luma; voxels from 100 m of view depth (the engine's fog distance, not the ray's) go darker toward
+    // the background. Wroclaw's spawn sees no voxel past 80 % of the reach (the design's first idea), so the far views
+    // are level ones to the four sides from 40 m up, 8 deg down; the design's rule is reported where it has samples.
+    const fogOffShot = async () => {
+        await page.evaluate(() => { window.__gsfpv.session.renderer.app.scene.fog.type = 'none'; });
+        await sleep(400);
+        const b = await canvasShot(page, '');
+        await page.evaluate((t) => { window.__gsfpv.session.renderer.app.scene.fog.type = t; }, fog?.type ?? 'none');
+        await sleep(300);
+        return b;
+    };
+    const pairs = []; // [depth, luma fog on, luma fog off]
+    if (fog && fog.type !== 'none') {
+        const npx = await pixels(page, await fogOffShot(), pts);
+        fc.forEach((h, i) => { if (h.kind !== 'none') pairs.push([h.depth, luma(px[i]), luma(npx[i])]); });
+    }
+    const far = [];
+    for (let k = 0; k < 4; k++) {
+        await hold(page, [spawn[0], spawn[1] + 40, spawn[2]], yaw0 + (k * Math.PI) / 2, -8);
+        await settled(page);
+        await sleep(1800);
+        const lp = grid(48, 12, 200, 420), ls = await canvasShot(page, '');
+        const [lpx, lfc] = [await pixels(page, ls, lp), await faces(page, lp)];
+        const opx = fog && fog.type !== 'none' ? await pixels(page, await fogOffShot(), lp) : lpx;
+        lfc.forEach((h, i) => { if (h.kind !== 'none') pairs.push([h.depth, luma(lpx[i]), luma(opx[i])]); });
+        far.push(...sel(lpx, lfc, (h) => h.kind !== 'none' && h.depth >= 0.8 * fogEnd));
+    }
+    const edges = [0, 30, 60, 100, 150, 250, 1000];
+    const bins = edges.slice(0, -1).map((a, i) => { const v = pairs.filter(([d]) => d >= a && d < edges[i + 1]); return { m: `${a}-${edges[i + 1]}`, n: v.length, on: v.length ? Math.round(mean(v.map((p) => p[1]))) : null, off: v.length ? Math.round(mean(v.map((p) => p[2]))) : null }; });
     const bgL = luma(bg);
-    const farOk = far.length === 0 ? null : far.filter((l) => Math.abs(l - bgL) <= 0.3 * 255).length / far.length;
+    const ratio = (v) => { const off = mean(v.map((p) => Math.abs(p[2] - bgL))); return v.length && off > 1 ? mean(v.map((p) => Math.abs(p[1] - bgL))) / off : null; };
+    const nearRatio = ratio(pairs.filter(([d]) => d < 30)), farRatio = ratio(pairs.filter(([d]) => d >= 100));
+    const farL = mean(far);
+    const farOk = nearRatio !== null && farRatio !== null && nearRatio >= 0.97 && farRatio <= 0.85;
+    const designFar = far.length ? far.filter((l) => Math.abs(l - bgL) <= 0.3 * 255).length / far.length : null;
+    const nearL = mean(nearAll);
     const nearOff = nearAll.length ? nearAll.filter((l) => Math.abs(l - bgL) > 0.3 * 255).length / nearAll.length : null;
     const diff = top !== null && side !== null ? Math.abs(top - side) / Math.max(top, side, 1) : null;
     const counts = fc.reduce((m, h) => ((m[h.kind] = (m[h.kind] ?? 0) + 1), m), {});
-    verdict('4-shading', diff !== null && diff >= 0.25 && (farOk === null || farOk >= 0.8), { topLuma: top && Math.round(top), sideLuma: side && Math.round(side), diff: diff && Math.round(diff * 100) / 100, counts, fogEnd, far: far.length, farNearBg: farOk, nearAwayFromBg: nearOff, bgLuma: Math.round(bgL) });
-    // step 5: frame time with the fog on and off (the same view, the same voxels)
-    const fogOn = await frameMs(page, 3000);
-    const saved = await page.evaluate(() => { const f = window.__gsfpv.session.renderer.app.scene.fog; const t = f.type; f.type = 'none'; return t; });
-    const fogOff = await frameMs(page, 3000);
-    await page.evaluate((t) => { window.__gsfpv.session.renderer.app.scene.fog.type = t; }, saved);
-    verdict('5-cost', fogOn !== null && fogOff !== null && Math.abs(fogOn - fogOff) <= 1, { fogType: saved, msFogOn: fogOn && Math.round(fogOn * 100) / 100, msFogOff: fogOff && Math.round(fogOff * 100) / 100, uncapped: process.env.BENCH_UNCAPPED === '1' });
+    verdict('4-shading', diff !== null && diff >= 0.25 && farOk && nearOff >= 0.8, { topLuma: top && Math.round(top), sideLuma: side && Math.round(side), diff: diff && Math.round(diff * 100) / 100, counts, fog, far: far.length, farLuma: farL && Math.round(farL), nearLuma: nearL && Math.round(nearL), fogNearRatio: nearRatio && Math.round(nearRatio * 100) / 100, fogFarRatio: farRatio && Math.round(farRatio * 100) / 100, farToward: farOk, designFarWithin30: designFar, nearAwayFromBg: nearOff, bgLuma: Math.round(bgL), bins });
+    // step 5: frame time with the fog on and off (the same view, the same voxels), alternated three times, medians
+    await hold(page, [spawn[0], spawn[1] + 2, spawn[2]], yaw0, -10);
+    await sleep(1500);
+    const on = [], off = [];
+    for (let k = 0; k < 3; k++) {
+        on.push(await frameMs(page, 2000));
+        await page.evaluate(() => { window.__gsfpv.session.renderer.app.scene.fog.type = 'none'; });
+        off.push(await frameMs(page, 2000));
+        await page.evaluate((t) => { window.__gsfpv.session.renderer.app.scene.fog.type = t; }, fog?.type ?? 'none');
+    }
+    const med = (a) => [...a].sort((x, y) => x - y)[1];
+    const fogOn = med(on), fogOff = med(off);
+    verdict('5-cost', fog?.type === 'linear' && fogOn !== null && fogOff !== null && fogOn - fogOff <= 1, { fogType: fog?.type ?? null, msFogOn: Math.round(fogOn * 100) / 100, msFogOff: Math.round(fogOff * 100) / 100, on: on.map((v) => Math.round(v * 10) / 10), off: off.map((v) => Math.round(v * 10) / 10), uncapped: process.env.BENCH_UNCAPPED === '1' });
     await page.evaluate(() => { window.__hold = null; });
     // ---- Lublin: step 3 (the pilot keeps the voxels-only choice: the mode is a stored setting)
     const lw = await openScene(page, LUBLIN);
@@ -213,6 +291,7 @@ try {
     verdict('3-lublin', lw.ok && ls.mode === 'only' && ls.nearWalls?.walls === 'thin' && drawn && says && back.plan?.why !== 'hidden' && back.splatEnabled !== false, { walls: lw.ok, mode: ls.mode, nearWalls: ls.nearWalls, nearOccupied: occ.length, nearDrawn: drawn, statusSaysThin: says, status: ls.status.slice(0, 220), afterOverlay: back });
     // ---- step 6: the panel's cross at 1536x730 (this page) and at 844x390
     const cross = async (pg) => {
+        await freeMouse(pg);
         const o = await pg.evaluate(() => !!document.querySelector('[data-testid=walls-more]')?.open);
         if (!o) { await clickEl(pg, '[data-testid=walls-summary]'); await sleep(500); }
         const v = await pg.evaluate(() => {
@@ -228,8 +307,9 @@ try {
     const big = await cross(page);
     const ctx2 = await browser.newContext({ viewport: { width: 844, height: 390 }, deviceScaleFactor: 1 });
     const p2 = await ctx2.newPage();
-    await p2.goto(`${base}/fly/?scene=${WROCLAW}&nowarn=1&render=off`);
-    await p2.waitForSelector('[data-testid=walls-summary]', { timeout: 60000 });
+    await p2.goto(`${base}/fly/?scene=${WROCLAW}&nowarn=1&render=off&input=touch`);
+    await p2.waitForFunction(() => ['ready', 'error'].includes(window.__gsfpv?.status), null, { timeout: 240000 });
+    await p2.waitForSelector('[data-testid=walls-summary]', { timeout: 120000 });
     await sleep(800);
     const small = await cross(p2);
     await ctx2.close();
