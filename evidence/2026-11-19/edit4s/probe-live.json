@@ -1,0 +1,141 @@
+{
+ "address": "https://gsfpv.flyreelstudio.eu/en",
+ "live": true,
+ "scan": "70b50d42",
+ "seed": 1,
+ "size": [
+  1536,
+  730
+ ],
+ "dsf": 1.25,
+ "date": "2026-11-19T15:28:08.171Z",
+ "steps": {
+  "open": {
+   "ok": true,
+   "lock": "CANVAS",
+   "courseMs": 25259,
+   "gates": 39,
+   "source": "generated"
+  },
+  "s1.moveGate2": {
+   "ok": true,
+   "select": "click",
+   "moved": {
+    "by": "gizmo",
+    "axis": "x",
+    "r": 40
+   },
+   "from": [
+    4.4,
+    2.6,
+    -2.4
+   ],
+   "to": [
+    4.046,
+    2.6,
+    -2.046
+   ],
+   "m": 0.5
+  },
+  "s2.draftIn3s": {
+   "ok": false,
+   "ms": 3067,
+   "drafts": null,
+   "newest": null,
+   "edit4": false
+  },
+  "s3.restored": {
+   "ok": false,
+   "open": {
+    "ok": true,
+    "lock": "CANVAS",
+    "courseMs": 1012,
+    "gates": 39,
+    "source": "generated"
+   },
+   "gate2": [
+    4.4,
+    2.6,
+    -2.4
+   ],
+   "want": [
+    4.046,
+    2.6,
+    -2.046
+   ],
+   "m": 0.501,
+   "restored": null,
+   "line": "Editor open. W A S D move the view, E up, Q down, hold the right mouse button to look around, the wheel sets the speed. Click a gate: it carries one set of handles at a time, chosen by Move, Turn or Size on the bar under | Editor open. W A S D move the view, E up, Q down, hold the right mouse button to look around, the wheel sets the speed. Click a gate: it carries one set of handles at a time, chosen by Move, Turn or Size on the bar under"
+  },
+  "s4.versions": {
+   "ok": false,
+   "n": 0,
+   "first": []
+  },
+  "s5.offer": {
+   "ok": false,
+   "select": "click",
+   "turned": true,
+   "text": null,
+   "offered": null,
+   "cross": null,
+   "line": "Not saved. Gate 3 faces away from the way in. Press Turn on its bar and pull a ring until it faces the way you come from."
+  },
+  "s6.correctAndSave": {
+   "ok": false,
+   "yes": false,
+   "gatesOnScreenMost": 0,
+   "gates": 0,
+   "selected": 2,
+   "done": null,
+   "line": "Not saved. Gate 3 faces away from the way in. Press Turn on its bar and pull a ring until it faces the way you come from.",
+   "stored": [],
+   "problem": null
+  }
+ },
+ "posts": [
+  {
+   "aborted": "https://gsfpv.flyreelstudio.eu/api/e",
+   "method": "POST"
+  },
+  {
+   "aborted": "https://gsfpv.flyreelstudio.eu/api/e",
+   "method": "POST"
+  },
+  {
+   "aborted": "https://gsfpv.flyreelstudio.eu/api/e",
+   "method": "POST"
+  },
+  {
+   "aborted": "https://gsfpv.flyreelstudio.eu/api/e",
+   "method": "POST"
+  },
+  {
+   "aborted": "https://gsfpv.flyreelstudio.eu/api/e",
+   "method": "POST"
+  },
+  {
+   "aborted": "https://gsfpv.flyreelstudio.eu/api/e",
+   "method": "POST"
+  }
+ ],
+ "notRun": [
+  "s8",
+  "s7"
+ ],
+ "open": {
+  "ok": true,
+  "lock": "CANVAS",
+  "courseMs": 25259,
+  "gates": 39,
+  "source": "generated"
+ },
+ "fails": [
+  "s2.draftIn3s",
+  "s3.restored",
+  "s4.versions",
+  "s5.offer",
+  "s6.correctAndSave"
+ ],
+ "log": []
+}

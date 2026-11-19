@@ -16,7 +16,11 @@ Design: C:/dev/.gsfpv-lanes/designs/edit4.md section 4 (edit4s). Owner's words: 
     check, at most 3 rounds), the offer in the window on refusedSave ([Correct and save] / [Correct] [Show me] and a 44 px
     cross), overview (courseOverview) then one undo step (restoredState), the change list line, then the save;
     edit4s-fixes.test.ts 8 tests, NEG (commits 6e53e61f, 49b200c7)
-- [ ] S3 acceptance: tools/bench/scripts/edit4s-probe.mjs (mouse, 1536x730 dsf 1.25, local api), live negative control, gates
+- [x] S3 acceptance: tools/bench/scripts/edit4s-probe.mjs (mouse, 1536x730 dsf 1.25, local api), live negative control, gates
+  - [x] the probe (commit ecadfdf6); the live negative control fails s2-s6 (evidence/2026-11-19/edit4s/probe-live.json)
+  - [x] the probe found a gate pushed into a wall by the gizmo that had no correction: nudge now tries the 26 ways, the
+    least move first (fixes.ts nudgeWays), test 'from any side', NEG OK (commit 719916e1)
+  - [x] local run: 9 of 9 PASS (evidence/2026-11-19/edit4s/probe-local.json); gates (this commit)
 
 Design versus code (the code wins):
 - Stage S0 (the seam: course/editor/seam.ts, parts.ts loader, Course menu) is NOT in this branch (origin/main e3201fec has no
@@ -43,7 +47,23 @@ Design versus code (the code wins):
 
 ## What the owner does
 
-(filled at S3)
+1. Opens a scan, clicks Keyboard on the Controls screen, clicks into the scene, makes a course (key Shift+G) and opens the
+   editor (key Shift+B).
+2. Types his name in the window and presses Save on the top bar. If the site has had too many new courses from his
+   computer this hour, the line says 'Too many new courses from this computer this hour. Your course is kept as a draft.
+   Save again after 17:50.' and a Save again button waits in the window; the course on screen is not touched. Otherwise the
+   line says 'Saved as your course: ...'. An untouched generated course with the name 'Andrii Shramko' saves.
+3. Clicks gate 2 and drags its arrow. About 2 s later the change is kept in this browser (no button needed).
+4. Reloads the page (or the browser closes) and opens the editor again: gate 2 is where he left it and the line says
+   'Your unsaved course from 16:51 is back (Versions: 2 kept). Key Ctrl+Z takes it away.'
+5. Clicks the window's title 'Course editor' and scrolls down to Versions: each kept draft with its time, gate count and
+   what changed; a click on one brings it back (the course as it stands is kept first).
+6. Turns gate 3 the wrong way and presses Save. Instead of only 'Not saved', the window asks: 'Before saving: gate 3 faces
+   the wrong way; gate 2 touches a wall. Make these small corrections and save?' with [Correct and save] [Show me] and a
+   44 px cross.
+7. Presses Correct and save: the view pulls back until the whole course is on screen, the gates change in front of him (one
+   undo step, key Ctrl+Z), the line lists 'gate 3 turned 168 deg; gate 2 moved 10 cm away from the wall', then the course
+   is saved.
 
 ## Claims
 
@@ -74,10 +94,30 @@ Design versus code (the code wins):
    a new problem beside is dropped. Proof: `npx vitest run tools/bench/test/edit4s-fixes.test.ts` -> 8 passed. NEG:
    neg_control.py --files fixes.ts panel.ts builtin/course.ts keep.css -> NEG OK. `npx vitest run --changed HEAD~2`
    -> 38 files, 477 passed; `pnpm --filter @gsfpv/fly typecheck` clean.
+5. (S3) A gate the pilot pushed into a wall is moved out the least way in any of the 26 ways (0.1 m steps, at most 1 m),
+   not only away from the nearest ray hit (from a low gate's centre that is the floor). Proof: `npx vitest run
+   tools/bench/test/edit4s-fixes.test.ts` -> 9 passed. NEG: neg_control.py --ref HEAD~ --files fixes.ts -t 'from any side'
+   -> NEG OK (old code: gate 5 pushed 0.8-1.2 m in four ways had no correction).
+6. (S3) The pilot's own path with the mouse at 1536x730, device scale 1.25, pointer lock first, on the release build with
+   the local API: open, s8 429 kept as draft with the time and Save again, s7 the untouched generated course with the
+   name 'Andrii Shramko' saved, s1 gate 2 moved by the gizmo, s2 a draft in 1.5 s, s3 restored after a reload at the same
+   place with the line, s4 Versions shown with times, s5 the offer names gates 3 and 2 with a 44x44 cross, s6 the overview
+   (39 of 39 gates on screen), gate 3 selected, the list line, stored 201. Proof: `node tools/bench/scripts/edit4s-probe.mjs
+   dist 70b50d42 1 <out.json>` -> PASS 9/9 (evidence/2026-11-19/edit4s/probe-local.json). Live negative control:
+   `node tools/bench/scripts/edit4s-probe.mjs https://gsfpv.flyreelstudio.eu/en 70b50d42 1 <out.json>` -> FAIL s2 s3 s4
+   s5 s6, open and s1 PASS (evidence/2026-11-19/edit4s/probe-live.json).
 
 ## Not verified
 
 No person, phone or real controller took part in any check of this lane.
+- s7 and s8 were not run on the live site: they store a course (the probe aborts every non-GET /api/ request there). The
+  live run used the probe of commit ecadfdf6; s4 changed after it only to open the window by its title, and the live page
+  has no Versions list at all (0 entries), so it cannot pass there.
+- s8's hour is ended by starting the local API again (its counts live in memory), not by waiting an hour; Save again's
+  enabling at the named time is covered by edit4s-save.test.ts only.
+- ?render=off: nothing was drawn and no picture was judged (no GPU step was needed); 844x390 was not walked.
+- After a reload the address keeps the generated course's link (course=g1....), so a draft restored over it saves as a new
+  course, not as version 2 of the course saved before (nothing is lost; see For the lead).
 
 ## For the lead
 
@@ -102,6 +142,12 @@ place of restoredState, A's frameAll in place of courseOverview.
 Deploy order for S2: apps/api/server.py and apps/api/tracks.py (the API restart) before the page; the page alone still
 works with the old API (no Retry-After: the words name the hour's end). nginx: test_nginx_tracks.py passes, Retry-After
 is not hidden by the tracks location.
+S3: no file outside the owned ones (fixes.ts, the test, the probe, evidence). At the S0 merge: Course > Versions ->
+panel.revealVersions() (today the pilot opens the window by its title and scrolls to Versions). Wanted, not built: a draft
+restored over a generated course whose sourceId is the pilot's own saved course (token in this browser) could save as its
+next version instead of a new course (course.ts keeper restore sets hook.saved), and the save could write course=<id>
+into the address. Live checks after the deploy: edit4s-probe.mjs against the live address must then PASS open and s1-s6
+(s7, s8 only on a local API: they store).
 
 ## Cost notes
 
@@ -112,3 +158,6 @@ is not hidden by the tracks location.
   affordable; a ready cache of fitted courses per scene would make it seconds. Reading course.ts's save sites took ~6 replies.
 - S2 (second run, E7): most replies went to finding the check's geometry (checkTrack gate axis, edit() frames) because the
   design named course-line.ts courseFacing, which does not exist; a design that cites checkTrack's axis rule would save ~4.
+- S3: the most replies went to finding the probe's selectors and hooks in course.ts and panel.ts, and to a unit test that
+  makes the old nudge fail (box rooms never did; a low gate pushed along its axis does); a second build was needed after
+  the probe found the nudge fault. A probe skeleton with the editor's selectors and a local-API helper would save ~6 replies.
