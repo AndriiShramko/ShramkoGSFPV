@@ -40,7 +40,8 @@ export function tableAndSkull(): VoxelCollision {
 }
 
 /** A city filmed from above, 120 x 120 m: a fuzzy ground shell 2 m thick (one voxel in ten) under buildings 16 x 16 m on a
- *  30 m pitch, 12 to 21 m high, as crisp shells one voxel thick; voxel 0.2 m. */
+ *  30 m pitch, 12 to 21 m high, solid (SuperSplat's walls are solid under every surface: scan-kind-audit --profile);
+ *  voxel 0.2 m. */
 export const SLAB_TOP_M = 2;
 export const STREET_AT: Vec3 = [27, 3, 27];
 export const ROOF_AT: Vec3 = [12, 3, 12];
@@ -53,8 +54,7 @@ export function cityFromAbove(): VoxelCollision {
         const bx = x - i * 30 - 4, bz = z - j * 30 - 4;
         if (bx < 0 || bz < 0 || bx >= 16 || bz >= 16) return false;
         const h = SLAB_TOP_M + 10 + ((i * 3 + j * 5) % 4) * 3;
-        if (y >= h + v) return false;
-        return y >= h || bx < v || bz < v || bx >= 16 - v || bz >= 16 - v;
+        return y < h + v;
     });
 }
 

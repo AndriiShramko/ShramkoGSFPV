@@ -2,229 +2,228 @@
  "what": "gen4a A1 scan-kind-audit: analyzeScan kind against hand labels",
  "rules": {
   "zoneR": 2,
-  "roomCeilingShare": 0.6,
   "objectR": 0.25,
-  "objectVoxelShare": 0.5,
+  "roomCeilingShare": 0.38,
+  "roomLeafMin": 0.2,
+  "roomClosedShare": 0.6,
+  "roomLeafMax": 0.5,
+  "plantsLeafShare": 0.3,
+  "plantsCeilingMax": 0.2,
+  "objectReliefShare": 0.4,
   "cityReliefM": 6,
-  "cityGroundRel": 0.5,
-  "plantsFill": 0.25
+  "cityCeilingMax": 0.15
  },
- "match": 4,
+ "match": 11,
  "labelled": 14,
  "rows": [
   {
    "id": "0230d903",
    "scale": 1,
    "label": "street",
-   "kind": "plants",
+   "kind": "cityAbove",
    "match": false,
    "voxelM": 0.2,
-   "tileM": 9.6,
+   "tileM": 10.4,
    "tiles": [
-    52,
-    47
+    49,
+    46
    ],
-   "extentM": 459.2,
+   "extentM": 461.6,
    "core": [
-    -17.66,
-    3.8,
-    -28.829
+    -60.023,
+    12,
+    -101.716
    ],
-   "coreRadiusM": 111.531,
-   "ms": 286,
+   "coreRadiusM": 76.64,
+   "ms": 336,
    "measures": {
-    "footprintTiles": 1616,
-    "zoneTiles": 1349,
-    "ceilingShare": 0.027,
-    "coreVoxelShare": 0.315,
-    "reliefM": 4,
-    "groundCrisp": 30.323,
-    "upperCrisp": 18.863,
-    "coreFill": 0.51
+    "footprintTiles": 1424,
+    "zoneTiles": 552,
+    "ceilingShare": 0.128,
+    "leafShare": 0.063,
+    "coreDetailShare": 0.385,
+    "reliefM": 23.2,
+    "reliefShare": 0.05
    },
    "qualityHist": [
-    110,
-    104,
-    109,
-    92,
-    104,
-    83,
-    90,
-    96,
-    116,
-    712
+    197,
+    153,
+    113,
+    125,
+    111,
+    213,
+    156,
+    103,
+    66,
+    187
    ]
   },
   {
    "id": "1994c65c",
    "scale": 1,
    "label": "street",
-   "kind": "object",
-   "match": false,
+   "kind": "street",
+   "match": true,
    "voxelM": 0.4,
-   "tileM": 22.4,
+   "tileM": 24,
    "tiles": [
-    41,
-    50
+    40,
+    47
    ],
-   "extentM": 1054.4,
+   "extentM": 1076.8,
    "core": [
-    0.352,
-    0.985,
-    3.739
+    -35.2,
+    -7.2,
+    7.274
    ],
-   "coreRadiusM": 120.541,
-   "ms": 372,
+   "coreRadiusM": 126.851,
+   "ms": 295,
    "measures": {
-    "footprintTiles": 1505,
-    "zoneTiles": 354,
-    "ceilingShare": 0.119,
-    "coreVoxelShare": 0.821,
-    "reliefM": 4.8,
-    "groundCrisp": 15.58,
-    "upperCrisp": 7.297,
-    "coreFill": 0.5
+    "footprintTiles": 1322,
+    "zoneTiles": 347,
+    "ceilingShare": 0.238,
+    "leafShare": 0,
+    "coreDetailShare": 0.64,
+    "reliefM": 24,
+    "reliefShare": 0.022
    },
    "qualityHist": [
-    55,
-    91,
-    178,
-    131,
-    161,
-    132,
-    100,
-    105,
-    92,
-    460
+    204,
+    273,
+    207,
+    195,
+    129,
+    43,
+    39,
+    39,
+    44,
+    149
    ]
   },
   {
    "id": "2f1ddf5f",
    "scale": 1,
    "label": "cityAbove",
-   "kind": "plants",
-   "match": false,
+   "kind": "cityAbove",
+   "match": true,
    "voxelM": 0.2,
    "tileM": 17.6,
    "tiles": [
-    43,
+    44,
     50
    ],
-   "extentM": 810.4,
+   "extentM": 820,
    "core": [
-    -136.18,
-    3.209,
-    220.9
+    -271.158,
+    -11.2,
+    166.615
    ],
-   "coreRadiusM": 229.83,
-   "ms": 1783,
+   "coreRadiusM": 138.657,
+   "ms": 1442,
    "measures": {
-    "footprintTiles": 1487,
-    "zoneTiles": 1331,
-    "ceilingShare": 0.033,
-    "coreVoxelShare": 0.41,
-    "reliefM": 4,
-    "groundCrisp": 56.332,
-    "upperCrisp": 32.86,
-    "coreFill": 0.666
+    "footprintTiles": 1493,
+    "zoneTiles": 573,
+    "ceilingShare": 0.131,
+    "leafShare": 0.047,
+    "coreDetailShare": 0.367,
+    "reliefM": 16.8,
+    "reliefShare": 0.02
    },
    "qualityHist": [
-    54,
-    50,
-    31,
-    35,
-    52,
-    50,
-    107,
-    54,
-    72,
-    982
+    180,
+    86,
+    88,
+    111,
+    131,
+    166,
+    181,
+    179,
+    141,
+    230
    ]
   },
   {
    "id": "70b50d42",
    "scale": 1,
    "label": "street",
-   "kind": "plants",
-   "match": false,
+   "kind": "street",
+   "match": true,
    "voxelM": 0.1,
    "tileM": 7.2,
    "tiles": [
     40,
-    50
+    51
    ],
-   "extentM": 330,
+   "extentM": 334.4,
    "core": [
-    -19.507,
-    5.052,
-    -49.42
+    -15.824,
+    12.4,
+    31.121
    ],
-   "coreRadiusM": 60.215,
-   "ms": 498,
+   "coreRadiusM": 53.685,
+   "ms": 608,
    "measures": {
-    "footprintTiles": 1105,
-    "zoneTiles": 693,
-    "ceilingShare": 0.115,
-    "coreVoxelShare": 0.442,
-    "reliefM": 14.4,
-    "groundCrisp": 33.55,
-    "upperCrisp": 22.874,
-    "coreFill": 0.323
+    "footprintTiles": 1108,
+    "zoneTiles": 551,
+    "ceilingShare": 0.282,
+    "leafShare": 0.106,
+    "coreDetailShare": 0.441,
+    "reliefM": 15.6,
+    "reliefShare": 0.047
    },
    "qualityHist": [
-    87,
-    55,
-    79,
-    82,
-    77,
-    67,
-    88,
-    73,
-    88,
-    409
+    153,
+    106,
+    93,
+    124,
+    89,
+    102,
+    97,
+    98,
+    70,
+    176
    ]
   },
   {
    "id": "9baef54b",
    "scale": 1,
    "label": "street",
-   "kind": "plants",
-   "match": false,
+   "kind": "street",
+   "match": true,
    "voxelM": 0.1,
    "tileM": 6.4,
    "tiles": [
     50,
     40
    ],
-   "extentM": 294,
+   "extentM": 293.6,
    "core": [
-    15.913,
-    3.158,
-    -8.8
+    10.139,
+    13.8,
+    -5.763
    ],
-   "coreRadiusM": 44.385,
-   "ms": 421,
+   "coreRadiusM": 47.33,
+   "ms": 623,
    "measures": {
     "footprintTiles": 1051,
-    "zoneTiles": 529,
-    "ceilingShare": 0.136,
-    "coreVoxelShare": 0.43,
-    "reliefM": 14,
-    "groundCrisp": 31.882,
-    "upperCrisp": 21.831,
-    "coreFill": 0.323
+    "zoneTiles": 582,
+    "ceilingShare": 0.321,
+    "leafShare": 0.124,
+    "coreDetailShare": 0.47,
+    "reliefM": 23.2,
+    "reliefShare": 0.079
    },
    "qualityHist": [
-    36,
-    53,
-    48,
-    80,
-    82,
-    76,
-    104,
     103,
-    125,
-    344
+    119,
+    110,
+    127,
+    126,
+    96,
+    85,
+    77,
+    61,
+    147
    ]
   },
   {
@@ -239,35 +238,34 @@
     30,
     29
    ],
-   "extentM": 5.6,
+   "extentM": 5.8,
    "core": [
-    0.032,
-    -0.067,
-    -0.144
+    -0.064,
+    1,
+    0.459
    ],
-   "coreRadiusM": 1.858,
-   "ms": 4,
+   "coreRadiusM": 1.203,
+   "ms": 13,
    "measures": {
-    "footprintTiles": 684,
-    "zoneTiles": 684,
-    "ceilingShare": 0.082,
-    "coreVoxelShare": 0.294,
-    "reliefM": 1,
-    "groundCrisp": 24.111,
-    "upperCrisp": 11,
-    "coreFill": 0.882
+    "footprintTiles": 682,
+    "zoneTiles": 453,
+    "ceilingShare": 0.093,
+    "leafShare": 0.353,
+    "coreDetailShare": 0.401,
+    "reliefM": 2,
+    "reliefShare": 0.345
    },
    "qualityHist": [
-    0,
-    2,
-    11,
-    17,
-    24,
-    26,
-    30,
-    28,
-    26,
-    520
+    3,
+    64,
+    120,
+    74,
+    71,
+    68,
+    63,
+    58,
+    59,
+    102
    ]
   },
   {
@@ -282,78 +280,76 @@
     30,
     29
    ],
-   "extentM": 84,
+   "extentM": 87,
    "core": [
-    0.486,
-    -1.002,
-    -2.159
+    -0.954,
+    15,
+    6.884
    ],
-   "coreRadiusM": 27.868,
-   "ms": 4,
+   "coreRadiusM": 18.041,
+   "ms": 14,
    "measures": {
-    "footprintTiles": 684,
-    "zoneTiles": 684,
-    "ceilingShare": 0.082,
-    "coreVoxelShare": 0.294,
-    "reliefM": 15,
-    "groundCrisp": 24.111,
-    "upperCrisp": 11,
-    "coreFill": 0.882
+    "footprintTiles": 682,
+    "zoneTiles": 453,
+    "ceilingShare": 0.093,
+    "leafShare": 0.353,
+    "coreDetailShare": 0.401,
+    "reliefM": 30,
+    "reliefShare": 0.345
    },
    "qualityHist": [
-    0,
-    2,
-    11,
-    17,
-    24,
-    26,
-    30,
-    28,
-    26,
-    520
+    3,
+    64,
+    120,
+    74,
+    71,
+    68,
+    63,
+    58,
+    59,
+    102
    ]
   },
   {
    "id": "ba7aa29d",
    "scale": 1,
    "label": "street",
-   "kind": "object",
-   "match": false,
+   "kind": "street",
+   "match": true,
    "voxelM": 0.2,
    "tileM": 8.8,
    "tiles": [
-    34,
+    35,
     48
    ],
-   "extentM": 386.4,
+   "extentM": 390.4,
    "core": [
-    17.633,
-    7.762,
-    34.852
+    20.432,
+    10.4,
+    21.327
    ],
-   "coreRadiusM": 52.669,
-   "ms": 77,
+   "coreRadiusM": 69.873,
+   "ms": 200,
    "measures": {
-    "footprintTiles": 663,
-    "zoneTiles": 426,
-    "ceilingShare": 0.056,
-    "coreVoxelShare": 0.749,
-    "reliefM": 15.2,
-    "groundCrisp": 27.633,
-    "upperCrisp": 18.167,
-    "coreFill": 0.354
+    "footprintTiles": 669,
+    "zoneTiles": 572,
+    "ceilingShare": 0.26,
+    "leafShare": 0.093,
+    "coreDetailShare": 0.756,
+    "reliefM": 22.4,
+    "reliefShare": 0.057
    },
    "qualityHist": [
-    67,
+    129,
+    74,
+    82,
+    68,
+    36,
+    38,
+    39,
+    51,
     46,
-    58,
-    55,
-    65,
-    41,
-    49,
-    36,
-    36,
-    210
+    106
    ]
   },
   {
@@ -365,38 +361,37 @@
    "voxelM": 0.05,
    "tileM": 0.6,
    "tiles": [
-    37,
+    38,
     27
    ],
-   "extentM": 20,
+   "extentM": 21.4,
    "core": [
-    4.283,
-    16.196,
-    -0.75
+    6.806,
+    19.7,
+    -1.648
    ],
-   "coreRadiusM": 6.625,
-   "ms": 38,
+   "coreRadiusM": 3.523,
+   "ms": 22,
    "measures": {
-    "footprintTiles": 556,
-    "zoneTiles": 556,
-    "ceilingShare": 0.246,
-    "coreVoxelShare": 0.692,
-    "reliefM": 4.6,
-    "groundCrisp": 18.786,
-    "upperCrisp": 11.5,
-    "coreFill": 0.569
+    "footprintTiles": 553,
+    "zoneTiles": 344,
+    "ceilingShare": 0.468,
+    "leafShare": 0.548,
+    "coreDetailShare": 0.759,
+    "reliefM": 14.4,
+    "reliefShare": 0.673
    },
    "qualityHist": [
-    3,
-    5,
-    11,
+    91,
+    153,
+    30,
+    26,
     28,
-    19,
-    41,
-    51,
+    30,
+    31,
     37,
-    52,
-    309
+    40,
+    87
    ]
   },
   {
@@ -406,212 +401,207 @@
    "kind": "street",
    "match": true,
    "voxelM": 0.4,
-   "tileM": 24,
+   "tileM": 25.6,
    "tiles": [
-    51,
-    40
+    49,
+    38
    ],
-   "extentM": 1129.6,
+   "extentM": 1161.6,
    "core": [
-    -245.171,
-    -143.451,
-    -85.629
+    -429.861,
+    -20,
+    217.685
    ],
-   "coreRadiusM": 344.829,
-   "ms": 493,
+   "coreRadiusM": 149.071,
+   "ms": 463,
    "measures": {
-    "footprintTiles": 905,
-    "zoneTiles": 887,
-    "ceilingShare": 0,
-    "coreVoxelShare": 0.229,
-    "reliefM": 89.6,
-    "groundCrisp": 33.891,
-    "upperCrisp": 24.547,
-    "coreFill": 0.187
+    "footprintTiles": 830,
+    "zoneTiles": 263,
+    "ceilingShare": 0.43,
+    "leafShare": 0,
+    "coreDetailShare": 0.469,
+    "reliefM": 329.6,
+    "reliefShare": 0.284
    },
    "qualityHist": [
-    24,
-    37,
-    48,
-    56,
-    80,
-    71,
+    195,
+    119,
+    82,
     88,
-    76,
-    86,
-    339
+    64,
+    52,
+    58,
+    37,
+    30,
+    105
    ]
   },
   {
    "id": "5dfeb49b",
    "scale": 1,
    "label": "object",
-   "kind": "plants",
+   "kind": "room",
    "match": false,
    "voxelM": 0.05,
-   "tileM": 2.8,
+   "tileM": 2.6,
    "tiles": [
-    48,
-    38
+    50,
+    41
    ],
-   "extentM": 131.8,
+   "extentM": 117.6,
    "core": [
-    -27.8,
-    6.519,
-    7.4
+    -50.054,
+    9.3,
+    -7.687
    ],
-   "coreRadiusM": 47.11,
-   "ms": 3662,
+   "coreRadiusM": 20.493,
+   "ms": 1692,
    "measures": {
-    "footprintTiles": 1824,
-    "zoneTiles": 1824,
-    "ceilingShare": 0.252,
-    "coreVoxelShare": 0.07,
-    "reliefM": 0.2,
-    "groundCrisp": 63.506,
-    "upperCrisp": 49.995,
-    "coreFill": 0.518
+    "footprintTiles": 1200,
+    "zoneTiles": 563,
+    "ceilingShare": 0.728,
+    "leafShare": 0,
+    "coreDetailShare": 0.458,
+    "reliefM": 23,
+    "reliefShare": 0.196
    },
    "qualityHist": [
-    0,
-    0,
-    0,
-    0,
-    4,
-    0,
-    164,
-    0,
-    0,
-    1656
+    14,
+    38,
+    67,
+    231,
+    125,
+    206,
+    201,
+    96,
+    47,
+    175
    ]
   },
   {
    "id": "5dfeb49b",
    "scale": 15,
    "label": "object",
-   "kind": "plants",
+   "kind": "room",
    "match": false,
    "voxelM": 0.75,
-   "tileM": 42,
+   "tileM": 39,
    "tiles": [
-    48,
-    38
+    50,
+    41
    ],
-   "extentM": 1977,
+   "extentM": 1764,
    "core": [
-    -417,
-    97.778,
-    111
+    -750.809,
+    139.5,
+    -115.3
    ],
-   "coreRadiusM": 706.643,
-   "ms": 3558,
+   "coreRadiusM": 307.397,
+   "ms": 1891,
    "measures": {
-    "footprintTiles": 1824,
-    "zoneTiles": 1824,
-    "ceilingShare": 0.252,
-    "coreVoxelShare": 0.07,
-    "reliefM": 3,
-    "groundCrisp": 63.506,
-    "upperCrisp": 49.995,
-    "coreFill": 0.518
+    "footprintTiles": 1200,
+    "zoneTiles": 563,
+    "ceilingShare": 0.728,
+    "leafShare": 0,
+    "coreDetailShare": 0.458,
+    "reliefM": 345,
+    "reliefShare": 0.196
    },
    "qualityHist": [
-    0,
-    0,
-    0,
-    0,
-    4,
-    0,
-    164,
-    0,
-    0,
-    1656
+    14,
+    38,
+    67,
+    231,
+    125,
+    206,
+    201,
+    96,
+    47,
+    175
    ]
   },
   {
    "id": "7a475d38",
    "scale": 1,
    "label": "room",
-   "kind": "object",
-   "match": false,
+   "kind": "room",
+   "match": true,
    "voxelM": 0.032,
-   "tileM": 3.2,
+   "tileM": 3.328,
    "tiles": [
-    51,
-    35
+    49,
+    37
    ],
-   "extentM": 152.704,
+   "extentM": 155.136,
    "core": [
-    -7.465,
-    2.508,
-    -8.931
+    -7.656,
+    3.712,
+    -6.419
    ],
-   "coreRadiusM": 12.622,
-   "ms": 900,
+   "coreRadiusM": 21.521,
+   "ms": 571,
    "measures": {
-    "footprintTiles": 407,
-    "zoneTiles": 157,
-    "ceilingShare": 0.14,
-    "coreVoxelShare": 0.759,
-    "reliefM": 9.344,
-    "groundCrisp": 35.573,
-    "upperCrisp": 26.655,
-    "coreFill": 0.269
+    "footprintTiles": 429,
+    "zoneTiles": 282,
+    "ceilingShare": 0.411,
+    "leafShare": 0.348,
+    "coreDetailShare": 0.742,
+    "reliefM": 13.952,
+    "reliefShare": 0.09
    },
    "qualityHist": [
+    109,
+    39,
+    38,
+    40,
+    38,
     31,
-    22,
-    26,
-    34,
-    29,
-    42,
-    36,
-    36,
-    26,
-    125
+    24,
+    28,
+    25,
+    57
    ]
   },
   {
    "id": "39e63ce9",
    "scale": 1,
    "label": "room",
-   "kind": "plants",
-   "match": false,
+   "kind": "room",
+   "match": true,
    "voxelM": 0.05,
-   "tileM": 0.4,
+   "tileM": 0.6,
    "tiles": [
-    47,
-    40
+    40,
+    29
    ],
-   "extentM": 17,
+   "extentM": 21.4,
    "core": [
-    -4.032,
-    1.237,
-    1.652
+    -2.775,
+    1.2,
+    4.055
    ],
-   "coreRadiusM": 4.048,
-   "ms": 20,
+   "coreRadiusM": 3.246,
+   "ms": 13,
    "measures": {
-    "footprintTiles": 1254,
-    "zoneTiles": 1101,
-    "ceilingShare": 0.293,
-    "coreVoxelShare": 0.417,
-    "reliefM": 2.2,
-    "groundCrisp": 27.167,
-    "upperCrisp": 22.591,
-    "coreFill": 0.557
+    "footprintTiles": 611,
+    "zoneTiles": 354,
+    "ceilingShare": 0.431,
+    "leafShare": 0.33,
+    "coreDetailShare": 0.57,
+    "reliefM": 4.8,
+    "reliefShare": 0.224
    },
    "qualityHist": [
-    62,
+    78,
+    86,
+    46,
+    41,
+    41,
+    54,
+    68,
+    52,
     50,
-    57,
-    57,
-    84,
-    63,
-    77,
-    77,
-    96,
-    631
+    95
    ]
   }
  ]

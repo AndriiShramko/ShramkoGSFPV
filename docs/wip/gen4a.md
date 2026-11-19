@@ -11,28 +11,24 @@ tools/bench/src/scan-kinds.json, evidence/2026-11-19/gen4/.
   plan.ts (planCourse stub = the worker's path of today moved into the package, request ignored except the seed;
   placementStats answers zeros, kind 'unknown'), index.ts exports; request.test.ts (link round trip for all 6
   combinations; NEG OK: absent request.ts fails). Commit b142e495.
-- [ ] A1 analysis: scan.ts analyzeScan + scan.test.ts on worlds.ts worlds (room box, table+skull, city blocks on a 2 m
-  fuzzy ground slab, plant stems); NEG groundTop over the slab is its top (qualityMap.ground fails); footprint excludes the
-  air beside the table; scan-kind-audit.ts over 9 baked scans + 5dfeb49b, 7a475d38, micro-greens -> evidence; thresholds
-  from it; hand labels in scan-kinds.json.
-  - [x] analyzeScan (two passes over blocks: column cells -> trimmed extent; tiles x layers -> ground run, roofTop,
-    ceiling, crisp x cover quality, footprint closed by 2 tiles, core, measures, scanKind). Commits 7da1c05c, 1da82a25 and the
-    Status commit.
-  - [x] scan.test.ts on packages/tracks/test/scan-worlds.ts (room, table+skull, skull at x15, city on a fuzzy 2 m slab with
-    the qualityMap.ground control inside, plant tray): 5 passed. NEG with neg_control.py not run yet.
-  - [x] scan-kind-audit.ts + scan-kinds.json (12 scans: 9 baked + 5dfeb49b, 7a475d38, 39e63ce9 from the CDN cache;
-    micro-greens = Forest Floor ab5efa0e, fix3a.md line 762). Run 2: MATCH 4/14 (ab5efa0e x1/x15 plants, d10c5638 object,
-    eb5f51dc street). Lublin 2f1ddf5f analysis 1.8 s, 5dfeb49b 3.7 s (under the design's 5 s).
-  - [ ] LEFT: the kind rules do not hold on real walls (audit2 table in evidence/2026-11-19/gen4/scan-kinds.json):
-    (1) coreFill is 0.19-0.88 on every scan, so 'plants' fires on 6 streets/rooms: needs a measure that only foliage has
-    (e.g. share of layers with cover between 0.2 and 0.8 under roofTop, or fill measured in blocks of the zone only above
-    groundTop); (2) rooms show ceilingShare 0.14 (7a475d38) and 0.29 (39e63ce9): the CEIL_COV 0.5 / free-run rule misses
-    glass and partial ceilings; try cover >= 0.25 and measure in the core zone of radius 1 x coreRadiusM; (3) real walls are
-    dense shells, voxels per occupied block 7-64 (crisp saturates at CRISP_FULL 16; raise it to ~48 or use the median);
-    Lublin's ground (56) is denser than its roofs (33), so 'ground quality < roofs' must be read another way (e.g. the
-    ground run's thickness in m x unit: a drone scan's fuzzy shell is thick); (4) 5dfeb49b: coreVoxelShare 0.07 over a
-    132 m extent: the skull scene's core and object rule need the audit's core position checked against the skull (print
-    core and the top tiles). Then set the thresholds, re-run the audit once, the NEG via neg_control.py on scan.ts.
+- [x] A1 analysis: scan.ts analyzeScan + scan.test.ts + scan-kind-audit.ts + scan-kinds.json. Commits 7da1c05c, 1da82a25,
+  c54508f8 (run 1) and the A1 commit of run 2 (this Status).
+  - Run 2 found from the walls themselves (scan-kind-audit.ts --profile and --map): SuperSplat's voxels are SOLID under
+    every surface (64 voxels in every inner block; a column is one run from the grid's bottom to the ground or the roof),
+    and 5dfeb49b is solid up to the grid's top all round a carved bowl. So run 1's density measures (crisp, cover, fill)
+    could not work. analyzeScan now reads per column cell where the air is: the surface (top of the lowest run), a ceiling
+    (a run over >= 1 m x unit of air), leaves (a run over a smaller gap), the roof, the territory (air over the surface;
+    open sky over the grid's top unless a run caps the column there). Detail = the air's boundary per column (runs + half
+    the surface steps to the 4 neighbours); quality = detail x cover over 3x3 tiles over the best tenth; the core = the
+    window of 0.125 x extent richest in detail above a flat floor.
+  - Kind rules (KIND_RULES, from the audit table): room (ceiling >= 0.38 with leaves 0.2-0.5, or ceiling >= 0.6), plants
+    (leaves >= 0.3, ceiling < 0.2), object (relief >= 0.4 x extent), cityAbove (relief >= 6 m x unit, ceiling <= 0.15),
+    else street. Audit run 4: MATCH 11/14 (evidence/2026-11-19/gen4/scan-kinds.json). MISS: 0230d903 (truck show) reads
+    cityAbove (ceiling 0.13, relief 23 m: the same measures as Lublin); 5dfeb49b x1 and x15 read room: its walls close the
+    bowl (ceiling 0.73), so the placement keeps gates inside the bowl under its ceiling, which is what G1 needs too.
+    Analysis time: Lublin 1.4 s, 5dfeb49b 1.7 s (design limit 5 s). Quality histograms no longer pile up at 1.
+  - scan.test.ts 5 passed; the city world's buildings are now solid as real walls are. NEG OK twice (neg_control.py):
+    scan.ts absent (origin/main) and run 1's scan.ts (HEAD before this commit) both fail the test.
 - [ ] A2 placement: plan.ts planCourse for real + generate.ts `place` option + placementStats + plan.test.ts (closed course,
   startFinishM 0, outside 0, underGround 0, openings 10/6/4 D); NEG: the same worlds through fitCourse give an open course
   or a gate under the slab top; g1 tests stay green unchanged.
@@ -55,8 +51,18 @@ Nothing yet: stage S0 changes no page. After gen4b: Shift+G opens the 'Generate 
 
 ## Not verified
 
+- Whether 5dfeb49b's core (-50.1, 9.3, -7.7), radius 20 m, lies on the skull: no coordinates of the skull are known to
+  this lane (a drawn look in stage A3 or the acceptance can show it). Kind labels are a person's reading of the catalogue
+  notes, not the owner's check.
+
 - planCourse's stub is not run by a test of its own in S0 (it is the worker's code of today moved; A2 tests it). No person,
   phone or real controller took part.
+
+3. analyzeScan tells room, plants, object, cityAbove and street apart on four synthetic scans, finds the TOP of a fuzzy
+   ground shell where qualityMap's old rule does not, and keeps the air beside a table out of the territory. Proof:
+   `npx vitest run packages/tracks/test/scan.test.ts`; last result 5 passed; NEG OK (scan.ts absent; run 1's scan.ts).
+4. On the 12 real scans the kind matches the hand label 11 of 14 times (x1 and x15). Proof: `cd tools/bench && npx tsx
+   src/scan-kind-audit.ts`; last result MATCH 11/14 (evidence/2026-11-19/gen4/scan-kinds.json).
 
 ## For the lead
 
@@ -67,6 +73,10 @@ Nothing yet: stage S0 changes no page. After gen4b: Shift+G opens the 'Generate 
 - Deploy order: page only (packages/tracks is bundled into the page and its worker).
 
 ## Cost notes
+
+- A1 (run 2, done): about 40 replies; most went to finding that the walls are solid (the profile and map printouts
+  showed it at once) and to the synthetic skull's core (sitting on the table's edge). Cheaper: print --profile first for
+  any new measure; debug a pure function with a tsx script under TEMP that imports by absolute path (tsx -e prints nothing).
 
 - A1 (run 1, left): about 35 replies; most went to the synthetic worlds (a signed-hash bug gave 54 % fuzz instead of 10 %)
   and to finding the micro-greens id (a repo-wide grep timed out: grep docs/wip only). Cheaper: print the real scans'

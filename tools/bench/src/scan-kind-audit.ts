@@ -5,7 +5,7 @@
 import { existsSync, readdirSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { gunzipSync } from 'node:zlib';
-import { openVoxelCollision } from '@gsfpv/collision';
+import { blockDims, forEachBlock, openVoxelCollision } from '@gsfpv/collision';
 import type { VoxelCollision, VoxelMetadata } from '@gsfpv/collision';
 import { KIND_RULES, analyzeScan, flownCollision } from '@gsfpv/tracks';
 import type { SceneTransform } from '@gsfpv/tracks';
@@ -27,6 +27,70 @@ function wallsFromDir(dir: string): VoxelCollision {
     let bin: Uint8Array = readFileSync(join(dir, 'scene.voxel.bin'));
     if (bin[0] === 0x1f && bin[1] === 0x8b) bin = gunzipSync(bin);
     return openVoxelCollision(meta, bin);
+}
+
+/** --profile: per block column the occupied layers, so kind rules are designed from data (median / p90 over columns) */
+function profile(walls: VoxelCollision, unitM: number): Record<string, unknown> {
+    const [nbx, nby, nbz] = blockDims(walls);
+    const W = Math.ceil(nby / 32);
+    const bits = new Uint32Array(nbx * nbz * W), vox = new Float64Array(nbx * nbz);
+    forEachBlock(walls, [0, 0, 0], [nbx, nby, nbz], (bx, by, bz, lo, hi) => {
+        const L = walls.flipXY ? nby - 1 - by : by;
+        const c = bz * nbx + bx;
+        bits[c * W + (L >> 5)] |= 1 << (L & 31);
+        let v = lo >>> 0, n = 0;
+        while (v) { v &= v - 1; n++; }
+        v = hi >>> 0;
+        while (v) { v &= v - 1; n++; }
+        vox[c] += n;
+    });
+    const blockM = 4 * walls.voxelResolution;
+    const freeL = Math.max(1, Math.ceil(unitM / blockM));
+    const occ: number[] = [], crisp: number[] = [], run: number[] = [], span: number[] = [], fill: number[] = [], upper: number[] = [];
+    let cols = 0, ceil = 0, multi = 0;
+    for (let c = 0; c < nbx * nbz; c++) {
+        if (!vox[c]) continue;
+        cols++;
+        const on = (L: number): boolean => ((bits[c * W + (L >> 5)]! >>> (L & 31)) & 1) === 1;
+        let lo = -1, hi = -1, n = 0;
+        for (let L = 0; L < nby; L++) if (on(L)) { if (lo < 0) lo = L; hi = L; n++; }
+        let e = lo;
+        while (e + 1 < nby && on(e + 1)) e++;
+        let gap = 0, hasCeil = false;
+        for (let L = e + 1; L <= hi; L++) { if (on(L)) { if (gap >= freeL) hasCeil = true; gap = 0; } else gap++; }
+        if (hasCeil) ceil++;
+        if (hi > e) multi++;
+        occ.push(n); crisp.push(vox[c]! / n); run.push(((e - lo + 1) * blockM) / unitM); span.push(((hi - lo + 1) * blockM) / unitM);
+        fill.push(n / (hi - lo + 1)); upper.push((n - (e - lo + 1)) / n);
+    }
+    if (process.argv.includes('--map')) {
+        // 16 x 16 map over the grid: max surface (top of the lowest run) and share of columns with something above a gap
+        const M = 16, h = new Float64Array(M * M).fill(-1), mu = new Float64Array(M * M), n = new Float64Array(M * M);
+        for (let bz = 0; bz < nbz; bz++) for (let bx = 0; bx < nbx; bx++) {
+            const c = bz * nbx + bx;
+            if (!vox[c]) continue;
+            const on = (L: number): boolean => ((bits[c * W + (L >> 5)]! >>> (L & 31)) & 1) === 1;
+            let lo = 0;
+            while (!on(lo)) lo++;
+            let e = lo, top = lo;
+            while (e + 1 < nby && on(e + 1)) e++;
+            for (let L = e + 1; L < nby; L++) if (on(L)) top = L;
+            const m = Math.floor((bz * M) / nbz) * M + Math.floor(((walls.flipXY ? nbx - 1 - bx : bx) * M) / nbx);
+            h[m] = Math.max(h[m]!, e + 1);
+            if (top > e) mu[m]++;
+            n[m]++;
+        }
+        const x0 = walls.flipXY ? -(walls.gridMinX + nbx * blockM) : walls.gridMinX;
+        console.log(`grid x ${r3(x0)}..${r3(x0 + nbx * blockM)} z ${r3(walls.gridMinZ)}..${r3(walls.gridMinZ + nbz * blockM)} y layers ${nby} block ${blockM}`);
+        for (let r = 0; r < M; r++) {
+            const row: string[] = [];
+            for (let i = 0; i < M; i++) row.push(n[r * M + i] ? `${h[r * M + i]}:${Math.round((100 * mu[r * M + i]!) / n[r * M + i]!)}` : '.');
+            console.log(row.join(' '));
+        }
+    }
+    const q = (v: number[], p: number): number => { v.sort((a, b) => a - b); return v.length ? r3(v[Math.min(v.length - 1, Math.floor(v.length * p))]!) : 0; };
+    const mp = (v: number[]): string => `${q(v, 0.5)}/${q(v, 0.9)}`;
+    return { cols, ceilShare: r3(ceil / cols), multiShare: r3(multi / cols), occ: mp(occ), crisp: mp(crisp), runU: mp(run), spanU: mp(span), fill: mp(fill), upper: mp(upper) };
 }
 
 async function main(): Promise<void> {
@@ -55,6 +119,10 @@ async function main(): Promise<void> {
         for (const scale of ENLARGED.includes(s.id) ? [1, 15] : [1]) {
             const T = [scale, 0, 0, 0] as unknown as SceneTransform;
             const walls = scale === 1 ? base : flownCollision(base, T);
+            if (process.argv.includes('--profile')) {
+                console.log(`${s.id} x${scale} ${labels[s.id]?.label ?? '-'} v ${walls.voxelResolution} ${JSON.stringify(profile(walls, scale))}`);
+                continue;
+            }
             const t0 = performance.now();
             const a = analyzeScan(walls, T);
             const ms = Math.round(performance.now() - t0);

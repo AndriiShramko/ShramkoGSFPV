@@ -27,7 +27,7 @@ describe('analyzeScan: the kind, the ground, the roofs and the best part of a sc
     it('a skull on a table is an object: the core is the skull, the air beside the table is not scanned territory', () => {
         const a = analyzeScan(tableAndSkull(), IDENTITY);
         expect(a.kind).toBe('object');
-        expect(flat(a.core, SKULL)).toBeLessThan(0.1);
+        expect(flat(a.core, SKULL)).toBeLessThan(0.15); // on the skull (r 0.15), not the table's centre
         expect(a.coreRadiusM).toBeLessThan(0.3);
         // tiles in the scan's own proportion: a 1 m scene gets 10 cm tiles, not the street's 4 m
         expect(a.tileM).toBeLessThanOrEqual(0.1);
@@ -44,7 +44,7 @@ describe('analyzeScan: the kind, the ground, the roofs and the best part of a sc
         const a = analyzeScan(flownCollision(tableAndSkull(), T), T);
         expect(a.unitM).toBe(15);
         expect(a.kind).toBe('object');
-        expect(flat(a.core, [SKULL[0] * 15, 0, SKULL[2] * 15])).toBeLessThan(1.5);
+        expect(flat(a.core, [SKULL[0] * 15, 0, SKULL[2] * 15])).toBeLessThan(0.15 * 15);
     });
 
     it('a city from above: groundTop is the TOP of the fuzzy ground shell, the roofs stand over it', () => {
@@ -54,7 +54,9 @@ describe('analyzeScan: the kind, the ground, the roofs and the best part of a sc
         const block = 0.8;
         expect(Math.abs(at(a, a.groundTop, STREET_AT) - SLAB_TOP_M)).toBeLessThanOrEqual(block);
         expect(at(a, a.roofTop, ROOF_AT) - SLAB_TOP_M).toBeGreaterThanOrEqual(10);
-        expect(a.measures.groundCrisp).toBeLessThan(0.5 * a.measures.upperCrisp);
+        // seen from above: no ceilings; a solid building's tile has its roof as its own ground (no gate inside it)
+        expect(a.measures.ceilingShare).toBeLessThan(0.15);
+        expect(at(a, a.groundTop, ROOF_AT) - SLAB_TOP_M).toBeGreaterThanOrEqual(10);
         // control: the old rule (qualityMap's ground, counted from the bottom) does not find the shell's top in a street
         const q = qualityMap(walls);
         const tx = Math.floor((STREET_AT[0] - q.x0) / q.tileM), tz = Math.floor((STREET_AT[2] - q.z0) / q.tileM);
@@ -67,6 +69,6 @@ describe('analyzeScan: the kind, the ground, the roofs and the best part of a sc
         expect(a.kind).toBe('plants');
         expect(at(a, a.footprint, [0.5, 0.2, 0.5])).toBe(1);
         expect(at(a, a.footprint, [1.15, 0.2, 0.5]) === 1).toBe(false);
-        expect(a.measures.coreFill).toBeGreaterThanOrEqual(0.25);
+        expect(a.measures.leafShare).toBeGreaterThanOrEqual(0.3);
     });
 });
