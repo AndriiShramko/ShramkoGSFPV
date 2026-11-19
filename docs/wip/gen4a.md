@@ -66,7 +66,7 @@ tools/bench/src/scan-kinds.json, evidence/2026-11-19/gen4/.
     CoursePlace.maxGates = LEVELS gatesMax goes to composeElements (commit b534123b; tracks 163 passed).
   - [ ] LEFT 1: no course at all on Laval castle eb5f51dc (18 of 18 NO-ROOM fit 2, 30-60 s each) and on 1994c65c wide
     (9 of 9), and on 5dfeb49b at x1 (G1's scan: only beginner compact gave courses, failing detail and gates; beginner
-    wide, medium and pro NO-ROOM fit 2, 11-30 s each; 7a475d38 and 39e63ce9 were not reached when this run ended): find why (start: trace free.stats, startsOf, zone2 counts as the
+    wide, medium and pro NO-ROOM fit 2, 11-30 s each; the audit ended: PLANS 216 FAILED 96; course 42 fail, gates 39, detail 16, x1 15, ground 1, server 1; inside, nearCore, loop, opening, time, cityLow (Lublin) and room (Winter Garden) all PASS; 39e63ce9 all PASS): find why (start: trace free.stats, startsOf, zone2 counts as the
     housefly trace did: an env-gated console.error after generateCourse in plan.ts, removed after). A 1 km scan's wide box
     makes cells coarse (maxCells 4M); suspect the outdoor 'scanned' rule or the start inside a roof.
   - [ ] LEFT 2: 'server' FAIL on 1994c65c pro compact seed 1 (validateServerTrack: read its reason).
