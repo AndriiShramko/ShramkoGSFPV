@@ -11,7 +11,9 @@
 //   6 ears-walls names left, right, up and down and never front or behind (dir.front, dir.back, headphones.q-front-back);
 //   7 walls-hall opens after it;
 //   8 back at the start screen: Continue first, then Quick start, then Full course;
-//   9 the same screen at 844x390 fits (step 1's test) and keeps that order.
+//   9 the same screen at 844x390 fits (step 1's test) and keeps that order;
+//  11 (the independent review's step) Full course, back to Start, then Quick start by Tab and Enter: the path saved is full,
+//     then fast, and the headphone check opens.
 // Then steps 1 to 4 again in Playwright's Firefox (BROWSER=firefox runs only that part).
 // SITE=https://gsfpv.flyreelstudio.eu runs it against that site (read only: the page keeps its prefs in the browser;
 // nothing is saved, sent or created on the site): the negative control of the lane.
@@ -200,6 +202,45 @@ async function headphones(page: Page): Promise<boolean> {
     return false;
 }
 
+/** The pilot's saved path (the prefs collection 'sonic'), null when none is saved. */
+const savedPath = (page: Page): Promise<string | null> =>
+    page.evaluate(() => {
+        const raw = localStorage.getItem('gsfpv.prefs.v1');
+        const j = raw ? JSON.parse(raw) : null;
+        return (j?.collections?.sonic?.prefs?.path as string | undefined) ?? null;
+    });
+
+/**
+ * Step 11 (the independent review's step): the walk's fresh prefs already say 'fast', so Quick start never changed the path in
+ * the page. A pilot clicks Full course, comes back to Start, and takes Quick start by the keyboard alone (Tab to it, Enter), as a
+ * pilot who does not see the screen would: the path saved must be 'full', then 'fast', and the quick path's first lesson open.
+ */
+async function switchPath(page: Page, origin: string, who: string): Promise<void> {
+    const v: Record<string, unknown> = {};
+    const full = await page.locator('[data-testid="sonic-start-full"]').first().boundingBox();
+    if (full) {
+        await page.mouse.click(full.x + full.width / 2, full.y + full.height / 2);
+        for (let i = 0; i < 50 && (await savedPath(page)) !== 'full'; i++) await sleep(100);
+        v.afterFull = await savedPath(page);
+        await openStart(page, origin);
+        let tabs = 0;
+        for (; tabs < 40; tabs++) {
+            if ((await page.evaluate(() => document.activeElement?.getAttribute('data-testid') ?? null)) === 'sonic-start-quick') break;
+            await page.keyboard.press('Tab');
+        }
+        v.tabs = tabs;
+        await page.keyboard.press('Enter');
+        let s = await hook(page);
+        for (let i = 0; i < 100 && (s?.lesson ?? null) === null; i++) {
+            await sleep(100);
+            s = await hook(page);
+        }
+        v.afterQuick = await savedPath(page);
+        v.lesson = s?.lesson ?? null;
+    }
+    step(who, 11, 'Full course, back, then Quick start by Tab and Enter: path full, then fast, the headphone check opens', v.afterFull === 'full' && (v.tabs as number) < 40 && v.afterQuick === 'fast' && v.lesson === 'ears-headphones', v);
+}
+
 async function chromeWalk(browser: Browser, origin: string): Promise<void> {
     const who = 'chromium';
     const ctx = await browser.newContext({ viewport: { width: 1536, height: 730 }, deviceScaleFactor: 1.25 });
@@ -232,6 +273,8 @@ async function chromeWalk(browser: Browser, origin: string): Promise<void> {
     await sleep(500);
     const small = await look(page);
     step(who, 9, 'at 844x390 the start screen fits and keeps that order', fits(small) && order.every((id, i) => small.startOrder[i] === id), { ...(fitValue(small) as object), order: small.startOrder });
+    await page.setViewportSize({ width: 1536, height: 730 });
+    await switchPath(page, origin, who);
     if (errors.length) step(who, 10, 'no page error', false, errors);
     await ctx.close();
 }

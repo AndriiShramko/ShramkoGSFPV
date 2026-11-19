@@ -184,6 +184,16 @@ tried.
   (sonic-hp-behind). It asks nothing, so S1 left it; if the owner's "no behind or in front" covers it too, it is one
   button and its line.
 
+## Review
+Verdict: SHIP (independent check, 2026-11-19; review file U:/Temp/gsfpv-train4/reviews/sound6.md). No proven finding.
+Re-run: claims 2, 3, 6 pass; two negative controls (lessons.ts; start-screen.ts + start-model.ts + en.json against
+origin/main) NEG OK; the walk on a release build of fdb088bf passes every Chromium step (first wall cue 7.8 s), evidence
+evidence/2026-11-19/sound6/sound6-walk-review.json. Added probe step 11: Full course, back, Quick start by Tab and Enter
+only: path full then fast, the headphone check opens: PASS. Precondition: the pin 53a5675 is on no remote of the package
+yet; push the package before the merge to main. Doubts (not holding): the probe's autoplay flags cannot catch a gesture
+regression; the headphone screen's "Play a sound behind" button; a pilot pressing N before any sound in a listening lesson
+hears no keys line.
+
 ## Cost notes
 - S0: reading the design, the sonic5 status and the brief took 4 replies; nothing would make it cheaper.
 - S1: the count-based tests (lesson-schedule's measured counts, lessons' versions, progress steps) took 5 replies; the
@@ -202,3 +212,4 @@ tried.
 - S5 run 2: 45 replies; finding why the first knock waited (the runner waits for the host speech queue) and which
   lessons have no question (ears-walls: scenes only) took 6: a design naming how a host line delays a runner sound would
   save them; listen:words re-says only changed lines (4 s with its cache), so it is cheap to re-run.
+- Review: 20 replies; reading the probe and finding where the glossary plays its sounds (runner play()) took the most; a probe header naming which prefs state its steps start from would have shown the untested path change at once.
