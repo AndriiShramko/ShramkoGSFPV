@@ -56,8 +56,23 @@ tools/bench/src/scan-kinds.json, evidence/2026-11-19/gen4/.
     free-space box cut at the footprint's edge left a closed pocket 'badly scanned' at every size (enclosure rays left
     the box): zoneBox now pads a tile and an opening at each side. plan.test 8 passed, tracks 163 passed, NEG OK
     (plan.ts of A2). Commit: the one after d1617af3.
-  - [ ] gen4-place-audit.ts over the real scans -> evidence/2026-11-19/gen4/place.json
-  - [ ] gates once, status parts, LANE-DONE
+  - [x] gen4-place-audit.ts written (commit a60c5d30): 12 scans x 3 levels x 2 spreads x seeds 1-3, a 65 mm whoop, rules
+    course/inside/ground/detail/nearCore/loop/opening/gates/server/time (+ cityLow Lublin, room Winter Garden, x1 skull).
+    Its first scene (housefly d10c5638) found a start in a pocket under the fly (the flood reached 2-83 cells): planCourse
+    now also tries a start one opening over the core's roof (startsOf) and keeps the one with more zone cells; housefly
+    6 of 6 courses. Same commit.
+  - [x] Run 1 of the audit (code of a60c5d30; log U:/Temp/gsfpv-train4/gen4a/place-run1.log, JSON place-run1.json there
+    when it ended) found composed elements past the level's gatesMax (17-42 gates for medium 14 / pro 24): fixed,
+    CoursePlace.maxGates = LEVELS gatesMax goes to composeElements (commit b534123b; tracks 163 passed).
+  - [ ] LEFT 1: no course at all on Laval castle eb5f51dc (18 of 18 NO-ROOM fit 2, 30-60 s each) and on 1994c65c wide
+    (9 of 9), and on 5dfeb49b at x1 (G1's scan: only beginner compact gave courses, failing detail and gates; beginner
+    wide, medium and pro NO-ROOM fit 2, 11-30 s each; 7a475d38 and 39e63ce9 were not reached when this run ended): find why (start: trace free.stats, startsOf, zone2 counts as the
+    housefly trace did: an env-gated console.error after generateCourse in plan.ts, removed after). A 1 km scan's wide box
+    makes cells coarse (maxCells 4M); suspect the outdoor 'scanned' rule or the start inside a roof.
+  - [ ] LEFT 2: 'server' FAIL on 1994c65c pro compact seed 1 (validateServerTrack: read its reason).
+  - [ ] LEFT 3: re-run the audit after the fixes -> evidence/2026-11-19/gen4/place.json (all rules PASS, or each FAIL
+    named in Not verified); ms per plan <= FIT_BUDGET_MS (run 1: at most 61 s).
+  - [ ] LEFT 4: gates once (typecheck,vitest,architecture,i18n,b18,leaks), status parts, LANE-DONE.
 
 Differences from the design: planCourse and placementStats live in plan.ts (design section 3), not in request.ts
 (section 0 lists them there); both come out of '@gsfpv/tracks' the same. The stub's onStep gives estMs 0 for 'analyse'
@@ -104,6 +119,11 @@ Nothing yet: stage S0 changes no page. After gen4b: Shift+G opens the 'Generate 
 - Deploy order: page only (packages/tracks is bundled into the page and its worker).
 
 ## Cost notes
+
+- A3 (run 1, left): about 50 replies; most went to the synthetic no-room world (a pocket under 1 m x unit is no
+  territory; the free box cut at the footprint made it 'badly scanned') and to waiting on the 216-plan audit (30-60 s a
+  plan on the 1 km scans). Cheaper: run the audit per scene with --scenes in the background from the start and trace
+  free.stats with an env-gated line at once; never wait in 10 s loops longer than 9 minutes.
 
 - A2: about 25 replies; most went to the synthetic skull and tray giving no course (no air over them in the test grid,
   then the height cap against the walk's free radius). Cheaper: a TEMP tsx script over all worlds x levels printing one
