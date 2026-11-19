@@ -12,7 +12,7 @@ Work copy C:/dev/gsfpv-v13-host, branch edit4c from origin/main e3201fec.
       a small bar 'Keep it here?' [Keep] [Put back], 8 s no answer = keep; texts in locales fly/course-pieces (en es pl ru).
       warn-live.ts LiveWarnings (pure state: 10 a second, kept gates orange until fixed), warn-bar.ts WarnBar (the box,
       44 px cross, Put back = the undo key's row), warn.ts warnPlace/warnedGates, rules.ts paint 'warn', pieces-texts.ts,
-      pieces.css. Test tools/bench/test/edit4c-warn.test.ts. Commit: see git log (edit4c C1w).
+      pieces.css. Test tools/bench/test/edit4c-warn.test.ts. Commit 398ccd1b.
 - [ ] C2 pieces: double and triple vertical, double and triple horizontal (one undo step each), Add menu items.
 - [ ] C3 styles and pole/flag as a format spec (docs/wip/edit4c-format.md), acceptance probe tools/bench/scripts/edit4c-probe.mjs.
 
