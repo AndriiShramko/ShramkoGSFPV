@@ -1,0 +1,475 @@
+{
+ "address": "http://localhost:6180/en",
+ "scene": "70b50d42",
+ "size": [
+  1536,
+  730
+ ],
+ "dsf": 1.25,
+ "live": false,
+ "date": "2026-11-19T22:16:28.876Z",
+ "steps": {
+  "s1.open": {
+   "verdict": "PASS",
+   "mode": "edit",
+   "gates": 46,
+   "onPage": 21,
+   "under": [
+    "CANVAS.#view",
+    "CANVAS.#view",
+    "CANVAS.#view",
+    "CANVAS.#view"
+   ],
+   "screen": [
+    [
+     1035,
+     403,
+     9.38
+    ],
+    [
+     1128,
+     381,
+     15.89
+    ],
+    [
+     1132,
+     380,
+     16.63
+    ],
+    [
+     1135,
+     380,
+     17.38
+    ],
+    [
+     1138,
+     379,
+     18.12
+    ],
+    [
+     1217,
+     377,
+     22.24
+    ],
+    [
+     1233,
+     323,
+     22.89
+    ],
+    [
+     1267,
+     364,
+     28.31
+    ],
+    [
+     1289,
+     364,
+     34.35
+    ],
+    [
+     1318,
+     362,
+     42.15
+    ],
+    [
+     1553,
+     359,
+     32.83
+    ],
+    [
+     1597,
+     320,
+     31.48
+    ]
+   ],
+   "selected": 0,
+   "stand": [
+    1035,
+    403,
+    9.38
+   ],
+   "lock": null
+  },
+  "s2.add": {
+   "verdict": "PASS",
+   "judged": {
+    "leg": 0,
+    "clickedAt": [
+     1082,
+     392
+    ],
+    "armed": true,
+    "grew": true,
+    "newIndex": 1,
+    "wantIndex": 1,
+    "hitM": 43.62358302258198,
+    "offDeg": 0,
+    "neighbours": [
+     "g1",
+     "g2"
+    ],
+    "wasLeg": [
+     "g1",
+     "g2"
+    ],
+    "between": true,
+    "legDepth": 15.89,
+    "hidden": false
+   },
+   "tries": [
+    {
+     "leg": 4,
+     "clickedAt": [
+      1178,
+      378
+     ],
+     "armed": true,
+     "grew": true,
+     "newIndex": 1,
+     "wantIndex": 5,
+     "hitM": 11.784699426730107,
+     "offDeg": 0,
+     "neighbours": [
+      "g1",
+      "g2"
+     ],
+     "wasLeg": [
+      "g5",
+      "g6"
+     ],
+     "between": false,
+     "legDepth": 22.24,
+     "hidden": true
+    },
+    {
+     "leg": 38,
+     "clickedAt": [
+      1350,
+      362
+     ],
+     "armed": true,
+     "grew": true,
+     "newIndex": 0,
+     "wantIndex": 39,
+     "hitM": 8.662000230506811,
+     "legDepth": 42.77,
+     "hidden": true
+    },
+    {
+     "leg": 44,
+     "clickedAt": [
+      1267,
+      362
+     ],
+     "armed": true,
+     "grew": true,
+     "newIndex": 0,
+     "wantIndex": 45,
+     "hitM": 9.490670214916955,
+     "legDepth": 50.99,
+     "hidden": true
+    },
+    {
+     "selectedFar": 44,
+     "now": 44
+    },
+    {
+     "leg": 0,
+     "clickedAt": [
+      1082,
+      392
+     ],
+     "armed": true,
+     "grew": true,
+     "newIndex": 1,
+     "wantIndex": 1,
+     "hitM": 43.62358302258198,
+     "offDeg": 0,
+     "neighbours": [
+      "g1",
+      "g2"
+     ],
+     "wasLeg": [
+      "g1",
+      "g2"
+     ],
+     "between": true,
+     "legDepth": 15.89,
+     "hidden": false
+    }
+   ]
+  },
+  "s3.piece": {
+   "verdict": "PASS",
+   "choice": "double-vertical",
+   "armed": true,
+   "chose": true,
+   "covered": null,
+   "added": 2,
+   "gaps": [
+    {
+     "up": 2,
+     "side": 0
+    }
+   ],
+   "refused": null,
+   "said": "The new gate is red. Gate 2 stands in a wall. Pull its arrows to move it out into the open, or delete it with the cross on its bar."
+  },
+  "s3.undo": {
+   "verdict": "PASS",
+   "pressed": true,
+   "gates": [
+    46,
+    48,
+    46
+   ]
+  },
+  "s4.piece": {
+   "verdict": "PASS",
+   "choice": "triple-horizontal",
+   "armed": true,
+   "chose": true,
+   "covered": null,
+   "added": 3,
+   "gaps": [
+    {
+     "up": 0,
+     "side": 2.2
+    },
+    {
+     "up": 0,
+     "side": 2.2
+    }
+   ],
+   "refused": null,
+   "said": "Triple horizontal added: gates 1 to 3. Fly in through gate 1, turn round, back through the next."
+  },
+  "s4.undo": {
+   "verdict": "PASS",
+   "pressed": true,
+   "gates": [
+    46,
+    49,
+    46
+   ]
+  },
+  "s5.tag": {
+   "verdict": "PASS",
+   "gate": 1,
+   "axis": "z",
+   "px": 52,
+   "tag": {
+    "codes": [
+     "sharp-turn"
+    ],
+    "lines": [
+     "Too sharp a turn to fly into gate 2"
+    ],
+    "box": [
+     864,
+     135,
+     264,
+     42
+    ],
+    "dragging": true
+   },
+   "why": null
+  },
+  "s6.putBack": {
+   "verdict": "PASS",
+   "asked": true,
+   "ask": "Keep it here?KeepPut back (key Ctrl+Z)",
+   "moved": [
+    3.667,
+    2.4,
+    -8.521
+   ],
+   "back": [
+    -2.8,
+    2.4,
+    -11.2
+   ],
+   "before": [
+    -2.8,
+    2.4,
+    -11.2
+   ],
+   "barAfter": "off"
+  },
+  "s7.keep": {
+   "verdict": "PASS",
+   "asked": true,
+   "stayed": true,
+   "moved": true,
+   "kept": [
+    "g1"
+   ],
+   "id": "g1",
+   "barAfter": "off",
+   "why": null,
+   "px": 76
+  },
+  "s9.escAsk": {
+   "verdict": "FAIL",
+   "asked": false,
+   "escClosed": false,
+   "escStayed": false,
+   "escKept": false,
+   "barAfter": null,
+   "said": null,
+   "why": "no z arrow on the page"
+  },
+  "s10.addAsk": {
+   "verdict": "FAIL",
+   "asked": false,
+   "addClosedAsk": false,
+   "addClear": false,
+   "barAfter": null,
+   "why": "no z arrow on the page"
+  },
+  "s8.small": {
+   "verdict": "PASS",
+   "fits": true,
+   "clear": true,
+   "cross44": true,
+   "closed": true,
+   "list": {
+    "box": [
+     13,
+     167,
+     452,
+     192
+    ],
+    "items": [
+     {
+      "text": "Gate",
+      "box": [
+       18,
+       218,
+       220,
+       44
+      ],
+      "clear": true
+     },
+     {
+      "text": "Double vertical",
+      "box": [
+       240,
+       218,
+       220,
+       44
+      ],
+      "clear": true
+     },
+     {
+      "text": "Triple vertical",
+      "box": [
+       18,
+       264,
+       220,
+       44
+      ],
+      "clear": true
+     },
+     {
+      "text": "Double horizontal",
+      "box": [
+       240,
+       264,
+       220,
+       44
+      ],
+      "clear": true
+     },
+     {
+      "text": "Triple horizontal",
+      "box": [
+       18,
+       310,
+       220,
+       44
+      ],
+      "clear": true
+     },
+     {
+      "text": "×",
+      "box": [
+       416,
+       172,
+       44,
+       44
+      ],
+      "clear": true
+     }
+    ],
+    "cross": [
+     416,
+     172,
+     44,
+     44
+    ],
+    "view": [
+     844,
+     390
+    ]
+   }
+  }
+ },
+ "ready": {
+  "status": "ready",
+  "s": 2
+ },
+ "lockAfterClick": "CANVAS",
+ "course": {
+  "ok": true,
+  "s": 10,
+  "gates": 46
+ },
+ "tags": [
+  {
+   "label": "first",
+   "axis": "z",
+   "px": 52,
+   "tag": {
+    "codes": [
+     "sharp-turn"
+    ],
+    "lines": [
+     "Too sharp a turn to fly into gate 2"
+    ],
+    "box": [
+     864,
+     135,
+     264,
+     42
+    ],
+    "dragging": true
+   }
+  },
+  {
+   "label": "second",
+   "axis": "z",
+   "px": 76,
+   "tag": {
+    "codes": [
+     "sharp-turn"
+    ],
+    "lines": [
+     "Too sharp a turn to fly into gate 2"
+    ],
+    "box": [
+     844,
+     127,
+     264,
+     42
+    ],
+    "dragging": true
+   }
+  }
+ ],
+ "fails": [
+  "s9.escAsk",
+  "s10.addAsk"
+ ],
+ "log": []
+}

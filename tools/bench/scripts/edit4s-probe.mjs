@@ -303,9 +303,15 @@ try {
     await sleep(2600);
     const dropped = (await snap()).egates;
     const tG = Date.now();
-    await key('KeyG');
-    await sleep(500);
-    await key('KeyG');
+    // int4: since edit4b (car 1) key G makes no course in the editor; the pilot's path is the top bar's Course, 'Generate a
+    // new course', and Yes to the question (each question asked is answered Yes)
+    await clickSel('.ce-topbar [data-top="course"]', 400);
+    await clickSel('.ce-menu [data-item="generate"]', 600);
+    for (let i = 0; i < 3; i++) {
+        const yes9 = await boxOf('.life-ask [data-ask="yes"]');
+        if (!yes9) break;
+        await click(yes9.x, yes9.y, 900);
+    }
     const g9 = await until(snap, (x) => (x.open && Array.isArray(x.egates) && JSON.stringify(x.egates) !== JSON.stringify(dropped)) || (x.s4?.restored ?? 0) >= tG - 60_000 && (x.s4?.restored ?? 0) > 0 && x.open, 300000, 1000);
     await sleep(2000);
     s = await snap();

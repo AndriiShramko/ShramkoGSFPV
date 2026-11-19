@@ -1,0 +1,258 @@
+{
+  "probe": "sonic-quick-walk",
+  "target": "http://localhost:6180",
+  "at": "2026-11-19T22:20:51.531Z",
+  "pass": false,
+  "failed": [
+    "chromium 11"
+  ],
+  "steps": [
+    {
+      "browser": "chromium",
+      "n": 1,
+      "name": "the start screen fits at 1536x730 (scale 1.25)",
+      "pass": true,
+      "value": {
+        "overflowX": 0,
+        "buttons": 45,
+        "small": [],
+        "outside": [],
+        "overlaps": []
+      }
+    },
+    {
+      "browser": "chromium",
+      "n": 2,
+      "name": "\"Quick start\" is the first button of Start and visible",
+      "pass": true,
+      "value": {
+        "order": [
+          "sonic-start-quick",
+          "sonic-start-full"
+        ],
+        "visible": true
+      }
+    },
+    {
+      "browser": "chromium",
+      "n": 3,
+      "name": "a mouse click on it: sound running within 2 s, no sound problem shown",
+      "pass": true,
+      "value": {
+        "states": [
+          "running"
+        ],
+        "problem": null,
+        "clicked": "[data-testid=\"sonic-start-quick\"]"
+      }
+    },
+    {
+      "browser": "chromium",
+      "n": 4,
+      "name": "the first wall cue within 12 s of the click",
+      "pass": true,
+      "value": {
+        "seconds": 7.6,
+        "hook": true,
+        "speech": [
+          {
+            "text": "",
+            "voice": null,
+            "called": 1,
+            "started": 181,
+            "ended": 181
+          },
+          {
+            "text": "Headphone check",
+            "voice": "Microsoft David - English (United States)",
+            "called": 456,
+            "started": 548,
+            "ended": 2283
+          },
+          {
+            "text": "Headphones on, L on your left ear.",
+            "voice": "Microsoft David - English (United States)",
+            "called": 458,
+            "started": 2331,
+            "ended": 5605
+          },
+          {
+            "text": "Sound 1 of 3.",
+            "voice": "Microsoft David - English (United States)",
+            "called": 5605,
+            "started": 5648,
+            "ended": 7626
+          }
+        ]
+      }
+    },
+    {
+      "browser": "chromium",
+      "n": 5,
+      "name": "the headphone check answered on its three questions -> passed",
+      "pass": true,
+      "value": {
+        "lesson": "ears-headphones"
+      }
+    },
+    {
+      "browser": "chromium",
+      "n": 6,
+      "name": "ears-walls names left, right, up, down and never front or behind",
+      "pass": true,
+      "value": {
+        "passed": true,
+        "dirs": [
+          "dir.left",
+          "dir.right",
+          "dir.up",
+          "dir.down"
+        ],
+        "banned": []
+      }
+    },
+    {
+      "browser": "chromium",
+      "n": 7,
+      "name": "walls-hall opens after it",
+      "pass": true,
+      "value": {
+        "lesson": "walls-hall",
+        "phase": "intro",
+        "seconds": 112
+      }
+    },
+    {
+      "browser": "chromium",
+      "n": 8,
+      "name": "back at Start: Continue, Quick start, Full course",
+      "pass": true,
+      "value": {
+        "order": [
+          "sonic-start-continue",
+          "sonic-start-quick",
+          "sonic-start-full"
+        ]
+      }
+    },
+    {
+      "browser": "chromium",
+      "n": 9,
+      "name": "at 844x390 the start screen fits and keeps that order",
+      "pass": true,
+      "value": {
+        "overflowX": 0,
+        "buttons": 46,
+        "small": [],
+        "outside": [],
+        "overlaps": [],
+        "order": [
+          "sonic-start-continue",
+          "sonic-start-quick",
+          "sonic-start-full"
+        ]
+      }
+    },
+    {
+      "browser": "chromium",
+      "n": 11,
+      "name": "Full course, back, then Quick start by Tab and Enter: path full, then fast, the headphone check opens",
+      "pass": false,
+      "value": {
+        "afterFull": "full",
+        "tabs": 6,
+        "afterQuick": "full",
+        "lesson": "ears-headphones"
+      }
+    },
+    {
+      "browser": "firefox",
+      "n": 1,
+      "name": "the start screen fits at 1536x730 (scale 1.25)",
+      "pass": true,
+      "value": {
+        "overflowX": 0,
+        "buttons": 45,
+        "small": [],
+        "outside": [],
+        "overlaps": []
+      }
+    },
+    {
+      "browser": "firefox",
+      "n": 2,
+      "name": "\"Quick start\" is the first button of Start and visible",
+      "pass": true,
+      "value": {
+        "order": [
+          "sonic-start-quick",
+          "sonic-start-full"
+        ],
+        "visible": true
+      }
+    },
+    {
+      "browser": "firefox",
+      "n": 3,
+      "name": "a mouse click on it: sound running within 2 s, no sound problem shown",
+      "pass": true,
+      "value": {
+        "states": [
+          "running"
+        ],
+        "problem": null,
+        "clicked": "[data-testid=\"sonic-start-quick\"]"
+      }
+    },
+    {
+      "browser": "firefox",
+      "n": 4,
+      "name": "the first wall cue within 12 s of the click",
+      "pass": true,
+      "value": {
+        "seconds": 8.1,
+        "hook": true,
+        "speech": [
+          {
+            "text": "",
+            "voice": null,
+            "called": 0,
+            "started": 748,
+            "ended": 748
+          },
+          {
+            "text": "Headphone check",
+            "voice": "Microsoft David - English (United States)",
+            "called": 636,
+            "started": 914,
+            "ended": 2684
+          },
+          {
+            "text": "Headphones on, L on your left ear.",
+            "voice": "Microsoft David - English (United States)",
+            "called": 638,
+            "started": 2781,
+            "ended": 6057
+          },
+          {
+            "text": "Sound 1 of 3.",
+            "voice": "Microsoft David - English (United States)",
+            "called": 6057,
+            "started": 6141,
+            "ended": 8116
+          }
+        ]
+      }
+    },
+    {
+      "browser": "firefox",
+      "n": 0,
+      "name": "engine state and errors (information)",
+      "pass": true,
+      "value": {
+        "engine": "running",
+        "errors": []
+      }
+    }
+  ]
+}

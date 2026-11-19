@@ -1,0 +1,178 @@
+{
+ "address": "http://localhost:6180/en",
+ "live": true,
+ "scan": "70b50d42",
+ "seed": 1,
+ "size": [
+  1536,
+  730
+ ],
+ "dsf": 1.25,
+ "date": "2026-11-19T22:09:57.963Z",
+ "steps": {
+  "open": {
+   "ok": true,
+   "lock": "CANVAS",
+   "courseMs": 18214,
+   "gates": 39,
+   "source": "generated"
+  },
+  "s1.moveGate2": {
+   "ok": true,
+   "select": "click",
+   "moved": {
+    "by": "gizmo",
+    "axis": "z",
+    "r": 85
+   },
+   "from": [
+    4.4,
+    2.6,
+    -2.4
+   ],
+   "to": [
+    3.056,
+    2.6,
+    -3.744
+   ],
+   "m": 1.9
+  },
+  "s2.draftIn3s": {
+   "ok": true,
+   "ms": 1508,
+   "drafts": 1,
+   "newest": 1795126234814,
+   "edit4": true
+  },
+  "s3.restored": {
+   "ok": true,
+   "open": {
+    "ok": true,
+    "lock": "CANVAS",
+    "courseMs": 2,
+    "gates": 39,
+    "source": "generated"
+   },
+   "gate2": [
+    3.056,
+    2.6,
+    -3.744
+   ],
+   "want": [
+    3.056,
+    2.6,
+    -3.744
+   ],
+   "m": 0,
+   "restored": 1795126234814,
+   "line": "Your unsaved course from 23:10 is back (Versions: 1 kept). Key Ctrl+Z takes it away. | Your unsaved course from 23:10 is back (Versions: 1 kept). Key Ctrl+Z takes it away."
+  },
+  "s4.versions": {
+   "ok": true,
+   "openedBy": "its title",
+   "wheels": 2,
+   "n": 1,
+   "first": [
+    {
+     "text": "23:10 · gates: 39 · moved a gate",
+     "shown": true
+    }
+   ]
+  },
+  "s5.offer": {
+   "ok": true,
+   "select": "tab",
+   "turned": true,
+   "text": "Before saving: gate 3 faces the wrong way; gate 2 touches a wall. Make these small corrections and save?",
+   "offered": [
+    {
+     "kind": "face-line",
+     "gates": [
+      3
+     ]
+    },
+    {
+     "kind": "nudge",
+     "gates": [
+      2
+     ]
+    }
+   ],
+   "cross": [
+    44,
+    44
+   ],
+   "line": "Before saving: gate 3 faces the wrong way; gate 2 touches a wall. Make these small corrections and save?"
+  },
+  "s6.correctAndSave": {
+   "ok": false,
+   "yes": true,
+   "gatesOnScreenMost": 39,
+   "gates": 39,
+   "selected": 2,
+   "done": "gate 3 turned 168 deg; gate 2 moved 20 cm away from the wall",
+   "line": "No connection to the site. Your course is kept as a draft. Check the internet and press Save again.",
+   "stored": [],
+   "problem": {
+    "status": null,
+    "key": "course.save.problem.network",
+    "againAt": null
+   }
+  },
+  "s9.generateDropsForReal": {
+   "ok": false,
+   "ms": 300800,
+   "open": true,
+   "newCourse": false,
+   "restored": null,
+   "line": "Click a gate to change it. Fly the course (or key Space, or your controller's arm switch) flies it at once | Moved. Gate 3 of 39: ring, 1.2 m",
+   "drafts": 4
+  }
+ },
+ "posts": [
+  {
+   "aborted": "http://localhost:6180/api/e",
+   "method": "POST"
+  },
+  {
+   "aborted": "http://localhost:6180/api/e",
+   "method": "POST"
+  },
+  {
+   "aborted": "http://localhost:6180/api/e",
+   "method": "POST"
+  },
+  {
+   "aborted": "http://localhost:6180/api/e",
+   "method": "POST"
+  },
+  {
+   "aborted": "http://localhost:6180/api/e",
+   "method": "POST"
+  },
+  {
+   "aborted": "http://localhost:6180/api/e",
+   "method": "POST"
+  },
+  {
+   "aborted": "http://localhost:6180/api/tracks",
+   "method": "POST"
+  }
+ ],
+ "notRun": [
+  "s8",
+  "s7"
+ ],
+ "open": {
+  "ok": true,
+  "lock": "CANVAS",
+  "courseMs": 18214,
+  "gates": 39,
+  "source": "generated"
+ },
+ "fails": [
+  "s6.correctAndSave",
+  "s9.generateDropsForReal"
+ ],
+ "log": []
+}
