@@ -50,6 +50,14 @@ tools/bench/src/scan-kinds.json, evidence/2026-11-19/gen4/.
 - [ ] A3 tight scans and evidence: no-room + fitSize, shrunk ladder to 4 D, gen4-place-audit.ts over 12 scenes x 3 levels
   x 2 spreads x 3 seeds -> evidence/2026-11-19/gen4/place.json, PASS/FAIL per rule; ms per plan <= FIT_BUDGET_MS; the
   gates once before LANE-DONE.
+  - [x] no-room + fitSize: fitSizeFor (the first FIT_SIZES step over the size reaching FIT_SLACK x size / ratio; ratio =
+    the largest free radius of any free zone cell against the 4 D ring's need); plan.test.ts crowdedPocket (posts every
+    0.4 m in a closed 2 x 1.2 x 2 m pocket): no-room at x1 with fitSize 3, a shrunk course at x3. Found on the way: the
+    free-space box cut at the footprint's edge left a closed pocket 'badly scanned' at every size (enclosure rays left
+    the box): zoneBox now pads a tile and an opening at each side. plan.test 8 passed, tracks 163 passed, NEG OK
+    (plan.ts of A2). Commit: the one after d1617af3.
+  - [ ] gen4-place-audit.ts over the real scans -> evidence/2026-11-19/gen4/place.json
+  - [ ] gates once, status parts, LANE-DONE
 
 Differences from the design: planCourse and placementStats live in plan.ts (design section 3), not in request.ts
 (section 0 lists them there); both come out of '@gsfpv/tracks' the same. The stub's onStep gives estMs 0 for 'analyse'

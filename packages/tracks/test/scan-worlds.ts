@@ -58,6 +58,14 @@ export function cityFromAbove(): VoxelCollision {
     });
 }
 
+/** A pocket 2 x 1.2 x 2 m carved in a solid block (as 5dfeb49b's bowl is) and crowded with posts 5 cm thick every 0.3 m:
+ *  no 4 D gate of a whoop fits between them at x1, one does when the scan is three times larger; voxel 0.025 m. */
+export const POCKET_IN: [Vec3, Vec3] = [[0, 0, 0], [2, 1.2, 2]];
+export function crowdedPocket(): VoxelCollision {
+    const post = (v: number): boolean => v - Math.floor(v / 0.4) * 0.4 < 0.1;
+    return analyticCollision([-0.2, -0.2, -0.2], [2.2, 1.4, 2.2], 0.025, (x, y, z) => !inBox(x, y, z, POCKET_IN[0], POCKET_IN[1]) || (post(x) && post(z)));
+}
+
 /** A tray of plants 1 x 1 m: soil 4 cm, stems every 0.25 m 0.4 m high, a leaf ball (r 8 cm) on each and one half way;
  *  voxel 0.02 m; air to 1.5 m up (a gate a whoop passes over the leaves). */
 export function plantTray(): VoxelCollision {

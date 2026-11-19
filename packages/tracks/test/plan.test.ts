@@ -3,10 +3,10 @@
 // lane) on the same world, measured by the same placementStats, puts gates under the fuzzy ground's top or leaves the
 // course open.
 import { describe, expect, it } from 'vitest';
-import { COURSE_DEFAULTS, LEVELS, analyzeScan, courseLinkId, fitCourse, freeSpace, generateCourse, goodForGate, placementStats, planCourse, qualityBounds, qualityMap, validateServerTrack } from '../src';
-import type { CourseLevel, CourseRequest, PlanInput, VoxelCollision } from '../src';
+import { COURSE_DEFAULTS, LEVELS, analyzeScan, courseLinkId, fitCourse, freeSpace, generateCourse, fitSizeFor, flownCollision, goodForGate, placementStats, planCourse, qualityBounds, qualityMap, validateServerTrack } from '../src';
+import type { CourseLevel, CourseRequest, PlanInput, SceneTransform, VoxelCollision } from '../src';
 import { IDENTITY } from './worlds';
-import { cityFromAbove, plantTray, scannedRoom, tableAndSkull } from './scan-worlds';
+import { cityFromAbove, crowdedPocket, plantTray, scannedRoom, tableAndSkull } from './scan-worlds';
 
 const WHOOP_R = 0.0425; // a 65 mm whoop (fit.ts SMALLEST_DRONE_RADIUS_M)
 const D = 2 * WHOOP_R;
@@ -84,5 +84,32 @@ describe('planCourse: the asked course in the scanned part, closed, at the craft
         expect(r.stats.outside).toBe(0);
         expect(r.stats.underGround).toBe(0);
         expect(r.stats.closed).toBe(true);
+    });
+
+    it('a pocket too small at x1: no-room with the Scene size where the 4 D gate fits, and at that size a course', () => {
+        const pocket = crowdedPocket();
+        const r = planCourse(input(pocket, ask('beginner')));
+        expect(r.ok).toBe(false);
+        if (r.ok) return;
+        expect(r.reason).toBe('no-room');
+        expect(r.fitSize).not.toBeNull();
+        expect(r.fitSize!).toBeGreaterThan(1);
+        const T: SceneTransform = [r.fitSize!, 0, 0, 0];
+        const big = planCourse({ ...input(flownCollision(pocket, T), ask('beginner')), transform: T });
+        expect(big.ok).toBe(true);
+        if (!big.ok) return;
+        expect(big.shrunk).toBe(true);
+        expect(big.stats.gates).toBeGreaterThanOrEqual(1);
+        expect(big.stats.outside).toBe(0);
+        expect(big.stats.underGround).toBe(0);
+    });
+
+    it('fitSizeFor: the first step over the size that reaches size / ratio; null when none does', () => {
+        expect(fitSizeFor(1, 0.45)).toBe(3);
+        expect(fitSizeFor(1, 1.2)).toBe(2);
+        expect(fitSizeFor(3, 0.5)).toBe(10);
+        expect(fitSizeFor(10, 0.2)).toBeNull();
+        expect(fitSizeFor(30, 1)).toBeNull();
+        expect(fitSizeFor(1, 0)).toBeNull();
     });
 });

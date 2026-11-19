@@ -121,6 +121,37 @@ export function zoneAt(a: ScanAnalysis, request: CourseRequest, rules: PlanRules
     };
 }
 
+/** the Scene sizes a no-room answer may offer (the same steps as apps/fly course/finish.ts NO_COURSE_SIZES) */
+export const FIT_SIZES: readonly number[] = Object.freeze([1, 2, 3, 5, 10, 30]);
+/** fitSize asks this much more than the free radius alone: a usable room needs volume past the gate's own radius
+ *  (MEASURED, plan.test.ts crowdedPocket: radius 0.55 of the need at x1, the radius alone asks x2 which has no room) */
+export const FIT_SLACK = 1.25;
+
+/** the largest free radius of any free cell in a zone (a no-room scan has no usable cell to measure) against the radius
+ *  a ring of step k needs (>= 1: a gate fits) */
+function roomRatio(free: FreeSpace, k: number, at: (p: Vec3) => boolean): number {
+    let best = 0;
+    for (let i = 0; i < free.solid.length; i++) {
+        if (free.solid[i] !== 0) continue;
+        const c = clearanceM(free, i);
+        if (c > best && at(cellCentre(free, i))) best = c;
+    }
+    return best / (RING_MIN_FREE_M * k);
+}
+
+/**
+ * The Scene size at which a no-room scan gives the smallest gate room: the walls grow with the size and the craft does
+ * not, so the free radius grows as size; `ratio` is the largest free radius against the 4 D gate's need at `size`. The
+ * first FIT_SIZES step over `size` that reaches FIT_SLACK x size / ratio (a ratio >= 1 that still gave no course asks the next step:
+ * more room for the legs); null when no step is large enough or there is no free cell at all.
+ */
+export function fitSizeFor(size: number, ratio: number): number | null {
+    if (!(ratio > 0)) return null;
+    const want = (FIT_SLACK * size) / Math.min(1, ratio);
+    for (const s of FIT_SIZES) if (s > size + 1e-6 && s >= want - 1e-6) return s;
+    return null;
+}
+
 /** the walk's candidate cells (generate.ts walkCourse without a quality map: usable, a ring's free radius) in a zone */
 function zoneCount(free: FreeSpace, k: number, at: (p: Vec3) => boolean): number {
     let n = 0;
@@ -148,7 +179,10 @@ function zoneBox(a: ScanAnalysis, request: CourseRequest, rules: PlanRules, open
             y1 = Math.max(y1, (Number.isFinite(r) ? r : a.groundTop[t]!) + 2 * openingM, a.groundTop[t]! + EYE_HI_M * a.unitM + openingM);
         }
     if (!(x1 > x0)) return null;
-    return { min: [x0, y0 - openingM, z0], max: [x1, y1 + openingM, z1] };
+    // a tile and an opening more at each side: the walls that close the footprint stand in the box, so the free space's
+    // enclosure rays hit them (a box cut at the footprint's edge leaves a closed pocket 'badly scanned' at any size)
+    const pad = a.tileM + openingM;
+    return { min: [x0 - pad, y0 - openingM, z0 - pad], max: [x1 + pad, y1 + openingM, z1 + pad] };
 }
 
 /** where the walk starts: over the core, half way between its ground and its roof or ceiling (the nearest zone cell) */
@@ -185,6 +219,8 @@ export function planCourse(input: PlanInput, hooks: PlanHooks = {}): PlanAnswer 
     const elements = input.elements && rules.level.elements.length > 1;
     let best: { track: TrackFile; opening: number } | null = null;
     let lastMs = 0;
+    /** the 4 D gate's room at this size (fitSize of a no-room answer) */
+    let ratio = 0;
     for (let oi = 0; oi < rules.openings.length && !late(); oi++) {
         const opening = rules.openings[oi]!;
         const k = opening / RING_DIAMETER_M;
@@ -199,6 +235,7 @@ export function planCourse(input: PlanInput, hooks: PlanHooks = {}): PlanAnswer 
             if (!box) continue;
             hooks.onStep?.('free', 0);
             const free = freeAtMargin(walls, { spawn: start, bounds: box, unitM: a.unitM, kind: a.kind === 'room' ? 'indoor' : 'auto', goodAt: zoneAt(a, ask.req, R, opening, 2) }, p.marginM);
+            if (oi === rules.openings.length - 1) ratio = Math.max(ratio, roomRatio(free, k, zoneAt(a, ask.req, R, opening, 2)));
             let tier = 0;
             while (tier < 2 && zoneCount(free, k, zoneAt(a, ask.req, R, opening, tier)) < ZONE_CANDS_PER_GATE * R.gates) tier++;
             const place: CoursePlace = { at: zoneAt(a, ask.req, R, opening, tier), start, reachM: R.zoneR, gates: R.gates, climbMax: R.level.climbMax, version };
@@ -211,7 +248,7 @@ export function planCourse(input: PlanInput, hooks: PlanHooks = {}): PlanAnswer 
         }
         if (best && best.track.gates.length >= rules.level.gatesMin) break;
     }
-    if (!best) return { ok: false, reason: 'no-room', kind: a.kind, fitSize: null };
+    if (!best) return { ok: false, reason: 'no-room', kind: a.kind, fitSize: fitSizeFor(transform[0], ratio) };
     const track: TrackFile = { ...best.track, id: courseLinkId(request), title: courseTitle(request.seed) };
     const start = flownStart(track, transform) ?? { pos: a.core, yawDeg: 0 };
     return { ok: true, track, stats: placementStats(track, a, transform), start, shrunk: best.opening < rules.openings[0]! - 1e-9 };
