@@ -77,6 +77,14 @@ export function messagePlace(viewW: number, viewH: number): { side: boolean; max
     return { side, maxBottom: Math.round(viewH * (side ? 0.6 : 1 / 3)) };
 }
 
+/**
+ * A problem always says what to do (the owner's rule): one written without a fix line gets `fallback` (the
+ * service gives messages.fix.default: "send it to the author"). Other kinds are returned as they are.
+ */
+export function withFix(m: PilotMessage, fallback: string): PilotMessage {
+    return m.kind === 'problem' && !m.fix?.trim() ? { ...m, fix: fallback } : m;
+}
+
 /** The text a "Send to the author" report starts with. */
 export function reportText(m: Pick<LoggedMessage, 'text' | 'fix' | 'from' | 'scene'>): string {
     return [m.text, m.fix, m.from ? `from: ${m.from}` : '', m.scene ? `scene: ${m.scene}` : ''].filter(Boolean).join('\n');

@@ -1,6 +1,16 @@
 // Lane ux4a (complaint U1): the rules of the one message service (apps/fly/src/messages-logic.ts), no page.
 import { describe, expect, it } from 'vitest';
-import { LOG_SIZE, MAX_SHOWN_MS, MIN_SHOWN_MS, MessageLog, messagePlace, PROGRESS_IDLE_MS, reportText, shownMs } from '../../../apps/fly/src/messages-logic';
+import { LOG_SIZE, MAX_SHOWN_MS, MIN_SHOWN_MS, MessageLog, messagePlace, PROGRESS_IDLE_MS, reportText, shownMs, withFix } from '../../../apps/fly/src/messages-logic';
+
+describe('messages: a problem says what to do', () => {
+    it('a problem without a fix line gets the fallback; its own fix and other kinds stay', () => {
+        expect(withFix({ text: 'No course', kind: 'problem' }, 'Send it').fix).toBe('Send it');
+        expect(withFix({ text: 'No course', kind: 'problem', fix: '  ' }, 'Send it').fix).toBe('Send it');
+        expect(withFix({ text: 'No course', kind: 'problem', fix: 'Press Shift+G' }, 'Send it').fix).toBe('Press Shift+G');
+        expect(withFix({ text: 'Walls on' }, 'Send it').fix).toBeUndefined();
+        expect(withFix({ text: 'Ready', kind: 'done' }, 'Send it').fix).toBeUndefined();
+    });
+});
 
 describe('messages: how long a line stays', () => {
     it('a longer text stays longer', () => {

@@ -5,7 +5,7 @@
 // course's lap block (course/hud.ts, course/note-slot.ts) keep measuring it as the one note at the top.
 import { h } from './dom';
 import { t } from '../i18n';
-import { MessageLog, messagePlace, reportText } from '../messages-logic';
+import { MessageLog, messagePlace, reportText, withFix } from '../messages-logic';
 import type { LoggedMessage, PilotMessage } from '../messages-logic';
 
 export type { MessageKind, PilotMessage } from '../messages-logic';
@@ -55,7 +55,7 @@ export class MessageCenter {
     }
 
     tell(m: PilotMessage): LoggedMessage {
-        const e = this.log.add(m, performance.now(), this.scene());
+        const e = this.log.add(withFix(m, t('messages.fix.default')), performance.now(), this.scene());
         this.render();
         return e;
     }

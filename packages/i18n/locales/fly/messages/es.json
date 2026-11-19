@@ -1,6 +1,7 @@
 {
   "messages.send": "Enviar al autor",
   "messages.close": "Cerrar este mensaje",
+  "messages.fix.default": "Si vuelve a pasar, envíalo al autor: el botón de abajo.",
   "messages.more": "+{n} más en Mensajes",
   "messages.title": "Mensajes",
   "messages.empty": "Aún no hay mensajes.",

@@ -1,6 +1,7 @@
 {
   "messages.send": "Отправить автору",
   "messages.close": "Закрыть это сообщение",
+  "messages.fix.default": "Если это повторится, отправьте автору: кнопка ниже.",
   "messages.more": "Ещё {n} в Сообщениях",
   "messages.title": "Сообщения",
   "messages.empty": "Сообщений пока нет.",
