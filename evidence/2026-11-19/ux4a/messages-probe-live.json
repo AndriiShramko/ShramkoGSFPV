@@ -1,0 +1,2539 @@
+{
+ "what": "ux4a message service acceptance (ux4a-messages-probe.mjs)",
+ "base": "https://gsfpv.flyreelstudio.eu/en",
+ "scene": "70b50d42",
+ "browser": null,
+ "sizes": [
+  {
+   "size": "1536x730@1.25",
+   "steps": {
+    "1": {
+     "name": "Generate course: a line appears, its font-size >= 16 px",
+     "pass": false,
+     "text": null,
+     "font": null
+    },
+    "2": {
+     "name": "the ready line stays >= shownMs(text) - 200 ms",
+     "pass": false,
+     "text": null,
+     "shownMs": null,
+     "need": null
+    },
+    "3": {
+     "name": "progress lines replace in place (one node under course.progress)",
+     "pass": false,
+     "texts": 0,
+     "nodes": 0,
+     "maxNodesAtOnce": 0,
+     "sample": []
+    },
+    "4": {
+     "name": "a problem stays",
+     "pass": false,
+     "error": "locator.click: Timeout 5000ms exceeded.\nCall log:\n  - waiting for locator('[data-action=\"pause.messages\"]')\n"
+    },
+    "5": {
+     "name": "the top-row Messages button opens the list with 1 and 4; Shift+H toggles it; its cross and Esc close it",
+     "pass": false,
+     "button": false
+    },
+    "6": {
+     "name": "every message: inside the view, over no top-row button or OSD, outside the middle third",
+     "pass": true,
+     "samples": 3308,
+     "faults": {}
+    }
+   },
+   "errors": [],
+   "status": {
+    "status": "ready",
+    "walls": "none"
+   },
+   "pointerLock": true,
+   "escFrees": 2,
+   "problemText": "This course did not come out. Shift+G builds another one",
+   "readyText": null,
+   "lines": [
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 183448,
+     "font": 13,
+     "text": "This course did not come out. Shift+G builds another one"
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 901,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2, 0 %. 0:00 so far, about 0:10 left."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 897,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2, 12 %. 0:01 so far, about 0:10 left."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2, 24 %. 0:02 so far, about 0:10 left."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 904,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2, 36 %. 0:03 so far, about 0:10 left."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 901,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2, 48 %. 0:04 so far, about 0:05 left."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 904,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2, 61 %. 0:05 so far, about 0:05 left."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:06 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 901,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:07 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 907,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:08 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 904,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:09 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 901,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:10 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:11 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:12 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 898,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:13 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:14 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:15 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:16 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:17 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:18 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 899,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:19 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 896,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:20 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 903,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:21 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 905,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:22 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 903,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:23 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 898,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:24 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 903,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:25 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:26 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 897,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:27 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 901,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:28 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 897,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:29 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 896,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:30 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 901,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:31 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:32 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 899,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:33 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 897,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:34 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 896,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:35 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 898,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:36 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 898,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:37 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:38 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 897,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:39 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:40 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 903,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:41 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:42 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 899,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:43 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 899,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:44 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 903,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:45 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 898,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:46 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:47 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:48 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 901,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:49 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 903,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:50 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:51 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 896,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:52 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 898,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:53 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 904,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:54 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 904,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:55 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 897,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:56 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:57 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 898,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:58 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 898,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:59 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 899,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:00 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 897,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:01 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:02 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 903,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:03 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 904,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:04 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 904,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:05 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 901,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:06 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 901,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:07 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 903,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:08 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 903,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:09 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 896,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:10 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:11 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 904,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:12 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:13 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 892,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:14 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 904,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:15 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:16 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 903,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:17 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 896,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:18 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 896,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:19 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 896,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:20 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 901,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:21 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 904,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:22 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 904,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:23 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 904,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:24 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:25 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:26 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 897,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:27 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:28 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 898,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:29 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:30 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 901,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:31 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:32 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 904,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:33 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:34 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 896,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:35 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 897,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:36 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 901,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:37 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:38 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 905,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:39 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 901,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:40 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 903,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:41 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 903,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:42 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 897,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:43 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 901,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:44 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:45 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 897,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:46 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 903,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:47 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 897,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:48 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:49 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 897,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:50 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 897,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:51 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 896,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:52 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:53 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:54 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 899,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:55 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 897,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:56 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 904,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:57 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 898,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:58 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 897,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:59 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 903,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 2:00 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 897,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 2:01 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 901,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 2:02 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 903,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 2:03 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 899,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 2:04 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 2:05 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 2:06 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 896,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 2:07 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 2:08 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 901,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 2:09 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 899,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 2:10 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 2:11 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 897,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 2:12 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 2:13 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 904,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 2:14 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 903,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 2:15 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 896,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 2:16 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 904,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 2:17 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 2:18 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 903,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 2:19 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 901,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 2:20 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 897,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 2:21 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 896,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 2:22 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 901,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 2:23 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 2:24 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 2:25 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 896,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 2:26 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 897,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 2:27 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 2:28 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 897,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 2:29 so far; longer than usual, still working."
+    }
+   ]
+  },
+  {
+   "size": "844x390@1",
+   "steps": {
+    "1": {
+     "name": "Generate course: a line appears, its font-size >= 16 px",
+     "pass": false,
+     "text": null,
+     "font": null
+    },
+    "2": {
+     "name": "the ready line stays >= shownMs(text) - 200 ms",
+     "pass": false,
+     "text": null,
+     "shownMs": null,
+     "need": null
+    },
+    "3": {
+     "name": "progress lines replace in place (one node under course.progress)",
+     "pass": false,
+     "texts": 0,
+     "nodes": 0,
+     "maxNodesAtOnce": 0,
+     "sample": []
+    },
+    "4": {
+     "name": "a problem stays",
+     "pass": false,
+     "error": "locator.click: Timeout 5000ms exceeded.\nCall log:\n  - waiting for locator('[data-action=\"pause.messages\"]')\n"
+    },
+    "5": {
+     "name": "the top-row Messages button opens the list with 1 and 4; Shift+H toggles it; its cross and Esc close it",
+     "pass": false,
+     "button": false
+    },
+    "6": {
+     "name": "every message: inside the view, over no top-row button or OSD, outside the middle third",
+     "pass": false,
+     "samples": 3310,
+     "faults": {
+      "narrow view: in the middle third": {
+       "at": "246,86 353x31",
+       "n": 1580,
+       "t": 12883,
+       "crowded": true,
+       "row": "352,38 476x40"
+      }
+     }
+    }
+   },
+   "errors": [],
+   "status": {
+    "status": "ready",
+    "walls": "none"
+   },
+   "pointerLock": true,
+   "escFrees": 2,
+   "problemText": "This course did not come out. Shift+G builds another one",
+   "readyText": null,
+   "lines": [
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 181100,
+     "font": 13,
+     "text": "This course did not come out. Shift+G builds another one"
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 901,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2, 0 %. 0:00 so far, about 0:10 left."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 899,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2, 12 %. 0:01 so far, about 0:10 left."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 901,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2, 24 %. 0:02 so far, about 0:10 left."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2, 36 %. 0:03 so far, about 0:10 left."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 899,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2, 48 %. 0:04 so far, about 0:05 left."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2, 60 %. 0:05 so far, about 0:05 left."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 901,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:06 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:07 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:08 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:09 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 901,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:10 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 899,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:11 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:12 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 899,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:13 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:14 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:15 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:16 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:17 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 901,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:18 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:19 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:20 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:21 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:22 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:23 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 899,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:24 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:25 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 901,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:26 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 899,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:27 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 897,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:28 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 901,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:29 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 901,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:30 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 904,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:31 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 901,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:32 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 901,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:33 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 897,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:34 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:35 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 904,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:36 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 901,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:37 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:38 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 898,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:39 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:40 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 898,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:41 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:42 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 903,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:43 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 899,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:44 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:45 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:46 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:47 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 899,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:48 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:49 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:50 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 897,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:51 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:52 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:53 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 899,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:54 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 901,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:55 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:56 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:57 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 901,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:58 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 0:59 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:00 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 897,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:01 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 901,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:02 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 901,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:03 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 899,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:04 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 904,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:05 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 901,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:06 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 901,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:07 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:08 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:09 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 901,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:10 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 896,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:11 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:12 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 899,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:13 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:14 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 904,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:15 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 897,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:16 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 897,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:17 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:18 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 899,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:19 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 899,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:20 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:21 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 901,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:22 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 903,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:23 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 899,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:24 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:25 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:26 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:27 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:28 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 901,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:29 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:30 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:31 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 899,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:32 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 897,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:33 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 901,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:34 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:35 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 899,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:36 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:37 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 899,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:38 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 899,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:39 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 903,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:40 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:41 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 903,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:42 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 901,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:43 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 901,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:44 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:45 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 901,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:46 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:47 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:48 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 896,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:49 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:50 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:51 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 904,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:52 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:53 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 898,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:54 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 899,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:55 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 899,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:56 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 902,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:57 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 901,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:58 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 1:59 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 901,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 2:00 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 897,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 2:01 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 899,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 2:02 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 2:03 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 905,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 2:04 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 901,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 2:05 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 903,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 2:06 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 897,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 2:07 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 899,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 2:08 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 901,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 2:09 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 898,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 2:10 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 904,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 2:11 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 901,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 2:12 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 901,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 2:13 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 2:14 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 2:15 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 899,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 2:16 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 899,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 2:17 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 2:18 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 896,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 2:19 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 897,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 2:20 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 899,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 2:21 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 901,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 2:22 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 899,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 2:23 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 901,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 2:24 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 899,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 2:25 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 904,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 2:26 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 2:27 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 2:28 so far; longer than usual, still working."
+    },
+    {
+     "id": 1,
+     "key": null,
+     "kind": "?",
+     "ms": 900,
+     "font": 13,
+     "text": "Course: finding the free space. Step 1 of 2. 2:29 so far; longer than usual, still working."
+    }
+   ]
+  }
+ ],
+ "pass": false
+}
