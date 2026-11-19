@@ -34,6 +34,7 @@ import { t } from '../i18n';
 import type { SonicSetup, VisitPrefs } from './entry';
 import { SpokenList } from './spoken-list';
 import type { SpokenAnchor, SpokenItem } from './spoken-list';
+import { audioProblemKey } from './audio';
 import { buildModel, firstOf, lessonPlace, scanStartOrder } from './start-model';
 import type { LessonPlace, LessonRow, LessonState, SonicRequest, StartModel } from './start-model';
 import { KEY_HINTS_CHOICES, keyHintsChoice, setKeyHints } from './key-hints';
@@ -325,6 +326,7 @@ export class StartScreen {
 
     private startSection(): HTMLElement {
         this.begin('start');
+        const problem = this.audioProblemNote();
         const prefs = this.d.setup.prefs;
         const m = this.model;
         const req = this.d.request;
@@ -386,7 +388,44 @@ export class StartScreen {
         const choice = visit?.choice ?? null;
         if (choice) for (const b of choice.querySelectorAll<HTMLElement>('button')) this.stop(b, () => b.textContent ?? '');
         const unknown = req.kind === 'unknown' ? h('p', { class: 'sonic-note', role: 'note', 'data-testid': 'sonic-unknown' }, t('sonic.start.unknown', { id: req.raw })) : null;
-        return this.section('start', t('sonic.start.heading'), unknown, visit?.note ?? null, h('div', { class: 'sonic-actions', role: 'group', 'aria-label': t('sonic.start.heading') }, ...buttons, back), choice);
+        return this.section('start', t('sonic.start.heading'), problem, unknown, visit?.note ?? null, h('div', { class: 'sonic-actions', role: 'group', 'aria-label': t('sonic.start.heading') }, ...buttons, back), choice);
+    }
+
+    /**
+     * The sound did not come up (lane sound6 S4): what happened and the way on (another browser, or a reload), on the screen and
+     * not only in the live region, with one press that copies the page's link for that browser. Null while the sound is fine.
+     */
+    private audioProblemNote(): HTMLElement | null {
+        const key = audioProblemKey(this.d.setup.audio.failure);
+        if (key === null) return null;
+        const result = h('p', { 'data-testid': 'sonic-copy-result' });
+        const copy = h('button', { type: 'button', class: 'btn primary', 'data-testid': 'sonic-copy-link', onclick: () => this.copyLink(result) }, t('sonic.start.copyLink'));
+        this.stop(copy, () => `${t(key)} ${t('sonic.start.copyLink')}`);
+        return h('div', { class: 'sonic-note', role: 'note', 'data-testid': 'sonic-audio-problem' }, h('p', {}, t(key)), copy, result);
+    }
+
+    /** The page's link to the clipboard; what happened is shown under the button and said (a refused clipboard names the address bar). */
+    private copyLink(result: HTMLElement): void {
+        const done = (ok: boolean): void => {
+            const text = t(ok ? 'sonic.start.linkCopied' : 'sonic.start.copyFailed');
+            result.textContent = text;
+            this.say(text);
+        };
+        const clip = (globalThis.navigator as Navigator | undefined)?.clipboard;
+        if (!clip?.writeText) {
+            done(false);
+            return;
+        }
+        clip.writeText(location.href).then(() => done(true), () => done(false));
+    }
+
+    /** The sound did not come up: the screen is shown with the line at the top of Start, said, and its Copy link button focused. */
+    showAudioProblem(): void {
+        this.show();
+        const key = audioProblemKey(this.d.setup.audio.failure);
+        if (key === null) return;
+        this.say(t(key));
+        this.root.querySelector<HTMLElement>('[data-testid="sonic-copy-link"]')?.focus();
     }
 
     /** Quick start (fast) or Full course (full): the pilot's path is saved as that one, then its first lesson opens. */
@@ -442,7 +481,7 @@ export class StartScreen {
             this.stop(b, () => t(`sonic.hp.${side}`));
             return b;
         });
-        const notes = h('ul', { class: 'sonic-notes' }, h('li', {}, this.key('headphones.intro')), h('li', {}, this.key('headphones.wired')), h('li', {}, this.key('headphones.os-spatial')));
+        const notes = h('ul', { class: 'sonic-notes' }, h('li', {}, this.key('lesson.ears-headphones.intro.1')), h('li', {}, this.key('headphones.wired')), h('li', {}, this.key('headphones.os-spatial')));
         const loud = h('div', { class: 'sonic-loud', role: 'group', 'aria-labelledby': 'sonic-h-loud' }, h('h3', { id: 'sonic-h-loud', tabindex: -1 }, t('sonic.loud.heading')), h('p', { 'data-testid': 'sonic-loud-note' }, this.key('menu.hearing-note')), h('p', {}, this.key('headphones.volume')));
         return this.section('headphones', t('sonic.hp.heading'), notes, h('div', { class: 'sonic-actions', role: 'group', 'aria-label': t('sonic.hp.heading') }, ...buttons), loud);
     }
@@ -732,7 +771,7 @@ export class StartScreen {
         this.say(t(`sonic.hp.playing.${side}`));
         void started.then(() => {
             if (!audio.available) {
-                this.say(t('sonic.start.noAudio'));
+                this.showAudioProblem();
                 return;
             }
             const e = audio.engine;

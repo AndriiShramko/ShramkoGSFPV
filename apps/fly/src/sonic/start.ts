@@ -98,8 +98,7 @@ export function startSonic(d: SonicStartDeps): StartHandle {
             screen.hide();
             void started.then(async () => {
                 if (!setup.audio.available) {
-                    screen.show();
-                    screen.say(t('sonic.start.noAudio'));
+                    screen.showAudioProblem();
                     return;
                 }
                 const lesson = free ?? getLesson(id);

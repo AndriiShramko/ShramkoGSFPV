@@ -59,8 +59,26 @@ the design says train6: the lane prompt wins). Design C:/dev/.gsfpv-lanes/design
   (locales + 4 fixtures swapped: es and ru fail). 17 package test files naming the lesson, locales or catalog: 277
   passed, 1 failed: test/words.test.ts (S5's `pnpm listen:words`, as planned). Package tsc (three configs) 0 errors.
   Host: only the key, not the text, is named (sonic-int-review.ts R7), nothing else to move.
-- [ ] S4 Firefox: sound (engine placeListener) or a clear line that leads to Chrome or Edge (host engineFailed, test d).
-- [ ] S5 pin moved, package suite + listen:words, simulator gates, acceptance probe sonic-quick-walk.
+- [x] S4 Firefox: package quick1 e4fce05, pin packages/sonic-fpv at e4fce05 (local; simulator commit of this line).
+  Package: placeListener in a new DOM-free src/audio/listener.ts (the design put it in engine.ts and widened
+  AudioContextLike: that type has no listener, and the Node tests cannot import the DOM-typed engine, so the helper has
+  its own file and its own ListenerLike type): the AudioParams when all nine exist, else setPosition(0,0,0) and
+  setOrientation(0,0,-1,0,1,0). test/listener.test.ts 5 passed (engine.start on a stand-in context with only the
+  setters resolves, each setter called once); NEG OK against 8daf95d. Package tsc (three configs) 0 errors; the tests
+  reading src/audio (beacon, reset, speech-voice) pass. Host: audio.ts AudioFailure 'none' | 'no-web-audio' |
+  'engine-failed' (replaces the noAudio flag) and audioProblemKey; start-screen.ts showAudioProblem(): a visible
+  note at the top of Start (sonic-audio-problem, was only the screen reader's live region) with the line
+  sonic.start.engineFailed or noAudio and a primary 44 px button "Copy link" (sonic-copy-link, focused; the result
+  linkCopied or copyFailed under it); start.ts and the headphone buttons call it. Keys sonic.start.engineFailed,
+  copyLink, linkCopied, copyFailed in en, es, pl, ru. S2 leftover repaired: the host's headphone notes named the deleted
+  package key headphones.intro (the raw key was shown); now lesson.ears-headphones.intro.1, and a test checks every
+  package key start-screen.ts names in four languages. Tests sonic-start-screen.test.ts (5 new: (d), no Web Audio,
+  Copy link both ways, no note when fine, keys) and sonic-audio.test.ts: 68 passed; NEG OK against HEAD 453e3ab5.
+  All 60 host files tools/bench/test/sonic*: 862 passed, 10 skipped. fly typecheck and tools/bench tsc 0 errors.
+  Not done here, for S5 (it builds anyway): the page in Playwright firefox (firefox-1543 is installed) with
+  ?render=off: the engine running after a press; only if it plays, the site note names Firefox too.
+- [ ] S5 pin moved, package suite + listen:words, simulator gates, acceptance probe sonic-quick-walk; the Firefox page
+  check of S4.
 
 Base: origin/main e3201fec differs from this branch only in STATE.md: not merged.
 
@@ -77,6 +95,12 @@ Base: origin/main e3201fec differs from this branch only in STATE.md: not merged
 3. After the press of either path the first wall knock comes within 12 s in every language (measured voices: en 6.9,
    es 7.9, pl 7.1, ru 8.0 s), and the quick path's small room flies within 210 s (205.0 s with David). Proof (in
    C:/dev/ShramkoSonicFPV): `pnpm vitest run test/quick-path.test.ts`: 44 passed at 8daf95d; NEG OK against 58b1d7f.
+4. The engine starts on a listener that has only setPosition and setOrientation (Firefox's), with the same pose. Proof
+   (in C:/dev/ShramkoSonicFPV): `pnpm vitest run test/listener.test.ts`: 5 passed at e4fce05; NEG OK against 8daf95d.
+5. When the sound does not start, the start screen shows what happened and the way on (Chrome or Edge, or a reload) at
+   the top of Start with a focused Copy link button, not only in the screen reader's region; the headphone notes show
+   no raw key. Proof: `npx vitest run tools/bench/test/sonic-start-screen.test.ts tools/bench/test/sonic-audio.test.ts`:
+   68 passed; NEG OK against 453e3ab5.
 
 ## Not verified
 No person, phone or real controller took part in this lane.
@@ -84,7 +108,8 @@ No person, phone or real controller took part in this lane.
 ## For the lead
 - Files changed outside the owned files: docs/wip/sonic5.md (the decision of W1.6 written in);
   apps/fly/src/sonic/sound-panel.ts (one line: the kind of 'speed.brake'); tools/bench/test/sonicrec-recorder.test.ts;
-  the probes tools/bench/src/sonic-{start-keyboard,review-keys,v13-page,int-review,optin-page}.ts (new test ids).
+  the probes tools/bench/src/sonic-{start-keyboard,review-keys,v13-page,int-review,optin-page}.ts (new test ids);
+  tools/bench/test/sonic-audio.test.ts (S4).
 - A question for the lead: the host's headphone check on the start screen still has a button "Play a sound behind"
   (sonic-hp-behind). It asks nothing, so S1 left it; if the owner's "no behind or in front" covers it too, it is one
   button and its line.
@@ -99,3 +124,5 @@ No person, phone or real controller took part in this lane.
   slow quick-path test (S1's every-lesson loop, 100 s) is the bulk of each run: `-t` on the new tests saves it.
 - S2 host: 20 replies; reading the old test and probe slices took the most; a design listing every probe line that
   names a test id would save 4. One edit script per file group, then one run of tools/bench/test/sonic*, worked well.
+- S4: 30 replies; the package's tsconfig.node.json (no DOM) refusing a test that imports engine.ts cost 4, and edit
+  scripts whose anchors matched twice cost 3: a design naming the test tsconfig, and anchors checked with grep -c first.

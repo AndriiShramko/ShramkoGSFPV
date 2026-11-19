@@ -3,6 +3,7 @@
 // in-memory prefs store, a fake engine that records what it is asked to say). The real page is the page proof's
 // (tools/bench/src/sonic-v13-page.ts).
 //  - C1 (M41-1): the pause menu's item opens this screen (sonic-optin.test.ts); the page about the mode stays linked from it.
+import { readFileSync } from 'node:fs';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { DICTS, SHIPPED_LESSON_IDS, createTranslator, getLesson, lessonPaths } from '../../../packages/sonic-fpv/src';
 import type { Locale, LessonProgress, SpeechLine } from '../../../packages/sonic-fpv/src';
@@ -86,13 +87,13 @@ interface Screen {
 }
 
 /** The start screen of a page entered through ?sonic=start in `locale`, with the saved progress given, on a fresh document. */
-function open(o: { locale?: Locale; progress?: Record<string, LessonProgress>; current?: string | null; overFlight?: boolean; store?: ReturnType<typeof mkStore>; request?: ReturnType<ModelMod['parseSonicParam']>; experienced?: () => boolean; onFlies?: () => void; path?: 'full' | 'fast' } = {}): Screen {
+function open(o: { locale?: Locale; progress?: Record<string, LessonProgress>; current?: string | null; overFlight?: boolean; store?: ReturnType<typeof mkStore>; request?: ReturnType<ModelMod['parseSonicParam']>; experienced?: () => boolean; onFlies?: () => void; path?: 'full' | 'fast'; noWebAudio?: boolean } = {}): Screen {
     doc = stubPage();
     const store = o.store ?? mkStore();
     for (const p of Object.values(o.progress ?? {})) storeMod.saveProgress(store, p);
     if (o.current !== undefined) storeMod.setCurrentLesson(store, o.current);
     const engine = new SayingEngine();
-    const deps: AudioDeps = { makeContext: () => ({ currentTime: 0, sampleRate: 48000, state: 'running' }) as never, unlockSpeech: () => undefined, createEngine: () => engine as unknown as PageEngine };
+    const deps: AudioDeps = { makeContext: () => (o.noWebAudio ? null : ({ currentTime: 0, sampleRate: 48000, state: 'running' }) as never), unlockSpeech: () => undefined, createEngine: () => engine as unknown as PageEngine };
     const setup = new entryMod.SonicSetup(store, o.locale ?? 'en', new Sink(), { deps });
     if (o.path) expect(setup.update({ path: o.path }).ok).toBe(true);
     const started: string[] = [];
@@ -766,5 +767,85 @@ describe('v13-int review F2, F4: the screen over a flight takes every key it is 
         s.hide();
         expect(doc.activeElement).toBe(outside);
         s.dispose();
+    });
+});
+
+// ------------------------------------------------------------------ lane sound6 S4
+
+describe('lane sound6 S4: a sound that did not start says so on the screen, with the way on', () => {
+    const flush = async (): Promise<void> => {
+        for (let i = 0; i < 5; i++) await Promise.resolve();
+    };
+    const noteText = (): string => byTestId(doc, 'sonic-audio-problem')?.textContent ?? '';
+    const EN_LINES = JSON.parse(readFileSync(new URL('../../../packages/i18n/locales/fly/sonic/en.json', import.meta.url), 'utf8')) as Readonly<Record<string, string>>;
+
+    it('(d) the engine rejecting its start (Firefox before the package fix): the engineFailed line is shown at the top of Start, not noAudio, and Copy link has the focus', async () => {
+        const { setup, engine } = open();
+        const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+        engine.start = async () => { throw new TypeError("can't access property \"value\", listener.positionX is undefined"); };
+        expect(byTestId(doc, 'sonic-audio-problem')).toBeNull();
+        byTestId(doc, 'sonic-hp-left')!.click();
+        await flush();
+        expect(setup.audio.failure).toBe('engine-failed');
+        expect(warn).toHaveBeenCalled();
+        const note = byTestId(doc, 'sonic-audio-problem')!;
+        expect(note.closest('section')?.getAttribute('id')).toBe('sonic-sec-start');
+        expect(noteText()).toContain(EN_LINES['sonic.start.engineFailed']);
+        expect(noteText()).toContain('Chrome or Edge');
+        expect(noteText()).not.toContain(EN_LINES['sonic.start.noAudio']);
+        expect(doc.activeElement?.getAttribute('data-testid')).toBe('sonic-copy-link');
+        expect(byTestId(doc, 'sonic-copy-link')!.textContent).toBe('Copy link');
+    });
+
+    it('a browser with no Web Audio: the noAudio line, the same Copy link', async () => {
+        const { setup } = open({ noWebAudio: true });
+        byTestId(doc, 'sonic-hp-right')!.click();
+        await flush();
+        expect(setup.audio.failure).toBe('no-web-audio');
+        expect(noteText()).toContain(EN_LINES['sonic.start.noAudio']);
+        expect(byTestId(doc, 'sonic-copy-link')).not.toBeNull();
+    });
+
+    it('Copy link puts the page\'s address on the clipboard and says so under the button; a refused clipboard names the address bar', async () => {
+        const { engine } = open();
+        vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+        engine.start = async () => { throw new Error('no audio device'); };
+        const href = 'https://gsfpv.flyreelstudio.eu/en/fly/?sonic=start';
+        vi.stubGlobal('location', { pathname: '/en/fly/', search: '?sonic=start', origin: 'https://gsfpv.flyreelstudio.eu', href });
+        const copied: string[] = [];
+        const before = globalThis.navigator;
+        vi.stubGlobal('navigator', { clipboard: { writeText: async (x: string) => void copied.push(x) } });
+        try {
+            byTestId(doc, 'sonic-hp-left')!.click();
+            await flush();
+            byTestId(doc, 'sonic-copy-link')!.click();
+            await flush();
+            expect(copied).toEqual([href]);
+            expect(byTestId(doc, 'sonic-copy-result')!.textContent).toBe(EN_LINES['sonic.start.linkCopied']);
+            vi.stubGlobal('navigator', { clipboard: { writeText: async () => { throw new Error('denied'); } } });
+            byTestId(doc, 'sonic-copy-link')!.click();
+            await flush();
+            expect(byTestId(doc, 'sonic-copy-result')!.textContent).toBe(EN_LINES['sonic.start.copyFailed']);
+        } finally {
+            vi.stubGlobal('navigator', before);
+        }
+    });
+
+    it('a sound that starts shows no problem note', async () => {
+        const { setup } = open();
+        byTestId(doc, 'sonic-hp-left')!.click();
+        await flush();
+        expect(setup.audio.failure).toBe('none');
+        expect(byTestId(doc, 'sonic-audio-problem')).toBeNull();
+    });
+
+    it('every package line the screen names exists in all four languages (S2 deleted headphones.intro and the screen still named it)', () => {
+        const src = readFileSync(new URL('../../../apps/fly/src/sonic/start-screen.ts', import.meta.url), 'utf8');
+        const keys = [...src.matchAll(/this\.key\('([^']+)'/g)].map((m) => m[1]!);
+        expect(keys.length).toBeGreaterThan(3);
+        for (const l of ['en', 'es', 'pl', 'ru'] as const) {
+            const tr = createTranslator(l, DICTS);
+            expect(keys.filter((k) => !tr.has(k)), l).toEqual([]);
+        }
     });
 });
