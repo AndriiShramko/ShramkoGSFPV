@@ -7,6 +7,8 @@ Facts V1-a to V1-f, Design 1 to 7): the numbers there are the "before" of this l
 ## Status
 
 ### Stage W1-build
+- [x] W1-build CLOSED 2026-11-19 by the lead's decision of W1.6 (see there); the rest of this lane continues in lane
+  sound6 (docs/wip/sound6.md), which starts from this branch's head 80c91d05 and package bd79c96.
 - [x] W1.1 branches: simulator sonic5 from origin/main 77ab3948; package train6 from main e334c6e with 7678880 cherry-picked
   as 5e04268 (no conflict; the cherry-pick touches cues/budget.ts, cues/lead.ts, cues/planner.ts, cues/rules.ts,
   lesson/gate-aim.ts, lesson/runner.ts and two tests; the wrong-way rule D7 (runner.ts checkDirection, WRONG_WAY_*) and the
@@ -32,9 +34,13 @@ Facts V1-a to V1-f, Design 1 to 7): the numbers there are the "before" of this l
   placeOf; src/lesson/runner.ts lineTarget); never behind the craft. Test test/line-gate-cap.test.ts (4 tests), negative
   control with the old src/cues/line.ts fails by assertion ("expected -10 to be close to -4"); line.test.ts and
   speed-lead.test.ts pass (18 tests in the three files); three tsc 0 errors. The line stays off by default.
-- [~] W1.6 Design 6: measured first (Facts W1-f): at cd37a57 the ear pilot's median top speed on the ring course is
+- [x] W1.6 Design 6: measured first (Facts W1-f): at cd37a57 the ear pilot's median top speed on the ring course is
   6 m/s (8, 10, 12, 15 m/s fail on every seed), so by the package's shipping rule (test/speed-ladder.test.ts: cap at most
   median top / 1.25) no cap above 4.8 m/s can ship yet; no lesson built.
+  DECISION of the lead, 2026-11-19: the package's rule "a speed cap is at most the ear pilot's median top speed divided
+  by 1.25" stays; the lessons speed-5 to speed-8 are NOT built; what is proven stays (designs 3, 4, 5 and the audio
+  proofs W1.7). The glossary entry of the cue 'speed.brake' (item 1 of the left list) moves to lane sound6, in the stage
+  where it measures new spoken lines anyway. W1-build is closed by this decision (recorded by lane sound6).
 - [~] W1.7 offline audio proofs, package 4c8e4e1 on train6, simulator pin 4c8e4e1 (commit 57340ae3; test-audio/page/proofs.ts,
   run 'PROOFS=streams-at-speed,brake-ceiling PROOFS_OUT=evidence/audio-proofs-speed.json pnpm proof:audio', no GPU lock,
   49 s; package tsc -p tsconfig.json 0 errors). streams-at-speed: 8 m/s among pillars, every layer on, streams at any 0.1 s
