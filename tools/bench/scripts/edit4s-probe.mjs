@@ -252,9 +252,16 @@ try {
     judge('s3.restored', o2.ok && dist3(back, movedTo) >= 0 && dist3(back, movedTo) < 0.01 && s.s4?.restored != null && CLOCK.test(line3),
         { open: o2, gate2: r3(back), want: r3(movedTo), m: Math.round(dist3(back, movedTo) * 1000) / 1000, restored: s.s4?.restored ?? null, line: line3 });
 
-    // s4: Versions in the window
-    const vers = await page.evaluate(() => [...document.querySelectorAll('.course-editor .ce-version-list .ce-version-back')].map((b) => { b.scrollIntoView({ block: 'nearest' }); const r = b.getBoundingClientRect(); return { text: b.textContent.trim().slice(0, 90), shown: r.width > 0 && r.height > 0 && r.bottom > 0 && r.top < innerHeight }; }));
-    judge('s4.versions', vers.length >= 1 && vers.some((v) => v.shown && CLOCK.test(v.text)), { n: vers.length, first: vers.slice(0, 3) });
+    // s4: Versions in the window: the window opens closed (lane editor3 H1), the pilot clicks its title, then turns the
+    // wheel over it until the list is in view
+    const opened = await page.evaluate(() => document.querySelector('.course-editor')?.classList.contains('ce-open') ?? false);
+    if (!opened) await clickSel('.course-editor .ce-drawer', 500);
+    const versOf = () => page.evaluate(() => [...document.querySelectorAll('.course-editor .ce-version-list .ce-version-back')].map((b) => { const r = b.getBoundingClientRect(); const w = document.querySelector('.course-editor').getBoundingClientRect(); return { text: b.textContent.trim().slice(0, 90), shown: r.width > 0 && r.height > 0 && r.top >= Math.max(0, w.top) - 1 && r.bottom <= Math.min(innerHeight, w.bottom) + 1 }; }));
+    let vers = await versOf();
+    let wheels = 0;
+    const wb = await boxOf('.course-editor');
+    for (; wb && wheels < 8 && vers.length > 0 && !vers[0].shown; wheels++) { await page.mouse.move(wb.x, wb.y); await page.mouse.wheel(0, 250); await sleep(300); vers = await versOf(); }
+    judge('s4.versions', vers.length >= 1 && vers[0].shown && CLOCK.test(vers[0].text), { openedBy: opened ? 'already open' : 'its title', wheels, n: vers.length, first: vers.slice(0, 3) });
 
     // s5: gate 3 turned by 180 deg, Save: the offer names gate 3
     const by3 = await selectGate(2);

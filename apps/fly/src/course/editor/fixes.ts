@@ -1,6 +1,6 @@
 // Lane edit4s (E7): the small corrections a refused Save offers to make for the pilot. Pure: the walls come in, the fixes go
 // out; the page asks, shows the overview, applies them as one undo step and saves (course.ts, saveFlow).
-import { AXIS_TOLERANCE_DEG, checkTrack, gateAxis, nearestWall, reportProblems, toTrackV1 } from '@gsfpv/tracks';
+import { AXIS_TOLERANCE_DEG, checkTrack, gateAxis, reportProblems, toTrackV1 } from '@gsfpv/tracks';
 import type { Course, CourseCheck, CourseProblem } from '@gsfpv/tracks';
 import type { VoxelCollision } from '@gsfpv/collision';
 import { quatMultiply, quatNormalize, yawQuat } from '@shramko/sonic-fpv';
@@ -156,17 +156,41 @@ function faceLine(c: Course, i: number, p: CourseProblem, before: ReadonlySet<st
 /** flown metres of the step `k` as course units along `dir` */
 const stepped = (pos: Vec3, dir: Vec3, m: number, s: number): Vec3 => [r3(pos[0] + (dir[0] * m) / s), r3(pos[1] + (dir[1] * m) / s), r3(pos[2] + (dir[2] * m) / s)];
 
+/** how far (flown m) the walls reach a ray from the centre: farther than this counts as open */
+const NUDGE_REACH_M = 40;
+
+/**
+ * The 26 ways a gate can be moved (the cube's faces, edges and corners), the way away from the nearest wall first. A ray
+ * from the gate's centre often meets the floor or a corner first while the frame touches a side wall, so each way is tried.
+ */
+export function nudgeWays(col: VoxelCollision, centre: Vec3): Vec3[] {
+    const ways: { dir: Vec3; wallM: number }[] = [];
+    for (let x = -1; x <= 1; x++) {
+        for (let y = -1; y <= 1; y++) {
+            for (let z = -1; z <= 1; z++) {
+                if (x === 0 && y === 0 && z === 0) continue;
+                const d = unit([x, y, z]);
+                const h = col.queryRay(centre[0], centre[1], centre[2], d[0], d[1], d[2], NUDGE_REACH_M);
+                // moving away from a wall met at distance m: the way opposite the ray
+                ways.push({ dir: [-d[0], -d[1], -d[2]], wallM: h ? Math.hypot(h.x - centre[0], h.y - centre[1], h.z - centre[2]) : Infinity });
+            }
+        }
+    }
+    return ways.sort((a, b) => a.wallM - b.wallM).map((x) => x.dir);
+}
+
+/** the smallest move (0.1 m steps up to 1 m) in any of the 26 ways that clears the gate's wall problem and adds nothing */
 function nudge(c: Course, i: number, p: CourseProblem, before: ReadonlySet<string>, w: FixWalls): Fix | null {
     const g = c.gates[i]!;
     const [s, tx, ty, tz] = w.transform;
-    const hit = nearestWall(w.col, [g.pos[0] * s + tx, g.pos[1] * s + ty, g.pos[2] * s + tz]);
-    if (!hit) return null;
-    const away: Vec3 = [-hit.dir[0], -hit.dir[1], -hit.dir[2]];
+    const ways = nudgeWays(w.col, [g.pos[0] * s + tx, g.pos[1] * s + ty, g.pos[2] * s + tz]);
     for (let k = 1; k * FIX_STEP_M <= FIX_MAX_M + 1e-9; k++) {
         const m = k * FIX_STEP_M;
-        const moved: FixedGate = { index: i, before: { pos: g.pos, quat: g.quat }, after: { pos: stepped(g.pos, away, m, s), quat: g.quat } };
-        if (!clears(withGates(c, [moved]), i, i, p, before, w)) continue;
-        return { kind: 'nudge', problem: p, gates: [moved], words: { key: FIX_WORDS.nudge, args: { g: i + 1, cm: Math.round(m * 100) } } };
+        for (const away of ways) {
+            const moved: FixedGate = { index: i, before: { pos: g.pos, quat: g.quat }, after: { pos: stepped(g.pos, away, m, s), quat: g.quat } };
+            if (!clears(withGates(c, [moved]), i, i, p, before, w)) continue;
+            return { kind: 'nudge', problem: p, gates: [moved], words: { key: FIX_WORDS.nudge, args: { g: i + 1, cm: Math.round(m * 100) } } };
+        }
     }
     return null;
 }
@@ -193,7 +217,7 @@ function lift(c: Course, p: Extract<CourseProblem, { code: 'leg-wall' }>, before
 
 /**
  * The small corrections for `problems` of `c`: a gate facing the wrong way is turned along the line (gate-direction), a gate
- * touching a wall is moved away from the nearest wall in 0.1 m steps up to 1 m (gate-wall), a leg touching a wall has both
+ * touching a wall is moved the least way out, in 0.1 m steps up to 1 m, away from the nearest wall first (gate-wall), a leg touching a wall has both
  * its gates lifted the same way (leg-wall). Each is found on the course with the ones before it applied and is kept only if
  * the check around it shows the problem gone and nothing new. Problems with no small correction are left (the caller says
  * what to do about them).

@@ -4,7 +4,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { canSave, freeSpace, generateCourse, nearestWall, openEditor, upgradeTrack, wallsCheck } from '@gsfpv/tracks';
+import { canSave, freeSpace, gateAxis, generateCourse, nearestWall, openEditor, upgradeTrack, wallsCheck } from '@gsfpv/tracks';
 import type { Course, CourseProblem } from '@gsfpv/tracks';
 import { quatMultiply, yawQuat } from '../../../packages/sonic-fpv/src/util/vec';
 import { FIX_WORDS, LIFT_ONE_KEY, OFFER_KEYS, OFFER_WORDS, confirmFixes, courseOverview, foundWords, proposeFixes, withFixes } from '../../../apps/fly/src/course/editor/fixes';
@@ -66,6 +66,38 @@ describe('lane edit4s: the corrections a refused Save offers (E7)', () => {
         expect(nudge!.words.args.cm).toBeLessThanOrEqual(100);
         const r = confirmFixes(pushed!, problems, fixes, check);
         expect(r.problems.some((p) => p.code === 'gate-wall' && p.gate === g.id)).toBe(false);
+    });
+
+    it('a gate pushed level just into a wall from any side is moved out again (not only away from the nearest ray hit)', () => {
+        // a low gate (1.4 m over the floor, its frame clear) pushed along its own axis touches the wall ahead with its run
+        // through while the ray from its centre meets the floor first: moving up, away from that hit, never clears it
+        const missed: string[] = [];
+        let pushes = 0;
+        for (const i of [1, 2, 3, 4]) {
+            const low = withGate(course, i, { pos: [course.gates[i]!.pos[0], 1.4, course.gates[i]!.pos[2]] });
+            if (check(low).length > 0) continue;
+            const g = low.gates[i]!;
+            const ax = gateAxis(g.quat);
+            const level = Math.hypot(ax[0], ax[2]) || 1;
+            const ways = [[ax[0] / level, 0, ax[2] / level], [-ax[0] / level, 0, -ax[2] / level]];
+            for (let k = 0; k < 8; k++) ways.push([Math.cos((k / 8) * Math.PI * 2), 0, Math.sin((k / 8) * Math.PI * 2)]);
+            for (const d of ways) {
+                // the first 0.1 m step that makes the gate touch a wall, within 6 m
+                for (let m = 0.1; m <= 6; m += 0.1) {
+                    const c = withGate(low, i, { pos: [g.pos[0] + d[0]! * m, g.pos[1], g.pos[2] + d[2]! * m] });
+                    const problems = check(c);
+                    if (problems.length === 0) continue;
+                    if (problems.some((p) => p.code === 'gate-wall' && p.gate === g.id) && problems.every((p) => p.code === 'gate-wall' && p.gate === g.id)) {
+                        pushes++;
+                        const r = confirmFixes(c, problems, proposeFixes(c, problems, w), check);
+                        if (r.problems.length > 0 || !r.fixes.some((f) => f.kind === 'nudge')) missed.push(`gate ${i + 1} way ${d.map((v) => v.toFixed(2))} at ${m.toFixed(1)} m`);
+                    }
+                    break;
+                }
+            }
+        }
+        expect(pushes).toBeGreaterThan(3);
+        expect(missed).toEqual([]);
     });
 
     it('a fix the whole check finds a new problem beside is dropped, and the course is left as it was', () => {
