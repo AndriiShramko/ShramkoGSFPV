@@ -1,0 +1,16 @@
+{
+ "base": "http://127.0.0.1:6081",
+ "pass": true,
+ "failed": [],
+ "steps": [
+  {
+   "name": "scene en 1536x730: the header's button opens scene 39e63ce9",
+   "pass": true,
+   "detail": {
+    "href": "/en/fly/?scene=39e63ce9",
+    "url": "http://127.0.0.1:6081/en/fly/?scene=39e63ce9",
+    "text": "stub"
+   }
+  }
+ ]
+}

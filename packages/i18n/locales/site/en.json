@@ -10,6 +10,7 @@
     "sections": "Sections",
     "language": "Language",
     "fly": "Fly now",
+    "flySound": "Fly by Sound",
     "anchors": {
       "locations": "Places",
       "features": "Features",
@@ -853,7 +854,8 @@
   },
   "sticky": {
     "cta": "Fly now",
-    "note": "Free, in your browser"
+    "note": "Free, in your browser",
+    "soundNote": "Headphones on, free, in your browser"
   },
   "consent": {
     "title": "Analytics cookies",

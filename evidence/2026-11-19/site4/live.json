@@ -1,0 +1,149 @@
+{
+ "base": "https://gsfpv.flyreelstudio.eu",
+ "pass": false,
+ "failed": [
+  "sound en 1536x730: the menu's main button opens the sound start",
+  "sound en 375x812: the menu's main button opens the sound start",
+  "sound pl 1536x730: the menu's main button opens the sound start",
+  "sound pl 375x812: the menu's main button opens the sound start",
+  "sound es 1536x730: the header's button has the start button's address",
+  "sound ru 1536x730: the header's button has the start button's address",
+  "band en 1536x730: the Fly by Sound band starts the sound mode",
+  "scene en 1536x730: the header's button opens scene 39e63ce9",
+  "person en 1536x730: the header's button opens scene 39e63ce9",
+  "lang en->pl on /en/sound/#sound-keys keeps the page and its anchor",
+  "banner es 320x568: the start button is on screen and not under the cookie banner",
+  "banner es 320x640: the start button is on screen and not under the cookie banner"
+ ],
+ "steps": [
+  {
+   "name": "sound en 1536x730: the menu's main button opens the sound start",
+   "pass": false,
+   "detail": {
+    "href": "/en/fly/",
+    "url": "https://gsfpv.flyreelstudio.eu/en/fly/",
+    "text": "stub",
+    "own": "/en/fly/?sonic=start"
+   }
+  },
+  {
+   "name": "sound en 375x812: the menu's main button opens the sound start",
+   "pass": false,
+   "detail": {
+    "href": null,
+    "url": "https://gsfpv.flyreelstudio.eu/en/sound/",
+    "none": "no visible header a.btn-primary, .sticky-cta a.btn-primary",
+    "own": "/en/fly/?sonic=start"
+   }
+  },
+  {
+   "name": "sound pl 1536x730: the menu's main button opens the sound start",
+   "pass": false,
+   "detail": {
+    "href": "/pl/fly/",
+    "url": "https://gsfpv.flyreelstudio.eu/pl/fly/",
+    "text": "stub",
+    "own": "/pl/fly/?sonic=start"
+   }
+  },
+  {
+   "name": "sound pl 375x812: the menu's main button opens the sound start",
+   "pass": false,
+   "detail": {
+    "href": null,
+    "url": "https://gsfpv.flyreelstudio.eu/pl/sound/",
+    "none": "no visible header a.btn-primary, .sticky-cta a.btn-primary",
+    "own": "/pl/fly/?sonic=start"
+   }
+  },
+  {
+   "name": "sound es 1536x730: the header's button has the start button's address",
+   "pass": false,
+   "detail": {
+    "href": "/es/fly/",
+    "own": "/es/fly/?sonic=start"
+   }
+  },
+  {
+   "name": "sound ru 1536x730: the header's button has the start button's address",
+   "pass": false,
+   "detail": {
+    "href": "/ru/fly/",
+    "own": "/ru/fly/?sonic=start"
+   }
+  },
+  {
+   "name": "band en 1536x730: the Fly by Sound band starts the sound mode",
+   "pass": false,
+   "detail": {
+    "href": null,
+    "url": null
+   }
+  },
+  {
+   "name": "scene en 1536x730: the header's button opens scene 39e63ce9",
+   "pass": false,
+   "detail": {
+    "href": "/en/fly/",
+    "url": "https://gsfpv.flyreelstudio.eu/en/fly/",
+    "text": "stub"
+   }
+  },
+  {
+   "name": "person en 1536x730: the header's button opens scene 39e63ce9",
+   "pass": false,
+   "detail": {
+    "href": "/en/fly/",
+    "url": "https://gsfpv.flyreelstudio.eu/en/fly/",
+    "text": "stub"
+   }
+  },
+  {
+   "name": "lang en->pl on /en/sound/#sound-keys keeps the page and its anchor",
+   "pass": false,
+   "detail": {
+    "url": "https://gsfpv.flyreelstudio.eu/pl/sound/"
+   }
+  },
+  {
+   "name": "banner es 320x568: the start button is on screen and not under the cookie banner",
+   "pass": false,
+   "detail": {
+    "shown": true,
+    "banner": {
+     "x": 12,
+     "y": 298,
+     "width": 296,
+     "height": 190
+    },
+    "start": {
+     "x": 16,
+     "y": 405,
+     "width": 191.515625,
+     "height": 48
+    },
+    "hit": false
+   }
+  },
+  {
+   "name": "banner es 320x640: the start button is on screen and not under the cookie banner",
+   "pass": false,
+   "detail": {
+    "shown": true,
+    "banner": {
+     "x": 12,
+     "y": 370,
+     "width": 296,
+     "height": 190
+    },
+    "start": {
+     "x": 16,
+     "y": 405,
+     "width": 191.515625,
+     "height": 48
+    },
+    "hit": false
+   }
+  }
+ ]
+}

@@ -1,0 +1,187 @@
+{
+ "base": "https://gsfpv.flyreelstudio.eu",
+ "pass": true,
+ "failed": [],
+ "steps": [
+  {
+   "name": "fit en 844x390: the header's button fits and is free, the start button is free and opens the sound start",
+   "pass": true,
+   "detail": {
+    "head": {
+     "shown": true,
+     "right": 812,
+     "vw": 844,
+     "sw": 844,
+     "free": true
+    },
+    "free": true,
+    "url": "https://gsfpv.flyreelstudio.eu/en/fly/?sonic=start"
+   }
+  },
+  {
+   "name": "fit en 1366x768: the header's button fits and is free, the start button is free and opens the sound start",
+   "pass": true,
+   "detail": {
+    "head": {
+     "shown": true,
+     "right": 1227,
+     "vw": 1366,
+     "sw": 1366,
+     "free": true
+    },
+    "free": true,
+    "url": "https://gsfpv.flyreelstudio.eu/en/fly/?sonic=start"
+   }
+  },
+  {
+   "name": "fit en 768x1024: the header's button fits and is free, the start button is free and opens the sound start",
+   "pass": true,
+   "detail": {
+    "head": {
+     "shown": true,
+     "right": 736,
+     "vw": 768,
+     "sw": 768,
+     "free": true
+    },
+    "free": true,
+    "url": "https://gsfpv.flyreelstudio.eu/en/fly/?sonic=start"
+   }
+  },
+  {
+   "name": "fit es 844x390: the header's button fits and is free, the start button is free and opens the sound start",
+   "pass": true,
+   "detail": {
+    "head": {
+     "shown": true,
+     "right": 812,
+     "vw": 844,
+     "sw": 844,
+     "free": true
+    },
+    "free": true,
+    "url": "https://gsfpv.flyreelstudio.eu/es/fly/?sonic=start"
+   }
+  },
+  {
+   "name": "fit es 1366x768: the header's button fits and is free, the start button is free and opens the sound start",
+   "pass": true,
+   "detail": {
+    "head": {
+     "shown": true,
+     "right": 1227,
+     "vw": 1366,
+     "sw": 1366,
+     "free": true
+    },
+    "free": true,
+    "url": "https://gsfpv.flyreelstudio.eu/es/fly/?sonic=start"
+   }
+  },
+  {
+   "name": "fit es 768x1024: the header's button fits and is free, the start button is free and opens the sound start",
+   "pass": true,
+   "detail": {
+    "head": {
+     "shown": true,
+     "right": 736,
+     "vw": 768,
+     "sw": 768,
+     "free": true
+    },
+    "free": true,
+    "url": "https://gsfpv.flyreelstudio.eu/es/fly/?sonic=start"
+   }
+  },
+  {
+   "name": "fit pl 844x390: the header's button fits and is free, the start button is free and opens the sound start",
+   "pass": true,
+   "detail": {
+    "head": {
+     "shown": true,
+     "right": 812,
+     "vw": 844,
+     "sw": 844,
+     "free": true
+    },
+    "free": true,
+    "url": "https://gsfpv.flyreelstudio.eu/pl/fly/?sonic=start"
+   }
+  },
+  {
+   "name": "fit pl 1366x768: the header's button fits and is free, the start button is free and opens the sound start",
+   "pass": true,
+   "detail": {
+    "head": {
+     "shown": true,
+     "right": 1227,
+     "vw": 1366,
+     "sw": 1366,
+     "free": true
+    },
+    "free": true,
+    "url": "https://gsfpv.flyreelstudio.eu/pl/fly/?sonic=start"
+   }
+  },
+  {
+   "name": "fit pl 768x1024: the header's button fits and is free, the start button is free and opens the sound start",
+   "pass": true,
+   "detail": {
+    "head": {
+     "shown": true,
+     "right": 736,
+     "vw": 768,
+     "sw": 768,
+     "free": true
+    },
+    "free": true,
+    "url": "https://gsfpv.flyreelstudio.eu/pl/fly/?sonic=start"
+   }
+  },
+  {
+   "name": "fit ru 844x390: the header's button fits and is free, the start button is free and opens the sound start",
+   "pass": true,
+   "detail": {
+    "head": {
+     "shown": true,
+     "right": 812,
+     "vw": 844,
+     "sw": 844,
+     "free": true
+    },
+    "free": true,
+    "url": "https://gsfpv.flyreelstudio.eu/ru/fly/?sonic=start"
+   }
+  },
+  {
+   "name": "fit ru 1366x768: the header's button fits and is free, the start button is free and opens the sound start",
+   "pass": true,
+   "detail": {
+    "head": {
+     "shown": true,
+     "right": 1228.5,
+     "vw": 1366,
+     "sw": 1366,
+     "free": true
+    },
+    "free": true,
+    "url": "https://gsfpv.flyreelstudio.eu/ru/fly/?sonic=start"
+   }
+  },
+  {
+   "name": "fit ru 768x1024: the header's button fits and is free, the start button is free and opens the sound start",
+   "pass": true,
+   "detail": {
+    "head": {
+     "shown": true,
+     "right": 736,
+     "vw": 768,
+     "sw": 768,
+     "free": true
+    },
+    "free": true,
+    "url": "https://gsfpv.flyreelstudio.eu/ru/fly/?sonic=start"
+   }
+  }
+ ]
+}

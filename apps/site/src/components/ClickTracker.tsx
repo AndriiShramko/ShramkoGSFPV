@@ -1,12 +1,13 @@
 "use client";
 import { useEffect } from "react";
 import { routing, type Locale } from "@/i18n/routing";
+import { langHref } from "@/lib/lang-href";
 import { rememberLocale } from "@/lib/locale";
 import { countPageView, ctaLocation, gaEvent, isTrackEvent, openConsent, track } from "@/lib/track";
 
 /**
  * One delegated listener instead of many client islands:
- *  - <a data-lang="pl">                     → remember NEXT_LOCALE + lang_switch
+ *  - <a data-lang="pl">                     → remember NEXT_LOCALE + lang_switch, keep the current #anchor
  *  - <a data-track="cta_click" data-p="…">  → whitelisted event (unknown names are dropped)
  *  - <a data-consent="open">                → the consent banner again (without JS: the privacy page)
  *  - [data-share], [data-share-action], [data-ga="…"] → GA4 only: share {method}, a named click (copy_agent_prompt)
@@ -35,6 +36,8 @@ export default function ClickTracker() {
       const lang = el.dataset.lang;
       if (lang && (routing.locales as readonly string[]).includes(lang)) {
         rememberLocale(lang as Locale);
+        // the other language opens at the same place: the current anchor goes with the link (lib/lang-href.ts)
+        if (el instanceof HTMLAnchorElement) el.href = langHref(el.href, location.hash);
         if (lang !== document.documentElement.lang) track("lang_switch", lang, el);
         return;
       }

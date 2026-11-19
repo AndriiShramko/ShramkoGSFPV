@@ -12,6 +12,7 @@ Car 1 (job int4-car1, work copy C:/dev/gsfpv-v13-int, branch train4 from e3201fe
 
 Car 1
 
+- site4: merged (review SHIP), no conflict
 - ux4a: car 2 (review Verdict: HOLD when S1 reached it)
 - ux4b: car 2 (review Verdict: HOLD)
 - vox4: car 2 (no review file)

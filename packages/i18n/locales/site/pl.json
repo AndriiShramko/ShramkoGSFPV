@@ -10,6 +10,7 @@
     "sections": "Sekcje",
     "language": "Język",
     "fly": "Leć teraz",
+    "flySound": "Lot na słuch",
     "anchors": {
       "locations": "Miejsca",
       "features": "Funkcje",
@@ -853,7 +854,8 @@
   },
   "sticky": {
     "cta": "Leć teraz",
-    "note": "Za darmo, w przeglądarce"
+    "note": "Za darmo, w przeglądarce",
+    "soundNote": "W słuchawkach, za darmo, w przeglądarce"
   },
   "consent": {
     "title": "Ciasteczka analityczne",
