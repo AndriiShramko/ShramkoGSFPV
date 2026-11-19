@@ -98,7 +98,10 @@ the design says train6: the lane prompt wins). Design C:/dev/.gsfpv-lanes/design
     sound; the cheapest clean rule: in a module-0 listening lesson (ears-*) the keys line is said once a lesson, after
     the first question is answered (or the step's keys are said only at an 'ask' action), keep R8's flying lessons as
     they are; a host test that fails on the old code (lessons.ts hint per step) and the walk's step 4 <= 12 s;
-    (b) if listen:words passed: commit the package's evidence/listen/VL-4-words.json (package commit), move the pin;
+    (b) listen:words run 1 FAILED on one line: en cue.speed.brake.name "Brake notes" heard "Break notes" (0.5 > 0.2; a
+    homophone); es, pl, ru 0 over the bound, both controls fire. Rename the en line to words that cannot be misheard
+    (for example "Slow-down notes"), measure it (test/fixtures/measure-tts.ps1, en only), run listen:words again, then
+    commit the package's evidence/listen/VL-4-words.json (left uncommitted in the package after run 1) and move the pin;
     (c) the probe's step 1/9: decide links (check buttons only and list links as information, or give the nav and
     footer links min-height 44 px in apps/fly/src/sonic/sonic.css: the owner's rule says controls, so the CSS);
     (d) the walk again (both browsers) into evidence/2026-11-19/sound6/sound6-walk.json, the same against the live
