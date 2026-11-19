@@ -1,0 +1,213 @@
+{
+ "address": "http://localhost:5986/en",
+ "live": false,
+ "scan": "70b50d42",
+ "seed": 1,
+ "size": [
+  1536,
+  730
+ ],
+ "dsf": 1.25,
+ "date": "2026-11-19T16:38:37.455Z",
+ "steps": {
+  "open": {
+   "ok": true,
+   "lock": "CANVAS",
+   "courseMs": 23294,
+   "gates": 39,
+   "source": "generated"
+  },
+  "s8.failKept": {
+   "ok": true,
+   "fill": {
+    "posts": 61,
+    "retryAfter": "3600"
+   },
+   "pressed": true,
+   "status": 429,
+   "key": "course.save.problem.rate",
+   "line": "Too many new courses from this computer this hour. Your course is kept as a draft. Save again after 18:39.",
+   "again": {
+    "x": 1427.5,
+    "y": 664,
+    "w": 175,
+    "h": 26,
+    "disabled": true,
+    "text": "Save again after 18:39"
+   },
+   "drafts": 1,
+   "unchanged": true
+  },
+  "s7.untouchedSaved": {
+   "ok": true,
+   "saved": "70b50d42-efda0496",
+   "problem": {
+    "status": null,
+    "key": null,
+    "againAt": null
+   },
+   "line": "Saved as your course: Course kme4va, version 1. It is in Courses on the top bar",
+   "href": "http://localhost:5986/en/fly/?scene=70b50d42&course=g1.kme4va&render=off&nowarn=1",
+   "posts": [
+    {
+     "path": "/api/tracks",
+     "status": 429,
+     "at": 1795106354250
+    },
+    {
+     "path": "/api/tracks",
+     "status": 201,
+     "at": 1795106370955
+    }
+   ]
+  },
+  "s1.moveGate2": {
+   "ok": true,
+   "select": "click",
+   "moved": {
+    "by": "gizmo",
+    "axis": "x",
+    "r": 40
+   },
+   "from": [
+    4.4,
+    2.6,
+    -2.4
+   ],
+   "to": [
+    4.046,
+    2.6,
+    -2.046
+   ],
+   "m": 0.5
+  },
+  "s2.draftIn3s": {
+   "ok": true,
+   "ms": 1530,
+   "drafts": 2,
+   "newest": 1795106375368,
+   "edit4": true
+  },
+  "s3.restored": {
+   "ok": true,
+   "open": {
+    "ok": true,
+    "lock": "CANVAS",
+    "courseMs": 10,
+    "gates": 39,
+    "source": "generated"
+   },
+   "gate2": [
+    4.046,
+    2.6,
+    -2.046
+   ],
+   "want": [
+    4.046,
+    2.6,
+    -2.046
+   ],
+   "m": 0,
+   "restored": 1795106375368,
+   "line": "Your unsaved course from 17:39 is back (Versions: 2 kept). Key Ctrl+Z takes it away. | Your unsaved course from 17:39 is back (Versions: 2 kept). Key Ctrl+Z takes it away."
+  },
+  "s4.versions": {
+   "ok": true,
+   "openedBy": "its title",
+   "wheels": 2,
+   "n": 2,
+   "first": [
+    {
+     "text": "17:39 · gates: 39 · moved a gate",
+     "shown": true
+    },
+    {
+     "text": "17:39 · gates: 39 · not saved: kept here · saved",
+     "shown": true
+    }
+   ]
+  },
+  "s5.offer": {
+   "ok": true,
+   "select": "click",
+   "turned": true,
+   "text": "Before saving: gate 3 faces the wrong way; gate 2 touches a wall. Make these small corrections and save?",
+   "offered": [
+    {
+     "kind": "face-line",
+     "gates": [
+      3
+     ]
+    },
+    {
+     "kind": "nudge",
+     "gates": [
+      2
+     ]
+    }
+   ],
+   "cross": [
+    44,
+    44
+   ],
+   "line": "Before saving: gate 3 faces the wrong way; gate 2 touches a wall. Make these small corrections and save?"
+  },
+  "s6.correctAndSave": {
+   "ok": true,
+   "yes": true,
+   "gatesOnScreenMost": 39,
+   "gates": 39,
+   "selected": 2,
+   "done": "gate 3 turned 168 deg; gate 2 moved 10 cm away from the wall",
+   "line": "Saved as your course: Course kme4va, version 1. It is in Courses on the top bar",
+   "stored": [
+    {
+     "path": "/api/tracks",
+     "status": 201,
+     "at": 1795106407617
+    }
+   ],
+   "problem": {
+    "status": null,
+    "key": null,
+    "againAt": null
+   }
+  },
+  "s9.generateDropsForReal": {
+   "ok": true,
+   "ms": 15415,
+   "open": true,
+   "newCourse": true,
+   "restored": null,
+   "line": "Editor open. W A S D move the view, E up, Q down, hold the right mouse button to look around, the wheel sets the speed. Click a gate: it carries one set of handles at a time, chosen by Move, Turn or Size on the bar under",
+   "drafts": 5
+  }
+ },
+ "posts": [
+  {
+   "path": "/api/tracks",
+   "status": 429,
+   "at": 1795106354250
+  },
+  {
+   "path": "/api/tracks",
+   "status": 201,
+   "at": 1795106370955
+  },
+  {
+   "path": "/api/tracks",
+   "status": 201,
+   "at": 1795106407617
+  }
+ ],
+ "notRun": [],
+ "open": {
+  "ok": true,
+  "lock": "CANVAS",
+  "courseMs": 23294,
+  "gates": 39,
+  "source": "generated"
+ },
+ "fails": [],
+ "log": []
+}

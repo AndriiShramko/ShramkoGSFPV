@@ -10,6 +10,11 @@ import { markText } from './words';
 import { mayVote } from './rules';
 import { flashPart } from './flash';
 import './editor.css';
+import './keep.css';
+import { clockOf, type DraftEntry } from './drafts';
+import { draftByKey } from './keep-texts';
+import { fieldProblem, type SaveAgain } from './save-words';
+import { OFFER_KEYS, type FixAnswer } from './fixes';
 
 export interface PanelHost {
     key(press: KeyPress): void;
@@ -19,6 +24,8 @@ export interface PanelHost {
     saveAdmin(title: string): void;
     vote(id: string, v: 1 | -1): void;
     open(id: string): void;
+    /** lane edit4s: Versions, back to the kept draft at this index (newest first) */
+    back?(index: number): void;
 }
 
 const el = <K extends keyof HTMLElementTagNameMap>(tag: K, cls?: string, text?: string): HTMLElementTagNameMap[K] => {
@@ -42,6 +49,15 @@ export class EditorPanel {
     private readonly drawer: HTMLButtonElement;
     private readonly keys: HTMLElement;
     private readonly listTitle: HTMLElement;
+    private readonly versionsBox: HTMLElement;
+    private readonly versionRows: HTMLElement;
+    private readonly rule: HTMLElement;
+    private readonly again: HTMLButtonElement;
+    private againTimer: ReturnType<typeof setTimeout> | null = null;
+    private readonly offer: HTMLElement;
+    private readonly offerText: HTMLElement;
+    private readonly offerYes: HTMLButtonElement;
+    private offerAnswer: ((a: FixAnswer) => void) | null = null;
 
     constructor(ui: HTMLElement, private readonly host: PanelHost) {
         const root = el('section', 'course-editor interactive');
@@ -108,8 +124,45 @@ export class EditorPanel {
         this.admin.type = 'button';
         this.admin.hidden = true;
         this.admin.addEventListener('click', () => host.saveAdmin(this.title.value));
-        save.append(this.name, this.title, this.mine, this.all, this.admin);
+        // lane edit4s (E9): the fields are checked while typing against the server's rule, so the press cannot fail on them
+        this.rule = el('p', 'ce-field-rule');
+        this.rule.hidden = true;
+        this.name.addEventListener('input', () => this.fieldsOk());
+        this.title.addEventListener('input', () => this.fieldsOk());
+        // a failed save: Save again, enabled from the time the words name (save-words.ts)
+        this.again = el('button', 'ce-save-again', t('course.save.again'));
+        this.again.type = 'button';
+        this.again.hidden = true;
+        this.again.addEventListener('click', () => host.saveMine(this.name.value, this.title.value));
+        // lane edit4s (E7): a refused Save offers to make the small corrections itself (fixes.ts)
+        this.offer = el('div', 'ce-fix-offer');
+        this.offer.hidden = true;
+        this.offer.setAttribute('role', 'alertdialog');
+        this.offerText = el('p', 'ce-fix-text');
+        this.offerYes = el('button', 'ce-fix-yes');
+        this.offerYes.type = 'button';
+        this.offerYes.addEventListener('click', () => this.answer('yes'));
+        const show = el('button', 'ce-fix-show', t(OFFER_KEYS.show));
+        show.type = 'button';
+        show.addEventListener('click', () => this.answer('show'));
+        const close = el('button', 'ce-fix-close', '×');
+        close.type = 'button';
+        close.setAttribute('aria-label', t(OFFER_KEYS.close));
+        close.title = t(OFFER_KEYS.close);
+        close.addEventListener('click', () => this.answer('close'));
+        const buttons = el('div', 'ce-fix-buttons');
+        buttons.append(this.offerYes, show);
+        this.offer.append(this.offerText, buttons, close);
+        save.append(this.name, this.title, this.rule, this.mine, this.offer, this.again, this.all, this.admin);
         root.append(save);
+
+        // lane edit4s (E6): the drafts this browser kept, each with a way back (parts/keep.ts)
+        this.versionsBox = el('div', 'ce-versions');
+        this.versionsBox.append(el('h3', 'ce-versions-title', t('course.keep.versions')), el('p', 'ce-versions-note', t('course.keep.versionsNote')));
+        this.versionRows = el('ul', 'ce-version-list');
+        this.versionsBox.append(this.versionRows);
+        root.append(this.versionsBox);
+        this.versions([]);
 
         this.listTitle = el('h3', 'ce-list-title', t('course.edit.list'));
         root.append(this.listTitle);
@@ -128,6 +181,71 @@ export class EditorPanel {
     say(text: string, refused = false): void {
         this.live.textContent = text;
         this.live.classList.toggle('bad', refused);
+    }
+
+    /** lane edit4s (E9): the name and the title against the server's rule; a wrong one is outlined and its rule shown */
+    fieldsOk(): boolean {
+        let first: string | null = null;
+        for (const [input, field] of [[this.name, 'name'], [this.title, 'title']] as const) {
+            const key = fieldProblem(field, input.value);
+            input.classList.toggle('ce-field-bad', key !== null);
+            input.setAttribute('aria-invalid', String(key !== null));
+            first ??= key;
+        }
+        this.rule.hidden = first === null;
+        this.rule.textContent = first === null ? '' : t(first);
+        return first === null;
+    }
+
+    /** the field a failed save named: outlined and focused */
+    markField(field: 'name' | 'title'): void {
+        this.fieldsOk();
+        const input = field === 'name' ? this.name : this.title;
+        input.classList.add('ce-field-bad');
+        this.root.classList.add('ce-open');
+        input.focus();
+    }
+
+    /**
+     * Lane edit4s (E7): the offer of small corrections (its sentence, the yes button's words), answered once by `on`; null
+     * takes it away. The window opens so it is seen, and the yes button takes the focus (key Enter answers it).
+     */
+    offerFixes(offer: { text: string; yes: string } | null, on: ((a: FixAnswer) => void) | null = null): void {
+        this.offerAnswer = offer ? on : null;
+        this.offer.hidden = offer === null;
+        if (!offer) return;
+        this.offerText.textContent = offer.text;
+        this.offerYes.textContent = offer.yes;
+        this.root.classList.add('ce-open');
+        this.offerYes.focus();
+    }
+
+    /** true while the offer of corrections waits for its answer */
+    offering(): boolean {
+        return !this.offer.hidden;
+    }
+
+    private answer(a: FixAnswer): void {
+        const on = this.offerAnswer;
+        this.offerFixes(null);
+        on?.(a);
+    }
+
+    /** a failed save's Save again (save-words.ts SaveAgain): shown, enabled from `at`; null hides it */
+    offerAgain(again: SaveAgain | null): void {
+        if (this.againTimer !== null) clearTimeout(this.againTimer);
+        this.againTimer = null;
+        this.again.hidden = again === null;
+        if (!again) return;
+        const wait = again.at === null ? 0 : again.at - Date.now();
+        this.again.disabled = wait > 0;
+        this.again.textContent = wait > 0 ? t('course.save.againAt', { time: clockOf(again.at!) }) : t('course.save.again');
+        if (wait > 0) {
+            this.againTimer = setTimeout(() => {
+                this.again.disabled = false;
+                this.again.textContent = t('course.save.again');
+            }, wait);
+        }
     }
 
     defaults(name: string, title: string): void {
@@ -159,6 +277,37 @@ export class EditorPanel {
     }
 
     /** review ED-7: the window opens (on a phone its drawer) and shows that part; the focus stays on the page */
+    /** lane edit4s (E6): the kept drafts, newest first: time, gates, what changed, and a button back to each */
+    versions(list: readonly Pick<DraftEntry, 't' | 'gates' | 'by' | 'saved'>[]): void {
+        this.versionRows.replaceChildren();
+        if (list.length === 0) {
+            this.versionRows.append(el('li', 'ce-empty', t('course.keep.versionsEmpty')));
+            return;
+        }
+        list.forEach((d, i) => {
+            const li = el('li', 'ce-version');
+            const what = t(draftByKey(d.by)) + (d.saved ? ` · ${t('course.keep.versionSaved')}` : '');
+            const b = el('button', 'ce-version-back', t('course.keep.version', { time: clockOf(d.t), n: d.gates, what }));
+            b.type = 'button';
+            b.title = t('course.keep.back');
+            b.setAttribute('aria-label', `${t('course.keep.back')}: ${b.textContent ?? ''}`);
+            b.addEventListener('click', () => {
+                this.host.back?.(i);
+                b.blur();
+            });
+            li.append(b);
+            this.versionRows.append(li);
+        });
+    }
+
+    /** lane edit4s: Course > Versions opens the window at the kept drafts */
+    revealVersions(): void {
+        this.root.classList.add('ce-open');
+        this.drawer.setAttribute('aria-expanded', 'true');
+        this.versionsBox.scrollIntoView({ block: 'nearest' });
+        flashPart(this.versionRows);
+    }
+
     reveal(part: 'save' | 'keys' | 'courses'): void {
         this.root.classList.add('ce-open');
         this.drawer.setAttribute('aria-expanded', 'true');

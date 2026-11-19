@@ -179,6 +179,8 @@ _sthits: dict[str, deque] = defaultdict(deque)    # POST /api/session/start, per
 _schits: dict[str, deque] = defaultdict(deque)    # the chunks of an upload, per client
 _sqhits: dict[str, deque] = defaultdict(deque)    # finish and status, per client
 _trhits: dict[str, deque] = defaultdict(deque)    # POST /api/tracks, per client (tracks.LIMITS)
+_trbad: dict[str, deque] = defaultdict(deque)     # POST /api/tracks the store refused (4xx), per client: their own count
+                                                  # (lane edit4s E9: a refused body no longer uses up the creates)
 _trvhits: dict[str, deque] = defaultdict(deque)   # POST /api/tracks/<id>/versions|vote|broken, per kind and client
 _tghits: dict[str, deque] = defaultdict(deque)    # the owner bot's webhook, per client address (not shared:
                                                   # a stranger's flood must not use up Telegram's deliveries)
@@ -195,6 +197,30 @@ def _rate(bucket: dict[str, deque], key: str, n: int, window: float) -> bool:
         return False
     q.append(now)
     return True
+
+
+def _retry_s(bucket: dict[str, deque], key: str, window: float) -> int:
+    """Retry-After of a 429 from `_rate`: whole seconds until the oldest hit of `key` leaves the window (at least 1)."""
+    q = bucket.get(key)
+    if not q:
+        return 1
+    return max(1, int(math.ceil(window - (time.time() - q[0]))))
+
+
+def _full(bucket: dict[str, deque], key: str, n: int, window: float) -> bool:
+    """`_rate` without counting: True when `key` already has n hits in the window."""
+    q = bucket[key]
+    now = time.time()
+    while q and now - q[0] > window:
+        q.popleft()
+    return len(q) >= n
+
+
+def _give_back(bucket: dict[str, deque], key: str) -> None:
+    """Takes back the newest hit `_rate` counted (a create the server refused, lane edit4s E9)."""
+    q = bucket.get(key)
+    if q:
+        q.pop()
 
 
 def free_gb() -> float:
@@ -1446,11 +1472,13 @@ class Handler(BaseHTTPRequestHandler):
         path = self.path.split("?")[0]
         print(f"{time.strftime('%H:%M:%S')} {self.command} {'/api/tg/...' if path.startswith('/api/tg/') else path}", flush=True)
 
-    def _json(self, code: int, obj: dict) -> None:
+    def _json(self, code: int, obj: dict, retry_after_s: int | None = None) -> None:
         b = json.dumps(obj).encode()
         self.send_response(code)
         self.send_header("Content-Type", "application/json")
         self.send_header("Cache-Control", "no-store")
+        if retry_after_s is not None:
+            self.send_header("Retry-After", str(retry_after_s))
         self.send_header("Content-Length", str(len(b)))
         self.end_headers()
         self.wfile.write(b)
@@ -1458,7 +1486,7 @@ class Handler(BaseHTTPRequestHandler):
     def _client(self) -> str:
         return (self.headers.get("X-Forwarded-For") or "?").split(",")[0].strip()
 
-    def _refuse(self, code: int) -> None:
+    def _refuse(self, code: int, retry_after_s: int | None = None) -> None:
         """An early refusal (429) before the body was read: the body (at most DRAIN_MAX, which covers
         every route's own limit) is read and dropped first. A socket closed with unread data is reset,
         and the peer (nginx, or a test client on Windows) can lose the answer: a 502 or an aborted
@@ -1469,7 +1497,7 @@ class Handler(BaseHTTPRequestHandler):
             n = 0
         if 0 < n <= DRAIN_MAX:
             self.rfile.read(n)
-        self._json(code, {"ok": False})
+        self._json(code, {"ok": False}, retry_after_s)
 
     def _body(self) -> dict | None:
         try:
@@ -1679,8 +1707,20 @@ class Handler(BaseHTTPRequestHandler):
         except OSError:
             return self._json(500, {"ok": False, "error": "io"})
 
+    @staticmethod
+    def _create_refused(client: str | None) -> None:
+        """A create the store refused (4xx) gives its hit back to the creates of the hour and of all clients and counts in
+        the client's own count of refused bodies instead (LIMITS refused_creates_per_client_hour), so a pilot whose course
+        was refused, or who pressed again, still has every create of the hour (lane edit4s E9)."""
+        if client is None:
+            return
+        _give_back(_trhits, client)
+        _give_back(_all_hits, "tracks-create")
+        _rate(_trbad, client, tracks.LIMITS["refused_creates_per_client_hour"], 3600.0)
+
     def _tracks(self, method: str, path: str, qs: str) -> None:
         """The courses' routes (tracks.py). Refusals are {"ok": false, "error": <code>} with their status."""
+        counted: str | None = None   # the client whose create this request counted (given back when the create is refused)
         try:
             if method == "GET":
                 if path == "/api/tracks":
@@ -1710,17 +1750,26 @@ class Handler(BaseHTTPRequestHandler):
                     self._drain(n)
                 return self._json(403, {"ok": False, "error": "cross-site"})
             client = self._client()
+            # every 429 says when to try again (Retry-After: the oldest hit of the full count leaving its hour; lane edit4s E9)
             if act is None:
-                ok = _rate(_trhits, client, tracks.LIMITS["creates_per_client_hour"], 3600.0) \
-                    and _rate(_all_hits, "tracks-create", tracks.LIMITS["creates_all_hour"], 3600.0)
+                if _full(_trbad, client, tracks.LIMITS["refused_creates_per_client_hour"], 3600.0):
+                    return self._refuse(429, _retry_s(_trbad, client, 3600.0))
+                if not _rate(_trhits, client, tracks.LIMITS["creates_per_client_hour"], 3600.0):
+                    return self._refuse(429, _retry_s(_trhits, client, 3600.0))
+                if not _rate(_all_hits, "tracks-create", tracks.LIMITS["creates_all_hour"], 3600.0):
+                    _give_back(_trhits, client)
+                    return self._refuse(429, _retry_s(_all_hits, "tracks-create", 3600.0))
+                counted = client
             else:   # versions, votes and broken reports: each its own count per client (tracks-plan 2.8)
                 limit = {"versions": "versions_per_client_hour", "vote": "votes_per_client_hour", "broken": "reports_per_client_hour"}[act.group(2)]
-                ok = _rate(_trvhits, f"{act.group(2)}:{client}", tracks.LIMITS[limit], 3600.0)
-            if not ok:
-                return self._refuse(429)
+                key = f"{act.group(2)}:{client}"
+                if not _rate(_trvhits, key, tracks.LIMITS[limit], 3600.0):
+                    return self._refuse(429, _retry_s(_trvhits, key, 3600.0))
             if n > tracks.LIMITS["body_bytes"]:
+                self._create_refused(counted)
                 return self._refuse(413)
             if n <= 0:
+                self._create_refused(counted)
                 return self._json(400, {"ok": False, "error": "bad-length"})
             raw = self.rfile.read(n)
             if _guard["tripped"]:
@@ -1734,6 +1783,8 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json(200, TRACKS.vote(tid, raw, client))
             return self._json(200, TRACKS.broken(tid, raw, client))
         except tracks.TrackError as e:
+            if 400 <= e.status < 500:
+                self._create_refused(counted)
             return self._json(e.status, {"ok": False, "error": e.code, **e.extra})
         except OSError:
             return self._json(500, {"ok": False, "error": "io"})

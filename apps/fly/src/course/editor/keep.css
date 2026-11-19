@@ -1,0 +1,20 @@
+/* Lane edit4s (train 4): the Versions list of the course editor's window (panel.ts, parts/keep.ts). */
+.ce-versions { margin-top: 8px; }
+.ce-versions-title { margin: 6px 0 2px; font-size: 1em; }
+.ce-versions-note { margin: 0 0 4px; opacity: 0.8; font-size: 0.9em; }
+.ce-version-list { list-style: none; margin: 0; padding: 0; max-height: 220px; overflow-y: auto; }
+.ce-version { border-top: 1px solid #2a3442; }
+.ce-version-back { display: block; width: 100%; min-height: 44px; text-align: left; font-size: 15px; }
+/* lane edit4s (E9): a save field the server would refuse is outlined, its rule stands under it; Save again after a failure */
+.ce-save input.ce-field-bad { outline: 2px solid #ff6b6b; outline-offset: 1px; }
+.ce-field-rule { margin: 2px 0 4px; color: #ffb3b3; font-size: 15px; line-height: 1.3; }
+.ce-save-again { min-height: 44px; font-size: 15px; }
+.ce-field-rule { grid-column: 1 / -1; }
+.ce-field-rule[hidden], .ce-save-again[hidden] { display: none; }
+/* lane edit4s (E7): a refused Save's offer of small corrections, in the window's flow (it lies over nothing) */
+.ce-fix-offer { grid-column: 1 / -1; position: relative; margin: 4px 0; padding: 8px 52px 8px 10px; border: 1px solid #ffb35c; border-radius: 6px; background: #2a2116; }
+.ce-fix-offer[hidden] { display: none; }
+.ce-fix-text { margin: 0 0 8px; font-size: 16px; line-height: 1.35; }
+.ce-fix-buttons { display: flex; flex-wrap: wrap; gap: 8px; }
+.ce-fix-buttons button { min-height: 44px; font-size: 15px; padding: 0 14px; }
+.ce-fix-close { position: absolute; top: 4px; right: 4px; width: 44px; height: 44px; font-size: 22px; line-height: 1; }

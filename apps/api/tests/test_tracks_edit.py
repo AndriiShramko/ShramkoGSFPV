@@ -361,6 +361,7 @@ class Http(unittest.TestCase):
         server.TRACKS = TrackStore(lambda: Path(self.tmp.name), free_bytes=lambda: 10 ** 12, min_free_bytes=lambda: 10 ** 9)
         self.addCleanup(lambda: setattr(server, "TRACKS", saved))
         server._trhits.clear()
+        server._trbad.clear()
         server._trvhits.clear()
         self.api = ThreadingHTTPServer(("127.0.0.1", 0), server.Handler)
         threading.Thread(target=self.api.serve_forever, daemon=True).start()

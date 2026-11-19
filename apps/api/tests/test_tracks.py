@@ -177,6 +177,7 @@ class Http(unittest.TestCase):
         server.TRACKS = TrackStore(lambda: self.dir, free_bytes=lambda: self.free[0], min_free_bytes=lambda: 10 ** 9)
         self.addCleanup(lambda: setattr(server, "TRACKS", saved))
         server._trhits.clear()
+        server._trbad.clear()
         self.api = ThreadingHTTPServer(("127.0.0.1", 0), server.Handler)
         threading.Thread(target=self.api.serve_forever, daemon=True).start()
         self.addCleanup(lambda: (self.api.shutdown(), self.api.server_close()))
@@ -225,11 +226,43 @@ class Http(unittest.TestCase):
         self.assertEqual(json.loads(body)["error"], "invalid")
         self.assertEqual(self.call("POST", "/api/tracks", (FIX / "valid-open-scaled.json").read_bytes(), ip="203.0.113.8")[0], 201)   # control
 
-    def test_eleventh_create_in_an_hour_is_429(self):
-        for i in range(10):
+    def test_one_create_over_the_hour_is_429_with_retry_after(self):
+        n = tracks.LIMITS["creates_per_client_hour"]
+        self.assertEqual(n, 20)   # lane edit4s E9: 10 -> 20
+        for i in range(n):
             self.assertEqual(self.call("POST", "/api/tracks", course(seed=f"r{i}"))[0], 201, i)
-        self.assertEqual(self.call("POST", "/api/tracks", course(seed="r10"))[0], 429)
-        self.assertEqual(self.call("POST", "/api/tracks", course(seed="r11"), ip="198.51.100.1")[0], 201)   # control: another client
+        code, h, _ = self.call("POST", "/api/tracks", course(seed="rx"))
+        self.assertEqual(code, 429)
+        # lane edit4s E9: the page says when to save again: the oldest create leaves the hour then
+        self.assertTrue(3500 <= int(h["Retry-After"]) <= 3600, h.get("Retry-After"))
+        self.assertEqual(self.call("POST", "/api/tracks", course(seed="ry"), ip="198.51.100.1")[0], 201)   # control: another client
+
+    def test_refused_creates_do_not_use_up_the_hour(self):
+        # lane edit4s E9: 11 refused bodies (a name the server refuses, pressed again and again) took the 10 creates of the
+        # hour, so the pilot's good course then got 429 'cannot save, try another time'
+        bad = json.loads(BASIC)
+        bad["author"] = {"kind": "person", "name": "A"}
+        for i in range(11):
+            self.assertEqual(self.call("POST", "/api/tracks", json.dumps(bad).encode())[0], 400, i)
+        self.assertEqual(self.call("POST", "/api/tracks", course(seed="good"))[0], 201)
+        # control: the refused bodies have their own count, so they are no free flood either
+        for i in range(tracks.LIMITS["refused_creates_per_client_hour"] - 11):
+            self.call("POST", "/api/tracks", json.dumps(bad).encode())
+        code, h, _ = self.call("POST", "/api/tracks", course(seed="good2"))
+        self.assertEqual(code, 429)
+        self.assertIn("Retry-After", h)
+
+    def test_versions_429_has_retry_after(self):
+        saved = tracks.LIMITS["versions_per_client_hour"]
+        tracks.LIMITS["versions_per_client_hour"] = 1
+        self.addCleanup(lambda: tracks.LIMITS.__setitem__("versions_per_client_hour", saved))
+        server._trvhits.clear()
+        self.addCleanup(server._trvhits.clear)
+        path = "/api/tracks/39e63ce9-00000000/versions"
+        self.call("POST", path, course(), headers={"X-Track-Token": "x"})
+        code, h, _ = self.call("POST", path, course(), headers={"X-Track-Token": "x"})
+        self.assertEqual(code, 429)
+        self.assertTrue(1 <= int(h["Retry-After"]) <= 3600)
 
     def test_cross_site_posts_are_refused(self):
         # lane review TR-6: a text/plain POST from another site's page went through (201) from the visitor's own address

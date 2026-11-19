@@ -43,11 +43,12 @@ from pathlib import Path
 from typing import Callable
 
 # Limits, all ESTIMATES (not measured; plan section 7 and tracks-plan.md 2.8): a generated course of 24 gates is about 6 KB of
-# JSON, so 64 KB holds 200 gates with room; 10 creates an hour lets a pilot try a few courses; 20 courses a scene keeps a
+# JSON, so 64 KB holds 200 gates with room; 20 creates an hour lets a pilot try a few courses; 20 courses a scene keeps a
 # scene's list short until voting exists (train 2).
 LIMITS = {
     "body_bytes": 64 * 1024,          # POST body, also nginx client_max_body_size 64k
-    "creates_per_client_hour": 10,    # server.py _rate(_trhits, client, ...)
+    "creates_per_client_hour": 20,    # server.py _rate(_trhits, client, ...); lane edit4s E9: 10 -> 20, refused ones not counted
+    "refused_creates_per_client_hour": 60,  # server.py _trbad: refused (4xx) creates, their own count, so they are no free flood
     "creates_all_hour": 300,          # server.py _rate(_all_hits, "tracks-create", ...): every client together (as report, share)
     "tracks_per_scene": 300,          # visible ones; the oldest unrated is hidden first (tracks-plan 2.8, lane review TR-6)
     "versions_per_track": 50,         # 409 after that; the admin may delete old versions
