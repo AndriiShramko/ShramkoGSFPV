@@ -14,7 +14,7 @@ The contract (packages/tracks/src/request.ts) came from gen4a S0 (b142e495), mer
       step, %, time left, Cancel 44 px; stays until the answer); link.ts courseOfLink (g1 legacy, g2 request) and the page
       writes 'g2.' links; the no-room box 'Make the scene xN and build' / 'Try another layout' + Close + 44 px cross; the
       start line 'The start gate is N m away' for 8 s; hook.box, hook.plan, hook.startLine. course-progress.test.ts
-      (+5 tests, 20 passed, NEG OK). Commit: see git log 'gen4b B2'.
+      (+5 tests, 20 passed, NEG OK). Commit 25fbb339.
 - [ ] B3 acceptance: tools/bench/scripts/gen4-accept-probe.mjs (design section 6), the live negative control, the gates.
 
 Differences from the design (the code wins):
