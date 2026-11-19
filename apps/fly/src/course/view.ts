@@ -35,7 +35,9 @@ const PAINT: Record<Paint, [number, number, number]> = {
     checkDark: [0.02, 0.02, 0.02],
     selected: [1, 0.92, 0.25],
     bad: [1, 0.08, 0.05],
-    'selected-bad': [1, 0.5, 0]
+    'selected-bad': [1, 0.5, 0],
+    // lane edit4c C1w: a gate with a live warning (course/editor/warn.ts), orange
+    warn: [1, 0.45, 0]
 };
 /** a chevron every this many metres along the path (tracks-plan 2.3) */
 export const CHEVRON_STEP_M = 2;

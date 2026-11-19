@@ -80,3 +80,34 @@ export function placeWarnings(course: Course, index: number, pose: FlownPose, fl
     }
     return out;
 }
+
+/** The gates a warning paints orange: the moved gate `index` whenever it has one, and a next gate that can no longer be
+ *  entered forward (its own sharp turn). */
+export function warnedGates(ws: readonly Warning[], index: number): Set<number> {
+    const out = new Set<number>();
+    if (ws.length > 0) out.add(index);
+    for (const w of ws) if (w.code === 'sharp-turn' && w.gate >= 0) out.add(w.gate);
+    return out;
+}
+
+/** how often the warnings are worked out while a gate drags (the legs' sweeps), ms: at most 10 times a second */
+export const WARN_EVERY_MS = 100;
+/** how long the question 'Keep it here?' waits for an answer, ms; no answer keeps the gate where the pilot put it */
+export const KEEP_ASK_MS = 8000;
+/** the warning box stands this far above the gate's centre, CSS px (the gate bar stands as far below: bar-place.ts BAR_CLEAR_PX) */
+export const WARN_CLEAR_PX = 210;
+
+/**
+ * Where the warning box goes for a gate at (x, y) on a page w by h: centred above the gate (the gate bar takes the space
+ * below), else below the gate bar (`barH` px tall at WARN_CLEAR_PX under the gate), else at the top just under the top bar
+ * (`topClear` px from the page's top: a phone); inside the page; null when the gate is not in front of the camera.
+ */
+export function warnPlace(at: readonly [number, number, number] | null, w: number, h: number, boxW: number, boxH: number, topClear: number, barH = 44): [number, number] | null {
+    if (!at || !(at[2] > 0) || !Number.isFinite(at[0]) || !Number.isFinite(at[1])) return null;
+    const x = Math.max(8, Math.min(w - boxW - 8, at[0] - boxW / 2));
+    const top = topClear + 8;
+    const up = at[1] - WARN_CLEAR_PX - boxH;
+    const down = at[1] + WARN_CLEAR_PX + barH + 8;
+    const y = up >= top ? up : down + boxH <= h - 8 ? down : top;
+    return [Math.round(x), Math.round(y)];
+}

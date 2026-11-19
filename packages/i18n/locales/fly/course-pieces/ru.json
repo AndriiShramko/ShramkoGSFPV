@@ -1,0 +1,14 @@
+{
+  "course.piece.warn.sharpTurn": "Слишком крутой поворот, чтобы влететь в ворота {gate}",
+  "course.piece.warn.tooClose": "Ворота {gate} стоят слишком близко к воротам {other}",
+  "course.piece.warn.wallInOpening": "В проёме ворот {gate} стоит стена",
+  "course.piece.warn.legLong": "От ворот {gate} до ворот {other} больше {max} м",
+  "course.piece.warn.legWall": "Путь от ворот {gate} до ворот {other} идёт сквозь стену",
+  "course.piece.warn.legWallStart": "Путь от старта до ворот {other} идёт сквозь стену",
+  "course.piece.ask": "Оставить здесь?",
+  "course.piece.keep": "Оставить",
+  "course.piece.putBack": "Вернуть (клавиша Ctrl+Z)",
+  "course.piece.close": "Закрыть: ворота остаются здесь",
+  "course.piece.kept": "Оставлено, где вы поставили. Ворота {gate} будут оранжевыми, пока проблема не уйдёт.",
+  "course.piece.more": "и ещё {n}"
+}

@@ -43,6 +43,9 @@ import { frameGate, reframeOnDragEnd } from '../../course/editor/frame';
 import type { RayFn } from '../../course/editor/camera';
 import { EditView } from '../../course/editor/view-mouse';
 import { GateBar } from '../../course/editor/gate-bar';
+import { WarnBar } from '../../course/editor/warn-bar';
+import { LiveWarnings } from '../../course/editor/warn-live';
+import { KEPT_KEY } from '../../course/editor/pieces-texts';
 import { TopBar } from '../../course/editor/top-bar';
 import { ADD_RAY_M, addAction, addLift, facingFrom, placeFor } from '../../course/editor/add-place';
 import { flyShows, modeStep, openStep, type EditMode } from '../../course/editor/fly-mode';
@@ -149,6 +152,11 @@ export const course: Feature = {
         let bar: GateBar | null = null;
         /** lane editor3 E3: the top bar (Add gate, Undo, Redo, Exit) and whether the drone flies inside the mode */
         let top: TopBar | null = null;
+        /** lane edit4c C1w (E11): the warning box at the gate and the live warnings' state (kept gates stay orange) */
+        let warnBar: WarnBar | null = null;
+        let warns: LiveWarnings | null = null;
+        /** the course the open question is about (any other course on screen closes it) */
+        let askedCourse: unknown = null;
         let mode: EditMode = 'edit';
         /** review ED-3: a crash in flight holds the edit view until the drone is seen disarmed (fly-mode.ts modeStep) */
         let crashHold = false;
@@ -850,7 +858,14 @@ export const course: Feature = {
             stage.show(run.gates, gateRoles(run.gates.length, track.laps > 1), (role) => t(`course.gate.${role}`), (x, y, z) => col?.queryRay(x, y, z, 0, -1, 0, 80)?.y ?? null);
             stage.setNext(ed.selected, run.path, track.laps > 1, false);
             // stage F1-finish: the selected gate magenta, a failing gate red (tracks-plan 2.11)
-            const paints = editPaints(ed.course.gates.map((g) => g.id), ed.selected, ed.problems);
+            // lane edit4c C1w: another edit (the undo key too) or another gate selected while 'Keep it here?' is open closes the
+            // question; the gate counts as kept, so it stays orange while it still warns (an undo that put it back: it does not)
+            const askedGate = warnBar?.asking() ?? null;
+            if (askedGate !== null && (ed.course !== askedCourse || ed.course.gates[ed.selected]?.id !== askedGate)) {
+                warnBar?.close();
+                warns?.keep(askedGate);
+            }
+            const paints = editPaints(ed.course.gates.map((g) => g.id), ed.selected, ed.problems, warns?.painted(ed.course, !!dragBase));
             stage.paintEdit(paints);
             edHook.paints = paints;
             shownNext = ed.selected;
@@ -952,8 +967,21 @@ export const course: Feature = {
             }, camFrom([ep.x, ep.y, ep.z], [ep.x + ef.x, ep.y + ef.y, ep.z + ef.z]));
             bar = new GateBar(ctx.ui, { key: (p) => applyKey(p), where: () => view?.standScreen() ?? null, tool: () => view?.tool ?? 'move', setTool: (tl) => view?.setTool(tl), dragging: () => view?.isDragging() ?? false });
             top = new TopBar(ctx.ui, { key: (p) => applyKey(p), add: () => toggleAdd(), show: (part) => panel?.reveal(part) });
-            // read only, for the page probes (tools/bench/src/editor3-smoke.ts)
-            (window as unknown as { __gsfpvEditView?: () => unknown }).__gsfpvEditView = () => (view ? { ...view.debug(), mode, bar: bar?.debug() ?? null, place: lastPlace, wrong: lastWrong, course: ed ? { gates: ed.course.gates, start: (ed.course as { start?: unknown }).start ?? null, problems: ed.problems } : null, camTaken, crashCleared, crashActive: ctx.crash.active, drone: [S.px, S.py, S.pz].map((i) => Math.round((ctx.session.runner.sim.s[i] ?? 0) * 100) / 100), override: ctx.session.cameraOverride } : null);
+            warns = new LiveWarnings({ flown: () => flownTransform(), walls: () => ctx.session.collision ?? null, margin: () => edMargin });
+            warnBar = new WarnBar(ctx.ui, {
+                where: () => view?.standScreen() ?? null,
+                topClear: () => top?.root.getBoundingClientRect().bottom ?? 0,
+                // Put back is the undo key's row: one action, one key
+                putBack: () => applyKey({ code: 'KeyZ', ctrlKey: true }),
+                kept: (id) => {
+                    warns?.keep(id);
+                    const i = ed ? ed.course.gates.findIndex((g) => g.id === id) : -1;
+                    showEd();
+                    if (i >= 0) say(t(KEPT_KEY, { gate: i + 1 }));
+                }
+            });
+            // read only, for the page probes (tools/bench/src/editor3-smoke.ts); lane edit4c: the warning box and the kept gates
+            (window as unknown as { __gsfpvEditView?: () => unknown }).__gsfpvEditView = () => (view ? { ...view.debug(), mode, bar: bar?.debug() ?? null, warn: warnBar ? { ...warnBar.debug(), kept: warns?.keptIds() ?? [] } : null, place: lastPlace, wrong: lastWrong, course: ed ? { gates: ed.course.gates, start: (ed.course as { start?: unknown }).start ?? null, problems: ed.problems } : null, camTaken, crashCleared, crashActive: ctx.crash.active, drone: [S.px, S.py, S.pz].map((i) => Math.round((ctx.session.runner.sim.s[i] ?? 0) * 100) / 100), override: ctx.session.cameraOverride } : null);
             // lane editor3 H1, read only: the shown handles' shape under a page point (the probe finds the ring it presses)
             (window as unknown as { __gsfpvEditHit?: (x: number, y: number, own?: boolean) => unknown }).__gsfpvEditHit = (x, y, own) => view?.hitAt(x, y, own === true) ?? null;
             // I1, read only: the eye's distance, the gate's height, the rings' minor axes and the handle parts' rectangles
@@ -1000,6 +1028,9 @@ export const course: Feature = {
             view = null;
             bar?.destroy();
             bar = null;
+            warnBar?.destroy();
+            warnBar = null;
+            warns = null;
             top?.destroy();
             top = null;
             mode = 'edit';
@@ -1133,6 +1164,9 @@ export const course: Feature = {
                 const gates = [...base.course.gates];
                 gates[base.selected] = g;
                 ed = { ...base, course: { ...base.course, gates } };
+                // lane edit4c C1w (E11): what the gate breaks where it is now, at most 10 times a second, in a tag beside it
+                const ws = warns?.during(ed.course, base.selected, gateFlownPose(g, flownTransform()), performance.now());
+                if (ws) warnBar?.live(g.id, ws);
                 // one redraw per frame however fast the pointer moves
                 if (!dragFrame) dragFrame = requestAnimationFrame(() => { dragFrame = 0; if (ed && dragBase) showEd(); });
                 return;
@@ -1147,6 +1181,12 @@ export const course: Feature = {
                 edChanged = true;
                 checks?.ask(st.course, flownTransform(), edMargin);
             }
+            // lane edit4c C1w: a release into a place that warns asks 'Keep it here?' (no answer in 8 s keeps it)
+            warns?.endDrag();
+            const ws = st && warns ? warns.released(st.course, st.selected) : [];
+            askedCourse = st ? st.course : null;
+            if (ws.length > 0) warnBar?.ask(g.id, ws);
+            else warnBar?.close();
             showEd();
             // J1 (E1): a drag that left the gate outside the middle 80 % of the view (a size change, a long move) frames it
             // again; never during the drag (this is its end). Review EJ-2: only a drag that changed the gate and took its box

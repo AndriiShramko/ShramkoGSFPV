@@ -1,0 +1,14 @@
+{
+  "course.piece.warn.sharpTurn": "Too sharp a turn to fly into gate {gate}",
+  "course.piece.warn.tooClose": "Gate {gate} is too close to gate {other}",
+  "course.piece.warn.wallInOpening": "A wall stands in the opening of gate {gate}",
+  "course.piece.warn.legLong": "From gate {gate} to gate {other} is more than {max} m",
+  "course.piece.warn.legWall": "The way from gate {gate} to gate {other} goes through a wall",
+  "course.piece.warn.legWallStart": "The way from the start to gate {other} goes through a wall",
+  "course.piece.ask": "Keep it here?",
+  "course.piece.keep": "Keep",
+  "course.piece.putBack": "Put back (key Ctrl+Z)",
+  "course.piece.close": "Close: the gate stays here",
+  "course.piece.kept": "Kept where you put it. Gate {gate} stays orange until the problem is gone.",
+  "course.piece.more": "and {n} more"
+}
