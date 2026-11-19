@@ -367,4 +367,4 @@ body.cinema .rec-dot { display: none; }
 .gen-row { display: flex; gap: 8px; margin: 12px 0 4px; } .gen-row .gen-choice { flex: 1 1 0; min-height: 48px; font-size: 17px; }
 .gen-line { margin: 4px 0 8px; color: var(--muted); font-size: 15px; line-height: 1.35; } .gen-warn { margin: 8px 0; padding: 8px 10px; border-radius: 8px; background: rgba(245, 158, 11, .14); border: 1px solid rgba(245, 158, 11, .5); font-size: 16px; }
 .gen-actions { display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap; margin-top: 14px; } .gen-actions .btn { min-width: 140px; font-size: 16px; }
-@media (max-height: 420px) { .gen-dialog { padding: 10px 14px; } .gen-row { margin: 6px 0 2px; } .gen-line { margin: 2px 0 4px; font-size: 14px; } .gen-warn { margin: 4px 0; padding: 4px 8px; } .gen-actions { margin-top: 6px; } }
+@media (max-height: 420px) { .gen-dialog { padding: 10px 14px; } .gen-row { margin: 6px 0 2px; } .gen-line { margin: 2px 0 4px; } .gen-warn { margin: 4px 0; padding: 4px 8px; } .gen-actions { margin-top: 6px; } }

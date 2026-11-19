@@ -179,8 +179,8 @@ export class GenerateDialog {
             h('div', { class: 'gen-actions' },
                 h('button', { type: 'button', class: 'btn gen-cancel', 'data-action': 'gen-cancel', onclick: () => this.cancel() }, m.cancel),
                 h('button', { type: 'button', class: 'btn primary gen-main', 'data-action': 'gen-build', 'aria-keyshortcuts': 'Enter', title: `${m.main} (${this.t('course.gen.enter')})`, onclick: () => this.build() }, m.main)));
-        if (this.root) this.root.replaceWith(root);
-        else this.parent.append(root);
+        this.root?.remove();
+        this.parent.append(root);
         this.root = root;
     }
 }
