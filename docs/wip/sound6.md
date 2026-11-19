@@ -48,7 +48,17 @@ the design says train6: the lane prompt wins). Design C:/dev/.gsfpv-lanes/design
     tools/bench/test/sonic*: 867 tests, 0 failed. Probes moved to the new test ids (not run: S5 runs the walk):
     sonic-start-keyboard.ts, sonic-review-keys.ts, sonic-v13-page.ts, sonic-int-review.ts, sonic-optin-page.ts.
     pnpm --filter fly typecheck 0 errors; tools/bench tsc 0 errors.
-- [ ] S3 the seconds to the first wall sound, counted from lessonSchedule (test b).
+- [x] S3 the seconds to the first wall sound, counted from lessonSchedule (test b): package quick1 8daf95d, pin
+  packages/sonic-fpv at 8daf95d (local; simulator commit of this line). test/quick-path.test.ts (b) plays each path's
+  lessons one after another through lessonSchedule with the four measured voices, every question answered right after
+  it is read out. First wall knock at 58b1d7f: en 11.5 s, es 12.7 s, pl 11.9 s, ru 13.3 s: es and ru
+  broke the design's 12 s, so the headphone check's intro.1 became "Headphones on, L on your left ear." (4 languages,
+  measured 3.1 to 3.8 s, was 7.9 to 9.0 s). Now en 6.9, es 7.9, pl 7.1, ru 8.0 s on both paths. The quick path's
+  small room flies 205.0 s after the press with David (headphone check 82.2 s with its 3 sounds, the walls 89.2 s,
+  the room's intro 33.6 s; the design guessed 135 s): the test guards 210 s against new talk. NEG OK against 58b1d7f
+  (locales + 4 fixtures swapped: es and ru fail). 17 package test files naming the lesson, locales or catalog: 277
+  passed, 1 failed: test/words.test.ts (S5's `pnpm listen:words`, as planned). Package tsc (three configs) 0 errors.
+  Host: only the key, not the text, is named (sonic-int-review.ts R7), nothing else to move.
 - [ ] S4 Firefox: sound (engine placeListener) or a clear line that leads to Chrome or Edge (host engineFailed, test d).
 - [ ] S5 pin moved, package suite + listen:words, simulator gates, acceptance probe sonic-quick-walk.
 
@@ -64,6 +74,9 @@ Base: origin/main e3201fec differs from this branch only in STATE.md: not merged
 2. The start screen shows Quick start (first, primary for a new pilot) and Full course, no path radios; each press
    saves its path and opens its first lesson; a returning pilot sees Continue first. Proof: `npx vitest run
    tools/bench/test/sonic-start-screen.test.ts tools/bench/test/sonic-start.test.ts`: 38 passed; NEG OK against 156dd1fd.
+3. After the press of either path the first wall knock comes within 12 s in every language (measured voices: en 6.9,
+   es 7.9, pl 7.1, ru 8.0 s), and the quick path's small room flies within 210 s (205.0 s with David). Proof (in
+   C:/dev/ShramkoSonicFPV): `pnpm vitest run test/quick-path.test.ts`: 44 passed at 8daf95d; NEG OK against 58b1d7f.
 
 ## Not verified
 No person, phone or real controller took part in this lane.
@@ -82,5 +95,7 @@ No person, phone or real controller took part in this lane.
   design could list them. Finding ring-1's position took 5 replies (a print script): a world dump helper would help.
 - S2 package: 17 tests that pin counts (line totals, glossary steps and minutes, versions, the old fast path) took 6
   replies; one run of every test file that greps the changed names, then one edit script, is the cheapest order.
+- S3: 14 replies; the package's vitest hides console.log, so a print helper writing a temp file cost 3 replies; the
+  slow quick-path test (S1's every-lesson loop, 100 s) is the bulk of each run: `-t` on the new tests saves it.
 - S2 host: 20 replies; reading the old test and probe slices took the most; a design listing every probe line that
   names a test id would save 4. One edit script per file group, then one run of tools/bench/test/sonic*, worked well.
