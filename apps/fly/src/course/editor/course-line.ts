@@ -50,8 +50,9 @@ export function nearOnSegment(a: V3, b: V3, p: V3): { t: number; dist: number } 
     return { t, dist: Math.hypot(p[0] - q[0]!, p[1] - q[1]!, p[2] - q[2]!) };
 }
 
-/** A click's ray passes a leg when it comes this near to it, flown m, at the least (an estimate: a frame's half width) */
-export const ON_LEG_MIN_M = 1;
+/** A click's ray passes a leg when it comes this near to it, flown m, at the least (an estimate; measured: 1 m took the
+ *  neighbouring leg at a shared gate 3 m from the eye, where 1 m is some 18 deg) */
+export const ON_LEG_MIN_M = 0.3;
 /** ... or this share of the distance along the ray, whichever is more (about 1.7 deg: some 20 px at 115 deg over 1536 px) */
 export const ON_LEG_SHARE = 0.03;
 /** a gate put on a leg keeps this far from both its ends, flown m (an estimate: no frame touches the gates at the ends) */
@@ -94,17 +95,20 @@ export function rayToSegment(o: V3, d: V3, maxS: number, a: V3, b: V3): { s: num
  * Lane edit4c C3 (E11, brief 561: 'on the overview, put the frames out'): the leg a click points at. The pilot sees the
  * course's legs in front of the scan; a click whose ray passes a leg (within ON_LEG_MIN_M, or ON_LEG_SHARE of the way) before
  * it meets the wall at `maxS` means that leg, not the wall behind it (measured on a Shift+G course: a click between gates 9
- * and 10, 12 m off, met a wall 36 m off and the gate went after gate 3). The nearest such leg along the ray wins; the point
+ * and 10, 12 m off, met a wall 36 m off and the gate went after gate 3). The leg the ray passes nearest (as a share of the
+ * allowance) wins; of legs alike (within 0.1 of it, e.g. two legs crossing on the page) the nearer to the eye. The point
  * on it keeps ON_LEG_END_M from both ends. Null: the ray passes no leg (the wall point stands).
  */
 export function legOnRay(points: readonly V3[], o: V3, d: V3, maxS: number): { after: number; at: V3 } | null {
-    let best: { after: number; s: number; t: number } | null = null;
+    let best: { after: number; s: number; t: number; score: number } | null = null;
     for (let i = 0; i + 1 < points.length; i++) {
         const a = points[i]!;
         const b = points[i + 1]!;
         const c = rayToSegment(o, d, maxS, a, b);
-        if (c.s < ON_LEG_NEAR_M || c.dist > Math.max(ON_LEG_MIN_M, c.s * ON_LEG_SHARE)) continue;
-        if (!best || c.s < best.s) best = { after: i, s: c.s, t: c.t };
+        const allow = Math.max(ON_LEG_MIN_M, c.s * ON_LEG_SHARE);
+        if (c.s < ON_LEG_NEAR_M || c.dist > allow) continue;
+        const score = c.dist / allow;
+        if (!best || score < best.score - 0.1 || (score <= best.score + 0.1 && c.s < best.s)) best = { after: i, s: c.s, t: c.t, score };
     }
     if (!best) return null;
     const a = points[best.after]!;

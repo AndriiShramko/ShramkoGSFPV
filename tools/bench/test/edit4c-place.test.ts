@@ -92,6 +92,9 @@ describe('edit4c C1: a new gate takes the place and the angle of the course', ()
         // a leg passing by the eye is not the one clicked: the next leg along the ray is (gate 2 -> 3, 10 m off)
         const b = placeFor(s, TR, { o: [15, 2, -12.5], d: [-1, 0, 0], hit: 14 }, 0);
         expect(b.after).toBe(1);
+        // a click just past gate 3 on the leg 3 -> 4 (seen from above): the leg 2 -> 3 ends 0.9 m away, the click means 3 -> 4
+        const n = placeFor(s, TR, { o: [10.8, 12, -14.6], d: [0, -1, 0], hit: 30 }, 0);
+        expect(n.after).toBe(2);
     });
 
     it('three duplicates on a curved course follow the curve to the next gate (not a straight row), each facing along it', () => {

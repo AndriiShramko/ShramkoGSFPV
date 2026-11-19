@@ -112,11 +112,28 @@ async function legs(s, any = false) {
         const len = Math.hypot(b[0] - a[0], b[1] - a[1]);
         const mid = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
         if (len < 70 || !(await onCanvas(mid[0], mid[1]))) continue;
+        // no other leg drawn within 30 px of the point: a click there could mean that leg as well
+        const segPx = (p, q) => { const vx = q[0] - p[0], vy = q[1] - p[1]; const l2 = vx * vx + vy * vy || 1; const t = Math.max(0, Math.min(1, ((mid[0] - p[0]) * vx + (mid[1] - p[1]) * vy) / l2)); return Math.hypot(mid[0] - p[0] - vx * t, mid[1] - p[1] - vy * t); };
+        let crossed = false;
+        for (let j = 0; j + 1 < g.length && !crossed; j++) if (j !== i && g[j][2] > 0 && g[j + 1][2] > 0 && segPx(g[j], g[j + 1]) < 30) crossed = true;
+        if (crossed) continue;
         out.push({ i, len: Math.round(len), mid: mid.map(Math.round), depth: r2(Math.max(a[2], b[2])) });
     }
-    // the nearest legs first: a click lands where its ray meets the scan (measured: legs 30 m off were behind a wall 6 m
+    // the nearest legs first: a click lands where its ray meets the scan (measured: legs 47 m off were behind a wall 6 m
     // from the eye, so the gate went, rightly, into the leg nearest that wall point)
     return out.sort((x, y) => x.depth - y.depth);
+}
+/** the view has stopped gliding (a selection frames its gate): the eye and the selected gate's place on the page unchanged
+ *  over 250 ms, at most 4 s */
+async function settle() {
+    const key = (s) => JSON.stringify([s.stand?.screen, (s.gates || [])[0]]);
+    let a = key(await snap());
+    for (let t = 0; t < 16; t++) {
+        await sleep(250);
+        const b = key(await snap());
+        if (b === a) return;
+        a = b;
+    }
 }
 async function backOff() {
     await page.keyboard.down('KeyS');
@@ -196,7 +213,7 @@ try {
         let tries = [];
         let found = null;
         let judged = null;
-        for (let n = 0; n < 3 && !judged; n++) {
+        for (let n = 0; n < 4 && !judged; n++) {
             const s = await snap();
             // legs not starting at the selected gate first (there the old page's 'after the selected one' would match by
             // luck), then those that do (the old page still faces them from the eye, 83-89 deg off on the live site)
@@ -204,7 +221,7 @@ try {
             const ls = [...own, ...(await legs(s, true)).filter((l) => l.i === s.selected)];
             if (!ls.length) {
                 const far = (s.gates || []).map((p, i) => ({ p, i })).filter(({ p, i }) => i !== s.selected && p[2] > 0 && p[0] > 40 && p[0] < W - 40 && p[1] > 110 && p[1] < H - 90).sort((x, y) => y.p[2] - x.p[2])[0];
-                if (far) { await click(far.p[0], far.p[1], 800); tries.push({ selectedFar: far.i, now: (await snap()).selected }); } else await backOff();
+                if (far) { await click(far.p[0], far.p[1], 800); await settle(); tries.push({ selectedFar: far.i, now: (await snap()).selected }); } else await backOff();
                 continue;
             }
             for (const leg of ls.slice(0, 6)) {
@@ -236,7 +253,7 @@ try {
             if (!judged) {
                 // every leg tried stood behind the scan: select the farthest gate on the page (the view frames it) and go on
                 const far = (s.gates || []).map((p, i) => ({ p, i })).filter(({ p, i }) => i !== s.selected && p[2] > 0 && p[0] > 40 && p[0] < W - 40 && p[1] > 110 && p[1] < H - 90).sort((x, y) => y.p[2] - x.p[2])[0];
-                if (far) { await click(far.p[0], far.p[1], 800); tries.push({ selectedFar: far.i, now: (await snap()).selected }); }
+                if (far) { await click(far.p[0], far.p[1], 800); await settle(); tries.push({ selectedFar: far.i, now: (await snap()).selected }); }
             }
         }
         found = judged && judged.between && judged.offDeg <= 15 ? judged : null;
@@ -310,7 +327,7 @@ try {
             for (px = 4; px <= 900; px += 6) {
                 await page.mouse.move(hitAt[0] + dir[0] * px, hitAt[1] + dir[1] * px);
                 await sleep(30);
-                if (px % 24 === 4) {
+                if (px >= 40 && px % 24 === 4) {
                     const m = await snap();
                     if (m.warnDom && m.warn && m.warn !== 'absent' && m.warn.mode === 'tag') { tag = { codes: m.warn.codes, lines: m.warn.lines, box: m.warnDom.box, dragging: m.dragging }; break; }
                 }
@@ -339,7 +356,11 @@ try {
             }
             const restored = !!back && back.list?.[gi] && Math.hypot(...back.list[gi].pos.map((v, i) => v - one.before[i])) < 0.01;
             judge('s6.putBack', !!asked && restored, { asked: !!asked, ask: one.after?.askDom?.text ?? null, moved: one.after?.list?.[gi]?.pos ?? null, back: back?.list?.[gi]?.pos ?? null, before: one.before, barAfter: back?.warn?.mode ?? null });
-            const two = await dragToward('second');
+            // the second drag starts from the pose Put back gave; a press that missed the arrow (the bar just closed over the
+            // scene) is tried once more
+            await settle();
+            let two = await dragToward('second');
+            if (!two.ok && !two.after?.askDom) { await settle(); two = await dragToward('second-again'); }
             const asked2 = two.after?.askDom && two.after.warn?.mode === 'ask';
             let kept = null;
             if (asked2) {
@@ -349,7 +370,7 @@ try {
             const stayed = !!kept && kept.list?.[gi] && two.after.list?.[gi] && Math.hypot(...kept.list[gi].pos.map((v, i) => v - two.after.list[gi].pos[i])) < 0.01;
             const moved = !!two.after?.list?.[gi] && Math.hypot(...two.after.list[gi].pos.map((v, i) => v - two.before[i])) > 0.05;
             const orange = !!kept && Array.isArray(kept.warn?.kept) && kept.warn.kept.includes(two.id);
-            judge('s7.keep', !!asked2 && stayed && moved && orange, { asked: !!asked2, stayed, moved, kept: kept?.warn?.kept ?? null, id: two.id, barAfter: kept?.warn?.mode ?? null });
+            judge('s7.keep', !!asked2 && stayed && moved && orange, { asked: !!asked2, stayed, moved, kept: kept?.warn?.kept ?? null, id: two.id, barAfter: kept?.warn?.mode ?? null, why: two.why ?? null, px: two.px ?? null });
         }
         res.tags = tags;
     }
