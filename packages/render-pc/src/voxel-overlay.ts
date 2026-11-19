@@ -41,6 +41,8 @@ interface Entry {
     mi: MeshInstance;
     vb: VertexBuffer;
     floater: Uint8Array;
+    /** per vertex, its ambient occlusion level (PackedChunk.ao), re-applied on a recolour */
+    ao?: Uint8Array;
     quads: number;
     /** style (and height range, for 'height') its colours were written for */
     colored: VoxelStyle;
@@ -509,7 +511,7 @@ export class VoxelOverlay {
             if (!this.stale(e)) continue;
             if (recolor > 0 && recolor + e.quads > this.maxRecolorQuadsPerFrame) break;
             const buf = e.vb.lock();
-            writeColors(ArrayBuffer.isView(buf) ? (buf.buffer as ArrayBuffer) : buf, this.layout, e.quads * 4, this.styleNow, e.floater, this.lo, this.hi);
+            writeColors(ArrayBuffer.isView(buf) ? (buf.buffer as ArrayBuffer) : buf, this.layout, e.quads * 4, this.styleNow, e.floater, this.lo, this.hi, e.ao);
             e.vb.unlock();
             e.colored = this.styleNow;
             e.lo = this.lo;
@@ -541,7 +543,7 @@ export class VoxelOverlay {
         const mi = new MeshInstance(mesh, this.matNow(), this.root);
         mi.castShadow = false;
         this.layer.addMeshInstances([mi]);
-        this.entries.set(key, { mi, vb, floater: c.floater, quads: c.quads, colored: c.style, lo: c.lo, hi: c.hi });
+        this.entries.set(key, { mi, vb, floater: c.floater, ...(c.ao ? { ao: c.ao } : {}), quads: c.quads, colored: c.style, lo: c.lo, hi: c.hi });
         this.quadsNow += c.quads;
     }
 

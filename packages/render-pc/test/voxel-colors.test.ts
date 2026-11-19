@@ -2,7 +2,7 @@
 // the chunk's positions, normals and grid UVs; floaters take the floater colour in every style;
 // the height style follows y; a recolour touches only the colour bytes. Controls included.
 import { describe, expect, it } from 'vitest';
-import { packChunk, writeColors, voxelColor, heightColor, voxelFog, FOG_NEAR_M, VOXEL_GLOW, VOXEL_STYLES, QUAD_ABOVE_CEILING, QUAD_FLOATER } from '../src/voxel-colors';
+import { AO_SHADE, packChunk, writeColors, voxelColor, heightColor, voxelFog, FOG_NEAR_M, VOXEL_GLOW, VOXEL_STYLES, QUAD_ABOVE_CEILING, QUAD_FLOATER } from '../src/voxel-colors';
 import type { VoxelLayout } from '../src/voxel-colors';
 
 // the overlay's VertexFormat order: position, normal, uv0, colour -> 36 bytes
@@ -101,5 +101,25 @@ describe('the voxels-only look (voxux4 V3): low glow, fog to the plan\'s reach',
         expect(voxelFog(40)).toEqual({ start: 20, end: 40 });
         expect(voxelFog(Number.NaN)).toEqual({ start: FOG_NEAR_M, end: 200 });
         expect(voxelFog(0).end).toBeGreaterThan(voxelFog(0).start);
+    });
+});
+
+describe('ambient occlusion (voxux4 V-2b): the corner levels darken the colour bytes and survive a recolour', () => {
+    it('level k scales RGB by AO_SHADE[k]; level 0 and no array leave the colour; a wrong length is refused', () => {
+        const c = chunk(4, 1000);
+        const ao = new Uint8Array(16).map((_, v) => v % 4);
+        const plain = new Uint8Array(packChunk(c, L, 'solid', 0, 10).vertices);
+        const p = packChunk(c, L, 'solid', 0, 10, ao);
+        expect(p.ao).toBe(ao);
+        const u8 = new Uint8Array(p.vertices);
+        for (let v = 0; v < 16; v++) for (let ch = 0; ch < 3; ch++) expect(u8[v * 36 + 32 + ch]).toBe(Math.round(plain[v * 36 + 32 + ch] * AO_SHADE[ao[v]]));
+        expect(AO_SHADE[0]).toBe(1);
+        expect(AO_SHADE[3]).toBeLessThan(AO_SHADE[1]);
+        expect(u8[3 * 36 + 32]).toBeLessThan(plain[3 * 36 + 32]);
+        // a style change rewrites the colours with the same shading
+        writeColors(p.vertices, L, 16, 'height', p.floater, 0, 10, p.ao);
+        const h = new Uint8Array(packChunk(c, L, 'height', 0, 10).vertices);
+        for (let v = 0; v < 16; v++) expect(u8[v * 36 + 32]).toBe(Math.round(h[v * 36 + 32] * AO_SHADE[ao[v]]));
+        expect(() => packChunk(c, L, 'solid', 0, 10, new Uint8Array(3))).toThrow(/ambient occlusion/);
     });
 });
