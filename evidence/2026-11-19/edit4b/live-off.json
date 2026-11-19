@@ -1,0 +1,198 @@
+{
+ "address": "https://gsfpv.flyreelstudio.eu/en",
+ "scan": "70b50d42",
+ "size": [
+  1536,
+  730
+ ],
+ "dsf": 1.25,
+ "name": "live-off",
+ "query": "&render=off",
+ "live": true,
+ "date": "2026-11-19T15:20:08.502Z",
+ "steps": {
+  "1-open-numbers": {
+   "ok": false,
+   "gates": 33,
+   "labels": [],
+   "onScreen": [],
+   "mode": "edit"
+  },
+  "2-clear-no": {
+   "ok": false,
+   "menu": false,
+   "item": false,
+   "asked": false,
+   "answered": false,
+   "gates": 33
+  },
+  "3-clear-yes": {
+   "ok": false,
+   "menu": false,
+   "item": false,
+   "asked": false,
+   "answered": false,
+   "gates": 33,
+   "said": "Editor open. W A S D move the view, E up, Q down, hold the right mouse button to look around, the wheel sets the speed. Click a gate: it carries one set of handles at a time, chosen by Move, Turn or S"
+  },
+  "4-undo": {
+   "ok": true,
+   "gates": 33
+  },
+  "5-new-empty": {
+   "ok": false,
+   "menu": false,
+   "item": false,
+   "asked": false,
+   "answered": false,
+   "gates": 33,
+   "addOn": "false",
+   "said": "Nothing to undo"
+  },
+  "6-two-gates": {
+   "ok": false,
+   "gates": 33,
+   "onScreen": [],
+   "tried": []
+  },
+  "7-fly": {
+   "ok": false,
+   "ms": 1042,
+   "mode": "edit",
+   "button": null
+  },
+  "8-back": {
+   "ok": true,
+   "ms": 4,
+   "mode": "edit",
+   "top": true,
+   "button": null
+  },
+  "9-generate-no": {
+   "ok": false,
+   "menu": false,
+   "item": false,
+   "asked": false,
+   "answered": false,
+   "gates": 33
+  },
+  "10-pointed": {
+   "ok": false,
+   "how": [
+    {
+     "at": [
+      230,
+      621
+     ],
+     "pointed": false,
+     "eyeAdd": 8.018,
+     "undo": true,
+     "eyeUndo": 21.368
+    },
+    {
+     "at": [
+      1306,
+      621
+     ],
+     "pointed": false,
+     "eyeAdd": 3.985,
+     "undo": true,
+     "eyeUndo": 2.246
+    },
+    {
+     "at": [
+      461,
+      402
+     ],
+     "pointed": false,
+     "eyeAdd": 4.201,
+     "undo": true,
+     "eyeUndo": 4.043
+    },
+    {
+     "at": [
+      1075,
+      402
+     ],
+     "pointed": false,
+     "eyeAdd": 5.281,
+     "undo": true,
+     "eyeUndo": 1.565
+    },
+    {
+     "at": [
+      768,
+      365
+     ],
+     "pointed": false,
+     "eyeAdd": 0,
+     "undo": false,
+     "eyeUndo": 0
+    },
+    {
+     "at": [
+      154,
+      438
+     ],
+     "pointed": false,
+     "eyeAdd": 5.074,
+     "undo": true,
+     "eyeUndo": 5.701
+    },
+    {
+     "at": [
+      1382,
+      438
+     ],
+     "pointed": false,
+     "eyeAdd": 5.151,
+     "undo": true,
+     "eyeUndo": 3.05
+    }
+   ],
+   "eyeRest": true,
+   "wrong": {
+    "index": 1,
+    "key": "course.edit.fix.legWall",
+    "lead": "course.edit.addFix"
+   },
+   "pointed": null,
+   "selected": 1,
+   "flash": [],
+   "problems": 2,
+   "said": "The new gate is red. The way from gate 2 to gate 3 goes through a wall. Pull the arrows of gate 2 until the straight way between them is clear, or delete it with the cross on its bar.",
+   "save": null
+  },
+  "11-small-view": {
+   "ok": false,
+   "menuBox": null,
+   "menuX": null,
+   "askBox": null,
+   "askX": null,
+   "closed": true
+  }
+ },
+ "log": [],
+ "ready": {
+  "status": "ready",
+  "ms": 16208
+ },
+ "lock": true,
+ "course": {
+  "ok": true,
+  "ms": 10120,
+  "gates": 33
+ },
+ "fails": [
+  "1-open-numbers",
+  "2-clear-no",
+  "3-clear-yes",
+  "5-new-empty",
+  "6-two-gates",
+  "7-fly",
+  "9-generate-no",
+  "10-pointed",
+  "11-small-view"
+ ],
+ "verdict": "FAIL"
+}
