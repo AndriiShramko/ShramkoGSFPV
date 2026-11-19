@@ -362,3 +362,9 @@ body.cinema .rec-dot { display: none; }
 .consent-card p { margin: 0 0 10px; color: var(--muted); } .consent-card strong { color: var(--fg); } .consent-card a { color: var(--accent); }
 .consent-actions { display: flex; flex-wrap: wrap; gap: 8px; } .consent-actions .btn { min-width: 120px; }
 .pm-cookies { margin: 10px 0 0; text-align: center; } .pm-cookies .linkish { background: none; border: 0; padding: 8px; min-height: 44px; color: var(--muted); font: inherit; font-size: 13px; text-decoration: underline; cursor: pointer; } .pm-cookies .linkish:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+/* lane gen4b B1: the Generate a course dialog (course/generate-dialog.ts); a .panel, fits 1366x768 and 844x390 */
+.gen-dialog { z-index: 30; font-size: 16px; } .gen-dialog h2 { font-size: 20px; margin: 0; }
+.gen-row { display: flex; gap: 8px; margin: 12px 0 4px; } .gen-row .gen-choice { flex: 1 1 0; min-height: 48px; font-size: 17px; }
+.gen-line { margin: 4px 0 8px; color: var(--muted); font-size: 15px; line-height: 1.35; } .gen-warn { margin: 8px 0; padding: 8px 10px; border-radius: 8px; background: rgba(245, 158, 11, .14); border: 1px solid rgba(245, 158, 11, .5); font-size: 16px; }
+.gen-actions { display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap; margin-top: 14px; } .gen-actions .btn { min-width: 140px; font-size: 16px; }
+@media (max-height: 420px) { .gen-dialog { padding: 10px 14px; } .gen-row { margin: 6px 0 2px; } .gen-line { margin: 2px 0 4px; font-size: 14px; } .gen-warn { margin: 4px 0; padding: 4px 8px; } .gen-actions { margin-top: 6px; } }

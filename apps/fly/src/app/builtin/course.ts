@@ -35,7 +35,10 @@ import { sayVia } from '../say-via';
 import type { CueEvent } from '@shramko/sonic-fpv';
 import { soundCourseSeed } from './sonic-flight';
 import { S } from '@gsfpv/sim-core';
-import { MAX_GATES_EDIT, canSave, checkTrack, edit, flownCollision, flownStart, marginOf, nearestWall, openEditor, toTrackV1, upgradeTrack, wallsCheck } from '@gsfpv/tracks';
+import { MAX_GATES_EDIT, REQUEST_DEFAULTS, canSave, checkTrack, edit, flownCollision, flownStart, marginOf, nearestWall, openEditor, toTrackV1, upgradeTrack, wallsCheck } from '@gsfpv/tracks';
+import type { CourseRequest } from '@gsfpv/tracks';
+import { COURSE_LEVELS, COURSE_SPREADS, GenerateDialog, pressAction, type GenerateFrom } from '../../course/generate-dialog';
+import { dialogOpen } from '../../devices/keyboard';
 import { CheckQueue, checkOnPage } from '../../course/editor/check-core';
 import type { FromCheckWorker } from '../../course/editor/check-core';
 import { aimAt, gateCamera, type GateView } from '../../course/editor/camera';
@@ -99,6 +102,44 @@ export const course: Feature = {
         const stage = new CourseStage(ctx.renderer);
         const hud = new CourseHud(ctx.ui);
         hud.setCloseLabel(t('course.hide'));
+        // lane gen4b B1 (G7-G9): the level and the spread the pilot picked last (store course.level, course.spread); the
+        // voxels-only view asks for the whole scene at any scan quality (gen4 design section 3)
+        const remembered = (): Omit<CourseRequest, 'seed'> => {
+            const level = ctx.prefs.get<CourseRequest['level']>('course.level');
+            const spread = ctx.prefs.get<CourseRequest['spread']>('course.spread');
+            const only = ctx.prefs.get<string>('voxels.show') === 'only';
+            return {
+                level: COURSE_LEVELS.includes(level) ? level : REQUEST_DEFAULTS.level,
+                spread: only ? 'wide' : COURSE_SPREADS.includes(spread) ? spread : REQUEST_DEFAULTS.spread,
+                anyQuality: only
+            };
+        };
+        /** what the next generate() asks the worker for (the dialog's choice; a link's or a room's seed keeps it) */
+        let request: Omit<CourseRequest, 'seed'> = remembered();
+        /** the dialog's open: where from, and the seed its build keeps (the editor's 'regen-same'); null: a new seed */
+        let dialogFor: { from: GenerateFrom; seed: number | null } | null = null;
+        const genDialog = new GenerateDialog(ctx.ui, t, {
+            pick: (p) => {
+                if (p.level) ctx.prefs.set('course.level', p.level);
+                if (p.spread) ctx.prefs.set('course.spread', p.spread);
+            },
+            build: (r) => {
+                const f = dialogFor;
+                dialogFor = null;
+                ctx.resume('panel');
+                request = r;
+                if (f?.from === 'editor') {
+                    // the dialog said the unsaved changes are lost; the editor opens again on the new course
+                    askedFor = null;
+                    reopenAfter = true;
+                }
+                generate(f?.seed ?? (f?.from === 'flight' ? pressSeed() : randomSeed()));
+            },
+            cancel: () => {
+                dialogFor = null;
+                ctx.resume('panel');
+            }
+        });
         const store = new CourseStore();
         let rows: CourseRow[] = [];
         let run: CourseRun | null = null;
@@ -596,6 +637,7 @@ export const course: Feature = {
             hook.problem = null;
             startProgress();
             pending = seed;
+            hook.request = { seed, ...request };
             const msg: CourseJob = {
                 t: 'generate', job: ++job, ...w,
                 spawn: [s.spawn[0], s.spawn[1], s.spawn[2]],
@@ -727,12 +769,36 @@ export const course: Feature = {
             inUse: () => (run && hook.on ? { track: run.track, next: hook.next, gates: gatesByEar(run) } : null),
             generate: () => generate(pressSeed())
         };
-        // Shift+G makes a course in every mode, Fly by Sound too (D2): one key, one course in the scene
+        /**
+         * Lane gen4b B1 (G9, the owner: "it deletes everything I made and generates a new one"): Shift+G, the pause menu's item
+         * and the editor's G open the 'Generate a course' dialog; it says what is replaced and builds only on its main button.
+         * `seed`: the seed the build keeps (the editor's 'regen-same'). The editor lanes call this through hook.generateDialog.
+         */
+        const openGenerateDialog = (from: GenerateFrom, seed: number | null = null): void => {
+            const act = pressAction({ busy, sonic: !!ctx.sonic });
+            // lane onecourse fixes (review OC-1): a press while a course is being made says how far it is (the progress line)
+            if (act === 'wait') return void generate(seed ?? randomSeed());
+            if (act === 'direct') {
+                request = remembered();
+                return generate(seed ?? (from === 'flight' ? pressSeed() : randomSeed()));
+            }
+            if (genDialog.isOpen) return;
+            // over another window (settings, a picker) a second one would stack; the pause menu and the editor give way
+            if (dialogOpen() && !ctx.menu.isOpen && !ed) return;
+            if (ctx.menu.isOpen) ctx.menu.close();
+            dialogFor = { from, seed };
+            ctx.pause('panel');
+            const r = remembered();
+            genDialog.open({ level: r.level, spread: r.spread, voxelsOnly: r.anyQuality, shownGates: run?.gates.length ?? 0, unsaved: !!ed && edChanged });
+        };
+        hook.generateDialog = (from) => openGenerateDialog(from);
+        hook.dialog = () => genDialog.model();
+        // Shift+G makes a course in every mode, Fly by Sound too (D2): one key, one course in the scene; gen4b: through the dialog
         ctx.keys.on('course.generate', (e) => {
             if (e.repeat) return;
-            generate(pressSeed());
+            openGenerateDialog('flight');
         });
-        ctx.menu.add({ id: 'pause.course', action: 'course.generate', labelKey: 'course.menu.generate', order: 72, section: 'tools', run: () => generate(randomSeed()) });
+        ctx.menu.add({ id: 'pause.course', action: 'course.generate', labelKey: 'course.menu.generate', order: 72, section: 'tools', run: () => openGenerateDialog('menu') });
         ctx.menu.add({
             id: 'pause.course.toggle', action: 'course.toggle', labelKey: 'course.menu.off', order: 73, section: 'tools',
             run: () => toggle(), enabled: () => run !== null, label: () => t(hook.on ? 'course.menu.off' : 'course.menu.on')
@@ -781,6 +847,12 @@ export const course: Feature = {
         });
         // a new scene: its walls are others, so the course goes (a link's seed is for the scene the page opened with)
         ctx.events.on('session', () => {
+            // gen4b: the dialog was asked for the scene that went; nothing is built
+            if (genDialog.isOpen) {
+                genDialog.close();
+                dialogFor = null;
+                ctx.resume('panel');
+            }
             closeEdit(true);
             job++;
             // course5 review CV-3, CV-4: a 'no course fits' size belongs to the scene it was said in
@@ -1211,10 +1283,9 @@ export const course: Feature = {
             }
             if (c === 'focus-window') return panel.focusName();
             if (c === 'regen' || c === 'regen-same') {
-                // review TK-4: G drops the changes only when asked twice, like Esc
-                if (busy || ask('regen', t('course.edit.unsavedAgain'))) return;
-                reopenAfter = true;
-                return generate(c === 'regen-same' && hook.seed !== null ? hook.seed : randomSeed());
+                // lane gen4b B1 (G9): the dialog names the course it replaces and the unsaved changes it drops, and waits for a
+                // yes (it replaced review TK-4's 'press G twice')
+                return openGenerateDialog('editor', c === 'regen-same' && hook.seed !== null ? hook.seed : null);
             }
             if (c === 'save-all') return void saveAll();
             if (panel.askName()) return say(t('course.edit.name'));
@@ -1356,8 +1427,9 @@ export const course: Feature = {
         // review TK-3: Tab walks the window's buttons when the focus is in it (gates when on the canvas), F6 enters the window,
         // Esc inside it gives the focus back first (course/editor/keys.ts keyRoute)
         addEventListener('keydown', (e: KeyboardEvent) => {
-            // lane editor3 E3: while the drone flies the keys belong to the flight
-            if (!ed || !panel || mode === 'fly') return;
+            // lane editor3 E3: while the drone flies the keys belong to the flight; gen4b: the Generate dialog over the editor
+            // takes its own keys (Enter, Esc)
+            if (!ed || !panel || mode === 'fly' || genDialog.isOpen) return;
             if (e.code === 'Escape' && view?.adding) {
                 e.preventDefault();
                 e.stopPropagation();
