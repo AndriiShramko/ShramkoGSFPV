@@ -17,7 +17,7 @@ The contract (packages/tracks/src/request.ts) came from gen4a S0 (b142e495), mer
       (+5 tests, 20 passed, NEG OK). Commit 25fbb339.
 - [x] B3 acceptance: tools/bench/scripts/gen4-accept-probe.mjs (design section 6, 10 steps, mouse, 1536x730 at 1.25),
       local PASS (step 9 pending gen4a), live control FAILS steps 2-8 and 10, one drawn run, the gates. Commits 505ebbc5 and
-      the B3 commit that holds this line.
+      9f5e3509 (gate fixes) and the commit that holds this line.
 - Step 1 runs on Lublin 2f1ddf5f, not 5dfeb49b: on this tree planCourse is the gen4a S0 stub, and 5dfeb49b at x1 answers
   no room (evidence accept-5dfeb49b-stub.json: the no-room box came, steps 5-8 could not run). G1 (gates at x1 there) is
   gen4a's stage A3; the probe takes the scene as its third argument, so the merged train runs it on 5dfeb49b.
@@ -80,7 +80,10 @@ Differences from the design (the code wins):
    'START / FINISH 44 m' at the right edge; nothing lies over another thing.
 8. The gates: typecheck, architecture, i18n, catalog, b18, leaks PASS; vitest first had 5 failures (four source-reading
    tests and the main chunk's closure, see For the lead), fixed; the vitest gate run again on the fixed tree. Proof:
-   `gates.py --only vitest,b18` - result in the line below.
+   `gates.py --only vitest,b18` - B18 PASS; vitest 5328 passed, 0 tests failed, but two suites (rooms-open-vote,
+   rooms-socket) stopped at 'rooms.py did not start' under the load of the other lanes; alone
+   (`npx vitest run tools/bench/test/rooms-open-vote.test.ts tools/bench/test/rooms-socket.test.ts`) 8 passed, and they
+   passed in the first gate run. This lane changed nothing of rooms.
 
 ## Not verified
 
