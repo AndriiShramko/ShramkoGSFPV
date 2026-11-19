@@ -47,7 +47,7 @@ tools/bench/src/scan-kinds.json, evidence/2026-11-19/gen4/.
     (share 0, inside the design's 1 in 5).
   - plan.test.ts 6 passed (room x 3 levels, city from above with the old path as control, skull pro at x1, plant tray
     shrunk); NEG OK (neg_control.py, plan.ts and generate.ts of S0); packages/tracks/test 161 passed (23 files).
-- [ ] A3 tight scans and evidence: no-room + fitSize, shrunk ladder to 4 D, gen4-place-audit.ts over 12 scenes x 3 levels
+- [x] A3 tight scans and evidence: no-room + fitSize, shrunk ladder to 4 D, gen4-place-audit.ts over 12 scenes x 3 levels
   x 2 spreads x 3 seeds -> evidence/2026-11-19/gen4/place.json, PASS/FAIL per rule; ms per plan <= FIT_BUDGET_MS; the
   gates once before LANE-DONE.
   - [x] no-room + fitSize: fitSizeFor (the first FIT_SIZES step over the size reaching FIT_SLACK x size / ratio; ratio =
@@ -131,7 +131,10 @@ tools/bench/src/scan-kinds.json, evidence/2026-11-19/gen4/.
     inside, ground, detail, loop, opening, server, time 216/216; cityLow 18/18 (Lublin), room 18/18 (Winter Garden), x1
     18/18 (5dfeb49b). The 12 FAILs are named in Not verified (gates 6, nearCore 6). Max ms per plan 42.6 s (Winter Garden; FIT_BUDGET_MS 120 s
     holds for all 216). Log U:/Temp/gsfpv-train4/gen4a/place-run6.log.
-  - [ ] LEFT 4: gates once (typecheck,vitest,architecture,i18n,b18,leaks), status parts, LANE-DONE.
+  - [x] LEFT 4: gates once on cdcc4c31 (U:/Temp/gsfpv-gates-20261119-232620): typecheck, vitest, i18n, b18, leaks PASS;
+    architecture FAILED on two comments in scan.ts ('window' followed by '.' or '(' reads as the DOM to rule 8). Comments
+    reworded (no code changed); `node scripts/check-architecture.mjs`: architecture rules: ok. The other five not run
+    again (only comments changed). dist deleted. Commit: the one after cdcc4c31.
 
 Differences from the design: planCourse and placementStats live in plan.ts (design section 3), not in request.ts
 (section 0 lists them there); both come out of '@gsfpv/tracks' the same. The stub's onStep gives estMs 0 for 'analyse'
@@ -177,6 +180,9 @@ does not refuse: the dialog names the Scene size where the course fits (gen4b's 
    Winter Garden's gates all stand under its ceiling, Lublin's none near its fuzzy ground, the skull at x1 has a course.
    Proof: `cd tools/bench && npx tsx src/gen4-place-audit.ts`; last result (b34b5386) PLANS 216 FAILED 12, the 12 named
    in Not verified (evidence/2026-11-19/gen4/place.json).
+11. The release gates hold on this branch. Proof: `python -X utf8 C:/Users/andri/.claude/skills/gsfpv/scripts/gates.py
+   --repo C:/dev/gsfpv-rooms --only typecheck,vitest,architecture,i18n,b18,leaks`; last result: all PASS except
+   architecture (two comments in scan.ts), which passes after the comment fix (`node scripts/check-architecture.mjs`: ok).
 
 ## Not verified
 
@@ -222,6 +228,9 @@ does not refuse: the dialog names the Scene size where the course fits (gen4b's 
 - Deploy order: page only (packages/tracks is bundled into the page and its worker).
 
 ## Cost notes
+
+- A3 (run 4, done): about 8 replies; the gates found the architecture rule's DOM regex on a comment's word 'window'.
+  Cheaper: run `node scripts/check-architecture.mjs` (1 s) right after any comment edit in packages/tracks.
 
 - A3 (run 3, left): about 60 replies; most went to a wrong first cause for Winter Garden (coarse cells): a box change
   'fixed' it by moving the cell grid. Cheaper: trace the zone predicate at the stored gate position and the walk's
