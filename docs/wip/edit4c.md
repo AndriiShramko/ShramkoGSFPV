@@ -115,6 +115,11 @@ Differences from the design (the code wins):
 - A generated course from Shift+G: the probe's verdicts use the link g1.1; how a person's own seed lays out on the
   page differs (see the drawn run below).
 - Gate looks and the pole and flag: spec only, nothing to verify in the page.
+- Gates (gates.py on 892a7c90: typecheck, vitest, architecture, i18n, b18, leaks): all PASS but vitest, 1 failed of
+  5352 (5337 passed, 14 skipped): tools/bench/test/app-dji-rc2.test.ts:188 `rc.late` 1, expected 0, a timing check of the
+  DJI RC 2 path while about 15 lanes ran vitest at once. This branch changes neither that test nor apps/fly/src/devices
+  (`git diff origin/main..HEAD` on both is empty); the train's rules keep lanes off the DJI RC 2 path, so it was not
+  re-run here. Log U:/Temp/gsfpv-gates-20261119-165215.
 
 ## For the lead
 
@@ -133,6 +138,15 @@ Differences from the design (the code wins):
   C1w has only the pure tests.
 - Seam wanted (when S0 lands): Services.placeFor = add-place.ts placeFor bound to the state; EditAction 'add' carries
   `after` (the gate it follows); S0's planned 'place' action can reuse it.
+- C3: new files only (docs/wip/edit4c-format.md, tools/bench/scripts/edit4c-probe.mjs, evidence/2026-11-19/edit4c/).
+- The owner's yes is needed for the format change (docs/wip/edit4c-format.md): gate looks plain / fabric / led and the
+  pole and flag markers. Then the Fly by Sound repository first, the pin move, then tracks.py and the page.
+- Live checks after the deploy (read-only): `COURSE=g1.1 QUERY='&render=off' node tools/bench/scripts/edit4c-probe.mjs
+  https://gsfpv.flyreelstudio.eu/en <out.json>` must give PASS 10 of 10 (today on live: 1 of 10). It saves nothing.
+- vitest: tools/bench/test/app-dji-rc2.test.ts:188 failed once in the gates under load (see Not verified); not this
+  lane's file, worth one re-run on the merged train.
+- The C3 drawn run's first try was stopped by the run's time limit while it held C:/dev/.gpu-lock; the lane found the
+  lock orphaned (no live holder, edit4a still waiting) at 17:05 and removed it; edit4a took it at once.
 
 ## Cost notes
 
@@ -143,3 +157,7 @@ Differences from the design (the code wins):
 - C2: most replies went to the check's 35 deg entry rule refusing every piece (found by reading check.ts, then a rule) and
   to small fixes (npx needs npx.cmd inside neg_control.py; a DOM module imported by a test pulls i18n's `location`); a
   note in the design that the straight-leg rule forbids turn-round pieces would have saved three.
+- C3: most replies went to the probe's own aim (9 page runs: legs far off behind a wall, the arrow chosen by screen
+  direction, the Add list covering the click, Esc leaving the edit view) and to a GPU lock left by a killed run; a
+  shared probe helper (pick a scene point free of handles, pick the arrow by the gate's 3D axes, end adding safely) and
+  a lock wrapper with a trap in train4-common.md would have saved five.
