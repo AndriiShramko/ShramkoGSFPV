@@ -269,7 +269,7 @@ export function analyzeScan(walls: VoxelCollision, transform: SceneTransform): S
     }
 
     // footprint: tiles with voxels in FOOT_COV of their cells, closed by FOOT_CLOSE tiles (dilate, then erode)
-    let foot = new Uint8Array(nt);
+    let foot: Uint8Array = new Uint8Array(nt);
     for (let t = 0; t < nt; t++) if (cellsIn[t]! > 0 && cellsHit[t]! >= S.footCov * cellsIn[t]!) foot[t] = 1;
     const grow = (src: Uint8Array, want: number): Uint8Array => {
         const out = new Uint8Array(nt);
