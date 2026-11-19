@@ -142,6 +142,11 @@ Differences from the design (the code wins):
   DJI RC 2 path while about 15 lanes ran vitest at once. This branch changes neither that test nor apps/fly/src/devices
   (`git diff origin/main..HEAD` on both is empty); the train's rules keep lanes off the DJI RC 2 path, so it was not
   re-run here. Log U:/Temp/gsfpv-gates-20261119-165215.
+- Gates on the final code (ad15dce4, after the legOnRay fix): typecheck, architecture, i18n, b18, leaks PASS; vitest
+  5332 passed, 21 skipped, no test failed, but one file failed to set up: tools/bench/test/rooms-race.test.ts:110
+  'rooms.py did not start' (its own Python server, under the shared load of the other lanes). The DJI RC 2 test of the
+  first run passed this time. This branch changes no rooms file (`git diff origin/main..HEAD` on the test,
+  apps/rooms and builtin/rooms.ts is empty). Log U:/Temp/gsfpv-gates-20261119-174716.
 
 ## For the lead
 
@@ -165,8 +170,12 @@ Differences from the design (the code wins):
   pole and flag markers. Then the Fly by Sound repository first, the pin move, then tracks.py and the page.
 - Live checks after the deploy (read-only): `COURSE=g1.1 QUERY='&render=off' node tools/bench/scripts/edit4c-probe.mjs
   https://gsfpv.flyreelstudio.eu/en <out.json>` must give PASS 10 of 10 (today on live: 1 of 10). It saves nothing.
-- vitest: tools/bench/test/app-dji-rc2.test.ts:188 failed once in the gates under load (see Not verified); not this
-  lane's file, worth one re-run on the merged train.
+- vitest: tools/bench/test/app-dji-rc2.test.ts:188 (first gates run) and tools/bench/test/rooms-race.test.ts (second:
+  rooms.py did not start) failed once each under load (see Not verified); neither is this lane's file, each passed or
+  was not reached in the other run; worth one re-run on the merged train.
+- C3 also changed (owned files): apps/fly/src/course/editor/course-line.ts (rayToSegment, legOnRay, ON_LEG_*),
+  add-place.ts (placeFor asks legOnRay first), tools/bench/test/edit4c-place.test.ts (the C1 click's eye moved so its
+  ray still meets the wall first; the C3 case).
 - The C3 drawn run's first try was stopped by the run's time limit while it held C:/dev/.gpu-lock; the lane found the
   lock orphaned (no live holder, edit4a still waiting) at 17:05 and removed it; edit4a took it at once.
 
