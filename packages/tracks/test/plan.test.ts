@@ -3,7 +3,7 @@
 // lane) on the same world, measured by the same placementStats, puts gates under the fuzzy ground's top or leaves the
 // course open.
 import { describe, expect, it } from 'vitest';
-import { COURSE_DEFAULTS, LEVELS, analyzeScan, courseLinkId, fitCourse, freeSpace, generateCourse, fitSizeFor, flownCollision, goodForGate, placementStats, planCourse, qualityBounds, qualityMap, validateServerTrack } from '../src';
+import { CELL_PER_OPENING, COURSE_DEFAULTS, FREE_DEFAULTS, LEVELS, analyzeScan, clipBox, courseLinkId, fitCourse, freeSpace, generateCourse, fitSizeFor, flownCollision, goodForGate, placementStats, planCourse, qualityBounds, qualityMap, validateServerTrack } from '../src';
 import type { CourseLevel, CourseRequest, PlanInput, SceneTransform, VoxelCollision } from '../src';
 import { IDENTITY } from './worlds';
 import { cityFromAbove, crowdedPocket, plantTray, scannedRoom, tableAndSkull } from './scan-worlds';
@@ -111,5 +111,26 @@ describe('planCourse: the asked course in the scanned part, closed, at the craft
         expect(fitSizeFor(10, 0.2)).toBeNull();
         expect(fitSizeFor(30, 1)).toBeNull();
         expect(fitSizeFor(1, 0)).toBeNull();
+    });
+
+    it('clipBox: a 1 km scan flown at x1 by a whoop gets a box of the course\'s reach, with cells near the gate\'s size', () => {
+        // Laval eb5f51dc: the whole-scan box gave 3.2 m cells against a 0.85 m gate (no usable cell, no course)
+        const box = { min: [-900, -350, -500] as [number, number, number], max: [400, 100, 500] as [number, number, number] };
+        const start: [number, number, number] = [-430, -224, 218];
+        const c = clipBox(box, start, 30, 0.85, 0.4);
+        for (let ax = 0; ax < 3; ax++) {
+            expect(c.min[ax]).toBeCloseTo(Math.max(box.min[ax]!, start[ax]! - 30), 6);
+            expect(c.max[ax]).toBeCloseTo(Math.min(box.max[ax]!, start[ax]! + 30), 6);
+        }
+        // a reach whose box holds more than maxCells cells of half an opening is shrunk until it holds them
+        const fine = clipBox(box, start, 300, 0.85, 0.01);
+        const vol = (fine.max[0] - fine.min[0]) * (fine.max[1] - fine.min[1]) * (fine.max[2] - fine.min[2]);
+        const cell = CELL_PER_OPENING * 0.85;
+        expect(vol).toBeLessThanOrEqual(FREE_DEFAULTS.maxCells * cell * cell * cell);
+        expect(vol).toBeGreaterThan(0.5 * FREE_DEFAULTS.maxCells * cell * cell * cell);
+        // the start stays inside, a box smaller than the reach is kept whole
+        for (let ax = 0; ax < 3; ax++) expect(start[ax]! >= fine.min[ax]! && start[ax]! <= fine.max[ax]!).toBe(true);
+        const small = { min: [0, 0, 0] as [number, number, number], max: [5, 3, 4] as [number, number, number] };
+        expect(clipBox(small, [1, 1, 1], 30, 0.85, 0.1)).toEqual(small);
     });
 });

@@ -64,11 +64,16 @@ tools/bench/src/scan-kinds.json, evidence/2026-11-19/gen4/.
   - [x] Run 1 of the audit (code of a60c5d30; log U:/Temp/gsfpv-train4/gen4a/place-run1.log, JSON place-run1.json there
     when it ended) found composed elements past the level's gatesMax (17-42 gates for medium 14 / pro 24): fixed,
     CoursePlace.maxGates = LEVELS gatesMax goes to composeElements (commit b534123b; tracks 163 passed).
-  - [ ] LEFT 1: no course at all on Laval castle eb5f51dc (18 of 18 NO-ROOM fit 2, 30-60 s each) and on 1994c65c wide
-    (9 of 9), and on 5dfeb49b at x1 (G1's scan: only beginner compact gave courses, failing detail and gates; beginner
-    wide, medium and pro NO-ROOM fit 2, 11-30 s each; the audit ended: PLANS 216 FAILED 96; course 42 fail, gates 39, detail 16, x1 15, ground 1, server 1; inside, nearCore, loop, opening, time, cityLow (Lublin) and room (Winter Garden) all PASS; 39e63ce9 all PASS): find why (start: trace free.stats, startsOf, zone2 counts as the
-    housefly trace did: an env-gated console.error after generateCourse in plan.ts, removed after). A 1 km scan's wide box
-    makes cells coarse (maxCells 4M); suspect the outdoor 'scanned' rule or the start inside a roof.
+  - [x] LEFT 1 (run 1's audit: PLANS 216 FAILED 96; course 42 fail, gates 39, detail 16, x1 15, ground 1, server 1):
+    no course on Laval castle eb5f51dc, 1994c65c wide and 5dfeb49b at x1. Found by a trace hook (removed): (a) the 1 km
+    scans' zone box (whole scan) made 3.2 m free cells against a 0.85 m whoop gate: usable 0. clipBox now clips the box to
+    the course's own reach around the start (gates x legMax / 2 + legMax) and shrinks it until maxCells cells of
+    max(blockM, CELL_PER_OPENING 0.5 x opening) hold it: Laval 8 gates in 1.7 s (was NO-ROOM after 37 s), 1994c65c wide 8
+    gates in 1.1 s. (b) 5dfeb49b at x1 (a 20 m skull in a 117 m bowl, kind room): the free space's enclosure rays (19 of
+    26 hit within 12 m) left a thin shell, 265 usable cells; planCourse now passes enclosureMin 0: the analysis'
+    territory (footprint, ground, ceiling, roof) is the one 'scanned' rule. 8 gates in 7.8 s (was 1 gate in 123 s). (c)
+    a street start sits at eye height (startOf), not half way to a 'ceiling' of sky floaters 88 m up (Laval). plan.test
+    clipBox test; tracks 164 passed.
   - [ ] LEFT 2: 'server' FAIL on 1994c65c pro compact seed 1 (validateServerTrack: read its reason).
   - [ ] LEFT 3: re-run the audit after the fixes -> evidence/2026-11-19/gen4/place.json (all rules PASS, or each FAIL
     named in Not verified); ms per plan <= FIT_BUDGET_MS (run 1: at most 61 s).

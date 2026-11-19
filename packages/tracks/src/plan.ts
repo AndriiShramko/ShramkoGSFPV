@@ -16,7 +16,7 @@
 import { COURSE_DEFAULTS, EYE_HI_M, EYE_LO_M, LOW_EDGE_M, RING_DIAMETER_M, RING_MIN_FREE_M, RING_TUBE_M, SQUARE_BAR_M, SQUARE_SIDE_M, courseTitle, generateCourse } from './generate';
 import type { CoursePlace } from './generate';
 import { RING_MIN_DRONE_DIAMETERS, SMALLEST_DRONE_RADIUS_M, freeAtMargin, scaledParams } from './fit';
-import { clearanceM, cellCentre } from './freespace';
+import { FREE_DEFAULTS, clearanceM, cellCentre } from './freespace';
 import type { FreeSpace } from './freespace';
 import { flownStart } from './check';
 import { analyzeScan, scanTile } from './scan';
@@ -185,13 +185,40 @@ function zoneBox(a: ScanAnalysis, request: CourseRequest, rules: PlanRules, open
     return { min: [x0 - pad, y0 - openingM, z0 - pad], max: [x1 + pad, y1 + openingM, z1 + pad] };
 }
 
-/** where the walk starts: over the core, half way between its ground and its roof or ceiling (the nearest zone cell) */
+/** the free-space cell a course is laid in at most, in openings (a ring's free radius is measured in cells) */
+export const CELL_PER_OPENING = 0.5;
+
+/**
+ * The zone box clipped to the course's own reach around the start: a loop of N legs of at most L m spans at most N x L / 2,
+ * and the box is shrunk further until maxCells cells of max(blockM, CELL_PER_OPENING x opening) hold it. A 1 km aerial
+ * scan flown at x1 by a whoop (Laval eb5f51dc) gave a 3.2 m cell against a 0.85 m gate in the whole-scan box: no cell
+ * usable, no course.
+ */
+export function clipBox(box: { min: Vec3; max: Vec3 }, start: Vec3, reachM: number, openingM: number, voxelM: number): { min: Vec3; max: Vec3 } {
+    const cell = Math.max(4 * voxelM, CELL_PER_OPENING * openingM);
+    const maxVol = FREE_DEFAULTS.maxCells * cell * cell * cell;
+    let h = reachM;
+    let out = box;
+    for (let i = 0; i < 8; i++) {
+        const min = [0, 1, 2].map((ax) => Math.max(box.min[ax]!, Math.min(start[ax]!, box.max[ax]!) - h)) as unknown as Vec3;
+        const max = [0, 1, 2].map((ax) => Math.min(box.max[ax]!, Math.max(start[ax]!, box.min[ax]!) + h)) as unknown as Vec3;
+        out = { min, max };
+        const vol = (max[0] - min[0]) * (max[1] - min[1]) * (max[2] - min[2]);
+        if (!(vol > maxVol)) break;
+        h *= 0.98 * Math.cbrt(maxVol / vol);
+    }
+    return out;
+}
+
+/** where the walk starts: over the core, half way between its ground and its roof or ceiling (a street at eye height;
+ *  the walk takes the nearest zone cell) */
 function startOf(a: ScanAnalysis, openingM: number): Vec3 {
     const t = scanTile(a, a.core);
     const g = t >= 0 ? a.groundTop[t]! : NaN;
     if (!Number.isFinite(g)) return a.core;
     const c = a.ceiling[t]!, r = a.roofTop[t]!;
-    const top = Number.isFinite(c) ? c : Number.isFinite(r) ? Math.max(r, g + EYE_HI_M * a.unitM) : g + EYE_HI_M * a.unitM;
+    const eye = g + EYE_HI_M * a.unitM;
+    const top = a.kind === 'street' ? eye : Number.isFinite(c) ? c : Number.isFinite(r) ? Math.max(r, eye) : eye;
     return [a.core[0], Math.max(g + lowEdgeM(a, openingM) + openingM, (g + top) / 2), a.core[2]];
 }
 
@@ -244,7 +271,9 @@ export function planCourse(input: PlanInput, hooks: PlanHooks = {}): PlanAnswer 
             if (!box) continue;
             hooks.onStep?.('free', 0);
             const zone2 = zoneAt(a, ask.req, R, opening, 2);
-            const freeFrom = (spawn: Vec3): FreeSpace => freeAtMargin(walls, { spawn, bounds: box, unitM: a.unitM, kind: a.kind === 'room' ? 'indoor' : 'auto', goodAt: zone2 }, p.marginM);
+            const legMax = R.legMaxM * shrink;
+            const reach = (R.gates * legMax) / 2 + legMax;
+            const freeFrom = (spawn: Vec3): FreeSpace => freeAtMargin(walls, { spawn, bounds: clipBox(box, spawn, reach, opening, walls.voxelResolution), unitM: a.unitM, kind: a.kind === 'room' ? 'indoor' : 'auto', goodAt: zone2, enclosureMin: 0 }, p.marginM);
             let start = starts[0]!;
             let free = freeFrom(start);
             // a start in a pocket (under a housefly's body, between its legs) reaches a few cells: the air over the roof
