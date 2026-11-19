@@ -7,7 +7,8 @@ The contract (packages/tracks/src/request.ts) came from gen4a S0 (b142e495), mer
 
 - [x] B1 dialog: course/generate-dialog.ts (dialogModel, pressAction, dialogKey, GenerateDialog), course.ts routes Shift+G,
       the pause menu item, the editor's G and hook.generateDialog through it; store keys course.level, course.spread;
-      locales course.gen.* in en, es, pl, ru; generate-dialog.test.ts (7 tests, NEG OK). Commit: see git log "gen4b B1".
+      locales course.gen.* in en, es, pl, ru; generate-dialog.test.ts (7 tests, NEG OK). Commits 6e525061, 3fde6ad6.
+      The CourseJob does not carry the request yet (course.ts keeps it in `request` and on hook.request): B2 sends it.
 - [ ] B2 worker and progress: worker.ts calls planCourse with the request; progress step 'analyse'; progress-box.ts (16 px,
       bar, step, %, time left, Cancel 44 px); link.ts g2 via parseCourseLink; move to the start gate; the no-room box with
       'Make the scene xN and build'. course-progress.test.ts: steps analyse/free/lay, share never goes back, 100 on answer;
