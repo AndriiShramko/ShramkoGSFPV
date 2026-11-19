@@ -18,7 +18,7 @@ export const LOCALES: Locale[] = ['en', 'es', 'pl', 'ru'];
 // in the mode; soniclook: the words of its sound panel and attitude display, v0.13), which come with the start chunk (sonic/texts.ts,
 // v12-optin); of Fly by Sound every page keeps only sonicentry (the pause menu's way in, the note that the mode did not load).
 const NAMESPACED = import.meta.glob<Record<string, string>>(
-    ['../../../packages/i18n/locales/fly/*/*.json', '!../../../packages/i18n/locales/fly/sonicrec/*.json', '!../../../packages/i18n/locales/fly/sonic/*.json', '!../../../packages/i18n/locales/fly/sonickeys/*.json', '!../../../packages/i18n/locales/fly/soniclook/*.json'],
+    ['../../../packages/i18n/locales/fly/*/*.json', '!../../../packages/i18n/locales/fly/sonicrec/*.json', '!../../../packages/i18n/locales/fly/sonic/*.json', '!../../../packages/i18n/locales/fly/sonickeys/*.json', '!../../../packages/i18n/locales/fly/soniclook/*.json', '!../../../packages/i18n/locales/fly/sonichead/*.json'],
     { eager: true, import: 'default' }
 );
 

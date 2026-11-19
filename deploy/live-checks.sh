@@ -294,6 +294,45 @@ process.exit(p > 0 && m.at > p && flight > 0 && paused > 1.5 * flight && back &&
 }
 run detail-line-wroclaw locked detailline
 run pause-rise-lublin locked pauserise
+# Train 4, car 1 (docs/wip/train4-int.md "Live checks"; lanes site4, edit4b, menu4, tails4, head4). Each probe prints one
+# JSON verdict and exits non-zero on a failed step; before the train 4 release the live site fails the steps each lane
+# repairs (the lanes' negative controls).
+# site4-links.mjs (header: read-only, the simulator's address is answered by a stub page, /api/** by 204): the main button
+# of the sound, home, scene and supporter pages leads where the page promises; the language switch keeps the anchor; the
+# cookie box leaves the start button free at 320 px.
+run site4-links node scripts/site4-links.mjs "$SITE" "$OUT/site4-links.json"
+# edit4b-probe.mjs (header: never presses Save, send, vote or create; on an address that is not localhost nothing is
+# stored, the steps only change the course in the page; render off): the course's life in the editor with the mouse
+# (Delete all gates and New empty course ask first, Undo, Fly the course and Back to editing, a sentence naming a gate
+# selects it). It takes no GPU lock itself.
+edit4blife() { QUERY='&render=off' SHOT=0 node scripts/edit4b-probe.mjs "$SITE/en" 70b50d42 1536x730 1.25 live-after "$OUT/edit4b-course-life.json"; }
+run edit4b-course-life locked edit4blife
+# menu4-first-minute-probe.mjs (header: fresh browser profiles, the cookie question declined, render off; nothing saved
+# or sent): the first visit asks "Have you flown FPV before?", the simple pause menu with its "More" line, the short
+# settings list with search and "Show all settings".
+run menu4-first-minute locked node scripts/menu4-first-minute-probe.mjs "$SITE/en" "$OUT/menu4-first-minute.json"
+# tails4-review-start.mjs (header: opens three scans in the page, one click into the scene, sticks still, render off; it
+# reads the start the page placed): on 2f1ddf5f, d10c5638 and ab5efa0e the drone starts near the ground, free of the walls.
+run tails4-start-moved locked node scripts/tails4-review-start.mjs "$SITE/en" "$OUT/tails4-start-moved.json"
+# head4 (deploy/nginx.conf, after the nginx reload): only the simulator page may ask for the camera; every other page keeps
+# camera=() (two HEAD requests).
+head4headers() {
+  local fly priv
+  fly=$(curl -sI -m 30 "$SITE/en/fly/" | tr -d '\r' | grep -i '^permissions-policy:')
+  priv=$(curl -sI -m 30 "$SITE/en/privacy/" | tr -d '\r' | grep -i '^permissions-policy:')
+  echo "fly: $fly"; echo "privacy: $priv"
+  case "$fly" in *"camera=(self)"*) ;; *) return 1;; esac
+  case "$priv" in *"camera=()"*) ;; *) return 1;; esac
+}
+run head4-camera-headers head4headers
+# head4-accept.mjs (header: Chrome's fake camera plays a Motion-JPEG clip of a still portrait and auto-answers the camera
+# question; the setting lives in the probe browser's own profile; its step picturesStayHere fails on any request other
+# than a GET or to another origin; nothing is saved or sent): "Turn my head to listen" in the sound settings, off loads
+# nothing, on opens the camera, Shift+H centres, the listener turns, off closes the camera, a refused camera is said.
+# HEAD4_CLIP names the clip (head4-tracker.mjs makes it from a face photo; it stays outside the repository); without the
+# clip the probe stops with an error and the check FAILs.
+head4accept() { node scripts/head4-accept.mjs "$SITE" "$OUT/head4-accept.json" "${HEAD4_CLIP:-U:/Temp/gsfpv-train4/head4/head4-clip.mjpeg}"; }
+run head4-accept locked head4accept
 
 if [ "$FAILED" = 0 ]; then echo "LIVE CHECKS: PASS"; exit 0; fi
 echo "LIVE CHECKS: FAIL"

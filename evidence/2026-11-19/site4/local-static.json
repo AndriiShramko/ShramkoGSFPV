@@ -1,0 +1,127 @@
+{
+ "base": "http://127.0.0.1:6080",
+ "pass": true,
+ "failed": [],
+ "steps": [
+  {
+   "name": "sound en 1536x730: the menu's main button opens the sound start",
+   "pass": true,
+   "detail": {
+    "href": "/en/fly/?sonic=start",
+    "url": "http://127.0.0.1:6080/en/fly/?sonic=start",
+    "text": "stub",
+    "own": "/en/fly/?sonic=start"
+   }
+  },
+  {
+   "name": "sound en 375x812: the menu's main button opens the sound start",
+   "pass": true,
+   "detail": {
+    "href": "/en/fly/?sonic=start",
+    "url": "http://127.0.0.1:6080/en/fly/?sonic=start",
+    "text": "stub",
+    "own": "/en/fly/?sonic=start"
+   }
+  },
+  {
+   "name": "sound pl 1536x730: the menu's main button opens the sound start",
+   "pass": true,
+   "detail": {
+    "href": "/pl/fly/?sonic=start",
+    "url": "http://127.0.0.1:6080/pl/fly/?sonic=start",
+    "text": "stub",
+    "own": "/pl/fly/?sonic=start"
+   }
+  },
+  {
+   "name": "sound pl 375x812: the menu's main button opens the sound start",
+   "pass": true,
+   "detail": {
+    "href": "/pl/fly/?sonic=start",
+    "url": "http://127.0.0.1:6080/pl/fly/?sonic=start",
+    "text": "stub",
+    "own": "/pl/fly/?sonic=start"
+   }
+  },
+  {
+   "name": "sound es 1536x730: the header's button has the start button's address",
+   "pass": true,
+   "detail": {
+    "href": "/es/fly/?sonic=start",
+    "own": "/es/fly/?sonic=start"
+   }
+  },
+  {
+   "name": "sound ru 1536x730: the header's button has the start button's address",
+   "pass": true,
+   "detail": {
+    "href": "/ru/fly/?sonic=start",
+    "own": "/ru/fly/?sonic=start"
+   }
+  },
+  {
+   "name": "band en 1536x730: the Fly by Sound band starts the sound mode",
+   "pass": true,
+   "detail": {
+    "href": null,
+    "url": "http://127.0.0.1:6080/en/fly/?sonic=start"
+   }
+  },
+  {
+   "name": "person en 1536x730: the header's button opens scene 39e63ce9",
+   "pass": true,
+   "detail": {
+    "href": "/en/fly/?scene=39e63ce9",
+    "url": "http://127.0.0.1:6080/en/fly/?scene=39e63ce9",
+    "text": "stub"
+   }
+  },
+  {
+   "name": "lang en->pl on /en/sound/#sound-keys keeps the page and its anchor",
+   "pass": true,
+   "detail": {
+    "url": "http://127.0.0.1:6080/pl/sound/#sound-keys"
+   }
+  },
+  {
+   "name": "banner es 320x568: the start button is on screen and not under the cookie banner",
+   "pass": true,
+   "detail": {
+    "shown": true,
+    "banner": {
+     "x": 12,
+     "y": 72,
+     "width": 296,
+     "height": 190
+    },
+    "start": {
+     "x": 16,
+     "y": 405,
+     "width": 191.515625,
+     "height": 48
+    },
+    "hit": true
+   }
+  },
+  {
+   "name": "banner es 320x640: the start button is on screen and not under the cookie banner",
+   "pass": true,
+   "detail": {
+    "shown": true,
+    "banner": {
+     "x": 12,
+     "y": 72,
+     "width": 296,
+     "height": 190
+    },
+    "start": {
+     "x": 16,
+     "y": 405,
+     "width": 191.515625,
+     "height": 48
+    },
+    "hit": true
+   }
+  }
+ ]
+}

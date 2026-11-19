@@ -47,7 +47,9 @@ describe('the editor key table', () => {
         expect(editorKey({ code: 'Insert' }, f)).toEqual({ edit: { kind: 'insert' } });
         expect(editorKey({ code: 'Delete' }, f)).toEqual({ edit: { kind: 'delete' } });
         expect(editorKey({ code: 'KeyZ', ctrlKey: true }, f)).toEqual({ edit: { kind: 'undo' } });
-        expect(editorKey({ code: 'KeyG', shiftKey: true }, f)).toEqual({ cmd: 'regen-same' });
+        // lane edit4b (E10): no key drops the course; Generate is a Course menu item that asks first
+        expect(editorKey({ code: 'KeyG' }, f)).toBeNull();
+        expect(editorKey({ code: 'KeyG', shiftKey: true }, f)).toBeNull();
         expect(editorKey({ code: 'Enter' }, f)).toEqual({ cmd: 'save-mine' });
         expect(editorKey({ code: 'Escape' }, f)).toEqual({ cmd: 'exit' });
         for (const code of ['KeyW', 'KeyA', 'KeyS', 'KeyD', 'Space', 'KeyT']) expect(editorKey({ code }, f), code).toBeNull();

@@ -1,0 +1,132 @@
+{
+ "what": "tails4 review: the moved starts in the page",
+ "base": "https://gsfpv.flyreelstudio.eu/en",
+ "rows": [
+  {
+   "scene": "2f1ddf5f",
+   "before": {
+    "hasCollision": true,
+    "free": true,
+    "spawn": [
+     146.52,
+     62.04,
+     -96.97
+    ],
+    "spawnOver": null,
+    "craft": [
+     146.52,
+     62.04,
+     -96.97
+    ],
+    "craftOver": null,
+    "lock": false
+   },
+   "after": {
+    "hasCollision": true,
+    "free": true,
+    "spawn": [
+     146.52,
+     62.04,
+     -96.97
+    ],
+    "spawnOver": null,
+    "craft": [
+     146.52,
+     62.04,
+     -96.97
+    ],
+    "craftOver": null,
+    "lock": false
+   },
+   "errors": []
+  },
+  {
+   "scene": "d10c5638",
+   "before": {
+    "hasCollision": true,
+    "free": true,
+    "spawn": [
+     20.49,
+     22.1,
+     7.9
+    ],
+    "spawnOver": null,
+    "craft": [
+     20.49,
+     22.1,
+     7.9
+    ],
+    "craftOver": null,
+    "lock": false
+   },
+   "after": {
+    "hasCollision": true,
+    "free": true,
+    "spawn": [
+     20.49,
+     22.1,
+     7.9
+    ],
+    "spawnOver": null,
+    "craft": [
+     20.49,
+     22.1,
+     7.9
+    ],
+    "craftOver": null,
+    "lock": false
+   },
+   "errors": []
+  },
+  {
+   "scene": "ab5efa0e",
+   "before": {
+    "hasCollision": true,
+    "free": true,
+    "spawn": [
+     -6.45,
+     3.14,
+     0.12
+    ],
+    "spawnOver": null,
+    "craft": [
+     -6.45,
+     3.14,
+     0.12
+    ],
+    "craftOver": null,
+    "lock": false
+   },
+   "after": {
+    "hasCollision": true,
+    "free": true,
+    "spawn": [
+     -6.45,
+     3.14,
+     0.12
+    ],
+    "spawnOver": null,
+    "craft": [
+     -6.45,
+     3.14,
+     0.12
+    ],
+    "craftOver": null,
+    "lock": false
+   },
+   "errors": []
+  }
+ ],
+ "pass": false,
+ "checks": {
+  "2f1ddf5f.walls": true,
+  "2f1ddf5f.spawnOverGround": false,
+  "2f1ddf5f.spawnFree": true,
+  "d10c5638.walls": true,
+  "d10c5638.spawnOverGround": false,
+  "d10c5638.spawnFree": true,
+  "ab5efa0e.walls": true,
+  "ab5efa0e.spawnOverGround": false,
+  "ab5efa0e.spawnFree": true
+ }
+}

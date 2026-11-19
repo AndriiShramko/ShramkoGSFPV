@@ -10,7 +10,7 @@
 // R and Y), so every respawn is a log record and lands on the same tick at any frame split.
 import { Sim, Runner, S, compileParams, SIM_CORE_VERSION, sha256Hex, attitude, FlightStats, RespawnDirector, StateHistory, DEFAULT_RESPAWN_POLICY, hoverStickOf, makeLifeHeader, WIND_SEED_MAX } from '@gsfpv/sim-core';
 import type { SimParams, ParamOverrides, SimEvent, Life, LifeHeader, RespawnOpts, RespawnPolicy, RespawnReason, WindConfig } from '@gsfpv/sim-core';
-import { VoxelContactWorld, findSphereSpawn, openVoxelCollision } from '@gsfpv/collision';
+import { VoxelContactWorld, openVoxelCollision, placeStart } from '@gsfpv/collision';
 import { validCeiling, validMinBlocks } from '@gsfpv/collision';
 import type { FloaterFilter, VoxelCollision, VoxelMetadata } from '@gsfpv/collision';
 import { resolveScene, headingFromCamera, noContentError } from '@gsfpv/scenes';
@@ -453,14 +453,8 @@ export class FlightSession {
         const cam = this.scene.camera;
         let pos: [number, number, number] = this.toFlown(cam ? cam.position : [0, 1.5, 0]);
         const yaw = cam ? headingFromCamera(cam) : 0;
-        if (this.collision) {
-            const push = { x: 0, y: 0, z: 0 };
-            const R = this.params.boundRadius + 0.03;
-            if (this.collision.querySphere(pos[0], pos[1], pos[2], R, push)) {
-                const out = { x: 0, y: 0, z: 0 };
-                if (findSphereSpawn(this.collision, pos[0], pos[1], pos[2], R, out)) pos = [out.x, out.y, out.z];
-            }
-        }
+        // an overview camera (no ground near under it) moves down its own line onto the scan (@gsfpv/collision start.ts)
+        if (this.collision) pos = placeStart(this.collision, pos, cam ? this.toFlown(cam.target) : null, this.params.boundRadius + 0.03).pos;
         return [pos[0], pos[1], pos[2], yaw];
     }
 

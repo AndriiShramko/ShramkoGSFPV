@@ -64,7 +64,7 @@ interface Probe {
 }
 
 const real = readFileSync(NGINX_CONF, 'utf8');
-const MIC_FIRST_CUT = ['camera=(), microphone=(self), geolocation=()', 'camera=(), microphone=(), geolocation=()'] as const;
+const MIC_FIRST_CUT = ['camera=(self), microphone=(self), geolocation=()', 'camera=(self), microphone=(), geolocation=()'] as const;
 const MEDIA = " media-src 'self' blob:;";
 const confs: Record<string, string> = {
     'real': real,

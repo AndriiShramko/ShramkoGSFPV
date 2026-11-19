@@ -416,13 +416,14 @@ reload):
 | Change | Where | Why |
 |---|---|---|
 | `microphone=(self)` in the `Permissions-Policy` | `location ~ ^/(en\|es\|pl\|ru)/fly/` only; the site, the assets, the admin and the scene pages keep `microphone=()` | `getUserMedia` (the voice recording) and the browser's speech recognition are refused by `microphone=()` |
+| `camera=(self)` in the `Permissions-Policy` (lane head4) | the same simulator location only; every other location keeps `camera=()` | "Turn my head to listen" (Fly by Sound, off by default) opens the web camera; the pictures are read in the page's own worker and never leave the browser |
 | `media-src 'self' blob:` | the map `$gsfpv_csp_rest`, so the enforced and the report-only CSP both have it | the replay plays a recording's voice from a `blob:` URL; without the directive it falls back to `default-src 'self'` and is blocked |
 | `location ^~ /api/session/` | GET and POST only, `client_max_body_size 1100k`, the client address from the real-IP module (as `/api/admin/`), cookie and `Authorization` cleared, `no-store` | the chunked upload of a recording (the routes come with the API store, step 6); until then the API answers its own 404 |
 
 Check after the reload (`apps/api/tests/test_nginx_routes.py` reads the same rules from the file; the smoke script checks them on a served release):
 ```bash
-curl -sI https://gsfpv.flyreelstudio.eu/en/fly/ | grep -iE '^(permissions-policy|content-security-policy)'   # microphone=(self); media-src 'self' blob:
-curl -sI https://gsfpv.flyreelstudio.eu/en/privacy/ | grep -i '^permissions-policy'                          # microphone=()
+curl -sI https://gsfpv.flyreelstudio.eu/en/fly/ | grep -iE '^(permissions-policy|content-security-policy)'   # camera=(self), microphone=(self); media-src 'self' blob:
+curl -sI https://gsfpv.flyreelstudio.eu/en/privacy/ | grep -i '^permissions-policy'                          # camera=(), microphone=()
 curl -s -o /dev/null -w '%{http_code}\n' -X DELETE https://gsfpv.flyreelstudio.eu/api/session/probe          # 403: GET and POST only
 node scripts/smoke-release.mjs https://gsfpv.flyreelstudio.eu
 ```

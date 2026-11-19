@@ -26,6 +26,7 @@ import type { SonicRequest } from './start-model';
 import { allProgress, currentLesson, fliesBySound, resetProgress, setCurrentLesson, setFliesBySound } from './store';
 import { enableZoom } from './zoom';
 import { t } from '../i18n';
+import { attachHead } from './head/page';
 
 /** What the flight shell is asked to open: the lesson, its world (null: a scan lesson flies the scan) and the sound setup. */
 export interface LaunchRequest {
@@ -74,6 +75,7 @@ export function startSonic(d: SonicStartDeps): StartHandle {
     // what of the captions fits above the panels is measured again when the page changes size (v13-int review K2, captions.ts fit)
     addEventListener('resize', () => captions.refit());
     const setup = new SonicSetup(d.prefs, d.locale, captions);
+    attachHead(setup);
     // a shared link's sound for this visit (never saved unless kept); its scene and size are the lesson's own, which decides. The
     // address carries what of it still stands, so a reload or a restored tab never brings back a setting the pilot kept, changed or
     // let go of (review R2, address.ts)

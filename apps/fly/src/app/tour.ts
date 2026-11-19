@@ -12,7 +12,8 @@ import { defaultFilters, toQuery } from '../ui/superspl-tab-logic';
 function sessionStore(): CatalogStore | undefined {
     try {
         const s = window.sessionStorage;
-        s.getItem('gsfpv.tour.probe');
+        // touch the storage without a key of its own (train 4 tails4: no probe key the prefs scan must classify)
+        void s.length;
         return s;
     } catch {
         return undefined;

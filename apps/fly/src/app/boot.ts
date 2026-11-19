@@ -144,6 +144,7 @@ export async function boot(ui: HTMLElement, canvas: HTMLCanvasElement): Promise<
     // so the config's page_view names the settled deep link and the rewrite is no second page view.
     startAnalytics(!!q.get('simradio') || q.get('lat') === '1' || q.get('nowarn') === '1');
     if (first && !q.get('simradio') && q.get('lat') !== '1' && q.get('nowarn') !== '1') {
-        warningModal(ui, () => { try { localStorage.setItem('gsfpv.warned', '1'); } catch { /* ignore */ } mirrorWarned(prefs); start(); });
+        // the answer is the menu level (packages/prefs/src/defs/menu.ts): stored before the first scene opens
+        warningModal(ui, (level) => { try { localStorage.setItem('gsfpv.warned', '1'); } catch { /* ignore */ } mirrorWarned(prefs); prefs.set('ui.menuLevel', level); start(); });
     } else start();
 }

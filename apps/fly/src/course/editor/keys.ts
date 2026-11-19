@@ -4,7 +4,7 @@
 // the editor's commands. The panel's buttons run the same rows (KEY_ROWS), so the mouse and the keyboard do the same things.
 import type { EditAction } from '@gsfpv/tracks';
 
-export type EditorCommand = 'save-mine' | 'save-all' | 'exit' | 'regen' | 'regen-same' | 'focus-window';
+export type EditorCommand = 'save-mine' | 'save-all' | 'exit' | 'focus-window';
 
 export type EditorKey = { readonly edit: EditAction } | { readonly cmd: EditorCommand };
 
@@ -76,7 +76,6 @@ export function editorKey(e: KeyPress, forward: readonly [number, number]): Edit
         case 'Delete': case 'Backspace': return { edit: { kind: 'delete' } };
         case 'Comma': return { edit: { kind: 'order', step: -1 } };
         case 'Period': return { edit: { kind: 'order', step: 1 } };
-        case 'KeyG': return { cmd: shift ? 'regen-same' : 'regen' };
         case 'Enter': case 'NumpadEnter': return { cmd: 'save-mine' };
         case 'Escape': return { cmd: 'exit' };
         case 'F6': return { cmd: 'focus-window' };
@@ -110,7 +109,6 @@ export const KEY_ROWS: readonly { readonly caps: string; readonly labelKey: stri
     { caps: ', .', labelKey: 'course.edit.key.order', press: { code: 'Period' } },
     { caps: 'Ctrl+Z', labelKey: 'course.edit.key.undo', press: { code: 'KeyZ', ctrlKey: true } },
     { caps: 'Ctrl+Y', labelKey: 'course.edit.key.redo', press: { code: 'KeyY', ctrlKey: true } },
-    { caps: 'G', labelKey: 'course.edit.key.regen', press: { code: 'KeyG' } },
     { caps: 'F6', labelKey: 'course.edit.key.window', press: { code: 'F6' } },
     { caps: 'Esc', labelKey: 'course.edit.key.exit', press: { code: 'Escape' } }
 ];
@@ -133,6 +131,9 @@ export interface KeyAt {
     readonly typing: boolean;
     readonly inWindow: boolean;
     readonly onButton: boolean;
+    /** review of lane edit4b: a question (parts/life-ask.ts) or a top bar menu is open; it takes the keys itself (Esc closes it,
+     *  Enter answers the focused button), so the editor's keys wait: Esc never leaves the editor, Delete never deletes a gate */
+    readonly overlay?: boolean;
 }
 
 /**
@@ -141,6 +142,7 @@ export interface KeyAt {
  * canvas (Esc inside the window; the next Esc leaves the editor), 'save' is Enter in a text field, 'edit' runs editorKey.
  */
 export function keyRoute(e: KeyPress, at: KeyAt): 'pass' | 'blur' | 'save' | 'edit' {
+    if (at.overlay) return 'pass';
     if (at.typing) {
         if (e.code === 'Escape') return 'blur';
         if (e.code === 'Enter' || e.code === 'NumpadEnter') return 'save';

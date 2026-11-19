@@ -50,7 +50,6 @@
   "preflight.ok": "All good — let's fly",
   "warning.title": "Before you fly",
   "warning.text": "Fast flight and crashes can cause motion sickness. Measured over 50 crashes, crash effects flash at most 2 times per second (the WCAG limit is 3); motion is reduced if your system asks for reduced motion. Take a break if you feel unwell.",
-  "warning.ok": "Understood",
   "scenes.title": "Choose a scan",
   "scenes.paste": "Paste a SuperSplat link or scene id",
   "scenes.go": "Open",

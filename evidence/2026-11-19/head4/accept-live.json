@@ -1,0 +1,48 @@
+{
+ "probe": "head4-accept",
+ "base": "https://gsfpv.flyreelstudio.eu",
+ "browser": "system-chrome",
+ "viewport": "1536x730@1.25",
+ "steps": {
+  "rowShown": "FAIL",
+  "offLoadsNothing": "PASS",
+  "flyPageMayAsk": "FAIL",
+  "explainedFirst": "FAIL",
+  "cameraOn": "FAIL",
+  "trackerFiles": "FAIL",
+  "listenerTurns": "FAIL",
+  "picturesStayHere": "FAIL",
+  "offStopsCamera": "FAIL",
+  "centreKey": "FAIL",
+  "refusalSaid": "FAIL",
+  "otherPageRefuses": "PASS"
+ },
+ "pass": false,
+ "facts": {
+  "rowShown": {
+   "rowCount": 0,
+   "rowText": null
+  },
+  "offLoadsNothing": {
+   "headFilesBeforeOn": []
+  },
+  "flyPageMayAsk": {
+   "allowsCamera": false,
+   "permissionBefore": "denied"
+  },
+  "explainedFirst": "no row: not run",
+  "cameraOn": "no row: not run",
+  "trackerFiles": "no row: not run",
+  "listenerTurns": "no row: not run",
+  "picturesStayHere": "no row: not run",
+  "offStopsCamera": "no row: not run",
+  "centreKey": "no row: not run",
+  "refusalSaid": "no row: not run",
+  "said": [],
+  "otherPageRefuses": {
+   "allowsCamera": false,
+   "getUserMedia": "NotAllowedError"
+  }
+ },
+ "errors": []
+}

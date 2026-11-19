@@ -2,8 +2,7 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { sonicLinkPath } from "@gsfpv/scenes/sonic-link";
-import { AUTHOR, REPO, SOUND_REPO, flyPath } from "@/config/site";
+import { AUTHOR, REPO, SOUND_REPO, mainCta } from "@/config/site";
 import type { FlightSlot, VideoSlot } from "@/config/videos";
 import type { Locale } from "@/i18n/routing";
 import BgVideo from "@/components/BgVideo";
@@ -13,6 +12,7 @@ import Header from "@/components/Header";
 import JsonLd from "@/components/JsonLd";
 import { Ext } from "@/components/kit";
 import SoundFigure from "@/components/SoundFigure";
+import StickyCTA from "@/components/StickyCTA";
 import { pageMetadata } from "@/lib/meta";
 
 /**
@@ -22,11 +22,6 @@ import { pageMetadata } from "@/lib/meta";
  */
 const KEYS = ["T", "U", "I", "Z", "G", "R", "N", "L", "K"] as const;
 
-/**
- * The start link: the same kind of link a pilot's L copies in a lesson (@gsfpv/scenes sonic-link.ts), here for the start screen and in
- * the page's own language, with the mode's default sound.
- */
-const soundStartHref = (locale: string): string => sonicLinkPath({ lesson: "start", sound: {} }, flyPath(locale));
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
@@ -124,6 +119,8 @@ function Section({ id, title, boxed = false, children }: { id: string; title: st
 
 function Sound({ locale }: { locale: Locale }) {
   const t = useTranslations();
+  // the page's one main action, the same address in the header, the first screen and the phone's bottom bar
+  const cta = mainCta(locale, "sound");
   const raw = (k: string) => t.raw(k) as string[];
   const newTab = <span className="sr-only"> {t("sound.newTab")}</span>;
   const mail = (
@@ -138,7 +135,7 @@ function Sound({ locale }: { locale: Locale }) {
     </Ext>
   );
   const start = (
-    <a href={soundStartHref(locale)} data-track="fly_click" className="btn-primary inline-flex min-h-12 items-center px-5">
+    <a href={cta.href} data-track="fly_click" data-keep-clear className="btn-primary inline-flex min-h-12 items-center px-5">
       {t("sound.start.button")}
     </a>
   );
@@ -146,7 +143,7 @@ function Sound({ locale }: { locale: Locale }) {
     <>
       <JsonLd locale={locale} description={t("sound.description")} />
       <BgVideos />
-      <Header locale={locale} page="sound/" onLanding={false} />
+      <Header locale={locale} page="sound/" onLanding={false} cta={cta} />
       <main id="main" tabIndex={-1} className="pb-16 outline-none">
         {/* First screen: what this is, in one breath, and one action. The Winter Garden loop behind it (the scan of a sound lesson). */}
         <div className="relative isolate overflow-hidden border-b border-line">
@@ -356,6 +353,7 @@ function Sound({ locale }: { locale: Locale }) {
         </Section>
       </main>
       <Footer locale={locale} page="sound/" />
+      <StickyCTA locale={locale} label={t("nav.flySound")} note={t("sticky.soundNote")} cta={cta} />
     </>
   );
 }

@@ -30,11 +30,12 @@ describe('editor3 fixes ED-6: the word matches the action', () => {
 });
 
 describe('editor3 fixes ED-7: the top bar and the Keys table', () => {
-    it('the top bar has Add, Undo, Redo, Save, Courses, Keys and Exit; Save runs Ctrl+S', () => {
-        expect(TOP_BUTTONS.map((b) => b.id)).toEqual(['add', 'undo', 'redo', 'save', 'courses', 'keys', 'exit']);
+    // lane edit4b (design edit4 1.3): Fly the course joined the bar; Courses and Keys are items of the Course menu
+    it('the top bar has Add, Undo, Redo, Fly, Save, Course and Exit; Save runs Ctrl+S; the menu opens Courses and Keys', () => {
+        expect(TOP_BUTTONS.map((b) => b.id)).toEqual(['add', 'undo', 'redo', 'fly', 'save', 'course', 'exit']);
         expect(TOP_BUTTONS.find((b) => b.id === 'save')!.press).toEqual({ code: 'KeyS', ctrlKey: true });
-        expect(TOP_TS).toMatch(/host\.show\(press\)/);
-        expect(COURSE_TS).toMatch(/show: \(part\) => panel\?\.reveal\(part\)/);
+        expect(TOP_TS).toMatch(/this\.toggleMenu\(\)/);
+        expect(COURSE_TS).toMatch(/COURSE_MENU_HUB\.map\(\(m\) => \(\{ id: m\.id, labelKey: m\.labelKey, run: \(\) => panel\?\.reveal\(m\.id\) \}\)\)/);
         expect(PANEL_TS).toMatch(/reveal\(part: 'save' \| 'keys' \| 'courses'\)/);
     });
     it('the Keys table has the camera keys, Space to arm and the mouse', () => {

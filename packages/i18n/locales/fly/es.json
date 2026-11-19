@@ -50,7 +50,6 @@
   "preflight.ok": "Todo listo, ¡a volar!",
   "warning.title": "Antes de volar",
   "warning.text": "Volar rápido y chocar puede marear. Medido en 50 choques, los efectos destellan como máximo 2 veces por segundo (el límite WCAG es 3), y si tienes activada la reducción de movimiento en el sistema, la imagen se mueve con más suavidad. Si te encuentras mal, tómate un descanso.",
-  "warning.ok": "Entendido",
   "scenes.title": "Elige un escaneo",
   "scenes.paste": "Pega un enlace de SuperSplat o un ID de escena",
   "scenes.go": "Abrir",

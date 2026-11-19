@@ -128,6 +128,10 @@ export const KEYMAP: readonly KeyBinding[] = [
     // (sonic/narrator-key.ts). Every plain letter is bound in the ordinary flight or the sound mode; Shift+V is bound nowhere, and V
     // stands in the same place on QWERTY, QWERTZ, AZERTY and the Polish and Spanish layouts (review QV-5: not the apostrophe)
     { action: 'sonic.narrator', keys: [{ code: 'KeyV', shift: true, cap: 'Shift+V', aria: 'Shift+V' }], when: 'sonic', labelKey: 'keys.sonic.narrator', status: 'shipped' },
+    // train 4, lane head4: Shift+H (H for head) centres head tracking (sonic/head/switch.ts): the pilot faces the screen, presses it,
+    // that pose is straight ahead. Shift+H is bound nowhere and H stands in the same place on QWERTY, QWERTZ, AZERTY and the Polish
+    // and Spanish layouts; with head tracking off it says how to turn it on
+    { action: 'sonic.headCentre', keys: [{ code: 'KeyH', shift: true, cap: 'Shift+H', aria: 'Shift+H' }], when: 'sonic', labelKey: 'keys.sonic.headCentre', status: 'shipped' },
     // train 3, lane sonic3 (the owner: "flying by sound must be switched on for any scene"): Backslash switches Fly by Sound on and
     // off in place, in any scene, on every page. Every plain letter is bound; Shift plus a letter descends in the game scheme
     { action: 'flyBySound.toggle', keys: [{ code: 'Backslash', cap: '\\', aria: 'Backslash' }], when: 'always', labelKey: 'keys.flyBySound.toggle', status: 'shipped' }

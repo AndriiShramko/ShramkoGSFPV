@@ -1,4 +1,5 @@
 // Public facts only. Contact values come from the owner's publication rules; no phone, no address.
+import { sonicLinkPath } from "@gsfpv/scenes/sonic-link";
 export const SITE = "https://gsfpv.flyreelstudio.eu";
 export const REPO = "https://github.com/AndriiShramko/ShramkoGSFPV";
 export const REPO_BLOB = `${REPO}/blob/main`;
@@ -38,3 +39,21 @@ export const posterUrl = (id: string, size: "m" | "l" | "xl" = "m", version = 1)
 export const superSplatUrl = (id: string) => `https://superspl.at/scene/${id}`;
 
 export const flyPath = (locale: string) => `/${locale}/fly/`;
+
+/**
+ * The Fly by Sound start: the same kind of link a pilot's L copies in a lesson (@gsfpv/scenes sonic-link.ts), here for the start
+ * screen and in the page's own language, with the mode's default sound.
+ */
+export const soundStartPath = (locale: string): string => sonicLinkPath({ lesson: "start", sound: {} }, flyPath(locale));
+
+/**
+ * The page's main button (the header's primary button on a wide screen, the bottom bar on a phone). Every page says what it
+ * promises: `fly` the simulator's scene picker or a given address (a scene page: that scene), `sound` the Fly by Sound start.
+ * The label follows the kind: `fly` is "Fly now", `sound` is "Fly by Sound".
+ */
+export type MainCta = { kind: "fly" | "sound"; href: string };
+
+export const mainCta = (locale: string, kind: "fly" | "sound" = "fly", href?: string): MainCta => ({
+  kind,
+  href: href ?? (kind === "sound" ? soundStartPath(locale) : flyPath(locale)),
+});

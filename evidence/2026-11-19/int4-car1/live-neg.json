@@ -1,0 +1,114 @@
+{
+ "site": "https://gsfpv.flyreelstudio.eu",
+ "release": {
+  "sha": "89c9c86e",
+  "sonic": "293ebae",
+  "built": "2026-11-17T09:40:44.785Z"
+ },
+ "head": "833acb8f",
+ "note": "negative control before the train 4 release: every check must FAIL",
+ "checks": {
+  "site4-links": {
+   "pass": false,
+   "steps": 12,
+   "failed": [
+    "sound en 1536x730: the menu's main button opens the sound start",
+    "sound en 375x812: the menu's main button opens the sound start",
+    "sound pl 1536x730: the menu's main button opens the sound start",
+    "sound pl 375x812: the menu's main button opens the sound start",
+    "sound es 1536x730: the header's button has the start button's address",
+    "sound ru 1536x730: the header's button has the start button's address",
+    "band en 1536x730: the Fly by Sound band starts the sound mode",
+    "scene en 1536x730: the header's button opens scene 39e63ce9",
+    "person en 1536x730: the header's button opens scene 39e63ce9",
+    "lang en->pl on /en/sound/#sound-keys keeps the page and its anchor",
+    "banner es 320x568: the start button is on screen and not under the cookie banner",
+    "banner es 320x640: the start button is on screen and not under the cookie banner"
+   ]
+  },
+  "edit4b-course-life": {
+   "pass": false,
+   "steps": 12,
+   "failed": [
+    "1-open-numbers",
+    "2-clear-no",
+    "3-clear-yes",
+    "4-undo",
+    "5-new-empty",
+    "6-two-gates",
+    "7-fly",
+    "8-back",
+    "9-generate-no",
+    "10-pointed",
+    "12-esc-closes-first",
+    "11-small-view"
+   ]
+  },
+  "menu4-first-minute": {
+   "pass": false,
+   "steps": 15,
+   "failed": [
+    "ask: the notice asks the question with three answers",
+    "answer: a click on \"Never. Keep it simple\" goes on to the flight",
+    "pause: P frees the mouse and shows few items with \"More (n)\" holding the rest",
+    "fits: the list of items shown is shorter than the 730 px view and none lies over another",
+    "walk: Down stops on the \"More\" line, skips the items inside it and goes on round to Continue",
+    "more: a click on \"More (n)\" shows every item",
+    "settings: fewer rows than the full list and a \"Show all settings (n more)\" button",
+    "search: \"uptilt\" shows the camera uptilt row marked \"In the full menu\"",
+    "showAll: a click on \"Show all settings\" shows every row",
+    "levels: the three pilots see three different counts in the pause menu and in Settings"
+   ]
+  },
+  "tails4-start-moved": {
+   "pass": false,
+   "steps": 9,
+   "failed": [
+    "2f1ddf5f.walls",
+    "2f1ddf5f.spawnOverGround",
+    "2f1ddf5f.spawnFree",
+    "d10c5638.walls",
+    "d10c5638.spawnOverGround",
+    "d10c5638.spawnFree",
+    "ab5efa0e.walls",
+    "ab5efa0e.spawnOverGround",
+    "ab5efa0e.spawnFree"
+   ]
+  },
+  "head4-accept": {
+   "pass": false,
+   "steps": 12,
+   "failed": [
+    "rowShown",
+    "flyPageMayAsk",
+    "explainedFirst",
+    "cameraOn",
+    "trackerFiles",
+    "listenerTurns",
+    "picturesStayHere",
+    "offStopsCamera",
+    "centreKey",
+    "refusalSaid"
+   ]
+  },
+  "head4-camera-headers": {
+   "pass": false,
+   "log": [
+    "fly: Permissions-Policy: hid=(self), gamepad=(self), fullscreen=(self), screen-wake-lock=(self), camera=(), microphone=(self), geolocation=(), usb=(self), serial=(), bluetooth=(), xr-spatial-tracking=()",
+    "privacy: Permissions-Policy: hid=(self), gamepad=(self), fullscreen=(self), screen-wake-lock=(self), camera=(), microphone=(), geolocation=(), usb=(), serial=(), bluetooth=(), xr-spatial-tracking=()"
+   ]
+  }
+ },
+ "summary": [
+  "live checks of https://gsfpv.flyreelstudio.eu, logs in U:/Temp/gsfpv-train4/int4/live-neg",
+  "release.json: {\"sha\":\"89c9c86e\",\"sonic\":\"293ebae\",\"built\":\"2026-11-17T09:40:44.785Z\"}",
+  "site4-links FAIL (exit 1, see U:/Temp/gsfpv-train4/int4/live-neg/site4-links.log)",
+  "edit4b-course-life FAIL (exit 1, see U:/Temp/gsfpv-train4/int4/live-neg/edit4b-course-life.log)",
+  "menu4-first-minute FAIL (exit 1, see U:/Temp/gsfpv-train4/int4/live-neg/menu4-first-minute.log)",
+  "tails4-start-moved FAIL (exit 1, see U:/Temp/gsfpv-train4/int4/live-neg/tails4-start-moved.log)",
+  "head4-camera-headers FAIL (exit 1, see U:/Temp/gsfpv-train4/int4/live-neg/head4-camera-headers.log)",
+  "head4-accept FAIL (exit 1, see U:/Temp/gsfpv-train4/int4/live-neg/head4-accept.log)",
+  "LIVE CHECKS: FAIL",
+  "exit 1"
+ ]
+}

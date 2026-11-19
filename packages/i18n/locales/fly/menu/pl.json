@@ -1,0 +1,15 @@
+{
+  "menu.level.ask": "Czy latałeś już FPV?",
+  "menu.level.first": "Nigdy. Niech będzie prosto",
+  "menu.level.first.hint": "Mało przycisków, a dron pomaga ci latać.",
+  "menu.level.sim": "Tak, w innych symulatorach lub naprawdę",
+  "menu.level.sim.hint": "Tryb lotu, rates, kąt kamery i twoja aparatura, pod nazwami, które znasz.",
+  "menu.level.expert": "Pokaż mi wszystko",
+  "menu.level.expert.hint": "Wszystkie przyciski i wszystkie ustawienia naraz.",
+  "menu.level.later": "Możesz to zmienić w każdej chwili: Ustawienia, Ekran, Menu.",
+  "menu.more": "Więcej ({n})",
+  "menu.showAll": "Zawsze pokazuj wszystko",
+  "menu.settings.showAll": "Pokaż wszystkie ustawienia (jeszcze {n})",
+  "menu.settings.inFull": "W pełnym menu",
+  "menu.settings.changed": "Zmienione"
+}

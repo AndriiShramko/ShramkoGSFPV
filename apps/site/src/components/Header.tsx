@@ -1,5 +1,5 @@
 import { useTranslations } from "next-intl";
-import { flyPath } from "@/config/site";
+import { mainCta, type MainCta } from "@/config/site";
 import type { Locale } from "@/i18n/routing";
 import LangSwitcher from "./LangSwitcher";
 import Logo from "./Logo";
@@ -8,8 +8,12 @@ import Logo from "./Logo";
 // instead; eight links did not fit next to the language switcher in Spanish and Russian.
 const ANCHORS = ["locations", "features", "real", "numbers", "scenes", "radios", "faq", "contact"] as const;
 
-/** Sticky header: brand, section anchors (desktop), language switcher and the "Fly now" CTA. */
-export default function Header({ locale, page, onLanding }: { locale: Locale; page: string; onLanding: boolean }) {
+/**
+ * Sticky header: brand, section anchors (desktop), language switcher and the page's main button (`cta`, config/site.ts MainCta):
+ * "Fly now" to the picker by default, the scene on a scene page, "Fly by Sound" to the sound start on the sound pages.
+ */
+export default function Header({ locale, page, onLanding, cta }: { locale: Locale; page: string; onLanding: boolean; cta?: MainCta }) {
+  const main = cta ?? mainCta(locale);
   const t = useTranslations("nav");
   const base = onLanding ? "" : `/${locale}/`;
   return (
@@ -38,8 +42,8 @@ export default function Header({ locale, page, onLanding }: { locale: Locale; pa
         </nav>
         <div className="flex items-center gap-2">
           <LangSwitcher locale={locale} page={page} label={t("language")} where="nav" />
-          <a href={flyPath(locale)} data-track="fly_click" className="btn-primary hidden min-h-11 whitespace-nowrap px-4 text-sm md:inline-flex">
-            {t("fly")}
+          <a href={main.href} data-track="fly_click" data-main-cta={main.kind} className="btn-primary hidden min-h-11 whitespace-nowrap px-4 text-sm md:inline-flex">
+            {main.kind === "sound" ? t("flySound") : t("fly")}
           </a>
         </div>
       </div>

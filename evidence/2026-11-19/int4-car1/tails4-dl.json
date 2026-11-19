@@ -1,0 +1,57 @@
+{
+ "what": "tails4-helper-download.mjs: the helper links save the repository bytes",
+ "base": "http://localhost:6180/en",
+ "neg": false,
+ "at": "2026-11-19T16:49:27.407Z",
+ "browser": "157.0.8103.52",
+ "files": {
+  "start-dji-helper.cmd": {
+   "event": true,
+   "suggested": "start-dji-helper.cmd",
+   "failure": null,
+   "bytes": 3461,
+   "expectedBytes": 3461,
+   "firstDiff": -1,
+   "crlf": true
+  },
+  "dji-helper.py": {
+   "event": true,
+   "suggested": "dji-helper.py",
+   "failure": null,
+   "bytes": 31973,
+   "expectedBytes": 31973,
+   "firstDiff": -1,
+   "crlf": null
+  }
+ },
+ "links": [
+  {
+   "file": "start-dji-helper.cmd",
+   "href": "blob:http://localhost:6180/ea9c6000-d661-4656-84d3-fae32dabe",
+   "download": "start-dji-helper.cmd",
+   "target": null
+  },
+  {
+   "file": "dji-helper.py",
+   "href": "blob:http://localhost:6180/29154f6a-9bef-4708-94c0-22483c6d1",
+   "download": "dji-helper.py",
+   "target": null
+  }
+ ],
+ "errors": [],
+ "pass": true,
+ "checks": {
+  "links.two": true,
+  "links.sameOrigin": true,
+  "start-dji-helper.cmd.event": true,
+  "start-dji-helper.cmd.name": true,
+  "start-dji-helper.cmd.saved": true,
+  "start-dji-helper.cmd.bytes": true,
+  "start-dji-helper.cmd.crlf": true,
+  "dji-helper.py.event": true,
+  "dji-helper.py.name": true,
+  "dji-helper.py.saved": true,
+  "dji-helper.py.bytes": true,
+  "noPageErrors": true
+ }
+}
