@@ -1,0 +1,54 @@
+{
+  "base": "http://localhost:6180/en",
+  "runs": {
+    "only": {
+      "mode": "only",
+      "wallsMs": 17,
+      "before": {
+        "mode": "only",
+        "splatVisible": false
+      },
+      "switchOk": true,
+      "switchWaitMs": 1887,
+      "sceneSwitch": {
+        "state": "done",
+        "from": "70b50d42",
+        "to": "2f1ddf5f",
+        "reason": "pick",
+        "ms": 1849
+      },
+      "reveal": "ready",
+      "visibleMs": 1116,
+      "splatVisible": false
+    },
+    "overlay": {
+      "mode": "overlay",
+      "wallsMs": 7,
+      "before": {
+        "mode": "overlay",
+        "splatVisible": true
+      },
+      "switchOk": true,
+      "switchWaitMs": 1912,
+      "sceneSwitch": {
+        "state": "done",
+        "from": "70b50d42",
+        "to": "2f1ddf5f",
+        "reason": "pick",
+        "ms": 1884
+      },
+      "reveal": "ready",
+      "visibleMs": 1157,
+      "splatVisible": true
+    }
+  },
+  "steps": {
+    "7-switch-from-only": {
+      "pass": true,
+      "onlyMs": 1887,
+      "overlayMs": 1912,
+      "onlyReveal": "ready",
+      "overlayReveal": "ready"
+    }
+  }
+}

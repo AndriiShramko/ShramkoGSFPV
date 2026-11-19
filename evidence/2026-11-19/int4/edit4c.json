@@ -7,13 +7,13 @@
  ],
  "dsf": 1.25,
  "live": false,
- "date": "2026-11-19T22:16:28.876Z",
+ "date": "2026-11-19T22:33:48.211Z",
  "steps": {
   "s1.open": {
    "verdict": "PASS",
    "mode": "edit",
-   "gates": 46,
-   "onPage": 21,
+   "gates": 39,
+   "onPage": 19,
    "under": [
     "CANVAS.#view",
     "CANVAS.#view",
@@ -22,180 +22,187 @@
    ],
    "screen": [
     [
-     1035,
-     403,
-     9.38
+     1358,
+     449,
+     7.22
     ],
     [
-     1128,
-     381,
-     15.89
+     1693,
+     425,
+     10.15
     ],
     [
-     1132,
-     380,
-     16.63
+     1931,
+     420,
+     12.79
     ],
     [
-     1135,
-     380,
-     17.38
+     2053,
+     398,
+     14.65
     ],
     [
-     1138,
-     379,
-     18.12
+     2047,
+     398,
+     15.07
     ],
     [
-     1217,
-     377,
-     22.24
+     2042,
+     398,
+     15.48
     ],
     [
-     1233,
-     323,
-     22.89
+     2036,
+     398,
+     15.9
     ],
     [
-     1267,
-     364,
-     28.31
+     2189,
+     392,
+     17.14
     ],
     [
-     1289,
-     364,
-     34.35
+     2215,
+     392,
+     17.18
     ],
     [
-     1318,
-     362,
-     42.15
+     2240,
+     392,
+     17.21
     ],
     [
-     1553,
-     359,
-     32.83
+     2240,
+     393,
+     19.43
     ],
     [
-     1597,
-     320,
-     31.48
+     1905,
+     393,
+     27.58
     ]
    ],
    "selected": 0,
    "stand": [
-    1035,
-    403,
-    9.38
+    1358,
+    449,
+    7.22
    ],
-   "lock": null
+   "lock": "CANVAS"
   },
   "s2.add": {
-   "verdict": "PASS",
-   "judged": {
-    "leg": 0,
-    "clickedAt": [
-     1082,
-     392
-    ],
-    "armed": true,
-    "grew": true,
-    "newIndex": 1,
-    "wantIndex": 1,
-    "hitM": 43.62358302258198,
-    "offDeg": 0,
-    "neighbours": [
-     "g1",
-     "g2"
-    ],
-    "wasLeg": [
-     "g1",
-     "g2"
-    ],
-    "between": true,
-    "legDepth": 15.89,
-    "hidden": false
-   },
+   "verdict": "FAIL",
+   "judged": null,
    "tries": [
     {
-     "leg": 4,
+     "leg": 23,
      "clickedAt": [
-      1178,
-      378
+      1366,
+      394
      ],
      "armed": true,
-     "grew": true,
-     "newIndex": 1,
-     "wantIndex": 5,
-     "hitM": 11.784699426730107,
-     "offDeg": 0,
-     "neighbours": [
-      "g1",
-      "g2"
-     ],
-     "wasLeg": [
-      "g5",
-      "g6"
-     ],
-     "between": false,
-     "legDepth": 22.24,
-     "hidden": true
-    },
-    {
-     "leg": 38,
-     "clickedAt": [
-      1350,
-      362
-     ],
-     "armed": true,
-     "grew": true,
+     "grew": false,
      "newIndex": 0,
-     "wantIndex": 39,
-     "hitM": 8.662000230506811,
-     "legDepth": 42.77,
+     "wantIndex": 24,
+     "hitM": null,
+     "legDepth": 74.11,
      "hidden": true
     },
     {
-     "leg": 44,
+     "leg": 34,
      "clickedAt": [
-      1267,
-      362
+      1304,
+      396
      ],
      "armed": true,
-     "grew": true,
+     "grew": false,
      "newIndex": 0,
-     "wantIndex": 45,
-     "hitM": 9.490670214916955,
-     "legDepth": 50.99,
+     "wantIndex": 35,
+     "hitM": null,
+     "legDepth": 78.63,
      "hidden": true
     },
     {
-     "selectedFar": 44,
-     "now": 44
+     "selectedFar": 38,
+     "now": 0
     },
     {
-     "leg": 0,
+     "leg": 23,
      "clickedAt": [
-      1082,
-      392
+      1366,
+      394
      ],
      "armed": true,
-     "grew": true,
-     "newIndex": 1,
-     "wantIndex": 1,
-     "hitM": 43.62358302258198,
-     "offDeg": 0,
-     "neighbours": [
-      "g1",
-      "g2"
+     "grew": false,
+     "newIndex": 0,
+     "wantIndex": 24,
+     "hitM": null,
+     "legDepth": 74.11,
+     "hidden": true
+    },
+    {
+     "leg": 34,
+     "clickedAt": [
+      1304,
+      396
      ],
-     "wasLeg": [
-      "g1",
-      "g2"
+     "armed": true,
+     "grew": false,
+     "newIndex": 0,
+     "wantIndex": 35,
+     "hitM": null,
+     "legDepth": 78.63,
+     "hidden": true
+    },
+    {
+     "selectedFar": 38,
+     "now": 0
+    },
+    {
+     "leg": 23,
+     "clickedAt": [
+      1366,
+      394
      ],
-     "between": true,
-     "legDepth": 15.89,
-     "hidden": false
+     "armed": true,
+     "grew": false,
+     "newIndex": 0,
+     "wantIndex": 24,
+     "hitM": null,
+     "legDepth": 74.11,
+     "hidden": true
+    },
+    {
+     "leg": 34,
+     "clickedAt": [
+      1304,
+      396
+     ],
+     "armed": true,
+     "grew": false,
+     "newIndex": 0,
+     "wantIndex": 35,
+     "hitM": null,
+     "legDepth": 78.63,
+     "hidden": true
+    },
+    {
+     "selectedFar": 38,
+     "now": 0
+    },
+    {
+     "leg": 23,
+     "clickedAt": [
+      1366,
+      394
+     ],
+     "armed": true,
+     "grew": false,
+     "newIndex": 0,
+     "wantIndex": 24,
+     "hitM": null,
+     "legDepth": 74.11,
+     "hidden": true
     }
    ]
   },
@@ -219,9 +226,9 @@
    "verdict": "PASS",
    "pressed": true,
    "gates": [
-    46,
-    48,
-    46
+    39,
+    41,
+    39
    ]
   },
   "s4.piece": {
@@ -248,27 +255,27 @@
    "verdict": "PASS",
    "pressed": true,
    "gates": [
-    46,
-    49,
-    46
+    39,
+    42,
+    39
    ]
   },
   "s5.tag": {
    "verdict": "PASS",
-   "gate": 1,
-   "axis": "z",
+   "gate": 37,
+   "axis": "x",
    "px": 52,
    "tag": {
     "codes": [
      "sharp-turn"
     ],
     "lines": [
-     "Too sharp a turn to fly into gate 2"
+     "Too sharp a turn to fly into gate 38"
     ],
     "box": [
-     864,
-     135,
-     264,
+     581,
+     138,
+     273,
      42
     ],
     "dragging": true
@@ -280,19 +287,19 @@
    "asked": true,
    "ask": "Keep it here?KeepPut back (key Ctrl+Z)",
    "moved": [
-    3.667,
-    2.4,
-    -8.521
+    89.5,
+    6.5,
+    27.3
    ],
    "back": [
-    -2.8,
-    2.4,
-    -11.2
+    89.2,
+    6.5,
+    27.3
    ],
    "before": [
-    -2.8,
-    2.4,
-    -11.2
+    89.2,
+    6.5,
+    27.3
    ],
    "barAfter": "off"
   },
@@ -301,31 +308,46 @@
    "asked": true,
    "stayed": true,
    "moved": true,
-   "kept": [
-    "g1"
+   "before": [
+    89.2,
+    6.5,
+    27.3
    ],
-   "id": "g1",
+   "during": [
+    89.5,
+    6.5,
+    27.3
+   ],
+   "after": [
+    89.5,
+    6.5,
+    27.3
+   ],
+   "kept": [
+    "g37"
+   ],
+   "id": "g37",
    "barAfter": "off",
    "why": null,
-   "px": 76
+   "px": 52
   },
   "s9.escAsk": {
-   "verdict": "FAIL",
-   "asked": false,
-   "escClosed": false,
-   "escStayed": false,
-   "escKept": false,
-   "barAfter": null,
-   "said": null,
-   "why": "no z arrow on the page"
+   "verdict": "PASS",
+   "asked": true,
+   "escClosed": true,
+   "escStayed": true,
+   "escKept": true,
+   "barAfter": "off",
+   "said": "Kept where you put it. Gate 37 stays orange until the problem is gone.",
+   "why": null
   },
   "s10.addAsk": {
-   "verdict": "FAIL",
-   "asked": false,
-   "addClosedAsk": false,
-   "addClear": false,
-   "barAfter": null,
-   "why": "no z arrow on the page"
+   "verdict": "PASS",
+   "asked": true,
+   "addClosedAsk": true,
+   "addClear": true,
+   "barAfter": "off",
+   "why": null
   },
   "s8.small": {
    "verdict": "PASS",
@@ -422,25 +444,25 @@
  "lockAfterClick": "CANVAS",
  "course": {
   "ok": true,
-  "s": 10,
-  "gates": 46
+  "s": 20,
+  "gates": 39
  },
  "tags": [
   {
    "label": "first",
-   "axis": "z",
+   "axis": "x",
    "px": 52,
    "tag": {
     "codes": [
      "sharp-turn"
     ],
     "lines": [
-     "Too sharp a turn to fly into gate 2"
+     "Too sharp a turn to fly into gate 38"
     ],
     "box": [
-     864,
-     135,
-     264,
+     581,
+     138,
+     273,
      42
     ],
     "dragging": true
@@ -448,19 +470,59 @@
   },
   {
    "label": "second",
-   "axis": "z",
-   "px": 76,
+   "axis": "x",
+   "px": 52,
    "tag": {
     "codes": [
      "sharp-turn"
     ],
     "lines": [
-     "Too sharp a turn to fly into gate 2"
+     "Too sharp a turn to fly into gate 38"
     ],
     "box": [
-     844,
-     127,
-     264,
+     571,
+     110,
+     273,
+     42
+    ],
+    "dragging": true
+   }
+  },
+  {
+   "label": "third",
+   "axis": "y",
+   "px": 52,
+   "tag": {
+    "codes": [
+     "sharp-turn"
+    ],
+    "lines": [
+     "Too sharp a turn to fly into gate 38"
+    ],
+    "box": [
+     598,
+     168,
+     273,
+     42
+    ],
+    "dragging": true
+   }
+  },
+  {
+   "label": "fourth",
+   "axis": "x",
+   "px": 52,
+   "tag": {
+    "codes": [
+     "sharp-turn"
+    ],
+    "lines": [
+     "Too sharp a turn to fly into gate 38"
+    ],
+    "box": [
+     608,
+     85,
+     273,
      42
     ],
     "dragging": true
@@ -468,8 +530,7 @@
   }
  ],
  "fails": [
-  "s9.escAsk",
-  "s10.addAsk"
+  "s2.add"
  ],
  "log": []
 }

@@ -207,6 +207,9 @@
     .ce-topbar .ce-tb { min-height: 44px; min-width: 44px; padding: 3px 5px; }
     .ce-topbar .ce-tb-line { display: none; }
     .ce-gatebar .ce-gb { width: 44px; height: 44px; padding: 11px; }
+    /* int4: the window starts under the top bar (top-bar.ts place() writes its bottom edge): since edit4b the bar's seven
+       buttons reach past x 400 at 844, where the window began beside it */
+    .course-editor { top: calc(var(--ce-topbar-bottom, 130px) + 6px); }
 }
 /* train 3 I2 (D7): a view lower than 500 px: the bar goes under the scene credit and the Walls chip's summary (top-bar.ts
    place() writes their lowest bottom edge to --ce-below), so 'Walls 5 cm' and the credit stay readable */

@@ -301,11 +301,16 @@ try {
         const tags = [];
         /** press on the arrow that points most toward the next gate, travel along it until the tag shows (or maxPx) */
         async function dragToward(label) {
+            // int4: since edit4a (E1) a click no longer frames the gate it selects; the pilot frames it with key F, so the
+            // probe does too before each drag (on g1.1 the chosen gate stood too far for its arrows to be found)
+            await page.keyboard.press('KeyF');
+            await settle();
             const d = await snap();
             const from = d.stand?.screen;
             const nb = d.gates?.[gi + 1];
             if (!from || !nb || !d.axes) return { ok: false, why: 'no handles or no next gate' };
-            // the arrow whose axis in the scene (the gate's right, up, forward from its quat) points most toward the next gate
+            // the arrow whose axis in the scene (the gate's right, up, forward from its quat) points most toward the next gate;
+            // int4: the move arrow itself (edit4a's one gizmo has a size box on each axis too, which a press on the axis alone took)
             const me = d.list[gi];
             const to = d.list[gi + 1].pos.map((v, i) => v - me.pos[i]);
             const [w, x, y, z] = me.quat;
@@ -314,8 +319,8 @@ try {
             const dir = best.dot >= 0 ? d.axes[best.k] : [-d.axes[best.k][0], -d.axes[best.k][1]];
             const hitAt = await page.evaluate(([f, dv, ax]) => {
                 const h = window.__gsfpvEditHit;
-                for (let r = 14; r <= 400; r += 2) { const x = f[0] + dv[0] * r; const y = f[1] + dv[1] * r; const hit = h?.(x, y); if (hit && hit[1] === ax) return [x, y]; }
-                for (let r = 14; r <= 400; r += 2) { const x = f[0] - dv[0] * r; const y = f[1] - dv[1] * r; const hit = h?.(x, y); if (hit && hit[1] === ax) return [x, y]; }
+                for (let r = 14; r <= 400; r += 2) { const x = f[0] + dv[0] * r; const y = f[1] + dv[1] * r; const hit = h?.(x, y); if (hit && hit[0] === 'move' && hit[1] === ax) return [x, y]; }
+                for (let r = 14; r <= 400; r += 2) { const x = f[0] - dv[0] * r; const y = f[1] - dv[1] * r; const hit = h?.(x, y); if (hit && hit[0] === 'move' && hit[1] === ax) return [x, y]; }
                 return null;
             }, [from, d.axes[best.k], best.k]);
             if (!hitAt) return { ok: false, why: `no ${best.k} arrow on the page`, axis: best.k };
@@ -371,7 +376,7 @@ try {
             const stayed = !!kept && kept.list?.[gi] && two.after.list?.[gi] && Math.hypot(...kept.list[gi].pos.map((v, i) => v - two.after.list[gi].pos[i])) < 0.01;
             const moved = !!two.after?.list?.[gi] && Math.hypot(...two.after.list[gi].pos.map((v, i) => v - two.before[i])) > 0.05;
             const orange = !!kept && Array.isArray(kept.warn?.kept) && kept.warn.kept.includes(two.id);
-            judge('s7.keep', !!asked2 && stayed && moved && orange, { asked: !!asked2, stayed, moved, kept: kept?.warn?.kept ?? null, id: two.id, barAfter: kept?.warn?.mode ?? null, why: two.why ?? null, px: two.px ?? null });
+            judge('s7.keep', !!asked2 && stayed && moved && orange, { asked: !!asked2, stayed, moved, before: two.before, during: two.during, after: two.after?.list?.[gi]?.pos ?? null, kept: kept?.warn?.kept ?? null, id: two.id, barAfter: kept?.warn?.mode ?? null, why: two.why ?? null, px: two.px ?? null });
             // s9 (the review's step): the question open, the pilot presses key Esc to get rid of the box, as Esc ends adding.
             // Esc must close it as its cross does (the gate kept), and must not start leaving the edit view.
             await settle();

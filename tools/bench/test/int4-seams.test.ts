@@ -28,6 +28,21 @@ describe('int4: edit4a drag cancel x edit4c live warnings', () => {
     });
 });
 
+describe('int4: edit4b top bar x the editor window on a small view (edit4a step 13, 844x390)', () => {
+    const css = readFileSync(join(SRC, 'course/editor/editor.css'), 'utf8');
+    const bar = readFileSync(join(SRC, 'course/editor/top-bar.ts'), 'utf8');
+    it('top-bar.ts writes its bottom edge on the shared parent and takes it away when it goes', () => {
+        expect(bar).toMatch(/this\.ui\.style\.setProperty\('--ce-topbar-bottom', `\$\{Math\.round\(bar\.bottom\)\}px`\)/);
+        expect(bar.match(/this\.ui\.style\.removeProperty\('--ce-topbar-bottom'\)/g) ?? []).toHaveLength(2);
+    });
+    it('in the small-view block the window starts under the bar', () => {
+        const start = css.indexOf('@media (max-width: 900px), (max-height: 500px) {');
+        expect(start).toBeGreaterThan(0);
+        const block = css.slice(start, css.indexOf('\n}', start));
+        expect(block).toMatch(/\.course-editor \{ top: calc\(var\(--ce-topbar-bottom, 130px\) \+ 6px\); \}/);
+    });
+});
+
 describe('int4: edit4s save x edit4b seam', () => {
     it('every save that reaches the keeper is also the seam event saved', () => {
         const kept = course.match(/keeper\?\.saved\(/g) ?? [];

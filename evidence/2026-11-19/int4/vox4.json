@@ -1,0 +1,186 @@
+{
+ "base": "http://localhost:6180/en",
+ "tag": "vox4",
+ "steps": {
+  "1-frozen": {
+   "pass": true,
+   "settled": true,
+   "bg": [
+    0,
+    0,
+    0
+   ],
+   "draw": {
+    "plan": {
+     "draw": "sorted",
+     "why": "hidden"
+    },
+    "accumActive": false,
+    "splatEnabled": false
+   },
+   "bgShare": 1,
+   "notBg": []
+  },
+  "2-moved": {
+   "pass": true,
+   "moved3m": true,
+   "bgShare": 1,
+   "notBg": []
+  },
+  "4-shading": {
+   "pass": true,
+   "topLuma": 200,
+   "sideLuma": 128,
+   "diff": 0.36,
+   "counts": {
+    "side": 398,
+    "other": 272,
+    "top": 482
+   },
+   "fog": {
+    "type": "linear",
+    "start": 30,
+    "end": 229.5827644943251
+   },
+   "far": 0,
+   "farLuma": null,
+   "nearLuma": 166,
+   "fogNearRatio": 1,
+   "fogFarRatio": 0.72,
+   "farToward": true,
+   "designFarWithin30": null,
+   "nearAwayFromBg": 0.9991181657848325,
+   "bgLuma": 0,
+   "bins": [
+    {
+     "m": "0-30",
+     "n": 1144,
+     "on": 165,
+     "off": 165
+    },
+    {
+     "m": "30-60",
+     "n": 8,
+     "on": 136,
+     "off": 138
+    },
+    {
+     "m": "60-100",
+     "n": 0,
+     "on": null,
+     "off": null
+    },
+    {
+     "m": "100-150",
+     "n": 50,
+     "on": 126,
+     "off": 169
+    },
+    {
+     "m": "150-250",
+     "n": 14,
+     "on": 105,
+     "off": 167
+    },
+    {
+     "m": "250-1000",
+     "n": 0,
+     "on": null,
+     "off": null
+    }
+   ]
+  },
+  "5-cost": {
+   "pass": true,
+   "fogType": "linear",
+   "msFogOn": 7.23,
+   "msFogOff": 6.88,
+   "on": [
+    8.7,
+    7.2,
+    5.2
+   ],
+   "off": [
+    8.8,
+    4.8,
+    6.9
+   ],
+   "uncapped": true
+  },
+  "3-lublin": {
+   "pass": false,
+   "walls": true,
+   "mode": "only",
+   "nearWalls": {
+    "walls": "drawn",
+    "cover": 0.5237630208333334
+   },
+   "nearOccupied": 7,
+   "nearDrawn": true,
+   "statusSaysThin": false,
+   "status": "20 cm voxels · the whole scene: 100% drawn, to 816 m · 968k faces",
+   "afterOverlay": {
+    "plan": {
+     "draw": "sorted",
+     "why": "not-asked"
+    },
+    "accumActive": false,
+    "splatEnabled": true
+   }
+  },
+  "6-panel": {
+   "pass": true,
+   "1536x730": {
+    "w": 44,
+    "h": 44,
+    "inView": true,
+    "onTop": true,
+    "closed": true,
+    "ok": true
+   },
+   "844x390": {
+    "w": 44,
+    "h": 44,
+    "inView": true,
+    "onTop": true,
+    "closed": true,
+    "ok": true
+   }
+  }
+ },
+ "errors": [],
+ "wroclawWalls": {
+  "ok": true,
+  "s": 4
+ },
+ "picks": [
+  {
+   "want": "only",
+   "opened": true,
+   "open": true,
+   "mode": "only",
+   "lock": false
+  },
+  {
+   "want": "only",
+   "opened": true,
+   "open": true,
+   "mode": "only",
+   "lock": false
+  },
+  {
+   "want": "overlay",
+   "opened": false,
+   "open": true,
+   "mode": "overlay",
+   "lock": false
+  }
+ ],
+ "sceneClick": {
+  "lock": true,
+  "mode": "only",
+  "panelOpen": true
+ },
+ "seconds": 100,
+ "pass": false
+}

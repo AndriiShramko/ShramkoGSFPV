@@ -1,6 +1,6 @@
 {
- "address": "http://localhost:6180/en",
- "live": true,
+ "address": "http://localhost:6181/en",
+ "live": false,
  "scan": "70b50d42",
  "seed": 1,
  "size": [
@@ -8,22 +8,64 @@
   730
  ],
  "dsf": 1.25,
- "date": "2026-11-19T22:09:57.963Z",
+ "date": "2026-11-19T22:21:37.102Z",
  "steps": {
   "open": {
    "ok": true,
    "lock": "CANVAS",
-   "courseMs": 18214,
+   "courseMs": 18207,
    "gates": 39,
    "source": "generated"
   },
+  "s8.failKept": {
+   "ok": true,
+   "fill": {
+    "posts": 61,
+    "retryAfter": "3600"
+   },
+   "pressed": true,
+   "status": 429,
+   "key": "course.save.problem.rate",
+   "line": "Too many new courses from this computer this hour. Your course is kept as a draft. Save again after 00:22.",
+   "again": {
+    "x": 1427.5,
+    "y": 664,
+    "w": 175,
+    "h": 26,
+    "disabled": true,
+    "text": "Save again after 00:22"
+   },
+   "drafts": 1,
+   "unchanged": true
+  },
+  "s7.untouchedSaved": {
+   "ok": true,
+   "saved": "70b50d42-e6a5e270",
+   "problem": {
+    "status": null,
+    "key": null,
+    "againAt": null
+   },
+   "line": "Saved as your course: Course kme4va, version 1. It is in Courses on the top bar",
+   "href": "http://localhost:6181/en/fly/?scene=70b50d42&course=g1.kme4va&render=off&nowarn=1",
+   "posts": [
+    {
+     "path": "/api/tracks",
+     "status": 429,
+     "at": 1795126926269
+    },
+    {
+     "path": "/api/tracks",
+     "status": 201,
+     "at": 1795126928680
+    }
+   ]
+  },
   "s1.moveGate2": {
    "ok": true,
-   "select": "click",
+   "select": "tab",
    "moved": {
-    "by": "gizmo",
-    "axis": "z",
-    "r": 85
+    "by": "key ArrowRight (the gizmo took no drag)"
    },
    "from": [
     4.4,
@@ -31,17 +73,17 @@
     -2.4
    ],
    "to": [
-    3.056,
+    4.4,
     2.6,
-    -3.744
+    -2.3
    ],
-   "m": 1.9
+   "m": 0.1
   },
   "s2.draftIn3s": {
    "ok": true,
-   "ms": 1508,
-   "drafts": 1,
-   "newest": 1795126234814,
+   "ms": 1515,
+   "drafts": 4,
+   "newest": 1795126946633,
    "edit4": true
   },
   "s3.restored": {
@@ -49,32 +91,40 @@
    "open": {
     "ok": true,
     "lock": "CANVAS",
-    "courseMs": 2,
+    "courseMs": 1,
     "gates": 39,
     "source": "generated"
    },
    "gate2": [
-    3.056,
+    4.4,
     2.6,
-    -3.744
+    -2.3
    ],
    "want": [
-    3.056,
+    4.4,
     2.6,
-    -3.744
+    -2.3
    ],
    "m": 0,
-   "restored": 1795126234814,
-   "line": "Your unsaved course from 23:10 is back (Versions: 1 kept). Key Ctrl+Z takes it away. | Your unsaved course from 23:10 is back (Versions: 1 kept). Key Ctrl+Z takes it away."
+   "restored": 1795126946633,
+   "line": "Your unsaved course from 23:22 is back (Versions: 4 kept). Key Ctrl+Z takes it away. | Your unsaved course from 23:22 is back (Versions: 4 kept). Key Ctrl+Z takes it away."
   },
   "s4.versions": {
    "ok": true,
    "openedBy": "its title",
    "wheels": 2,
-   "n": 1,
+   "n": 4,
    "first": [
     {
-     "text": "23:10 · gates: 39 · moved a gate",
+     "text": "23:22 · gates: 39 · moved a gate",
+     "shown": true
+    },
+    {
+     "text": "23:22 · gates: 39 · changed a gate's shape",
+     "shown": true
+    },
+    {
+     "text": "23:22 · gates: 39 · turned a gate",
      "shown": true
     }
    ]
@@ -83,18 +133,12 @@
    "ok": true,
    "select": "tab",
    "turned": true,
-   "text": "Before saving: gate 3 faces the wrong way; gate 2 touches a wall. Make these small corrections and save?",
+   "text": "Before saving: gate 3 faces the wrong way. Make these small corrections and save?",
    "offered": [
     {
      "kind": "face-line",
      "gates": [
       3
-     ]
-    },
-    {
-     "kind": "nudge",
-     "gates": [
-      2
      ]
     }
    ],
@@ -102,77 +146,64 @@
     44,
     44
    ],
-   "line": "Before saving: gate 3 faces the wrong way; gate 2 touches a wall. Make these small corrections and save?"
+   "line": "Before saving: gate 3 faces the wrong way. Make these small corrections and save?"
   },
   "s6.correctAndSave": {
-   "ok": false,
+   "ok": true,
    "yes": true,
    "gatesOnScreenMost": 39,
    "gates": 39,
    "selected": 2,
-   "done": "gate 3 turned 168 deg; gate 2 moved 20 cm away from the wall",
-   "line": "No connection to the site. Your course is kept as a draft. Check the internet and press Save again.",
-   "stored": [],
+   "done": "gate 3 turned 169 deg",
+   "line": "Saved as your course: Course kme4va, version 1. It is in Courses on the top bar",
+   "stored": [
+    {
+     "path": "/api/tracks",
+     "status": 201,
+     "at": 1795126979236
+    }
+   ],
    "problem": {
     "status": null,
-    "key": "course.save.problem.network",
+    "key": null,
     "againAt": null
    }
   },
   "s9.generateDropsForReal": {
-   "ok": false,
-   "ms": 300800,
+   "ok": true,
+   "ms": 6092,
    "open": true,
-   "newCourse": false,
+   "newCourse": true,
    "restored": null,
-   "line": "Click a gate to change it. Fly the course (or key Space, or your controller's arm switch) flies it at once | Moved. Gate 3 of 39: ring, 1.2 m",
-   "drafts": 4
+   "line": "Editor open. Keys W A S D move the view, key E up, key Q down. Drag with the left mouse button on empty space to circle round, with Shift to slide; the wheel goes towards the cursor; hold the right button to look around.",
+   "drafts": 7
   }
  },
  "posts": [
   {
-   "aborted": "http://localhost:6180/api/e",
-   "method": "POST"
+   "path": "/api/tracks",
+   "status": 429,
+   "at": 1795126926269
   },
   {
-   "aborted": "http://localhost:6180/api/e",
-   "method": "POST"
+   "path": "/api/tracks",
+   "status": 201,
+   "at": 1795126928680
   },
   {
-   "aborted": "http://localhost:6180/api/e",
-   "method": "POST"
-  },
-  {
-   "aborted": "http://localhost:6180/api/e",
-   "method": "POST"
-  },
-  {
-   "aborted": "http://localhost:6180/api/e",
-   "method": "POST"
-  },
-  {
-   "aborted": "http://localhost:6180/api/e",
-   "method": "POST"
-  },
-  {
-   "aborted": "http://localhost:6180/api/tracks",
-   "method": "POST"
+   "path": "/api/tracks",
+   "status": 201,
+   "at": 1795126979236
   }
  ],
- "notRun": [
-  "s8",
-  "s7"
- ],
+ "notRun": [],
  "open": {
   "ok": true,
   "lock": "CANVAS",
-  "courseMs": 18214,
+  "courseMs": 18207,
   "gates": 39,
   "source": "generated"
  },
- "fails": [
-  "s6.correctAndSave",
-  "s9.generateDropsForReal"
- ],
+ "fails": [],
  "log": []
 }

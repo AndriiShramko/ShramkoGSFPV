@@ -305,8 +305,10 @@ try {
         rec.effect = effect;
         others.push({ id, ok: effect || bx.disabled, effect, disabled: bx.disabled, title: bx.title, line: b.topLine, panel: b.panelBox });
     }
+    // int4: the rows of the Keys table (.ce-keys, shown since Course, Keys opens it) are left out: a press on a row does that key
+    // (Esc leaves, Del deletes), which is the keys' own check, not the window's, and it left the next step a changed page
     const wins = [];
-    const ctl = await page.evaluate(() => [...document.querySelectorAll('.course-editor button, .course-editor [role="button"], .course-editor input, .course-editor select, .course-editor summary')].filter((e) => e.getClientRects().length && getComputedStyle(e).visibility !== 'hidden').slice(0, 30).map((e, n) => { e.dataset.probeN = String(n); return { n, text: (e.textContent || e.value || e.getAttribute('aria-label') || '').trim().slice(0, 40), act: e.dataset.act || e.dataset.action || e.name || '' }; }));
+    const ctl = await page.evaluate(() => [...document.querySelectorAll('.course-editor button, .course-editor [role="button"], .course-editor input, .course-editor select, .course-editor summary')].filter((e) => e.getClientRects().length && getComputedStyle(e).visibility !== 'hidden' && !e.closest('.ce-keys')).slice(0, 30).map((e, n) => { e.dataset.probeN = String(n); return { n, text: (e.textContent || e.value || e.getAttribute('aria-label') || '').trim().slice(0, 40), act: e.dataset.act || e.dataset.action || e.name || '' }; }));
     for (const k of ctl) {
         if (/save|vote|send|report|admin|publish|create/i.test(`${k.text} ${k.act}`) && (LIVE || /everyone|admin|vote/i.test(`${k.text} ${k.act}`))) { wins.push({ ...k, skipped: 'saves or sends' }); continue; }
         if (!(await snap()).open) { wins.push({ ...k, skipped: 'editor closed before' }); continue; }

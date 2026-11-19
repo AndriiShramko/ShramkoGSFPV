@@ -1,11 +1,9 @@
 {
   "probe": "sonic-quick-walk",
   "target": "http://localhost:6180",
-  "at": "2026-11-19T22:20:51.531Z",
-  "pass": false,
-  "failed": [
-    "chromium 11"
-  ],
+  "at": "2026-11-19T22:27:31.738Z",
+  "pass": true,
+  "failed": [],
   "steps": [
     {
       "browser": "chromium",
@@ -59,29 +57,29 @@
             "text": "",
             "voice": null,
             "called": 1,
-            "started": 181,
-            "ended": 181
+            "started": 218,
+            "ended": 219
           },
           {
             "text": "Headphone check",
             "voice": "Microsoft David - English (United States)",
-            "called": 456,
-            "started": 548,
-            "ended": 2283
+            "called": 476,
+            "started": 568,
+            "ended": 2300
           },
           {
             "text": "Headphones on, L on your left ear.",
             "voice": "Microsoft David - English (United States)",
-            "called": 458,
-            "started": 2331,
-            "ended": 5605
+            "called": 478,
+            "started": 2345,
+            "ended": 5622
           },
           {
             "text": "Sound 1 of 3.",
             "voice": "Microsoft David - English (United States)",
-            "called": 5605,
-            "started": 5648,
-            "ended": 7626
+            "called": 5622,
+            "started": 5666,
+            "ended": 7643
           }
         ]
       }
@@ -157,11 +155,11 @@
       "browser": "chromium",
       "n": 11,
       "name": "Full course, back, then Quick start by Tab and Enter: path full, then fast, the headphone check opens",
-      "pass": false,
+      "pass": true,
       "value": {
         "afterFull": "full",
         "tabs": 6,
-        "afterQuick": "full",
+        "afterQuick": "fast",
         "lesson": "ears-headphones"
       }
     },
@@ -210,36 +208,36 @@
       "name": "the first wall cue within 12 s of the click",
       "pass": true,
       "value": {
-        "seconds": 8.1,
+        "seconds": 8.4,
         "hook": true,
         "speech": [
           {
             "text": "",
             "voice": null,
             "called": 0,
-            "started": 748,
-            "ended": 748
+            "started": 838,
+            "ended": 838
           },
           {
             "text": "Headphone check",
             "voice": "Microsoft David - English (United States)",
-            "called": 636,
-            "started": 914,
-            "ended": 2684
+            "called": 690,
+            "started": 1166,
+            "ended": 2950
           },
           {
             "text": "Headphones on, L on your left ear.",
             "voice": "Microsoft David - English (United States)",
-            "called": 638,
-            "started": 2781,
-            "ended": 6057
+            "called": 692,
+            "started": 3058,
+            "ended": 6333
           },
           {
             "text": "Sound 1 of 3.",
             "voice": "Microsoft David - English (United States)",
-            "called": 6057,
-            "started": 6141,
-            "ended": 8116
+            "called": 6333,
+            "started": 6447,
+            "ended": 8424
           }
         ]
       }

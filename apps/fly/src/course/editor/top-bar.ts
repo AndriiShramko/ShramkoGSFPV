@@ -94,7 +94,8 @@ export class TopBar {
     /** train 3 I2 (D7): on a view lower than 500 px the bar goes under the scene credit and the Walls chip's summary, so it
      * covers neither: their lowest bottom edge (page px) is written to --ce-below, used by editor.css (max-height: 500px) */
     private readonly place = (): void => {
-        const parts = [...this.ui.querySelectorAll('.attribution, [data-testid="walls-box"]')];
+        // int4: the bar itself is watched too (its width follows the language and Fly / Back to editing)
+        const parts = [...this.ui.querySelectorAll('.attribution, [data-testid="walls-box"]'), this.root];
         if (this.watch && (parts.length !== this.watched.length || parts.some((p, i) => p !== this.watched[i]))) {
             this.watch.disconnect();
             for (const p of parts) this.watch.observe(p);
@@ -106,6 +107,12 @@ export class TopBar {
             if (r.height > 0 && r.top < window.innerHeight / 2) below = Math.max(below, r.bottom);
         }
         this.root.style.setProperty('--ce-below', `${Math.round(below + 4)}px`);
+        // int4 (the seam of edit4b's longer bar and the window, found by edit4a's 844x390 step): on a view narrower than 900 px
+        // or lower than 500 px the bar reaches past the window's left edge in every language, so the window starts under the
+        // bar: its bottom edge (page px) is written to --ce-topbar-bottom on the shared parent, used by editor.css
+        const bar = this.root.getBoundingClientRect();
+        if (bar.height > 0) this.ui.style.setProperty('--ce-topbar-bottom', `${Math.round(bar.bottom)}px`);
+        else this.ui.style.removeProperty('--ce-topbar-bottom');
     };
 
     /** D6: one line, at most 420 px with an ellipsis (editor.css); the full text in its title */
@@ -211,6 +218,7 @@ export class TopBar {
         window.removeEventListener('pointerup', this.onAct, true);
         window.removeEventListener('resize', this.place);
         this.watch?.disconnect();
+        this.ui.style.removeProperty('--ce-topbar-bottom');
         this.root.remove();
     }
 }
