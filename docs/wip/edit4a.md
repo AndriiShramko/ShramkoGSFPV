@@ -25,13 +25,25 @@ against the code as it is: EditView gets the walls ray through its own host (Edi
   - [x] gates (typecheck, vitest, architecture, i18n, catalog, b18, leaks) on 6b90afbf: all PASS but vitest, whose only two
     failures are rooms-race and rooms-open-vote ('rooms.py did not start' under the load of 15 lanes); both pass alone
     (2 files, 13 passed). This lane changes no rooms file.
-  - [ ] LEFT 1 finding (run 3): the gizmo's own press test and partAt read the same event coordinates (e.offsetX) and the
+  - [x] LEFT 1 done (commit 2f835eef): a probe fault, not a product miss. The gizmo's own press test and partAt read the same event coordinates (e.offsetX) and the
     same shapes in one synchronous call, so a press can differ from the hover only by its point. The probe pressed the
     first point of a part met walking out from the centre, i.e. its very edge (run 2: the y ring at r 10 px, the box
     ends at r 8), at fractional CSS px; the synthetic press lands up to a fraction of a px off. Probe fix: whole px, and
     only a point whose 2 px neighbours name the same part; the press records the page's own coordinates (rec.down).
     The ?render=off repeats are not valid for the arrows: their flip and glance state is set in the gizmo's prerender.
-  - (old text) LEFT 1: find why a press on a part hitAt names is sometimes not taken (drawn run 2 step 9; ?render=off runs: steps 9, 10,
+  - [x] drawn run 3 on the local build of 2f835eef (evidence accept-local-run3.json): 1 to 10, cancel and 12 PASS; all 6
+    presses took the part named before them and at the page's own press point (res.presses: pre = down.hit = taken).
+    11 FAIL: gate 7's x arrow pointed at the eye, no point inside it (probe: now up to three gates, res.tried11).
+    13 FAIL, a real product fault: at 844x390 the gate bar placed above the gate (y 43) lay over the editor's window
+    [400, 86, 380, 35]. Fixed in bar-place.ts barPlace(keep) and gate-bar.ts keepClear() (the top bar and the editor's
+    window): on each row it moves left or right of the box, else the next row. Test editor3-gatebar (4 passed), NEG OK;
+    the 6 test files importing bar-place or gate-bar 45 passed; apps/fly typecheck exit 0. (next commit)
+  - LEFT (next run), in this order: 1) `node scripts/build-release.mjs` (dist was deleted; remove dist.tgz and
+    SHA256SUMS after it), copy the walls, serve on 5941; 2) ONE drawn local run inside the GPU lock, output
+    evidence/2026-11-19/edit4a/accept-local.json (overwrite run 1's file; runs 2 and 3 stay as their own files); all 14
+    steps must PASS; 3) update Claims 7 and 8 with its numbers; 4) the gates once (typecheck, vitest, architecture,
+    i18n, b18, leaks), files staged first; 5) kill the server, delete dist; LANE-DONE.
+  - (old text, solved above) LEFT 1: find why a press on a part hitAt names is sometimes not taken (drawn run 2 step 9; ?render=off runs: steps 9, 10,
     11 at random; once hitAt named move/x and 0.3 s later turn/ring:y at the same point with nothing moved). Suspect: the
     gizmos size and place their shapes in the engine's frame update while the camera entity holds the drone's pose
     (view-mouse.ts apply() comments 'the entity may hold the drone's pose between frames'), so the shapes the press tests
@@ -98,7 +110,8 @@ against the code as it is: EditView gets the walls ray through its own host (Edi
    evidence/2026-11-19/edit4a/accept-local.json; rmdir C:/dev/.gpu-lock` (release build, dist served by serve-csp.mjs):
    steps 1-12 and cancel PASS, 13 FAIL by the probe fault named in Status. A second drawn run after the probe fix
    (accept-local-run2.json): 13 PASS and every other step PASS but 9.ringY (Status, LEFT 1): claim 7 holds for the drag
-   of a ring only intermittently until LEFT 1 is done.
+   of a ring only intermittently until LEFT 1 is done. Drawn run 3 (accept-local-run3.json, the probe pressing inside the
+   parts): 9.ringY, 10.box, cancel PASS; every press took what hitAt named.
 8. At 844x390, device scale 2, no touch, nothing lies over another thing: top bar, gate bar, hover tag and the editor's
    window are disjoint and inside the window. Proof: `QUERY='&render=off' node tools/bench/scripts/edit4a-probe.mjs
    http://localhost:5941/en 70b50d42 1536x730 1.25 off-local evidence/2026-11-19/edit4a/accept-local-renderoff.json`:
@@ -109,13 +122,16 @@ against the code as it is: EditView gets the walls ray through its own host (Edi
    the arrows), cancel (the gate stays 0.7 m away), 11 the click glides the eye 22.9 m, 13 the gate bar lies over the
    editor's window. It PASSES 1, 8 and 12 (the old editor also opened, moved along x and framed on a click).
    Proof: evidence/2026-11-19/edit4a/accept-live.json.
+10. The gate bar never lies over the editor's window or the top bar (barPlace keep, A3). Proof: `npx vitest run
+   tools/bench/test/editor3-gatebar.test.ts` (4 passed); NEG OK against 2f835eef (the new case fails on the old files).
 
 ## Not verified
 
 - No person, phone, touch pad or real controller took part: the probe is a headless Chrome with a synthetic mouse. A touch
   pad's two-finger scroll and pinch are proven only by unit tests (wheelNotches with deltaMode and ctrlKey).
-- A press on a gizmo part is sometimes not taken (Status, LEFT 1): seen in ?render=off runs and once in a drawn run. The
-  render-off run is used for the laptop layout (step 13) only; its 10.box and 11.another FAILs are this same miss.
+- The press misses of runs 1 and 2 were the probe pressing a part's very edge (Status, LEFT 1); drawn run 3 took every
+  press it named. ?render=off runs are not valid for the arrows (their flip and glance state is set in the gizmo's
+  prerender, which does not run without drawing); the render-off run is used for the laptop layout (step 13) only.
 - Two drawn local runs were made in this stage (the rule is one): the first one's step 13 judged a click that the gate bar
   covered, a probe fault; the second run waited about 45 minutes for the GPU lock.
 - Picture (U:/Temp/gsfpv-train4/shots/edit4a-hover-local.png, looked at once): the selected ring gate lit yellow with the
@@ -157,3 +173,6 @@ against the code as it is: EditView gets the walls ray through its own host (Edi
   and to waiting for the shared GPU lock; trusting the design's 'render=off cannot draw gizmos' and going drawn at once,
   with the probe's clicks checked against the bars beforehand, would be cheaper. Next run: start from LEFT 1 with one drawn
   run that writes res.presses, before reading any engine code.
+- A3 run 3: reading the engine's gizmo code showed in a few replies that press and hover share coordinates and shapes, so
+  the miss had to be the probe's edge point; the build (dist had been deleted) and the GPU wait took the most time.
+  Keeping dist between runs of one stage (delete it only at LANE-DONE) would save a build.

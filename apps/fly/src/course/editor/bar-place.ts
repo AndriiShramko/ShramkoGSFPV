@@ -25,18 +25,38 @@ export function barAnchor<T>(hidden: boolean, dragging: boolean, where: T | null
     return hidden || dragging ? null : where;
 }
 
+/** A box on the page the bar must not lie over (the editor's window, the top bar): left, top, width, height, CSS px. */
+export type BarRect = readonly [number, number, number, number];
+
+/** the gap kept between the bar and the page's edge or a box it keeps clear of, CSS px */
+const BAR_GAP_PX = 8;
+
+function overlaps(x: number, y: number, bw: number, bh: number, r: BarRect): boolean {
+    return x < r[0] + r[2] && r[0] < x + bw && y < r[1] + r[3] && r[1] < y + bh;
+}
+
 /** Where the bar goes for a gate at (x, y) on a page w by h: centred under the handles, above them when there is no room
- * below, at the page's bottom edge when neither fits (a phone); kept inside the page; null hides it. */
-export function barPlace(at: readonly [number, number, number] | null, w: number, h: number, barW: number, barH: number): [number, number] | null {
+ * below, at the page's bottom edge when neither fits (a phone); kept inside the page; null hides it. Lane edit4a A3: never
+ * over a box of `keep` (the owner: nothing lies over another thing; at 844x390 the bar above the gate lay over the editor's
+ * window): on each of those rows it moves left or right of the box, and takes the next row when it cannot. */
+export function barPlace(at: readonly [number, number, number] | null, w: number, h: number, barW: number, barH: number, keep: readonly BarRect[] = []): [number, number] | null {
     if (!at || !(at[2] > 0) || !Number.isFinite(at[0]) || !Number.isFinite(at[1])) return null;
     if (at[0] < 0 || at[0] > w || at[1] < 0 || at[1] > h) return null;
-    const x = Math.max(8, Math.min(w - barW - 8, at[0] - barW / 2));
-    let y = at[1] + BAR_CLEAR_PX;
-    if (y + barH > h - 8) {
-        const up = at[1] - BAR_CLEAR_PX - barH;
-        y = up >= 8 ? up : h - barH - 8;
+    const g = BAR_GAP_PX;
+    const clampX = (x: number): number => Math.max(g, Math.min(w - barW - g, x));
+    const rows: number[] = [];
+    const below = at[1] + BAR_CLEAR_PX;
+    const up = at[1] - BAR_CLEAR_PX - barH;
+    if (below + barH <= h - g) rows.push(below);
+    if (up >= g) rows.push(up);
+    rows.push(h - barH - g);
+    const xs = [clampX(at[0] - barW / 2), ...keep.flatMap((r) => [clampX(r[0] - g - barW), clampX(r[0] + r[2] + g)])];
+    for (const y0 of rows) {
+        const y = Math.max(g, y0);
+        const x = xs.find((cx) => !keep.some((r) => overlaps(cx, y, barW, barH, r)));
+        if (x !== undefined) return [Math.round(x), Math.round(y)];
     }
-    return [Math.round(x), Math.round(Math.max(8, y))];
+    return [Math.round(xs[0]!), Math.round(Math.max(g, rows[0]!))];
 }
 
 // lane edit4a A2: the Move, Turn and Size tools (TOOLS, keys M R T) are gone: the one gizmo has all three parts at once

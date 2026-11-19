@@ -4,7 +4,17 @@
 // It follows the gate on the screen; it needs the cursor, as the editor's window ('.course-editor' in CURSOR_WINDOWS).
 import { t } from '../../i18n';
 import type { KeyPress } from './keys';
-import { BAR_BUTTONS, barAnchor, barPlace } from './bar-place';
+import { BAR_BUTTONS, barAnchor, barPlace, type BarRect } from './bar-place';
+
+/** lane edit4a A3: the boxes the gate bar keeps clear of: the editor's top bar and its window, where they are shown */
+const KEEP_CLEAR = '.ce-topbar, .course-editor';
+
+function keepClear(): BarRect[] {
+    return [...document.querySelectorAll<HTMLElement>(KEEP_CLEAR)]
+        .map((e) => e.getBoundingClientRect())
+        .filter((b) => b.width > 0 && b.height > 0)
+        .map((b) => [b.left, b.top, b.width, b.height] as const);
+}
 
 export interface GateBarHost {
     key(press: KeyPress): void;
@@ -66,7 +76,7 @@ export class GateBar {
 
     private tick = (): void => {
         const at = barAnchor(this.hidden, this.host.dragging(), this.host.where());
-        const pos = barPlace(at, window.innerWidth, window.innerHeight, this.root.offsetWidth || 300, this.root.offsetHeight || 36);
+        const pos = barPlace(at, window.innerWidth, window.innerHeight, this.root.offsetWidth || 300, this.root.offsetHeight || 36, at ? keepClear() : []);
         if (!pos) this.root.style.visibility = 'hidden';
         else {
             this.root.style.visibility = 'visible';

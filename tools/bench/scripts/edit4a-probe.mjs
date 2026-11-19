@@ -335,13 +335,23 @@ try {
     await sleep(1200);
     const s11 = await snap();
     const c11 = await pickable(onScreen(s11));
-    const g7 = c11.find((c) => c.i === Number(env.GATE11 ?? 7)) ?? c11[0];
+    const pref = c11.find((c) => c.i === Number(env.GATE11 ?? 7));
+    const order11 = pref ? [pref, ...c11.filter((c) => c !== pref)] : c11;
+    let g7 = order11[0];
     if (!g7) judge('11.another', false, { why: 'no other gate on screen' });
     else {
-        await click(g7.g[0], g7.g[1], 300);
-        const got = await until(snap, (s) => s.selected === g7.i, 2500, 250);
-        await sleep(800);
-        const p = await partsOf();
+        // run 3: gate 7's x arrow pointed at the eye (no point inside it): up to three gates, each clicked from the same eye
+        let got = null, p = null;
+        res.tried11 = [];
+        for (const c of order11.slice(0, 3)) {
+            g7 = c;
+            await click(c.g[0], c.g[1], 300);
+            got = await until(snap, (s) => s.selected === c.i, 2500, 250);
+            await sleep(800);
+            p = await partsOf();
+            res.tried11.push([c.i, got.ok, !!(p && p.arrowX)]);
+            if (got.ok && p && p.arrowX) break;
+        }
         const m = await snap();
         if (p && p.arrowX && m.axes) {
             res.hit11 = await page.evaluate(([x, y]) => [window.__gsfpvEditHit(x, y), window.__gsfpvEditHit(x, y, true)], p.arrowX.at);
