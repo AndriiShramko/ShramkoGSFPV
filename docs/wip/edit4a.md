@@ -14,8 +14,8 @@ against the code as it is: EditView gets the walls ray through its own host (Edi
 - [x] A2 one gizmo: move arrows, size boxes and turn rings at once; nearest handle owns the press; hover tag; no tool buttons;
   Esc / right click cancels a drag (commit b74bd0a8)
   - the drawn check of the hover (design A2 page probe) is folded into A3 step 7: one build and one GPU run for both
-- [ ] A3 acceptance: tools/bench/scripts/edit4a-probe.mjs (mouse, 1536x730 dsf 1.25), the live run as the negative control
-  (commits 5e9d70f1, 3ef5816c, 205f115d, 6b90afbf; the press records and this left list in the next commit)
+- [x] A3 acceptance: tools/bench/scripts/edit4a-probe.mjs (mouse, 1536x730 dsf 1.25), the live run as the negative control
+  (commits 5e9d70f1, 3ef5816c, 205f115d, 6b90afbf, 2f835eef, 19caf118; run 4 and the gates in the last commit of the lane)
   - [x] the probe, 14 steps, one JSON verdict, exit 1 on a FAIL
   - [x] drawn run 1 on the local build (evidence accept-local.json): steps 1 to 12 and cancel PASS, 13 (laptop layout) FAIL
     by a probe fault, repaired in 205f115d (its gate could lie under the gate bar)
@@ -38,20 +38,11 @@ against the code as it is: EditView gets the walls ray through its own host (Edi
     [400, 86, 380, 35]. Fixed in bar-place.ts barPlace(keep) and gate-bar.ts keepClear() (the top bar and the editor's
     window): on each row it moves left or right of the box, else the next row. Test editor3-gatebar (4 passed), NEG OK;
     the 6 test files importing bar-place or gate-bar 45 passed; apps/fly typecheck exit 0. (commit 19caf118)
-  - LEFT (next run), in this order: 1) `node scripts/build-release.mjs` (dist was deleted; remove dist.tgz and
-    SHA256SUMS after it), copy the walls, serve on 5941; 2) ONE drawn local run inside the GPU lock, output
-    evidence/2026-11-19/edit4a/accept-local.json (overwrite run 1's file; runs 2 and 3 stay as their own files); all 14
-    steps must PASS; 3) update Claims 7 and 8 with its numbers; 4) the gates once (typecheck, vitest, architecture,
-    i18n, b18, leaks), files staged first; 5) kill the server, delete dist; LANE-DONE.
-  - (old text, solved above) LEFT 1: find why a press on a part hitAt names is sometimes not taken (drawn run 2 step 9; ?render=off runs: steps 9, 10,
-    11 at random; once hitAt named move/x and 0.3 s later turn/ring:y at the same point with nothing moved). Suspect: the
-    gizmos size and place their shapes in the engine's frame update while the camera entity holds the drone's pose
-    (view-mouse.ts apply() comments 'the entity may hold the drone's pose between frames'), so the shapes the press tests
-    are not the ones the hover tested. The probe now records, for every drag, hitAt the moment before the press and what
-    the press took (res.presses): read them from one drawn run first. Fix in view-mouse.ts, with a unit test that fails
-    on the old code.
-  - LEFT 2: one drawn local run with all 14 steps PASS, saved as evidence/2026-11-19/edit4a/accept-local.json; then gates
-    vitest only (the status file and the view change are the new inputs), then LANE-DONE.
+  - [x] drawn run 4 on the release build of 9d588729 (evidence accept-local.json, overwriting run 1's file; run 1's file
+    stays in commit 6b90afbf): all 14 steps PASS, fails []; all 5 part presses took the part named before them at the
+    page's own press point (res.presses: pre = down.hit = taken); step 11 took the first gate it tried (gate 19).
+  - [x] gates once on the staged tree (see Claims 11)
+- A3 done.
 
 ## What the owner does
 
@@ -107,15 +98,13 @@ against the code as it is: EditView gets the walls ray through its own host (Edi
    click and a drag on another gate leave the eye where it was; a double click frames a gate in the middle third. The eye
    moved 0 m in every drag. Proof: `until mkdir C:/dev/.gpu-lock 2>/dev/null; do sleep 15; done; node
    tools/bench/scripts/edit4a-probe.mjs http://localhost:5941/en 70b50d42 1536x730 1.25 local
-   evidence/2026-11-19/edit4a/accept-local.json; rmdir C:/dev/.gpu-lock` (release build, dist served by serve-csp.mjs):
-   steps 1-12 and cancel PASS, 13 FAIL by the probe fault named in Status. A second drawn run after the probe fix
-   (accept-local-run2.json): 13 PASS and every other step PASS but 9.ringY (Status, LEFT 1): claim 7 holds for the drag
-   of a ring only intermittently until LEFT 1 is done. Drawn run 3 (accept-local-run3.json, the probe pressing inside the
-   parts): 9.ringY, 10.box, cancel PASS; every press took what hitAt named.
+   evidence/2026-11-19/edit4a/accept-local.json; rmdir C:/dev/.gpu-lock` (release build of 9d588729, dist served by
+   serve-csp.mjs). Last result (drawn run 4, 2026-11-19, a generated course of 35 gates): all 14 steps PASS, exit 0,
+   fails []; the x arrow, the y ring and the size box presses each took the part the hover named (res.presses). The
+   numbers above are drawn run 1's (its file is in commit 6b90afbf); runs 2 and 3 are kept as accept-local-run2/-run3.json.
 8. At 844x390, device scale 2, no touch, nothing lies over another thing: top bar, gate bar, hover tag and the editor's
-   window are disjoint and inside the window. Proof: `QUERY='&render=off' node tools/bench/scripts/edit4a-probe.mjs
-   http://localhost:5941/en 70b50d42 1536x730 1.25 off-local evidence/2026-11-19/edit4a/accept-local-renderoff.json`:
-   13.laptop PASS (over [], outside []); in that run 10.box and 11.another FAIL, see Not verified.
+   window are disjoint and inside the window. Proof: step 13.laptop of the same drawn run 4: PASS (it failed in run 3 on
+   the gate bar over the editor's window, repaired in 19caf118, claim 10).
 9. Negative control: the same probe on the live site (`https://gsfpv.flyreelstudio.eu/en`, drawn, read-only: it never
    presses Save, nothing is stored) FAILS the steps this lane repairs: 2 Home (no move), 3 the click glides the eye 30.4 m,
    4 orbit and 5 pan (no move), 6 the wheel (no dolly), 7 hover (no part named, no tag), 9 and 10 (no ring, no box beside
