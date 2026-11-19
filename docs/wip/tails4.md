@@ -13,11 +13,18 @@ docs/wip/train2b-lead.md 'Not verified', docs/wip/train3-lead.md 'Not verified' 
       Negative control --neg (the page's Blob one byte short, the download event still fires): FAIL on exactly the two
       'bytes' checks, every event/name/saved check still true, which is why the event alone proves nothing.
       Evidence evidence/2026-11-19/tails4/t1-helper-download.json and -neg.json. dist of ebbf066a kept for T2/T3.
-- [ ] T2 start heights: why the craft starts at a wrong height on b11e45d1 and on the second scan; repair in the scene's
-      data or the spawn code, with a unit test that fails on the old code. Leads: docs/wip/fix3a.md lines 885 and 898
-      (b11e45d1 gates 14.5-15.1 m over the first wall below; 'look at gate-place-map.ts top map'), docs/wip/course3.md
-      line 514 (K1.2: 2f1ddf5f and d10c5638 spawns from the CDN camera 62.0 m and 22.1 m high), findSpawn in the session.
-      The STATE.md bullet of 4e9148cd1005 names no start height.
+- [x] T2 start heights (this commit). Measured (tools/bench/src/tails4-spawn-heights.ts, all 13 scans with walls):
+      b11e45d1's start is right (2.59 m over the floor; its 14.5-15.1 m are the GATES of the course audit, not the
+      start: left for the lead). The wrong starts are 2f1ddf5f, d10c5638 and also ab5efa0e: the scan's CDN camera is an
+      overview OUTSIDE the walls' box (2f1ddf5f y 62 over a box that ends at 26.4; d10c5638 x 20.5, box ends at 15.4;
+      ab5efa0e x -6.45, box starts at -3), so nothing at all is under the craft. Repair in the spawn code:
+      packages/collision/src/start.ts placeStart (camera kept when ground is within 6 m under it; else the first point
+      on the camera-target line with ground under it, 1.5 m over that ground; the line over holes only, as on
+      2f1ddf5f: the nearest ground in rings around the target, 60 m; nothing: the camera as before), used by
+      Session.findSpawn. Real scans: PASS 13/13 (2f1ddf5f 'around' 1.5 m, d10c5638 'line' 1.5 m, ab5efa0e 'line'
+      1.5 m, the other 10 unchanged 'camera'); --old FAIL 3/13. Unit test packages/collision/test/start.test.ts 6
+      passed, NEG OK (neg_control.py, the 3 files). Typecheck collision, fly, bench 0; vitest --changed 104 files 941
+      passed; a6-reference holds its hash. Evidence t2-spawn-heights.json and t2-spawn-heights-old.json.
       T3 list: docs/wip/train3-lead.md line 147 (keys and their files); packages/prefs/test/migrate.test.ts.
 - [ ] T3 storage keys: the 13 keys nobody reads or migrates, each migrated or removed, with a test.
 
@@ -29,13 +36,27 @@ docs/wip/train2b-lead.md 'Not verified', docs/wip/train3-lead.md 'Not verified' 
    tools/rc-bridge/rc_bridge.py). Proof: `node tools/bench/scripts/tails4-helper-download.mjs http://localhost:6120/en
    <out.json>` on a release build (and `--neg` must fail). Last result: PASS 12/12; --neg FAIL on the 2 bytes checks.
 
+2. The craft no longer starts in empty air on 2f1ddf5f, d10c5638 and ab5efa0e: every one of the 13 scans with walls
+   starts at most 6 m over ground. Proof: `cd tools/bench && npx tsx src/tails4-spawn-heights.ts` (and `--old` must
+   fail). Last result: PASS 13/13, --old FAIL 3/13; `npx vitest run packages/collision/test/start.test.ts` 6 passed.
+
 ## Not verified
 
 - No person, phone or real controller took part in this lane.
+- T2: the new starts were not looked at in a picture: on 2f1ddf5f the ground found 13 m from the camera's target
+  (y 12.2) may be a roof or a floater, and on ab5efa0e (a 6 m object scan at Scene size x1) the start is 1.5 m over
+  the object's edge. Not flown in the page; only measured in Node on the walls the page loads.
 
 ## For the lead
+
+- b11e45d1: its start is right; the course audit's gates 14.5-15.1 m over the first wall below (fix3a.md item 3 of
+  'Left (C3-every-scan)') are a course question, not a start one: not done here.
+- Files outside tools/bench: packages/collision/src/start.ts (new), packages/collision/src/index.ts (export),
+  apps/fly/src/session/index.ts (findSpawn calls placeStart). Deploy: page only.
 
 ## Cost notes
 
 - T1: about 17 replies; most went to finding the three leftover lists (they sit in train2-lead, train3-lead and fix3a,
   not where the prompt points). A lane prompt that quotes the leftover lines with their file:line would save 6 replies.
+- T2: about 25 replies; most went to measuring before guessing (one probe over all 13 scans answered which scans are
+  wrong and why in one run) and to 2f1ddf5f's holes. A walls-bounds/ground helper in tools/bench would save 4.
