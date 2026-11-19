@@ -90,9 +90,12 @@ export class GamePilot {
             return;
         }
         const s = this.env.session();
-        const sim = s.sim;
+        const sim = s.sim as FlightSession['sim'] | undefined;
         const dt = this.lastT < 0 ? 0 : (tMs - this.lastT) / 1000;
         this.lastT = tMs;
+        // no model (a scene switch, or the scene list after a cancelled load: the session before is let go): nothing
+        // flies this frame, as EasyPilot.send (ux4b: every key frame threw "reading 'armed'" while the list stood)
+        if (!sim) return;
         const a = this.arm.step({ simArmed: sim.armed, crashed: sim.crashed, paused: s.paused, now: tMs });
         const on = !a.holdLow && !sim.crashed;
         this.game.speed = this.env.speed();

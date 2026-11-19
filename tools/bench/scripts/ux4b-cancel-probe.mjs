@@ -30,6 +30,9 @@ const TO = '2f1ddf5f';
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const res = { base, from: FROM, to: TO, steps: {}, log: [] };
 const fails = [];
+const errs = [];
+// ONLY=7: the phone step alone (?render=off, no GPU), with its cancel and step 8
+const ONLY = process.env.ONLY || '';
 function judge(step, ok, why = {}) {
     res.steps[step] = { ok: !!ok, ...why };
     if (!ok) fails.push(step);
@@ -76,7 +79,12 @@ async function open(W, H, dsf, query, hold) {
     const reqs = [];
     // the scan's own requests only: fetch/xhr (the posters and the page's chunks are not the load)
     page.on('request', (r) => { const t = r.resourceType(); if (t === 'fetch' || t === 'xhr' || t === 'other') reqs.push([Date.now(), r.url()]); });
-    page.on('pageerror', (e) => res.log.push(`pageerror: ${e.message}`.slice(0, 300)));
+    // each distinct page error once, with where it was thrown; errs counts them all (step 8)
+    page.on('pageerror', (e) => {
+        errs.push(Date.now());
+        const m = `pageerror: ${e.message} @ ${String(e.stack || '').split('\n').slice(1, 3).join(' < ').trim()}`.slice(0, 400);
+        if (!res.log.includes(m) && res.log.length < 40) res.log.push(m);
+    });
     if (hold) await page.route((u) => u.href.includes(TO), async (route) => { await sleep(hold); await route.continue().catch(() => undefined); });
     await page.goto(`${base}/fly/?scene=${FROM}&nowarn=1${query}`, { waitUntil: 'domcontentloaded', timeout: 120000 });
     const ready = await until(() => page.evaluate(() => window.__gsfpv?.status ?? null), (v) => v === 'ready' || v === 'error', 300000, 1000);
@@ -112,6 +120,7 @@ const isLublin = (u, folders) => u.includes(TO) || folders.has(folder(u));
 
 try {
     // ---- steps 1-6 at 1536x730, device scale 1.25, the scan drawn
+    if (ONLY !== '7') {
     const p = await open(1536, 730, 1.25, '', 0);
     res.ready = { ms: p.readyMs, lockAfterClick: p.lock };
     const before = new Set(p.reqs.map((r) => folder(r[1])));
@@ -145,6 +154,7 @@ try {
     judge('4.nothing-left', b2 && lAssets.length === 0 && (s4.entities ?? 0) <= 1 && s4.walls !== 'baking', { lublinAssets: lAssets, entities: s4.entities, assets: s4.assets, walls: s4.walls });
     // 5 the list's cross: back to Wroclaw
     const x5 = await p.box('[data-testid="scenes-in-flight"] [data-action="scenes-close"]');
+    res.errsWhileCancelled = errs.filter((t) => t >= tCancel).length;
     if (x5) await p.page.mouse.click(x5.x, x5.y);
     const c5 = await until(p.st, (s) => s.sw && s.sw.state === 'done' && s.sw.to === FROM && !s.card, 240000, 500);
     judge('5.back-to-from', x5 && c5.ok && c5.v.scene === FROM, { ms: c5.ms, sw: c5.v.sw, scene: c5.v.scene, said: /Back to/.test(c5.v.text), cross: x5 && { w: x5.w, h: x5.h } });
@@ -162,12 +172,19 @@ try {
     const l6 = (s6.assets || []).filter((u) => isLublin(u, lublin));
     judge('6.n-replaces', c6.ok && s6.scene !== TO && l6.length === 0 && (s6.entities ?? 0) <= 1, { pickHow: pk6.how, atN: at6.sw, ms: c6.ms, sw: c6.v.sw, scene: s6.scene, lublinAssets: l6, entities: s6.entities });
     await p.ctx.close();
+    }
 
     // ---- step 7 at 844x390: the card's Cancel in view and not covered
     const q = await open(844, 390, 2, '&render=off', 8000);
     await pickLublin(q);
     const c7 = await until(() => q.box('[data-action="load-cancel"]'), (b) => !!b, 3000, 100);
     judge('7.cancel-phone', c7.v && c7.v.w >= 44 && c7.v.h >= 44 && c7.v.inView && !c7.v.covered, { box: c7.v });
+    // 8 the list stands after a Cancel: the page throws nothing meanwhile (the flight's loops see no scene)
+    const t8 = Date.now();
+    if (c7.v) await q.page.mouse.click(c7.v.x, c7.v.y);
+    await sleep(3000);
+    const e8 = errs.filter((t) => t >= t8).length;
+    judge('8.no-errors-after-cancel', c7.v && e8 === 0 && (res.errsWhileCancelled ?? 0) === 0, { phone: e8, desktop: res.errsWhileCancelled ?? null, picker: (await q.st()).picker });
     await q.ctx.close();
 } catch (e) {
     res.error = String(e && e.stack || e).slice(0, 600);
