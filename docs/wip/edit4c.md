@@ -19,6 +19,9 @@ Work copy C:/dev/gsfpv-v13-host, branch edit4c from origin/main e3201fec.
       AddChooser (shown while Add is armed), pieces-texts.ts ADD_CHOICES and keys, pieces.css, course.ts wiring.
       Test tools/bench/test/edit4c-pieces.test.ts. Commit 55fb8b2b.
 - [ ] C3 styles and pole/flag as a format spec (docs/wip/edit4c-format.md), acceptance probe tools/bench/scripts/edit4c-probe.mjs.
+  - [x] C3a the format spec docs/wip/edit4c-format.md (look?: plain/fabric/led, logo null; marker pole/flag by side).
+  - [ ] C3b the probe edit4c-probe.mjs (mouse, 1536x730 dsf 1.25, Wroclaw 70b50d42), local build run + live negative.
+  - [ ] C3c gates, the status file's last parts.
 
 Differences from the design (the code wins):
 - S0 (the seam, seam.ts, parts.ts) does not exist: all four edit4 lanes branched from e3201fec at once. This lane builds
