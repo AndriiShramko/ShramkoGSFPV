@@ -8,6 +8,7 @@
 import { MAX_OPENING_M, MIN_OPENING_M, UNDO_MAX } from '@gsfpv/tracks';
 import type { Course, CourseCheck, EditorState } from '@gsfpv/tracks';
 import type { ObjectShape } from '@shramko/sonic-fpv';
+import type { Handle, HandleAxis } from './handle-look';
 
 export type V3 = readonly [number, number, number];
 /** w, x, y, z (the course format's order; PlayCanvas keeps x, y, z, w) */
@@ -23,6 +24,21 @@ export interface FlownPose {
     readonly quat: Q4;
     /** the opening, flown m (0 for a shape without one) */
     readonly opening: number;
+}
+
+/**
+ * Lane edit4a A2 (the edit4 design's DragEvent, named HandleDrag here beside the DOM's own DragEvent): one step of a
+ * handle's drag. 'start' when a press takes a handle, 'move' while it is dragged, 'end' when it is let go (the change is
+ * kept), 'cancel' on Esc or a right click during the drag (the gate goes back to `base`, nothing is kept).
+ */
+export interface HandleDrag {
+    readonly phase: 'start' | 'move' | 'end' | 'cancel';
+    readonly handle: Handle;
+    readonly axis: HandleAxis;
+    /** the stand-in now (flown frame); `base` on a cancel */
+    readonly pose: FlownPose;
+    /** the gate when the press began */
+    readonly base: FlownPose;
 }
 
 const r3 = (v: number): number => {

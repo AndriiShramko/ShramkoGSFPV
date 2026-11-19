@@ -1,0 +1,384 @@
+{
+ "address": "https://gsfpv.flyreelstudio.eu/en",
+ "scan": "70b50d42",
+ "size": [
+  1536,
+  730
+ ],
+ "dsf": 1.25,
+ "name": "live",
+ "query": "",
+ "live": true,
+ "date": "2026-11-19T15:15:50.937Z",
+ "steps": {
+  "1.open": {
+   "ok": true,
+   "mode": "edit",
+   "lock": false,
+   "gates": 41,
+   "E0": [
+    -1.6182312406819257,
+    3.22523925343629,
+    -13.912244965223156
+   ]
+  },
+  "2.home": {
+   "ok": false,
+   "nav": null,
+   "eyeMoved": 0,
+   "outside": [
+    [
+     19,
+     [
+      1543,
+      190,
+      49.64
+     ]
+    ],
+    [
+     20,
+     [
+      1579,
+      187,
+      48.72
+     ]
+    ],
+    [
+     21,
+     [
+      1591,
+      187,
+      48.55
+     ]
+    ],
+    [
+     22,
+     [
+      1604,
+      187,
+      48.39
+     ]
+    ],
+    [
+     23,
+     [
+      1680,
+      187,
+      43.54
+     ]
+    ]
+   ]
+  },
+  "3.select": {
+   "ok": false,
+   "gate": 3,
+   "selected": 3,
+   "eyeMoved": 30.44,
+   "line": "Selected. Gate 4 of 41: ring, 1.2 m"
+  },
+  "4.orbit": {
+   "ok": false,
+   "at": [
+    307,
+    548
+   ],
+   "nav": null,
+   "distBefore": 2.413,
+   "distAfter": 2.413,
+   "eyeMoved": 0,
+   "pivotIsGate": true
+  },
+  "5.pan": {
+   "ok": false,
+   "nav": null,
+   "eyeMoved": 0,
+   "yaw": [
+    null,
+    null
+   ],
+   "pitch": [
+    null,
+    null
+   ]
+  },
+  "6.wheel": {
+   "ok": false,
+   "overGate": false,
+   "nav": null,
+   "distBefore": -1,
+   "distAfter": -1,
+   "toGate": [
+    2.413,
+    2.413
+   ]
+  },
+  "7.hover": {
+   "ok": false,
+   "arrowX": {
+    "ok": null,
+    "hover": null,
+    "tag": null,
+    "cursor": ""
+   },
+   "box": {
+    "ok": false,
+    "why": "no such part found by hitAt"
+   },
+   "ringY": {
+    "ok": false,
+    "why": "no such part found by hitAt"
+   }
+  },
+  "8.arrowX": {
+   "ok": true,
+   "along": 0.7,
+   "off": 0,
+   "eyeMoved": 0,
+   "line": "Moved. Gate 4 of 41: ring, 1.2 m"
+  },
+  "9.ringY": {
+   "ok": false,
+   "why": "no y ring"
+  },
+  "10.box": {
+   "ok": false,
+   "why": "no size box"
+  },
+  "cancel": {
+   "ok": false,
+   "movedMid": 0.7,
+   "after": 0.7,
+   "cancels": [
+    null,
+    null
+   ],
+   "tag": null
+  },
+  "11.another": {
+   "ok": false,
+   "gate": 7,
+   "selected": 7,
+   "eyeAfterClick": 22.864,
+   "eyeAfterDrag": 22.864,
+   "gateMoved": 0.5
+  },
+  "12.double": {
+   "ok": true,
+   "gate": 8,
+   "selected": 8,
+   "screen": [
+    768,
+    365,
+    2.39
+   ],
+   "eyeMoved": 12.906
+  },
+  "13.laptop": {
+   "ok": false,
+   "selected": 8,
+   "hovered": null,
+   "rects": {
+    "topbar": [
+     [
+      8,
+      109,
+      381,
+      52
+     ]
+    ],
+    "gatebar": [
+     [
+      151,
+      328,
+      542,
+      54
+     ]
+    ],
+    "hoverTag": [],
+    "sizeTag": [],
+    "editor": [
+     [
+      400,
+      86,
+      380,
+      296
+     ]
+    ],
+    "panels": []
+   },
+   "over": [
+    [
+     "gatebar",
+     "editor"
+    ]
+   ],
+   "outside": []
+  }
+ },
+ "lockBeforeEditor": true,
+ "course": {
+  "ok": true,
+  "ms": 35347,
+  "gates": 41
+ },
+ "parts": {
+  "centre": [
+   768,
+   365
+  ],
+  "arrowX": {
+   "at": [
+    772,
+    365
+   ],
+   "r": 4,
+   "a": 0,
+   "part": [
+    "move",
+    "x"
+   ]
+  },
+  "seen": {
+   "move/x": 200,
+   "move/z": 144,
+   "move/y": 185
+  },
+  "tries": 1
+ },
+ "hit11": [
+  [
+   "move",
+   "x"
+  ],
+  [
+   "move",
+   "x"
+  ]
+ ],
+ "mid11": {
+  "dragging": true,
+  "sets": [
+   [
+    true,
+    1,
+    "x",
+    ""
+   ],
+   [
+    false,
+    0,
+    "",
+    ""
+   ],
+   [
+    false,
+    0,
+    "",
+    ""
+   ]
+  ],
+  "muted": 2,
+  "lock": false
+ },
+ "parts11": {
+  "centre": [
+   768,
+   365
+  ],
+  "arrowX": {
+   "at": [
+    772,
+    365
+   ],
+   "r": 4,
+   "a": 0,
+   "part": [
+    "move",
+    "x"
+   ]
+  },
+  "seen": {
+   "move/x": 200,
+   "move/z": 144,
+   "move/y": 185
+  },
+  "tries": 1
+ },
+ "final": {
+  "open": true,
+  "selected": 8,
+  "said": "Selected. Gate 9 of 41: ring, 1.2 m",
+  "courseGates": 41,
+  "courseOn": true,
+  "mode": "edit",
+  "eye": [
+   16.213582106497043,
+   4.42523925343629,
+   40.49073661020026
+  ],
+  "nav": null,
+  "hover": null,
+  "cancels": null,
+  "dragging": false,
+  "stand": {
+   "pos": [
+    14,
+    3.5999999046325684,
+    40
+   ],
+   "quat": [
+    0.5555697481794487,
+    0,
+    0.8314699362621742,
+    0
+   ],
+   "scale": 1,
+   "opening": 1.2,
+   "screen": [
+    422,
+    195,
+    2.39
+   ]
+  },
+  "axes": {
+   "x": [
+    0.9647638212377322,
+    -0.2631174057921088
+   ],
+   "y": [
+    0,
+    -1
+   ],
+   "z": [
+    -0.8682431421244593,
+    -0.49613893835683387
+   ]
+  },
+  "handles": true,
+  "lock": false,
+  "topLine": "Click a gate to change it. Arm your controller to fly the course at once, disarm to edit again",
+  "hoverTag": null,
+  "cursor": ""
+ },
+ "fails": [
+  "2.home",
+  "3.select",
+  "4.orbit",
+  "5.pan",
+  "6.wheel",
+  "7.hover",
+  "9.ringY",
+  "10.box",
+  "cancel",
+  "11.another",
+  "13.laptop"
+ ],
+ "log": [
+  "console: Failed to load resource: the server responded with a status of 403 ()",
+  "console: Failed to load resource: the server responded with a status of 403 ()",
+  "console: Failed to load resource: the server responded with a status of 403 ()",
+  "console: Failed to load resource: the server responded with a status of 403 ()",
+  "console: Failed to load resource: the server responded with a status of 403 ()",
+  "console: Failed to load resource: the server responded with a status of 403 ()"
+ ]
+}

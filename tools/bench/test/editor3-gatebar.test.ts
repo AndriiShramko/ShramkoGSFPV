@@ -28,6 +28,21 @@ describe('editor3 gate bar', () => {
         expect(right[0] + 300).toBeLessThanOrEqual(1272);
     });
 
+    it('lane edit4a A3: never over the editor window or the top bar (844x390, drawn run 3 of the edit4a probe)', () => {
+        // the gate at (405, 307), bar 390x54: above the gate (y 43) lay over the editor's window [400, 86, 380, 35]
+        const keep = [[400, 86, 380, 35], [8, 109, 381, 52]] as const;
+        const p = barPlace([405, 307, 54], 844, 390, 390, 54, keep)!;
+        const over = (r: readonly number[]): boolean => p[0] < r[0]! + r[2]! && r[0]! < p[0] + 390 && p[1] < r[1]! + r[3]! && r[1]! < p[1] + 54;
+        expect(keep.filter(over)).toEqual([]);
+        // the row above the gate is kept (it moved left of the window), inside the page
+        expect(p).toEqual([8, 43]);
+        // no box in the way: the same place as before
+        expect(barPlace([405, 307, 54], 844, 390, 390, 54, [[600, 300, 100, 30]])).toEqual(barPlace([405, 307, 54], 844, 390, 390, 54));
+        // no row is free: the first row centred (as before), never off the page
+        const full = barPlace([400, 300, 5], 1280, 800, 300, 40, [[0, 0, 1280, 800]])!;
+        expect(full).toEqual([250, 300 + BAR_CLEAR_PX]);
+    });
+
     it('is hidden for no gate, a gate behind the camera or off the page', () => {
         expect(barPlace(null, 1280, 800, 300, 40)).toBeNull();
         expect(barPlace([400, 300, -2], 1280, 800, 300, 40)).toBeNull();

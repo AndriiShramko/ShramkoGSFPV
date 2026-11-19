@@ -5,7 +5,6 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { overMiddle, reframeOnDragEnd } from '../../../apps/fly/src/course/editor/frame';
 import { ARROW_NEAR_M, nearShare, shareArrows, STAGE_NAME, type ScaleNode } from '../../../apps/fly/src/course/editor/arrow-share';
 
 const ROOT = join(__dirname, '..', '..', '..');
@@ -21,37 +20,21 @@ describe('EJ-1: hitAt and measure project with the edit view camera before they 
         const vm = src('apps/fly/src/course/editor/view-mouse.ts');
         const hit = body(vm, '    hitAt(x: number, y: number');
         expect(hit.indexOf('this.apply()')).toBeGreaterThan(-1);
-        expect(hit.indexOf('this.apply()')).toBeLessThan(hit.indexOf('pickRing('));
-        expect(hit.indexOf('this.apply()')).toBeLessThan(hit.indexOf('_getSelection'));
+        // train 4 edit4a A2 (the owner, brief 543: one gizmo): hitAt asks partAt, the press's own rule (rings and shapes)
+        expect(hit.indexOf('this.apply()')).toBeLessThan(hit.indexOf('this.partAt('));
+        expect(hit.indexOf('this.partAt(')).toBeGreaterThan(-1);
         const me = body(vm, '    measure(): Record<string, unknown> | null {');
         expect(me.indexOf('this.apply()')).toBeGreaterThan(-1);
         expect(me.indexOf('this.apply()')).toBeLessThan(me.indexOf('worldToScreen'));
     });
 });
 
-describe('EJ-2: the view frames the gate again only when the drag took it out of the middle', () => {
-    const inside = [700, 300, 1220, 780] as const;
-    const outside = [440, 60, 1480, 1020] as const;
-    it('inside before and outside after: framed; outside both (flown close): kept; inside both: kept', () => {
-        expect(reframeOnDragEnd(inside, outside, 1920, 1080)).toBe(true);
-        expect(reframeOnDragEnd(outside, outside, 1920, 1080)).toBe(false);
-        expect(reframeOnDragEnd(outside, [400, 50, 1500, 1030], 1920, 1080)).toBe(false);
-        expect(reframeOnDragEnd(inside, inside, 1920, 1080)).toBe(false);
-        expect(reframeOnDragEnd(inside, null, 1920, 1080)).toBe(true);
-    });
-    it('pass 3: a drag that pushed a gate already a little past the middle far out frames it (Tunis size 1.2 -> 2.4 m)', () => {
-        // the boxes measured by editor3-prove.ts on Tunis 887f27aa (fx3b/tunis e4.json scale.0.reframe)
-        expect(reframeOnDragEnd([735, 18.7, 1193, 511], [182, -742, 1461, 676], 1920, 1080)).toBe(true);
-        // a gate flown close (past the middle on all sides) and nudged: kept
-        expect(reframeOnDragEnd([100, 50, 1800, 1030], [150, 40, 1850, 1020], 1920, 1080)).toBe(false);
-        expect(overMiddle([700, 300, 1220, 780], 1920, 1080)).toBe(0);
-        expect(overMiddle(null, 1920, 1080)).toBe(Infinity);
-    });
-    it('course.ts takes the box when the drag begins and frames only a drag that changed the gate', () => {
+// Train 4 lane edit4a A1 removed EJ-2's reframe after a drag (brief 547: "why move my view when I move an obstacle?");
+// tools/bench/test/edit4a-camera.test.ts holds the new rule. The projection checks of pass 2 stay.
+describe('EJ-2 pass 2: the probes project with the edit view camera', () => {
+    it('course.ts no longer takes a box when a drag begins (nothing frames after it)', () => {
         const c = src('apps/fly/src/app/builtin/course.ts');
-        expect(c).toMatch(/if \(!dragBase\) dragBox = view\?\.gateBox\(\)\?\.box \?\? null;\s*const base = dragBase \?\? ed;/);
-        expect(c).toMatch(/const re = !!\(st && gb && reframeOnDragEnd\(before, gb\.box, gb\.w, gb\.h\)\);/);
-        expect(c).toMatch(/if \(re\) frameSel\(\);/);
+        expect(c).not.toMatch(/dragBox|reframeOnDragEnd/);
     });
     it('pass 2: gateBox and debug project with the edit view camera (a drag starts between frames)', () => {
         const v = src('apps/fly/src/course/editor/view-mouse.ts');

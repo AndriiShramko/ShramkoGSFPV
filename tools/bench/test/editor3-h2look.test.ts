@@ -21,7 +21,8 @@ describe('editor3 H2-look', () => {
         // the opening in metres beside the handle while it is dragged, the top bar's line after it
         expect(VIEW).toMatch(/if \(h === this\.size\) this\.showTag\(/);
         expect(COURSE).toMatch(/sizeText: \(m\) => t\('course\.edit\.sizeTag'/);
-        expect(COURSE).toMatch(/view\?\.tool === 'size' \? ACTION_KEYS\.size/);
+        // train 4 edit4a A2: the words name the handle the drag event says was dragged (no tool any more, brief 543)
+        expect(COURSE).toMatch(/handle === 'size' \? ACTION_KEYS\.size/);
         for (const l of ['en', 'es', 'pl', 'ru']) {
             const j = JSON.parse(read(`packages/i18n/locales/fly/course/${l}.json`)) as Record<string, string>;
             expect(j['course.edit.sizeTag'], l).toMatch(/\{m\}/);

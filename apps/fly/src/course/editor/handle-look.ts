@@ -5,24 +5,53 @@
 // through its handles. Sizes in CSS px as set; a part is drawn up to DRAWN_PER_SET times larger (measured), so the set
 // sizes are smaller than the decision's 12 and 14 px. view-mouse.ts turns them into the gizmo's own units. Pure.
 
-/** the sizes of the handles' parts, CSS px */
+/** lane edit4a A2: the three parts of the one gizmo (Blender's Transform tool): move arrows, turn rings, size boxes */
+export type Handle = 'move' | 'turn' | 'size';
+/** the axis of a handle's part; 'xyz' is the size handle's centre box (the whole gate) */
+export type HandleAxis = 'x' | 'y' | 'z' | 'xyz';
+
+/**
+ * The sizes of the handles' parts, CSS px. Lane edit4a A2 (the owner, brief 543: one gizmo with arrows, boxes and rings at
+ * once): the parts lie in separate bands from the centre out, so nothing lies over another thing on the gate's own axes:
+ * the size boxes inside (to 35 px), the rings in the middle (60 px), the move arrows outside (75 to 115 px). Estimates of the
+ * edit4 design (units of the gizmo's size), checked by the edit4a probe.
+ */
 export const HANDLE_PX = {
-    /** Move: from the centre to the arrow's tip */
-    moveReach: 90,
+    /** Move: from the centre to where the arrow's line begins, and to the arrow's tip */
+    moveGap: 75,
+    moveReach: 115,
     /** Move: the cone tip's length and width (drawn up to DRAWN_PER_SET times larger) */
     arrowLength: 13,
     arrowWidth: 9,
     /** every line and every ring's tube */
     line: 2.5,
     /** Turn: the rings' radius */
-    ringRadius: 85,
-    /** Size: from the centre to the far side of an end cube, the end cubes and the centre cube */
-    sizeReach: 90,
+    ringRadius: 60,
+    /** Size: from the centre to the far side of an end cube (no line to it), the end cubes and the centre cube */
+    sizeReach: 35,
     sizeBox: 9,
     centreBox: 9.5,
     /** how far from a line or a ring the pointer may be and still take it */
     pickTolerance: 8
 } as const;
+
+/** lane edit4a A2: where each handle can take a press, CSS px from the gizmo's centre along the gate's own axes */
+export function handleBands(px: typeof HANDLE_PX = HANDLE_PX): Record<Handle, readonly [number, number]> {
+    const boxHalf = (Math.max(px.sizeBox, px.centreBox) * DRAWN_PER_SET) / 2;
+    return {
+        size: [0, px.sizeReach + boxHalf],
+        turn: [px.ringRadius - px.pickTolerance, px.ringRadius + px.pickTolerance],
+        move: [px.moveGap, px.moveReach]
+    };
+}
+
+/** the smallest gap between two bands, CSS px (negative: they overlap) */
+export function bandGap(bands: Record<Handle, readonly [number, number]>): number {
+    const s = Object.values(bands).sort((a, b) => a[0] - b[0]);
+    let gap = Infinity;
+    for (let i = 1; i < s.length; i++) gap = Math.min(gap, s[i]![0] - s[i - 1]![1]);
+    return gap;
+}
 
 /**
  * How much larger a part is drawn than its set size: a cube seen at an angle spans up to sqrt(3) of its edge and the wide

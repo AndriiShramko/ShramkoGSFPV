@@ -42,6 +42,14 @@ Car 1 (one line a lane, in the merge order)
 - head4: merged 3e7a7c6e (review SHIP), no conflict (adds @mediapipe/tasks-vision 1.2.3 to apps/fly and the lock)
 - sound6: car 2 (no review file, both looks)
 
+Car 2 (job int4, on top of car 1's head 2716e78e and the release merge aa18f1e4 of origin/main, fast-forward; one line a lane)
+
+- site4: in car 1, its head is an ancestor of HEAD (no new commit)
+- ux4a: merged adb19dd6 (review SHIP); only generated files conflicted (README.md, llms.txt, apps/site/public/llms.txt, docs/settings.md): ours, then gen-catalog; pnpm -r typecheck rc 0
+- ux4b: merged c164d5ed (review SHIP), no conflict
+- vox4: merged fa53187d (review SHIP), no conflict
+- edit4a: merged (review SHIP); source conflicts with edit4b in apps/fly/src/app/builtin/course.ts and course/editor/texts.ts: edit4b's seam calls kept (pointAt on a wrong gate, TopBar fly/menu, SeamBus, emptyWaits, keyRoute), edit4a's rules kept (no aim/framedId/reframe, no tool switch on the gate bar, TOOLS keys gone, Esc during a drag returns first); edit4b's three framedId lines removed with the variable. pnpm -r typecheck rc 0. Seam breaks found by the tests, for S2: Shift+H bound to ux4a messages.open and head4 sonic.headCentre (keymap, app-keys tests); edit4a-camera counts edit4b's frameSelection provider (point.ts arrowPressed) as a second frameSel()
+
 ## Seams
 
 Car 1

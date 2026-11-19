@@ -1,0 +1,6 @@
+{
+  "course.view.handle.move": "Przesuń wzdłuż {axis}",
+  "course.view.handle.turn": "Obróć wokół {axis}",
+  "course.view.handle.size": "Rozmiar",
+  "course.view.cancelled": "Anulowano: bramka wróciła na miejsce"
+}
