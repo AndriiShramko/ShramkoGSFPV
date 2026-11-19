@@ -67,6 +67,8 @@ const KIND_OF: Readonly<Record<string, CueKind>> = {
     'height.rough': 'tone',
     'height.target': 'tone',
     'speed.tick': 'tick',
+    // the brake cue (sonic5 W1.4, in the glossary since lane sound6 S2) belongs to the speed, like the tick: not a place on the radar
+    'speed.brake': 'tick',
     'room.bed': 'room'
 };
 

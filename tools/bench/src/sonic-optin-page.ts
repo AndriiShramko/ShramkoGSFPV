@@ -322,7 +322,7 @@ async function ordinary(ctx: BrowserContext, out: Record<string, unknown>): Prom
         const [popup] = await Promise.all([ctx.waitForEvent('page', { timeout: 15000 }), page.click('[data-action="pause.flyBySound"]')]);
         await popup.waitForLoadState('domcontentloaded');
         await popup.waitForSelector('#sonic-start', { timeout: 60000 });
-        const landed = await popup.evaluate(() => ({ url: location.pathname + location.search, beginning: !!document.querySelector('[data-testid="sonic-start-beginning"]'), about: document.querySelector('[data-testid="sonic-about"]')?.getAttribute('href') ?? null }));
+        const landed = await popup.evaluate(() => ({ url: location.pathname + location.search, beginning: !!document.querySelector('[data-testid="sonic-start-quick"]'), about: document.querySelector('[data-testid="sonic-about"]')?.getAttribute('href') ?? null }));
         const stillPaused = await page.evaluate(() => !!document.querySelector('.pause-menu'));
         out.plainPopup = { ...landed, stillPaused };
         check('A: the item opens the mode\'s start screen for this scan /en/fly/?sonic=scan&scene=39e63ce9&sz=<size> in a new tab (the page about the mode in its footer); the flight stays paused under its menu', /^\/en\/fly\/\?sonic=scan&scene=39e63ce9&sz=\d+(\.\d+)?$/.test(landed.url) && landed.beginning && landed.about === '/en/sound/' && stillPaused, out.plainPopup);
@@ -690,7 +690,7 @@ async function soundPage(ctx: BrowserContext, out: Record<string, unknown>): Pro
     check('D: under the key list, the line for a screen reader in browse mode (review R5)', seen.keysText.includes(SITE_EN.sound.keys.reader), { reader: SITE_EN.sound.keys.reader });
     await page.click(`a[href="${want}"]`);
     await page.waitForSelector('#sonic-start', { timeout: 60000 });
-    const opened = await page.evaluate(() => ({ url: location.pathname + location.search, beginning: !!document.querySelector('[data-testid="sonic-start-beginning"]'), hook: typeof (window as unknown as { __gsfpv?: { sonic?: unknown } }).__gsfpv?.sonic }));
+    const opened = await page.evaluate(() => ({ url: location.pathname + location.search, beginning: !!document.querySelector('[data-testid="sonic-start-quick"]'), hook: typeof (window as unknown as { __gsfpv?: { sonic?: unknown } }).__gsfpv?.sonic }));
     check('D: following it opens the mode\'s start screen (nothing runs before a key press)', opened.url === want && opened.beginning && opened.hook === 'undefined', opened);
     await page.close();
 }

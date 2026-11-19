@@ -848,7 +848,7 @@ const probe10 = (page: Page): Promise<R10Probe> => page.evaluate(() => {
     return typeof f === 'function' ? { ...(f(false) as object), course } : { lesson: null, phase: null, attempt: 0, asking: false, question: null, engine: 'none', speechQueue: 0, target: null, hum: null, cues: [], motor: false, walls: { voxelM: null, builtin: false, scene: '', scale: 1 }, lastLine: null, pos: [0, 0, 0] };
 }) as Promise<R10Probe>;
 const scanOrder = (page: Page): Promise<string[]> => page.evaluate(() => {
-    const b = document.querySelector('[data-testid="sonic-start-beginning"]');
+    const b = document.querySelector('[data-testid="sonic-start-quick"]');
     return b?.parentElement ? [...b.parentElement.children].map((c) => c.getAttribute('data-testid') ?? '').filter((x) => x.startsWith('sonic-start-')) : [];
 });
 
@@ -978,11 +978,11 @@ async function r10(browser: () => Promise<BrowserContext>, served: Served): Prom
     check(`R10: the pause menu links this scan by sound (/en/fly/?sonic=scan&scene=${SCAN}&sz=<size>)`, new RegExp(`^/en/fly/\\?sonic=scan&scene=${SCAN}&sz=\\d+(\\.\\d+)?$`).test(href ?? ''), href);
     const [first] = await Promise.all([ctx.waitForEvent('page', { timeout: 15000 }), page.click('[data-action="pause.flyBySoundLessons"]')]);
     first.on('pageerror', (e) => problems.push(`R10 first: pageerror ${e.message.slice(0, 300)}`));
-    await until('the start screen (first-timer)', () => first.evaluate(() => !!document.querySelector('[data-testid="sonic-start-beginning"]')), (v) => v, 60000);
+    await until('the start screen (first-timer)', () => first.evaluate(() => !!document.querySelector('[data-testid="sonic-start-quick"]')), (v) => v, 60000);
     const firstOrder = await scanOrder(first);
     await first.screenshot({ path: `${SHOTS}/sound-start-first.png`, fullPage: false });
     result.r10first = firstOrder;
-    check('R10: a first-timer sees the lessons first, then "I already fly by sound" (sonic-start-beginning, sonic-start-scan-flier)', firstOrder.join() === 'sonic-start-beginning,sonic-start-scan-flier', firstOrder);
+    check('R10: a first-timer sees the lessons first, then "I already fly by sound" (sonic-start-quick, sonic-start-full, sonic-start-scan-flier)', firstOrder.join() === 'sonic-start-quick,sonic-start-full,sonic-start-scan-flier', firstOrder);
     await ctx.close();
 
     const exp = await newContext(browser, served, experiencedDoc(), null);
@@ -995,7 +995,7 @@ async function r10(browser: () => Promise<BrowserContext>, served: Served): Prom
     const expOrder = await scanOrder(fly);
     await fly.screenshot({ path: `${SHOTS}/sound-start-experienced.png`, fullPage: false });
     result.r10experienced = expOrder;
-    check('R10: a pilot who flies by sound sees "Fly this scan by sound" first (sonic-start-scan, sonic-start-beginning)', expOrder.join() === 'sonic-start-scan,sonic-start-beginning', expOrder);
+    check('R10: a pilot who flies by sound sees "Fly this scan by sound" first (sonic-start-scan, sonic-start-quick, sonic-start-full)', expOrder.join() === 'sonic-start-scan,sonic-start-quick,sonic-start-full', expOrder);
     await fly.focus('[data-testid="sonic-start-scan"]');
     await fly.keyboard.press('Enter');
     let skipped = false;

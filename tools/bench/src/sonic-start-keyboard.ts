@@ -347,17 +347,10 @@ try {
         const j = raw ? JSON.parse(raw) : null;
         return j?.collections?.sonic?.prefs ?? {};
     });
-    // the path: focus the radio, an arrow key moves it to the other one (and the Start buttons follow)
-    // (v0.13: Up and Down are the spoken list's, they move between stops; Left and Right change a setting, the path to the other one)
-    await page.evaluate(() => document.getElementById('sonic-path-full')!.focus());
-    await page.keyboard.press('ArrowRight');
-    const fastSaved = await until(async () => (await prefsOf()).path === 'fast');
-    check('an arrow key moves the path to "fast" and it is saved', fastSaved, (await prefsOf()).path);
-    const startSub = await page.evaluate(() => document.querySelector('[data-testid="sonic-start-beginning"] .sonic-sub')?.textContent);
-    await page.keyboard.press('ArrowLeft');
-    const fullSaved = await until(async () => (await prefsOf()).path === 'full');
-    check('and back to "full"', fullSaved);
-    check('the Start button names the first lesson of the path', typeof startSub === 'string' && startSub.length > 5, startSub);
+    // lane sound6 S2: the path is chosen by the two Start buttons, Quick start then Full course; the path radios are gone
+    const pathStart = await page.evaluate(() => ({ quick: document.querySelector('[data-testid="sonic-start-quick"] .sonic-sub')?.textContent ?? null, full: !!document.querySelector('[data-testid="sonic-start-full"]'), radios: document.querySelectorAll('[id^="sonic-path-"]').length }));
+    check('Quick start and Full course are there, no path radio', pathStart.full && pathStart.radios === 0, pathStart);
+    check('the Quick start button says what the quick path is', typeof pathStart.quick === 'string' && pathStart.quick.length > 5, pathStart.quick);
     // calm mode: Space
     await page.evaluate(() => document.getElementById('sonic-calm')!.focus());
     await page.keyboard.press('Space');

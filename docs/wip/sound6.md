@@ -18,7 +18,7 @@ the design says train6: the lane prompt wins). Design C:/dev/.gsfpv-lanes/design
   bd79c96 (6 failed). 30 package test files that name these lessons, lines or fixtures: all pass except
   test/words.test.ts (its evidence evidence/listen/VL-4-words.json must be rewritten by `pnpm listen:words`: left for
   S5, after the lines of S2). Three tsc 0 errors. Pin not moved yet (S2 moves it with the host change).
-- [ ] S2 the quick path as the default, the full course second; the glossary entry of the cue 'speed.brake'.
+- [x] S2 the quick path as the default, the full course second; the glossary entry of the cue 'speed.brake'.
   - [x] S2 package side: package quick1 64376d1 + 58b1d7f (simulator commit of this line). fast = ears-headphones,
     ears-walls, walls-hall, corridor, tunnel-gaps, rings-first, rings-course, free-garden (fastPath flags: ears-walls on,
     hover-height off); defaultPrefs path 'fast'. ears-headphones v4: title, one intro line (new text), "Sound 1 of 3",
@@ -35,14 +35,19 @@ the design says train6: the lane prompt wins). Design C:/dev/.gsfpv-lanes/design
     3 new tests; NEG OK against 92bb012 (3/3 fail on the old lesson data, locales, catalog and prefs). The 51 test files
     that name these lessons, lines, paths, prefs or fixtures: 944 passed, 1 failed: test/words.test.ts (evidence
     VL-4-words.json is rewritten by `pnpm listen:words` in S5, as planned). Package tsc (three configs) 0 errors.
-  - [ ] S2 host side (left, exact): move the pin packages/sonic-fpv to 58b1d7f; apps/fly/src/sonic/start-screen.ts:
-    replace "Start the course from the beginning" (testid sonic-start-beginning) and the path radios (sonic-path-*) by
-    two buttons sonic-start-quick (primary when no Continue; prefs.path 'fast', opens paths.fast[0]) and
-    sonic-start-full ('full', paths.full[0]), sub-lines menu.path.fast-what / full-what; start-model.ts beginningId ->
-    firstOf(path); host keys sonic.start.quick, sonic.start.full in packages/i18n/locales/fly/sonic/{en,es,pl,ru}.json,
-    remove sonic.start.course / sonic.path.legend if unused (Grep); host tests a-c (copy the buildModel( /
-    sonic-start-beginning tests); update probes that click sonic-start-beginning or sonic-path-*
-    (tools/bench/src/sonic-start-keyboard.ts and the walk probes); pnpm --filter fly typecheck.
+  - [x] S2 host side (simulator commit of this line): pin packages/sonic-fpv at 58b1d7f (local). start-screen.ts: the
+    old "Start the course from the beginning" button and the path radios are gone; two buttons sonic-start-quick
+    "Quick start" (primary when nothing else is; startPath('fast'): saves prefs.path, opens firstOf('fast')) and
+    sonic-start-full "Full course" (startPath('full')), sub-lines menu.path.fast-what / full-what (+ courseKeeps when
+    Continue exists); after Reset the focus goes to Quick start. start-model.ts: beginningId -> firstOf(path). Host
+    keys sonic.start.quick, sonic.start.full added; sonic.start.course, sonic.start.courseWhat, sonic.path.legend
+    removed (no other use). sound-panel.ts: 'speed.brake' has the kind 'tick' (sonic-panels.test.ts wants a kind for
+    every glossary cue; the design did not list it). Tests: sonic-start-screen.test.ts (a, b, c of the design),
+    sonic-start.test.ts (firstOf; fast path's second lesson ears-walls), sonicrec-recorder.test.ts (a new pilot's
+    path is fast). NEG OK against HEAD 156dd1fd (start-screen.ts, start-model.ts, en.json). All 60 host test files
+    tools/bench/test/sonic*: 867 tests, 0 failed. Probes moved to the new test ids (not run: S5 runs the walk):
+    sonic-start-keyboard.ts, sonic-review-keys.ts, sonic-v13-page.ts, sonic-int-review.ts, sonic-optin-page.ts.
+    pnpm --filter fly typecheck 0 errors; tools/bench tsc 0 errors.
 - [ ] S3 the seconds to the first wall sound, counted from lessonSchedule (test b).
 - [ ] S4 Firefox: sound (engine placeListener) or a clear line that leads to Chrome or Edge (host engineFailed, test d).
 - [ ] S5 pin moved, package suite + listen:words, simulator gates, acceptance probe sonic-quick-walk.
@@ -56,12 +61,20 @@ Base: origin/main e3201fec differs from this branch only in STATE.md: not merged
 1. The package's quick path is headphones, the walls, the small room, then the flying lessons, and it is the default of
    new prefs; the headphone check plays a wall knock after one intro line. Proof (in C:/dev/ShramkoSonicFPV):
    `pnpm vitest run test/quick-path.test.ts`: 39 passed at 58b1d7f; NEG OK against 92bb012.
+2. The start screen shows Quick start (first, primary for a new pilot) and Full course, no path radios; each press
+   saves its path and opens its first lesson; a returning pilot sees Continue first. Proof: `npx vitest run
+   tools/bench/test/sonic-start-screen.test.ts tools/bench/test/sonic-start.test.ts`: 38 passed; NEG OK against 156dd1fd.
 
 ## Not verified
 No person, phone or real controller took part in this lane.
 
 ## For the lead
-- Files changed outside the owned files: docs/wip/sonic5.md (the decision of W1.6 written in).
+- Files changed outside the owned files: docs/wip/sonic5.md (the decision of W1.6 written in);
+  apps/fly/src/sonic/sound-panel.ts (one line: the kind of 'speed.brake'); tools/bench/test/sonicrec-recorder.test.ts;
+  the probes tools/bench/src/sonic-{start-keyboard,review-keys,v13-page,int-review,optin-page}.ts (new test ids).
+- A question for the lead: the host's headphone check on the start screen still has a button "Play a sound behind"
+  (sonic-hp-behind). It asks nothing, so S1 left it; if the owner's "no behind or in front" covers it too, it is one
+  button and its line.
 
 ## Cost notes
 - S0: reading the design, the sonic5 status and the brief took 4 replies; nothing would make it cheaper.
@@ -69,3 +82,5 @@ No person, phone or real controller took part in this lane.
   design could list them. Finding ring-1's position took 5 replies (a print script): a world dump helper would help.
 - S2 package: 17 tests that pin counts (line totals, glossary steps and minutes, versions, the old fast path) took 6
   replies; one run of every test file that greps the changed names, then one edit script, is the cheapest order.
+- S2 host: 20 replies; reading the old test and probe slices took the most; a design listing every probe line that
+  names a test id would save 4. One edit script per file group, then one run of tools/bench/test/sonic*, worked well.

@@ -86,7 +86,7 @@ interface Screen {
 }
 
 /** The start screen of a page entered through ?sonic=start in `locale`, with the saved progress given, on a fresh document. */
-function open(o: { locale?: Locale; progress?: Record<string, LessonProgress>; current?: string | null; overFlight?: boolean; store?: ReturnType<typeof mkStore>; request?: ReturnType<ModelMod['parseSonicParam']>; experienced?: () => boolean; onFlies?: () => void } = {}): Screen {
+function open(o: { locale?: Locale; progress?: Record<string, LessonProgress>; current?: string | null; overFlight?: boolean; store?: ReturnType<typeof mkStore>; request?: ReturnType<ModelMod['parseSonicParam']>; experienced?: () => boolean; onFlies?: () => void; path?: 'full' | 'fast' } = {}): Screen {
     doc = stubPage();
     const store = o.store ?? mkStore();
     for (const p of Object.values(o.progress ?? {})) storeMod.saveProgress(store, p);
@@ -94,6 +94,7 @@ function open(o: { locale?: Locale; progress?: Record<string, LessonProgress>; c
     const engine = new SayingEngine();
     const deps: AudioDeps = { makeContext: () => ({ currentTime: 0, sampleRate: 48000, state: 'running' }) as never, unlockSpeech: () => undefined, createEngine: () => engine as unknown as PageEngine };
     const setup = new entryMod.SonicSetup(store, o.locale ?? 'en', new Sink(), { deps });
+    if (o.path) expect(setup.update({ path: o.path }).ok).toBe(true);
     const started: string[] = [];
     const closed = { n: 0 };
     const s = new screenMod.StartScreen({
@@ -118,9 +119,9 @@ const P = (id: string, o: Partial<LessonProgress> = {}): LessonProgress => ({ le
 
 const EN = createTranslator('en', DICTS);
 const titleOf = (id: string): string => EN.text(getLesson(id).title);
-/** "Lesson 20 of 28" as the page writes it for `id` on the full path. */
-const placeOf = (id: string): string => {
-    const p = modelMod.lessonPlace(id, 'full');
+/** "Lesson 20 of 28" as the page writes it for `id` on `path` (the full one unless named). */
+const placeOf = (id: string, path: 'full' | 'fast' = 'full'): string => {
+    const p = modelMod.lessonPlace(id, path);
     return `Lesson ${p.n} of ${p.total}`;
 };
 
@@ -148,23 +149,23 @@ describe('C1 (M41-1): the page about the mode stays linked from the start screen
 describe('train 2: the start screen of a scan link (?sonic=scan&scene=&sz=) orders its buttons by the pilot', () => {
     const scanReq = () => modelMod.parseSonicParam('scan', new URLSearchParams('sonic=scan&scene=887f27aa&sz=2'));
     const order = (): string[] => {
-        const parent = byTestId(doc, 'sonic-start-beginning')!.parentElement!;
+        const parent = byTestId(doc, 'sonic-start-quick')!.parentElement!;
         return parent.children.map((c) => c.getAttribute('data-testid') ?? '').filter((x) => x.startsWith('sonic-start-'));
     };
 
     it('an experienced pilot: "Fly this scan by sound" first and primary, then the lessons; a first-timer: the lessons first, then "I already fly by sound", whose press saves the flag', () => {
         const exp = open({ request: scanReq(), experienced: () => true });
-        expect(order()).toEqual(['sonic-start-scan', 'sonic-start-beginning']);
+        expect(order()).toEqual(['sonic-start-scan', 'sonic-start-quick', 'sonic-start-full']);
         expect(byTestId(doc, 'sonic-start-scan')!.className).toContain('primary');
-        expect(byTestId(doc, 'sonic-start-beginning')!.className).not.toContain('primary');
+        expect(byTestId(doc, 'sonic-start-quick')!.className).not.toContain('primary');
         byTestId(doc, 'sonic-start-scan')!.click();
         expect(exp.started).toEqual(['scan-free']);
         exp.s.dispose();
 
         let flies = 0;
         const first = open({ request: scanReq(), experienced: () => false, onFlies: () => void flies++ });
-        expect(order()).toEqual(['sonic-start-beginning', 'sonic-start-scan-flier']);
-        expect(byTestId(doc, 'sonic-start-beginning')!.className).toContain('primary');
+        expect(order()).toEqual(['sonic-start-quick', 'sonic-start-full', 'sonic-start-scan-flier']);
+        expect(byTestId(doc, 'sonic-start-quick')!.className).toContain('primary');
         expect(byTestId(doc, 'sonic-start-scan-flier')!.className).not.toContain('primary');
         byTestId(doc, 'sonic-start-scan-flier')!.click();
         expect(flies).toBe(1);
@@ -174,7 +175,7 @@ describe('train 2: the start screen of a scan link (?sonic=scan&scene=&sz=) orde
 
     it('control: the plain start screen (?sonic=start) has no scan button', () => {
         const { s } = open();
-        expect(order()).toEqual(['sonic-start-beginning']);
+        expect(order()).toEqual(['sonic-start-quick', 'sonic-start-full']);
         s.dispose();
     });
 });
@@ -182,30 +183,43 @@ describe('train 2: the start screen of a scan link (?sonic=scan&scene=&sz=) orde
 // ------------------------------------------------------------------ C2
 
 describe('C2 (M41-2, W7): the course from the beginning, Continue, the 28 lessons with their states, Reset with a confirm', () => {
-    it('before any lesson: no Continue; "Start the course from the beginning" says lesson 1 of 28 and opens it', () => {
-        const { s, started } = open();
+    it('lane sound6 S2 (a, b): before any lesson: no Continue; "Quick start" first and primary, "Full course" second; no path radios; each press saves its path and opens its first lesson', () => {
+        const { s, started, setup, store } = open();
         expect(byTestId(doc, 'sonic-start-continue')).toBeNull();
-        const b = byTestId(doc, 'sonic-start-beginning')!;
-        expect(b.textContent).toContain('Start the course from the beginning');
-        expect(b.textContent).toContain(`Lesson 1 of ${SHIPPED_LESSON_IDS.length}: ${titleOf('ears-headphones')}.`);
-        expect(b.textContent).not.toContain('Your progress is kept');
-        expect(b.className).toContain('primary');
-        b.click();
-        expect(started).toEqual(['ears-headphones']);
+        const q = byTestId(doc, 'sonic-start-quick')!;
+        const f = byTestId(doc, 'sonic-start-full')!;
+        expect(q.parentElement!.querySelectorAll('button').map((b) => b.getAttribute('data-testid'))).toEqual(['sonic-start-quick', 'sonic-start-full']);
+        expect(q.textContent).toBe(`Quick start${EN.say('menu.path.fast-what')}`);
+        expect(f.textContent).toBe(`Full course${EN.say('menu.path.full-what')}`);
+        expect(q.className).toContain('primary');
+        expect(f.className).not.toContain('primary');
+        expect(doc.querySelectorAll('input').filter((x) => (x.getAttribute('data-testid') ?? '').startsWith('sonic-path-'))).toHaveLength(0);
+        expect(byTestId(doc, 'sonic-start-beginning')).toBeNull();
+        f.click();
+        expect(started).toEqual([lessonPaths().full[0]]);
+        expect(setup.prefs.path).toBe('full');
+        expect(store.collection('sonic').prefs).toMatchObject({ path: 'full' });
+        byTestId(doc, 'sonic-start-quick')!.click();
+        expect(started).toEqual([lessonPaths().full[0], lessonPaths().fast[0]]);
+        expect(started[1]).toBe('ears-headphones');
+        expect(setup.prefs.path).toBe('fast');
+        expect(store.collection('sonic').prefs).toMatchObject({ path: 'fast' });
         s.dispose();
     });
 
-    it('with progress: "Continue: <the lesson left off on>" first, with its place and state; the course from the beginning opens lesson 1 and keeps the progress', () => {
+    it('lane sound6 S2 (c), with progress: "Continue: <the lesson left off on>" first, with its place and state, then Quick start, then Full course; Quick start opens lesson 1 and keeps the progress', () => {
         const progress = { 'walls-hall': P('walls-hall', { passed: true, attempts: 5, successes: 3 }), 'hover-height': P('hover-height', { attempts: 2, skipped: true }), 'rings-first': P('rings-first', { attempts: 2, successes: 1 }) };
         const { s, started, store } = open({ progress, current: 'rings-first' });
         const buttons = byTestId(doc, 'sonic-start-continue')!.parentElement!.querySelectorAll('button').map((b) => b.getAttribute('data-testid'));
-        expect(buttons.slice(0, 2)).toEqual(['sonic-start-continue', 'sonic-start-beginning']);
+        expect(buttons.slice(0, 3)).toEqual(['sonic-start-continue', 'sonic-start-quick', 'sonic-start-full']);
         const c = byTestId(doc, 'sonic-start-continue')!;
         expect(c.textContent).toContain(`Continue: ${titleOf('rings-first')}`);
-        expect(c.textContent).toContain(`${placeOf('rings-first')}, in progress`);
+        expect(c.textContent).toContain(`${placeOf('rings-first', 'fast')}, in progress`);
         expect(c.className).toContain('primary');
         const before = JSON.stringify(storeMod.allProgress(store));
-        const b = byTestId(doc, 'sonic-start-beginning')!;
+        expect(byTestId(doc, 'sonic-start-quick')!.className).not.toContain('primary');
+        expect(byTestId(doc, 'sonic-start-full')!.textContent).toContain('Your progress is kept.');
+        const b = byTestId(doc, 'sonic-start-quick')!;
         expect(b.textContent).toContain('Your progress is kept.');
         b.click();
         expect(started).toEqual(['ears-headphones']);
@@ -222,7 +236,7 @@ describe('C2 (M41-2, W7): the course from the beginning, Continue, the 28 lesson
         // a new page on the same saved document (the prefs keep `skipped` since v0.13)
         const again = mkStore();
         again.importFile(first.store.exportFile({ include: ['sonic'] }), 'replace');
-        const { s } = open({ store: again });
+        const { s } = open({ store: again, path: 'full' });
         const rows = doc.querySelectorAll('[data-testid="sonic-lesson"]');
         expect(rows.map((r) => r.getAttribute('data-lesson'))).toEqual(lessonPaths().full);
         expect(rows).toHaveLength(SHIPPED_LESSON_IDS.length);
@@ -276,7 +290,7 @@ describe('C2 (M41-2, W7): the course from the beginning, Continue, the 28 lesson
         expect(setup.prefs.theme).toBe('clear');
         expect(doc.querySelectorAll('[data-testid="sonic-lesson"]').every((r) => r.getAttribute('data-state') === 'new')).toBe(true);
         expect(byTestId(doc, 'sonic-start-continue')).toBeNull();
-        expect(doc.activeElement).toBe(byTestId(doc, 'sonic-start-beginning'));
+        expect(doc.activeElement).toBe(byTestId(doc, 'sonic-start-quick'));
         s.dispose();
     });
 
@@ -311,7 +325,7 @@ function shown(o: Parameters<typeof open>[0] = {}): Screen {
 /** The stops of a fresh screen with no progress and the volume part closed, in the page's order. */
 const STOPS = [
     ...['#sonic-sec-start', '#sonic-sec-headphones', '#sonic-sec-lessons', '#sonic-sec-settings'],
-    'sonic-start-beginning', 'sonic-path-full', 'sonic-path-fast',
+    'sonic-start-quick', 'sonic-start-full',
     'sonic-hp-left', 'sonic-hp-right', 'sonic-hp-behind',
     ...lessonPaths().full.map((id) => `lesson:${id}`), 'sonic-reset',
     // v13-int step 3: sound from above and below after the target height note; the sound panel and the attitude display after the frame;
@@ -351,12 +365,13 @@ describe('C3 (M41-4, W13): the start screen and the mode\'s settings as a spoken
         expect(engine.said.slice(2).every((x) => x.interrupt)).toBe(true);
         const lines = heard(engine).slice(1);
         const at = (name: string): string => lines[STOPS.indexOf(name)]!;
-        expect(at('sonic-start-beginning')).toBe(`Start. Start the course from the beginning. Lesson 1 of ${SHIPPED_LESSON_IDS.length}: ${titleOf('ears-headphones')}. Item 1 of 3.`);
-        expect(at('sonic-path-fast')).toMatch(/^Path: Fast path, off\. .+\. Item 3 of 3\.$/);
+        expect(at('sonic-start-quick')).toBe(`Start. Quick start. ${EN.say('menu.path.fast-what').replace(/\.$/, '')}. Item 1 of 2.`);
+        expect(at('sonic-start-full')).toBe(`Full course. ${EN.say('menu.path.full-what').replace(/\.$/, '')}. Item 2 of 2.`);
         expect(at('sonic-hp-left')).toBe('Check your headphones. Play a sound on the left. Item 1 of 3.');
         // a lesson says its own place and state, not an item number
-        expect(at('lesson:ears-headphones')).toBe(`Lessons. ${titleOf('ears-headphones')}. Lesson 1 of ${SHIPPED_LESSON_IDS.length}, not started, Fast path`);
-        expect(at('lesson:rings-first')).toBe(`${titleOf('rings-first')}. ${placeOf('rings-first')}, not started, Fast path`);
+        // a new pilot is on the fast path (lane sound6 S2): its lessons are counted on it
+        expect(at('lesson:ears-headphones')).toBe(`Lessons. ${titleOf('ears-headphones')}. Lesson 1 of ${lessonPaths().fast.length}, not started, Fast path`);
+        expect(at('lesson:rings-first')).toBe(`${titleOf('rings-first')}. ${placeOf('rings-first', 'fast')}, not started, Fast path`);
         // the settings' stops: the screen's own count, 11 before v13-int's three switches (step 3), 15 before lane sonic-beacon's switch, 16 before lane quiet's
         const settings = STOPS.slice(STOPS.indexOf('sonic-theme'), STOPS.indexOf('summary') + 1).length;
         expect(settings).toBe(17); // 16 before lane quiet's narrator switch
@@ -466,7 +481,7 @@ describe('C3 (M41-4, W13): the start screen and the mode\'s settings as a spoken
         again.s.dispose();
     });
 
-    it('the volume and pitch sliders are stops only while their part is open; the path\'s two choices go to each other with Left and Right', () => {
+    it('the volume and pitch sliders are stops only while their part is open', () => {
         const { s, engine, setup } = shown();
         doc.key('ArrowDown');
         const summary = doc.querySelector('summary')!;
@@ -486,15 +501,6 @@ describe('C3 (M41-4, W13): the start screen and the mode\'s settings as a spoken
         expect(focusedId(doc)).toBe('sonic-gain-height');
         doc.key('ArrowLeft');
         expect(setup.prefs.layerGainDb).toMatchObject({ safety: 1, height: -1 });
-        // the path
-        byTestId(doc, 'sonic-path-full')!.focus();
-        doc.key('ArrowRight');
-        expect(setup.prefs.path).toBe('fast');
-        expect(focusedId(doc)).toBe('sonic-path-fast');
-        expect(lastHeard(engine).text).toMatch(/^Path: Fast path, on\. /);
-        doc.key('ArrowLeft');
-        expect(setup.prefs.path).toBe('full');
-        expect(focusedId(doc)).toBe('sonic-path-full');
         s.dispose();
     });
 
@@ -505,7 +511,7 @@ describe('C3 (M41-4, W13): the start screen and the mode\'s settings as a spoken
         const esc = doc.key('Escape');
         expect(esc.defaultPrevented).toBe(true);
         expect(focusedId(doc)).toBe('sonic-start-continue');
-        expect(lastHeard(engine).text).toBe(`Start. Continue: ${titleOf('hover-height')}. ${placeOf('hover-height')}, in progress. Item 1 of 4.`);
+        expect(lastHeard(engine).text).toBe(`Start. Continue: ${titleOf('hover-height')}. ${placeOf('hover-height')}, in progress. Item 1 of 3.`);
         const again = doc.key('Escape');
         expect(again.defaultPrevented).toBe(false);
         expect(focusedId(doc)).toBe('sonic-start-continue');
@@ -529,7 +535,7 @@ describe('C3 (M41-4, W13): the start screen and the mode\'s settings as a spoken
         expect(engine.said.slice(n - 2).map((x) => x.interrupt)).toEqual([true, false]);
         byTestId(doc, 'sonic-reset-yes')!.focus();
         byTestId(doc, 'sonic-reset-yes')!.click();
-        expect(heard(engine).slice(-2)).toEqual(['Your progress is reset. Every lesson is new again.', `Start. Start the course from the beginning. Lesson 1 of ${SHIPPED_LESSON_IDS.length}: ${titleOf('ears-headphones')}. Item 1 of 3.`]);
+        expect(heard(engine).slice(-2)).toEqual(['Your progress is reset. Every lesson is new again.', `Start. Quick start. ${EN.say('menu.path.fast-what').replace(/\.$/, '')}. Item 1 of 2.`]);
         s.dispose();
     });
 
@@ -545,7 +551,7 @@ describe('C3 (M41-4, W13): the start screen and the mode\'s settings as a spoken
         expect(engine.said).toEqual([]);
         // Escape still goes back with a screen reader
         expect(doc.key('Escape').defaultPrevented).toBe(true);
-        expect(focusedId(doc)).toBe('sonic-start-beginning');
+        expect(focusedId(doc)).toBe('sonic-start-quick');
         s.dispose();
         // over a flight: bind's voice (the lesson's speech queue), the engine untouched
         const over = shown({ overFlight: true });
@@ -712,7 +718,7 @@ describe('v13-int review F2, F4: the screen over a flight takes every key it is 
     it('F2: shown over a lesson, the lesson\'s keys and the page\'s (B, N, Z, G, R, I, T, U, L, K, P, a digit) stop at the screen: the page\'s router never sees them; the harness keys F13 to F24 go on', () => {
         const { s } = shown({ overFlight: true });
         const seen = router(doc);
-        byTestId(doc, 'sonic-start-beginning')!.focus();
+        byTestId(doc, 'sonic-start-quick')!.focus();
         const codes = ['KeyB', 'KeyN', 'KeyZ', 'KeyG', 'KeyR', 'KeyI', 'KeyT', 'KeyU', 'KeyL', 'KeyK', 'KeyP', 'Digit1'];
         for (const code of codes) {
             const ev = doc.key(code.slice(-1).toLowerCase(), { code });
@@ -736,7 +742,7 @@ describe('v13-int review F2, F4: the screen over a flight takes every key it is 
     it('F2: the screen\'s own keys still work while it takes the others (Down moves the spoken list, Escape closes it over the flight)', () => {
         const { s, closed } = shown({ overFlight: true });
         router(doc);
-        byTestId(doc, 'sonic-start-beginning')!.focus();
+        byTestId(doc, 'sonic-start-quick')!.focus();
         const before = doc.activeElement;
         doc.key('ArrowDown');
         expect(doc.activeElement).not.toBe(before);
@@ -747,7 +753,7 @@ describe('v13-int review F2, F4: the screen over a flight takes every key it is 
 
     it('F4: hide() takes the focus off the screen\'s control at once, so the flight page finds the body and puts the focus on its region (feature.ts focusFlight); control: a focus outside the screen is left alone', () => {
         const { s } = shown({ overFlight: true });
-        byTestId(doc, 'sonic-start-beginning')!.focus();
+        byTestId(doc, 'sonic-start-quick')!.focus();
         expect(s.root.contains(doc.activeElement as never)).toBe(true);
         s.hide();
         expect(doc.activeElement).toBe(doc.body);

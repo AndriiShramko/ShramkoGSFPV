@@ -151,18 +151,7 @@ try {
     check('Space on "calm mode" toggles it on and back off', calm0 === false && calm1 === true && calm2 === false, { calm0, calm1, calm2, keydowns: kCalm });
     check('and its keydowns are not default-prevented (the flight does not take Space from the screen)', kCalm.length >= 2 && kCalm.every((k) => k.code !== 'Space' || !k.prevented), kCalm);
 
-    // the arrow keys on the path radio group: full -> fast
-    await focusId(page, 'sonic-path-full');
-    n = await keyCount(page);
-    await page.keyboard.press('ArrowRight');
-    await sleep(100);
-    const fast = await checked(page, 'sonic-path-fast');
-    const kArrow = await keysSince(page, n);
-    check('ArrowRight on the path radio group moves it to the fast path', fast, { fast, keydowns: kArrow });
-    check('and the arrow key is not default-prevented', kArrow.length >= 1 && kArrow.every((k) => !k.prevented), kArrow);
-    await focusId(page, 'sonic-path-fast');
-    await page.keyboard.press('ArrowLeft');
-    await sleep(100);
+    // (the path radio group is gone since lane sound6 S2: Quick start and Full course are buttons)
 
     // the arrow keys on a slider (speaking speed)
     await focusId(page, 'sonic-rate');

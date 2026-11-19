@@ -247,7 +247,7 @@ async function partA(browser: Browser, out: Record<string, unknown>): Promise<vo
                 url: location.pathname + location.search,
                 shown: !(document.querySelector('#sonic-start') as HTMLElement).hidden,
                 h1: document.querySelector('#sonic-h1')?.textContent ?? '',
-                beginning: !!document.querySelector('[data-testid="sonic-start-beginning"]'),
+                beginning: !!document.querySelector('[data-testid="sonic-start-quick"]'),
                 lessons: document.querySelectorAll('[data-testid="sonic-lesson"]').length,
                 about: document.querySelector('[data-testid="sonic-about"]')?.getAttribute('href') ?? null
             }));
@@ -282,14 +282,14 @@ async function partB(browser: Browser, out: Record<string, unknown>): Promise<vo
                 group,
                 cont: text('[data-testid="sonic-start-continue"]'),
                 contPrimary: document.querySelector('[data-testid="sonic-start-continue"]')?.classList.contains('primary') ?? false,
-                course: text('[data-testid="sonic-start-beginning"]'),
+                course: text('[data-testid="sonic-start-quick"]'),
                 lessons: [...document.querySelectorAll<HTMLElement>('[data-testid="sonic-lesson"]')].map((b) => ({ id: b.dataset.lesson ?? '', state: b.dataset.state ?? '', text: (b.textContent ?? '').replace(/\s+/g, ' ').trim() })),
                 modules: document.querySelectorAll('.sonic-module').length
             };
         });
         out.startScreen = { ...screen, lessons: screen.lessons.filter((l) => l.state !== 'new').concat(screen.lessons.slice(0, 2)) };
-        check(`B: "Continue: ${title('hover-turn')}" comes first, the primary button, with its place and state; then "Start the course from the beginning"`, screen.group[0] === 'sonic-start-continue' && screen.group[1] === 'sonic-start-beginning' && screen.contPrimary && screen.cont.includes(`Continue: ${title('hover-turn')}`) && screen.cont.includes(`${placeOf('hover-turn')}, in progress`), { group: screen.group, cont: screen.cont });
-        check('B: "Start the course from the beginning" names lesson 1 of 28 and says the progress is kept', screen.course.startsWith(SONIC['sonic.start.course'] ?? '-') && screen.course.includes(`${placeOf('ears-headphones')}: ${title('ears-headphones')}.`) && screen.course.includes(SONIC['sonic.start.courseKeeps'] ?? '-'), screen.course);
+        check(`B: "Continue: ${title('hover-turn')}" comes first, the primary button, with its place and state; then "Quick start" and "Full course" (lane sound6 S2)`, screen.group[0] === 'sonic-start-continue' && screen.group[1] === 'sonic-start-quick' && screen.group[2] === 'sonic-start-full' && screen.contPrimary && screen.cont.includes(`Continue: ${title('hover-turn')}`) && screen.cont.includes(`${placeOf('hover-turn')}, in progress`), { group: screen.group, cont: screen.cont });
+        check('B: "Quick start" says the progress is kept', screen.course.startsWith(SONIC['sonic.start.quick'] ?? '-') && screen.course.includes(SONIC['sonic.start.courseKeeps'] ?? '-'), screen.course);
         const byId = (id: string): { state: string; text: string } | undefined => screen.lessons.find((l) => l.id === id);
         const placesOk = screen.lessons.every((l, i) => l.text.includes(fill(SONIC['sonic.progress.lesson'] ?? '', { n: i + 1, total: TOTAL })));
         check('B: the 28 lessons in the path\'s order, by module, each "Lesson N of 28"', screen.lessons.length === TOTAL && screen.lessons.map((l) => l.id).join() === lessonPaths().full.join() && screen.modules === 8 && placesOk, { count: screen.lessons.length, modules: screen.modules, placesOk });
@@ -315,7 +315,7 @@ async function partB(browser: Browser, out: Record<string, unknown>): Promise<vo
         await sleep(400);
         const cleared = await saved(page);
         const after = await page.evaluate(() => ({ states: [...new Set([...document.querySelectorAll<HTMLElement>('[data-testid="sonic-lesson"]')].map((b) => b.dataset.state ?? ''))], cont: !!document.querySelector('[data-testid="sonic-start-continue"]'), focus: (document.activeElement as HTMLElement | null)?.dataset?.testid ?? null, status: document.querySelector('[data-testid="sonic-status"]')?.textContent ?? '' }));
-        check('B: Yes clears every lesson and the current one, keeps the sound settings (theme Clear); every lesson new, no Continue, the focus on the course\'s first button, the status line says so', Object.keys(cleared.progress).length === 0 && cleared.current === null && cleared.prefs?.theme === 'clear' && after.states.join() === 'new' && !after.cont && after.focus === 'sonic-start-beginning' && after.status === SONIC['sonic.reset.done'], { saved: { progress: cleared.progress, current: cleared.current, theme: cleared.prefs?.theme }, ...after });
+        check('B: Yes clears every lesson and the current one, keeps the sound settings (theme Clear); every lesson new, no Continue, the focus on the course\'s first button, the status line says so', Object.keys(cleared.progress).length === 0 && cleared.current === null && cleared.prefs?.theme === 'clear' && after.states.join() === 'new' && !after.cont && after.focus === 'sonic-start-quick' && after.status === SONIC['sonic.reset.done'], { saved: { progress: cleared.progress, current: cleared.current, theme: cleared.prefs?.theme }, ...after });
         await page.reload();
         await page.waitForSelector('#sonic-start [data-testid="sonic-lesson"]', { timeout: 60000 });
         const reloaded = await page.evaluate(() => ({ states: [...new Set([...document.querySelectorAll<HTMLElement>('[data-testid="sonic-lesson"]')].map((b) => b.dataset.state ?? ''))], cont: !!document.querySelector('[data-testid="sonic-start-continue"]') }));
@@ -406,7 +406,7 @@ async function partC(browser: Browser, out: Record<string, unknown>): Promise<vo
         await key(page, 'Escape');
         const back = { focus: await focusNow(page), said: (await spoken(page)).slice(n) };
         out.escape = back;
-        check('C: Escape goes back to the first Start button, said with its section', back.focus.testid === 'sonic-start-beginning' && back.said[0] === `Start. ${SONIC['sonic.start.course']}. ${placeOf('ears-headphones')}: ${title('ears-headphones')}. Item 1 of 3.`, back);
+        check('C: Escape goes back to the first Start button, said with its section', back.focus.testid === 'sonic-start-quick' && (back.said[0] ?? '').startsWith(`Start. ${SONIC['sonic.start.quick']}. `) && (back.said[0] ?? '').endsWith('Item 1 of 2.'), back);
         // every line went through the engine at the theme's voice level: interrupts reached the browser's voice as cuts
         check('C: the lines cut each other (the browser\'s voice cancelled for each new stop)', (await cancels(page)) >= 10, { cancels: await cancels(page) });
         await page.reload();
