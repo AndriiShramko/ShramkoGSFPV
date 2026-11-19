@@ -8,7 +8,8 @@ Design: C:/dev/.gsfpv-lanes/designs/edit4.md part B. Owner's words: brief lines 
   (893e3a9f wip; the commit titled 'edit4b B1: the course's life')
 - [x] B2 numbers and pointing: gate numbers on screen, every message naming a gate points at it (the commit titled
   'edit4b B2: gate numbers and pointing')
-- [ ] B3 acceptance probe tools/bench/scripts/edit4b-probe.mjs, gates, status parts complete
+- [x] B3 acceptance probe tools/bench/scripts/edit4b-probe.mjs, gates, status parts complete (2c42943e, 32c6e183,
+  655ad16f, 38eb366a; the commit titled 'edit4b B3: acceptance')
 
 Differences from the design (the code wins):
 - Stage S0 (the seam) was never built: no commit of it exists and all four edit4 lanes branched from origin/main
@@ -79,6 +80,9 @@ Differences from the design (the code wins):
 6. Negative control of the whole lane: the same probe against the live site (the code before this train, read-only:
    nothing saved there, Save is never pressed on it): FAIL on 9 of 11 steps (evidence/2026-11-19/edit4b/live-off.json).
    Steps 4 (Undo) and 8 (back to edit) pass there only because nothing was deleted and the mode never left edit.
+7. The repository gates hold: `gates.py --only typecheck,vitest,architecture,i18n,b18,leaks`: all PASS but vitest, whose
+   one failure (editfix-e2.test.ts pinned the flying bar's CSS before Back to editing stayed) was updated; that file then
+   8/8 pass (408 other files passed in the gate run). `--only catalog`: PASS.
 
 ## Not verified
 
@@ -92,6 +96,10 @@ No person, phone or real controller took part in any check of this lane.
 - A gate the pilot adds is still framed by the hub (train 3 I1, D1: a new selection frames it), so a refused floor gate
   is pointed at after that glide; only the pointing itself is proven not to move the eye (0 m on the refused Save).
 - Reduced motion (steady 3 s mark) is unit-tested only.
+- Picture U:/Temp/gsfpv-train4/shots/edit4b-local-gpu-numbers.png (the drawn run, PASS 11/11,
+  evidence/2026-11-19/edit4b/local-gpu.json): lime numbered tags stand over the gates along the cobbled street under
+  the seven-button top bar; tags 8 and 28 stand over a wall on the right: a gate hidden behind the scan keeps its number
+  (labels drop only for each other, the eye and the bars, not for the scene's walls). Not fixed in this lane.
 
 ## For the lead
 
@@ -113,7 +121,8 @@ B2 outside the owned list: seam.ts (flashGate, one member more than the design's
 course.ts (makeSeam flashGate; showWrong points instead of aim). Other parts' messages that name a gate (S's save problems,
 C's warnings) call seam.call('pointAt', index, reason) on their side.
 Deploy order: page only.
-B3: one new file, tools/bench/scripts/edit4b-probe.mjs (part B's probe). Live check after the deploy: `QUERY='&render=off'
+B3: one new file, tools/bench/scripts/edit4b-probe.mjs (part B's probe); one pin updated, tools/bench/test/editfix-e2.test.ts
+(the flying bar keeps Back to editing beside Exit). Live check after the deploy: `QUERY='&render=off'
 node tools/bench/scripts/edit4b-probe.mjs https://gsfpv.flyreelstudio.eu/en 70b50d42 1536x730 1.25 live-after <out>`:
 expect PASS 11/11 except that step 10 is judged on the refused floor gate there (Save is never pressed on the live site;
 the floor gates live only in the page). If edit4s changes what the top bar's Save does (today: it opens the window's save
@@ -126,3 +135,6 @@ part at the name), the probe's step 10 Save path (.ce-name, .ce-save-mine) needs
 - B2: most replies went to reading the hub (course.ts) for the flown gate pose, the project() path and showWrong; a
   design line naming gateFlownPose and the seam's lack of a paint path would have saved four. neg_control needs npx.cmd on
   Windows.
+- B3: most replies went to step 10 (a sentence naming a gate): an overlapping gate is not refused, the top bar's Save
+  opens the name first, and a new gate is framed by the hub; a design line naming the refusing path (Save mine with a
+  wall gate) would have saved six runs. The GPU lock waited about 15 minutes for another lane.
