@@ -1,0 +1,225 @@
+{
+ "base": "https://gsfpv.flyreelstudio.eu/en",
+ "tag": "live",
+ "steps": {
+  "1-frozen": {
+   "pass": false,
+   "settled": true,
+   "bg": [
+    0,
+    0,
+    0
+   ],
+   "draw": {
+    "plan": {
+     "draw": "accum",
+     "why": "ok"
+    },
+    "accumActive": true,
+    "splatEnabled": false
+   },
+   "bgShare": 0,
+   "notBg": [
+    [
+     43,
+     52,
+     44
+    ],
+    [
+     42,
+     49,
+     39
+    ],
+    [
+     39,
+     47,
+     36
+    ],
+    [
+     44,
+     53,
+     42
+    ]
+   ]
+  },
+  "2-moved": {
+   "pass": false,
+   "moved3m": true,
+   "bgShare": 0,
+   "notBg": [
+    [
+     43,
+     52,
+     44
+    ],
+    [
+     42,
+     49,
+     39
+    ],
+    [
+     39,
+     47,
+     36
+    ],
+    [
+     44,
+     53,
+     42
+    ]
+   ]
+  },
+  "4-shading": {
+   "pass": false,
+   "topLuma": 206,
+   "sideLuma": 140,
+   "diff": 0.32,
+   "counts": {
+    "side": 397,
+    "other": 271,
+    "top": 484
+   },
+   "fog": {
+    "type": "none",
+    "start": 1,
+    "end": 1000
+   },
+   "far": 0,
+   "farLuma": null,
+   "nearLuma": 175,
+   "fogNearRatio": null,
+   "fogFarRatio": 1,
+   "farToward": false,
+   "designFarWithin30": null,
+   "nearAwayFromBg": 1,
+   "bgLuma": 0,
+   "bins": [
+    {
+     "m": "0-30",
+     "n": 0,
+     "on": null,
+     "off": null
+    },
+    {
+     "m": "30-60",
+     "n": 0,
+     "on": null,
+     "off": null
+    },
+    {
+     "m": "60-100",
+     "n": 0,
+     "on": null,
+     "off": null
+    },
+    {
+     "m": "100-150",
+     "n": 50,
+     "on": 172,
+     "off": 172
+    },
+    {
+     "m": "150-250",
+     "n": 14,
+     "on": 168,
+     "off": 168
+    },
+    {
+     "m": "250-1000",
+     "n": 0,
+     "on": null,
+     "off": null
+    }
+   ]
+  },
+  "5-cost": {
+   "pass": false,
+   "fogType": "none",
+   "msFogOn": 10.2,
+   "msFogOff": 10.1,
+   "on": [
+    10.2,
+    9.9,
+    10.6
+   ],
+   "off": [
+    10.1,
+    9.6,
+    10.3
+   ],
+   "uncapped": true
+  },
+  "3-lublin": {
+   "pass": false,
+   "walls": true,
+   "mode": "only",
+   "nearWalls": null,
+   "nearOccupied": 0,
+   "nearDrawn": true,
+   "statusSaysThin": false,
+   "status": "20 cm voxels · the whole scene: 41% drawn, to 848 m · 901k faces · about 6 s left",
+   "afterOverlay": {
+    "plan": {
+     "draw": "accum",
+     "why": "ok"
+    },
+    "accumActive": true,
+    "splatEnabled": true
+   }
+  },
+  "6-panel": {
+   "pass": true,
+   "1536x730": {
+    "w": 44,
+    "h": 44,
+    "inView": true,
+    "onTop": true,
+    "closed": true,
+    "ok": true
+   },
+   "844x390": {
+    "w": 44,
+    "h": 44,
+    "inView": true,
+    "onTop": true,
+    "closed": true,
+    "ok": true
+   }
+  }
+ },
+ "errors": [],
+ "wroclawWalls": {
+  "ok": true,
+  "s": 9
+ },
+ "picks": [
+  {
+   "want": "only",
+   "opened": true,
+   "open": true,
+   "mode": "only",
+   "lock": false
+  },
+  {
+   "want": "only",
+   "opened": true,
+   "open": true,
+   "mode": "only",
+   "lock": false
+  },
+  {
+   "want": "overlay",
+   "opened": false,
+   "open": true,
+   "mode": "overlay",
+   "lock": false
+  }
+ ],
+ "sceneClick": {
+  "lock": true,
+  "mode": "only",
+  "panelOpen": true
+ },
+ "seconds": 117,
+ "pass": false
+}
