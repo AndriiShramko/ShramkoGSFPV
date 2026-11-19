@@ -4,6 +4,7 @@
 // every change to the store at once and has no Apply button.
 import { h, clear, panel, fmt } from './dom';
 import { t } from '../i18n';
+import type { MenuLevel } from '@gsfpv/prefs';
 
 export function measurePanel(parent: HTMLElement, report: Record<string, unknown>, onClose: () => void): void {
     const p = panel(t('measure.title'), () => { p.close(); onClose(); });
@@ -43,8 +44,28 @@ export function replaysPanel(parent: HTMLElement, items: { label: string; play: 
     void clear;
 }
 
-export function warningModal(parent: HTMLElement, onOk: () => void): void {
+/**
+ * The answers of the first-visit question (docs/wip/menu-plan.md 2.1; the owner's three kinds of new pilot),
+ * in the order shown. `action` is the button's data-action: "Show me everything" keeps `warning-ok`, the
+ * single button of the notice before the question, so a bench that presses it still gets today's full menus.
+ */
+export const LEVEL_ANSWERS: readonly { level: MenuLevel; action: string }[] = [
+    { level: 'first', action: 'warning-first' },
+    { level: 'sim', action: 'warning-sim' },
+    { level: 'expert', action: 'warning-ok' }
+];
+
+/**
+ * "Before you fly": the motion notice and the question "Have you flown FPV before?". Each answer accepts the
+ * notice and names the menu level; `onAnswer` stores it (app/boot.ts). The first answer has the focus.
+ */
+export function warningModal(parent: HTMLElement, onAnswer: (level: MenuLevel) => void): void {
     const p = panel(t('warning.title'));
-    p.body.append(h('p', {}, t('warning.text')), h('button', { type: 'button', class: 'btn primary', 'data-action': 'warning-ok', onclick: () => { p.close(); onOk(); } }, t('warning.ok')));
+    const answers = LEVEL_ANSWERS.map(({ level, action }, i) => h('button', { type: 'button', class: i === 0 ? 'btn primary block level-answer' : 'btn block level-answer', 'data-action': action, 'data-level': level, onclick: () => { p.close(); onAnswer(level); } },
+        h('span', { class: 'level-name' }, t(`menu.level.${level}`)), h('span', { class: 'level-hint' }, t(`menu.level.${level}.hint`))));
+    p.body.append(h('p', {}, t('warning.text')),
+        h('div', { class: 'level-ask', role: 'group', 'aria-labelledby': 'level-ask-q' }, h('h3', { id: 'level-ask-q' }, t('menu.level.ask')), ...answers),
+        h('p', { class: 'muted' }, t('menu.level.later')));
     parent.append(p.root);
+    answers[0]?.focus({ preventScroll: true });
 }

@@ -1,0 +1,15 @@
+{
+  "menu.level.ask": "Вы уже летали FPV?",
+  "menu.level.first": "Никогда. Пусть будет просто",
+  "menu.level.first.hint": "Мало кнопок, и дрон помогает лететь.",
+  "menu.level.sim": "Да, в других симуляторах или по-настоящему",
+  "menu.level.sim.hint": "Режим полёта, рейты, угол камеры и ваш пульт, под знакомыми названиями.",
+  "menu.level.expert": "Покажите всё",
+  "menu.level.expert.hint": "Все кнопки и все настройки сразу.",
+  "menu.level.later": "Это можно изменить в любой момент: Настройки, Экран, Меню.",
+  "menu.more": "Ещё ({n})",
+  "menu.showAll": "Всегда показывать всё",
+  "menu.settings.showAll": "Показать все настройки (ещё {n})",
+  "menu.settings.inFull": "В полном меню",
+  "menu.settings.changed": "Изменено"
+}
