@@ -71,8 +71,9 @@ export const KEYMAP: readonly KeyBinding[] = [
     { action: 'walls.toggle', keys: [letter('C')], when: 'always', labelKey: 'keys.walls.toggle', status: 'shipped' },
     // v0.2 (app/builtin/hud.ts): every text on the flight view off / on
     { action: 'hud.toggle', keys: [letter('H')], when: 'always', labelKey: 'keys.hud.toggle', status: 'shipped' },
-    // train 4, lane ux4a (complaint U1): Shift+H opens the Messages list (the last 50 lines, a problem's Send to the author); bound nowhere else
-    { action: 'messages.open', keys: [{ code: 'KeyH', shift: true, cap: 'Shift+H', aria: 'Shift+H' }], when: 'always', labelKey: 'keys.messages.open', status: 'shipped' },
+    // train 4, lane ux4a (complaint U1): Shift+L (L for the last lines) opens the Messages list (the last 50 lines, a problem's Send to the
+    // author). Not Shift+H: that is head4's head centring in the sound mode, live since car 1 (integration int4, the seam of both)
+    { action: 'messages.open', keys: [{ code: 'KeyL', shift: true, cap: 'Shift+L', aria: 'Shift+L' }], when: 'always', labelKey: 'keys.messages.open', status: 'shipped' },
     // [ ] step the scene size x1.1; with Shift x2 (0.25 to 100 is 9 Shift presses, not 63)
     { action: 'scale.down', keys: [{ code: 'BracketLeft', cap: '[', aria: '[' }, { code: 'BracketLeft', shift: true, cap: 'Shift+[', aria: 'Shift+[' }], when: 'always', labelKey: 'keys.scale.down', status: 'shipped' },
     { action: 'scale.up', keys: [{ code: 'BracketRight', cap: ']', aria: ']' }, { code: 'BracketRight', shift: true, cap: 'Shift+]', aria: 'Shift+]' }], when: 'always', labelKey: 'keys.scale.up', status: 'shipped' },

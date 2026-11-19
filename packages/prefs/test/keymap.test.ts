@@ -96,8 +96,8 @@ const ADDED_AFTER_DESIGN: Record<string, string[]> = {
     'sonic.headCentre': ['Shift+H'],
     // train 3, lane sonic3: Backslash, Fly by Sound on and off in place
     'flyBySound.toggle': ['\\'],
-    // train 4, lane ux4a: Shift+H, the Messages list
-    'messages.open': ['Shift+H']
+    // train 4, lane ux4a: Shift+L, the Messages list
+    'messages.open': ['Shift+L']
 };
 
 /**
@@ -119,7 +119,7 @@ const SHIPPED_BY_TRACKS: readonly string[] = ['course.toggle', 'course.generate'
 // lane tracks edits only the list above, lane rooms only the list below.
 /** Lane rooms: both, since 'Fly with others' is in every pilot's menu (lane rooms-public; review RV-1's list). */
 const SHIPPED_BY_ROOMS: readonly string[] = ['rooms.panel', 'rooms.who'];
-/** Train 4, lane ux4a: Shift+H opens the Messages list (app/builtin/hud.ts). */
+/** Train 4, lane ux4a: Shift+L opens the Messages list (app/builtin/hud.ts). */
 const SHIPPED_BY_UX4A: readonly string[] = ['messages.open'];
 
 const press = (code: string, extra: Partial<KeyPress> = {}): KeyPress => ({ code, shiftKey: false, ...extra });
@@ -194,7 +194,7 @@ describe('v0.2 keys keep working', () => {
         expect(keysFor('mode.cycle')).toEqual([{ cap: 'M', aria: 'M' }]);
         expect(keysFor('arm.toggle')).toEqual([{ cap: 'Space', aria: 'Space' }]);
         for (const state of ['flight', 'crash'] as const) {
-            expect(actionFor(press('KeyM'), state)).toBe('mode.cycle');
+            expect(actionFor(press('KeyL'), state)).toBe('share.open');
             expect(actionFor(press('Space'), state)).toBeNull();
         }
         // control: the same M binding marked flying (as in wave 1) is never routed: a radio pilot's M did nothing (review C3, C12)
@@ -275,14 +275,18 @@ describe('the sound mode\'s keys exist only in the mode (v12-optin: when \'sonic
 });
 
 describe('the Messages list key (train 4, lane ux4a)', () => {
-    it('Shift+H opens Messages in flight and while crashed; H alone stays the HUD key', () => {
+    it('Shift+L opens Messages in flight and while crashed; L alone stays the Share key; Shift+H routes nothing outside the sound mode', () => {
         for (const state of ['flight', 'crash'] as const) {
-            expect(actionFor(press('KeyH', { shiftKey: true }), state)).toBe('messages.open');
-            expect(actionFor(press('KeyH'), state)).toBe('hud.toggle');
+            expect(actionFor(press('KeyL', { shiftKey: true }), state)).toBe('messages.open');
+            expect(actionFor(press('KeyL'), state)).toBe('share.open');
+            expect(actionFor(press('KeyH', { shiftKey: true }), state)).toBeNull();
+            // the seam of ux4a and head4 (int4): on a ?sonic= page Shift+H centres the head and Shift+L still opens Messages
+            expect(actionFor(press('KeyH', { shiftKey: true }), state, { sonic: true })).toBe('sonic.headCentre');
+            expect(actionFor(press('KeyL', { shiftKey: true }), state, { sonic: true })).toBe('messages.open');
         }
     });
-    it('control: a second action planted on Shift+H is caught as a double binding', () => {
-        const p = keymapProblems(plant({ action: 'test.h', keys: [{ code: 'KeyH', shift: true, cap: 'Shift+H', aria: 'Shift+H' }], status: 'shipped' }));
+    it('control: a second action planted on Shift+L is caught as a double binding', () => {
+        const p = keymapProblems(plant({ action: 'test.l', keys: [{ code: 'KeyL', shift: true, cap: 'Shift+L', aria: 'Shift+L' }], status: 'shipped' }));
         expect(p).toHaveLength(1);
         expect(p[0]).toContain('messages.open');
     });

@@ -8,7 +8,7 @@
 //   1 the route lifted, Pause -> "Generate course" again: a line appears, its font-size >= 16 px;
 //   3 the course's progress lines replace each other in place (never two nodes under the key course.progress);
 //   2 the "Gates: N ..." line stays at least shownMs(text) - 200 ms (messages-logic.ts: 3 s + 70 ms a character, 4-15 s);
-//   5 the top-row Messages button opens the list, which holds the lines of 1 and 4; Shift+H closes and opens it; its
+//   5 the top-row Messages button opens the list, which holds the lines of 1 and 4; Shift+L closes and opens it; its
 //     cross closes it; Esc closes it;
 //   6 every 100 ms every message rectangle: inside the view, over no top-row button and no OSD block, outside the
 //     middle third (wide view: its bottom above a third of the height; narrow or low: left of a third of the width).
@@ -243,25 +243,25 @@ async function runSize({ w, h, dsf }) {
             r.cross = x;
             await page.locator('.messages-panel .panel-x').first().click({ timeout: 3000 }).catch(() => 0); await page.waitForTimeout(400);
             r.crossCloses = !(await open());
-            // the pause menu Esc opened to free the mouse goes with its own Esc; then Shift+H works in the flight
+            // the pause menu Esc opened to free the mouse goes with its own Esc; then Shift+L works in the flight
             r.menuAfterList = await page.locator('[data-action="pause.continue"]').isVisible().catch(() => false);
             if (r.menuAfterList) { await page.keyboard.press('Escape'); await page.waitForTimeout(500); }
-            await page.keyboard.press('Shift+KeyH'); await page.waitForTimeout(400);
+            await page.keyboard.press('Shift+KeyL'); await page.waitForTimeout(400);
             r.shiftHOpens = await open();
-            await page.keyboard.press('Shift+KeyH'); await page.waitForTimeout(400);
+            await page.keyboard.press('Shift+KeyL'); await page.waitForTimeout(400);
             r.shiftHCloses = !(await open());
-            await page.keyboard.press('Shift+KeyH'); await page.waitForTimeout(400);
+            await page.keyboard.press('Shift+KeyL'); await page.waitForTimeout(400);
             const again = await open();
             r.lockBeforeEsc = await page.evaluate(() => !!document.pointerLockElement);
             await page.keyboard.press('Escape'); await page.waitForTimeout(400);
             r.menuAfterEsc = await page.locator('[data-action="pause.continue"]').isVisible().catch(() => false);
             r.escCloses = again && !(await open());
         }
-        step(5, 'the top-row Messages button opens the list with 1 and 4; Shift+H toggles it; its cross and Esc close it',
+        step(5, 'the top-row Messages button opens the list with 1 and 4; Shift+L toggles it; its cross and Esc close it',
             has && r.opened && r.hasProblem && r.hasReady && r.cross && r.cross.w >= 44 && r.cross.h >= 44 && r.shiftHCloses && r.shiftHOpens && r.crossCloses && r.escCloses, r);
     } catch (e) { step(5, 'the Messages list', false, { error: errText(e) }); }
 
-    // ---- 7 (the review's step): the pause menu's Messages item names its key; one press of Shift+H there opens the list ----
+    // ---- 7 (the review's step): the pause menu's Messages item names its key; one press of Shift+L there opens the list ----
     try {
         const open = () => page.evaluate(() => { const p = document.querySelector('.messages-panel'); return !!p && p.getBoundingClientRect().height > 0; });
         const r = {};
@@ -271,16 +271,16 @@ async function runSize({ w, h, dsf }) {
         if (!(await menuUp())) await page.locator('.top-actions [data-action=pause]').click({ timeout: 5000 });
         await page.waitForTimeout(400);
         r.menu = await menuUp();
-        r.itemKey = (await page.locator('[data-action="pause.messages"]').first().textContent({ timeout: 3000 }).catch(() => '') ?? '').includes('Shift+H');
-        await page.keyboard.press('Shift+KeyH'); await page.waitForTimeout(500);
+        r.itemKey = (await page.locator('[data-action="pause.messages"]').first().textContent({ timeout: 3000 }).catch(() => '') ?? '').includes('Shift+L');
+        await page.keyboard.press('Shift+KeyL'); await page.waitForTimeout(500);
         r.opened = await open();
         await page.keyboard.press('Escape'); await page.waitForTimeout(400);
         r.escCloses = !(await open());
-        step(7, 'with the pause menu up, key Shift+H (named on its Messages item) opens the list at one press; Esc closes it', r.menu && r.itemKey && r.opened && r.escCloses, r);
-    } catch (e) { step(7, 'Shift+H in the pause menu', false, { error: errText(e) }); }
+        step(7, 'with the pause menu up, key Shift+L (named on its Messages item) opens the list at one press; Esc closes it', r.menu && r.itemKey && r.opened && r.escCloses, r);
+    } catch (e) { step(7, 'Shift+L in the pause menu', false, { error: errText(e) }); }
 
     // ---- 8 (the review's repair): in the course editor's edit mode (key Shift+B, the course of steps 1-3) the pilot
-    //      presses three keys that work only in flight (Shift+H, Shift+N, P): the page says once, in place, what to press
+    //      presses three keys that work only in flight (Shift+L, Shift+N, P): the page says once, in place, what to press
     //      (one line, no amber problem, no "Send to the author") and the line goes by itself (it stayed for good before) ----
     try {
         const edit = () => page.evaluate(() => !!document.querySelector('.course-editor:not(.ce-flying)'));
@@ -291,7 +291,7 @@ async function runSize({ w, h, dsf }) {
         if (await page.locator('[data-action="pause.continue"]').isVisible().catch(() => false)) { await page.keyboard.press('Escape'); await page.waitForTimeout(500); }
         await page.keyboard.press('Shift+KeyB'); await page.waitForTimeout(2500);
         r.editMode = await edit();
-        for (const k of ['Shift+KeyH', 'Shift+KeyN', 'KeyP']) { await page.keyboard.press(k); await page.waitForTimeout(400); }
+        for (const k of ['Shift+KeyL', 'Shift+KeyN', 'KeyP']) { await page.keyboard.press(k); await page.waitForTimeout(400); }
         const now = await lines();
         r.lines = now.length;
         r.said = now[0]?.text ?? null;

@@ -1,6 +1,6 @@
 // The Messages list (lane ux4a, complaint U1: "a problem must say what it is and whom to tell"): every line the
 // message service (ui/messages.ts) showed, newest first, with its time and kind; a problem keeps what to do and a
-// "Send to the author" button. Opened by Shift+H (action messages.open, app/builtin/hud.ts), by the top-row button
+// "Send to the author" button. Opened by Shift+L (action messages.open, app/builtin/hud.ts), by the top-row button
 // (messagesButton, app/builtin/top.ts) and by the "+N more in Messages" line of the stack. Esc and its 44 px cross
 // close it (app/builtin/pause.ts closeTop finds the .panel-x).
 import { h } from './dom';
@@ -72,7 +72,7 @@ export function openMessages(host: MessagesHost, center: MessageCenter = message
     return root;
 }
 
-/** Shift+H and the top-row button: a second press closes the list; over another window it does nothing (that window has the keys). */
+/** Shift+L and the top-row button: a second press closes the list; over another window it does nothing (that window has the keys). */
 export function toggleMessages(host: MessagesHost, center: MessageCenter = messages): boolean {
     const open = host.parent.querySelector<HTMLElement>(SELECTOR);
     if (open) { open.querySelector<HTMLButtonElement>('.panel-x')?.click(); return true; }
