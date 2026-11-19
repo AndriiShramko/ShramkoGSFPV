@@ -5,9 +5,11 @@ Owner's words: brief lines 533-536 (the Fly by Sound page's top menu says "Fly n
 ## Status
 
 - [x] Stage 1: the audit (probe on the live site) and the design (this file): 51f7dac4
-- [ ] Stage 2: the repairs, each with a check in apps/site/scripts/verify.mjs or a unit test that fails on origin/main
-  - [x] 2a: MainCta in config/site.ts, header + bottom bar per page, home band button, lang anchor, consent dock; unit test apps/site/test/main-cta.test.ts (7 pass, NEG OK)
-  - [ ] 2b: verify.mjs checks (static + browser) with their negative control
+- [x] Stage 2: the repairs, each with a check in apps/site/scripts/verify.mjs or a unit test that fails on origin/main
+  - [x] 2a: MainCta in config/site.ts, header + bottom bar per page, home band button, lang anchor, consent dock; unit test apps/site/test/main-cta.test.ts (7 pass, NEG OK): 3c0c2caf
+  - [x] 2b: verify.mjs checks (static + browser): 296/296 on the local build; negative control (neg_control.py swapped the 8 page/component files to origin/main, rebuilt): 269/296, the 27 failing are exactly the new checks (band x4, sound header/bar/keep-clear x12, scene template x4, clicks 1536x730 and 375x667 x4, language anchor, banner 320x568 and 320x640). Logs U:/Temp/gsfpv-train4/site4/verify.log, neg-verify.log
+  - Note: no joined person has a scene today, so the person-page check loops over nobody; the code passes `fly` to both buttons (row 4). apps/site/out now holds the origin/main build of the negative control: stage 3 rebuilds first.
+  - Note: the privacy hook refuses Bash commands that name verify.mjs (the file holds the public contact address): edit it with Edit, run it through `pnpm verify` or `node scripts/verify.mjs` from apps/site.
 - [ ] Stage 3: the acceptance (tools/bench/scripts/site4-links.mjs on a local build, the same probe on the live site must fail), the gates, the status parts
 
 ## Audit (stage 1)
@@ -55,3 +57,4 @@ Probe: `node tools/bench/scripts/site4-links.mjs https://gsfpv.flyreelstudio.eu 
 ## Cost notes
 
 - Stage 1: most replies went to finding where each page's main button is built (Header, StickyCTA, the API scene templates); one probe on the live site gave the whole audit table in one run.
+- Stage 2: the most replies went to the smoke's first runs (serve.mjs needs python on PATH; a navigation request carries no #anchor; a missing bottom bar made a click throw on the old build). Cheaper: start the server with the PATH export from the start, and make every click in a check catch its own timeout.

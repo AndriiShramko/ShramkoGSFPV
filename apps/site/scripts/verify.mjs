@@ -885,7 +885,7 @@ for (const mode of ["ok", "fail"]) {
 // (bottom bar); a language switch keeps the anchor; the cookie banner never lies over the sound page's start button.
 {
   const clickTo = async (page, loc) => {
-    const [req] = await Promise.all([page.waitForRequest((r) => r.isNavigationRequest() && r.frame() === page.mainFrame(), { timeout: 8000 }).catch(() => null), loc.click()]);
+    const [req] = await Promise.all([page.waitForRequest((r) => r.isNavigationRequest() && r.frame() === page.mainFrame(), { timeout: 8000 }).catch(() => null), loc.click({ timeout: 5000 }).catch(() => null)]);
     return req ? new URL(req.url()) : null;
   };
   for (const [w, h, where] of [[1536, 730, "header"], [375, 667, "aside"]]) {
@@ -903,7 +903,7 @@ for (const mode of ["ok", "fail"]) {
     const page = await ctx.newPage();
     await page.goto(`${BASE}/en/sound/#sound-keys`, { waitUntil: "networkidle" });
     // a navigation request carries no #anchor: the address the page lands on does
-    await page.locator("header a[data-lang='pl']").click();
+    await page.locator("header a[data-lang='pl']").click({ timeout: 5000 }).catch(() => null);
     const u = await page.waitForURL(/\/pl\/sound\//, { timeout: 8000 }).then(() => new URL(page.url())).catch(() => null);
     ok("en/sound/#sound-keys: the header's language switch to pl keeps the page and the anchor", !!u && u.pathname === "/pl/sound/" && u.hash === "#sound-keys", u ? u.pathname + u.hash : "no navigation");
     await ctx.close();
