@@ -94,3 +94,48 @@ export class LoadRun {
         return p;
     }
 }
+
+/**
+ * The page's one scene load at a time (app/scene-host.ts). next() starts a new run and cancels the run before it
+ * ('replaced') at once; the new run waits for `prev.settled` before it touches the renderer, so two loads never
+ * share it. A third pick while the second still waits cancels the second the same way: the last pick wins.
+ */
+export class LoadSlot {
+    private cur: LoadRun | null = null;
+
+    /** the run started last (it may have ended) */
+    get current(): LoadRun | null {
+        return this.cur;
+    }
+
+    /** a load is under way: started and not ended */
+    get loading(): boolean {
+        return !!this.cur && !this.cur.done;
+    }
+
+    /** A new run; `prev`: the run it replaced, still unwinding (await its settled first), or null. */
+    next(): { run: LoadRun; prev: LoadRun | null } {
+        const old = this.cur;
+        const run = new LoadRun();
+        this.cur = run;
+        if (!old || old.done) return { run, prev: null };
+        old.cancel('replaced');
+        return { run, prev: old };
+    }
+
+    /** The pilot's Cancel: the run under way stops; false when none was. */
+    cancel(): boolean {
+        if (!this.loading || this.cur!.why !== null) return false;
+        this.cur!.cancel('pilot');
+        return true;
+    }
+}
+
+/**
+ * What follows a cancelled load. 'picker': the pilot pressed Cancel, so the scene list opens (closing it brings
+ * back the scene flown before); 'replace': a new pick or key N stopped it, and that new load goes on at once.
+ * Before train 4 neither happened: a pick during a load was ignored.
+ */
+export function afterCancel(why: CancelWhy): 'picker' | 'replace' {
+    return why === 'pilot' ? 'picker' : 'replace';
+}

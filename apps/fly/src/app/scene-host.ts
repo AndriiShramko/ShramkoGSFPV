@@ -17,6 +17,9 @@
 // (@gsfpv/scenes rotation.ts).
 // The pause menu's "Change scan" opens the scene picker over the flight (openPicker): a scene picked
 // there loads the same way, so changing the scan by hand keeps the radio too (item 5).
+// A load can be stopped (train 4, lane ux4b; app/scene-load.ts): Cancel on the card (or key Esc) stops every fetch,
+// await and walls bake of it and opens the picker (closing it brings the scene left back); a new pick or key N
+// during a load replaces it at once (LoadSlot: the last pick wins, one load on the renderer at a time).
 import { SUPERSPLAT_READ_MS, SceneError, SceneRotation, flyQueryString, getLibrary, legacyLibraryStore, mergeLibraries, orderFor, parseSceneLink, recordFailure, recordOpen, sameRender, useLibraryStore, writeSceneQuery } from '@gsfpv/scenes';
 import type { CatalogCollection, RotationRules, RotationSource, RotationOrder, SceneLibraryData, SceneRender, SceneTour, TourFrom } from '@gsfpv/scenes';
 import type { PrefsStore } from '@gsfpv/prefs';
@@ -38,6 +41,8 @@ import type { FlightContext, SceneRef, SceneSwitchReason, SceneSwitcher } from '
 import { drawingFor } from './drawing';
 import { noteNextUsed } from './next-used';
 import { pageTour } from './tour';
+import { LoadSlot, abortable, afterCancel, isCancelled } from './scene-load';
+import type { LoadRun } from './scene-load';
 
 /** A SuperSplat read that has taken this long says "looking for the next scene" (an answer in the blink of an eye says nothing). */
 const LOOKING_AFTER_MS = 600;
@@ -63,7 +68,10 @@ export class SceneHost implements SceneSwitcher {
     readonly rotation: SceneRotation;
     /** N and the scene after a crash from the owner's catalogue: his scenes, then SuperSplat (app/tour.ts) */
     readonly tour: SceneTour;
-    private busyNow = false;
+    /** the one scene load at a time: a new pick or key N cancels the load under way, Cancel on the card stops it (lane ux4b) */
+    private readonly slot = new LoadSlot();
+    /** the scene the load under way brings (a second pick of it lets that load go on) */
+    private target: { id: string; render?: SceneRender } | null = null;
     /** go() is deciding which scene (SuperSplat may have to be asked): no second decision meanwhile */
     private picking = false;
     /** the "looking for the next scene" note is due when this fires (searching) */
@@ -88,8 +96,19 @@ export class SceneHost implements SceneSwitcher {
         this.lookingTimer = setTimeout(() => this.d.ctx.hud.flash(t('rotation.looking'), LOOKING_FLASH_MS), LOOKING_AFTER_MS);
     }
 
+    /** the next scene is being chosen (N waits); a load under way is not busy: a new pick replaces it */
     get busy(): boolean {
-        return this.busyNow || this.picking;
+        return this.picking;
+    }
+
+    /** a scene is loading (the card is up) */
+    get loading(): boolean {
+        return this.slot.loading;
+    }
+
+    /** Cancel on the loading card (or key Esc there): the load stops and the scene list opens. */
+    cancelLoad(): boolean {
+        return this.slot.cancel();
     }
 
     private rules(): RotationRules {
@@ -128,8 +147,18 @@ export class SceneHost implements SceneSwitcher {
      * Continue card. A pick loads in the page; x or Esc closes it and the flight goes on.
      */
     openPicker(): void {
+        // asked for while a scene loads: that is the pilot's Cancel (the list opens once the load has stopped)
+        if (this.slot.loading) { this.cancelLoad(); return; }
+        this.showPicker(null);
+    }
+
+    /**
+     * The picker; `back`: the scene left was already let go (a cancelled load disposed it), so closing the list
+     * or picking that scene again loads it back instead of resuming.
+     */
+    private showPicker(back: (() => void) | null): void {
         const { ctx, showcase } = this.d;
-        if (this.picker || this.busyNow) return;
+        if (this.picker) return;
         ctx.pause('scene');
         if (ctx.menu.isOpen) ctx.menu.close();
         const picker = new ScenePicker(ctx.ui, [...showcase], [...(this.d.collections ?? [])]);
@@ -150,7 +179,8 @@ export class SceneHost implements SceneSwitcher {
             this.picker = null;
             offKeys();
             removeEventListener('keydown', onKey, true);
-            if (resume) ctx.resume('scene');
+            if (resume && back) back();
+            else if (resume) ctx.resume('scene');
         };
         addEventListener('keydown', onKey, true);
         picker.root.prepend(h('button', { type: 'button', class: 'panel-x', 'data-action': 'scenes-close', 'aria-label': t('common.close'), 'aria-keyshortcuts': 'Escape', title: `${t('common.close')} (Esc)`, onclick: () => close(true) }, '×'));
@@ -167,7 +197,8 @@ export class SceneHost implements SceneSwitcher {
     }
 
     async go(kind: 'next' | 'random' | 'favourite' | 'auto'): Promise<boolean> {
-        if (this.busy) return false;
+        // only a choice already being made waits; a load under way is replaced by the scene chosen now
+        if (this.picking) return false;
         // N and Shift+N, whatever pressed them (key, radio switch, panel button, the crash hint): the pilot knows N now
         if (kind === 'next' || kind === 'random') noteNextUsed();
         this.picking = true;
@@ -196,12 +227,61 @@ export class SceneHost implements SceneSwitcher {
      * own parameters are rewritten), and a load that fails goes back to the scene flown as any other reason does.
      */
     async load(id: string, reason: SceneSwitchReason, render?: SceneRender): Promise<boolean> {
+        const { ctx } = this.d;
+        const tgt = this.target;
+        if (this.slot.loading) {
+            // the scene already on its way: that load goes on
+            if (tgt && tgt.id === id && sameRender(render, tgt.render)) return false;
+        } else if (id === ctx.scene.id && reason !== 'back' && sameRender(render, ctx.scene.render)) return false;
+        // a load under way is cancelled at once ('replaced'); this one starts once it has unwound
+        const { run, prev } = this.slot.next();
+        this.target = render ? { id, render } : { id };
+        const out = await run.watch(this.runLoad(run, prev, id, reason, render));
+        if (this.slot.current === run) this.target = null;
+        if (out.kind === 'done') return true;
+        if (out.kind === 'cancelled') {
+            if (run.why && afterCancel(run.why) === 'picker') this.afterPilotCancel(out.from, out.fromRender, out.fromTitle);
+            return false;
+        }
+        // a newer pick is loading already: it decides what comes next
+        if (this.slot.current !== run) return false;
+        // the scene left loaded a moment ago: back to it; when even that fails, the picker
+        if (reason !== 'back' && out.from !== id) {
+            await this.load(out.from, 'back', out.fromRender);
+            ctx.hud.flash(t('rotation.failed', { id }), 5000);
+            return false;
+        }
+        location.search = '';
+        return false;
+    }
+
+    /**
+     * The pilot cancelled a load: the scene left is already let go (its session was disposed when the load began),
+     * so the scene list opens at once; a pick there loads as any pick does, closing it (cross or key Esc) or picking
+     * the scene left loads that one back and says so.
+     */
+    private afterPilotCancel(from: string, fromRender: SceneRender | undefined, title: string): void {
+        const { ctx } = this.d;
+        ctx.hud.flash(t('load.cancel.done'), 4000);
+        this.showPicker(() => {
+            void this.load(from, 'back', fromRender).then((ok) => { if (ok) ctx.hud.flash(t('load.cancel.back', { title }), 4000); });
+        });
+    }
+
+    /** One load of `id` (load() above decides whether it runs and what follows it). */
+    private async runLoad(run: LoadRun, prev: LoadRun | null, id: string, reason: SceneSwitchReason, render?: SceneRender): Promise<LoadOutcome> {
         const { ctx, canvas, showcase, base } = this.d;
-        if (this.busyNow || (id === ctx.scene.id && reason !== 'back' && sameRender(render, ctx.scene.render))) return false;
-        this.busyNow = true;
+        // the load this one replaced unwinds first (every await of it is abortable): one load on the renderer at a time
+        if (prev) await prev.settled;
         const t0 = performance.now();
         const from = ctx.scene.id;
         const fromRender = ctx.scene.render;
+        const fromTitle = ctx.scene.meta?.title ?? from;
+        if (run.signal.aborted) {
+            // replaced again while it waited: it never began
+            hook.sceneSwitch = { state: 'cancelled', from, to: id, reason, why: run.why, ms: 0 };
+            return { kind: 'cancelled', from, fromRender, fromTitle };
+        }
         hook.sceneSwitch = { state: 'loading', from, to: id, reason };
         ctx.pause('scene');
         if (ctx.menu.isOpen) ctx.menu.close();
@@ -218,7 +298,8 @@ export class SceneHost implements SceneSwitcher {
             compact: true,
             onRetry: () => location.reload(),
             onBack: () => { location.search = ''; },
-            onFlyNow: () => flyNow.press()
+            onFlyNow: () => flyNow.press(),
+            onCancel: () => run.cancel('pilot')
         });
         // the channels the craft flies with now: the new scene's first life starts with them (C.4 'scene')
         const ch = old.sim ? Array.from(old.sim.ch) : null;
@@ -241,32 +322,32 @@ export class SceneHost implements SceneSwitcher {
             // the gusts go on with the same seed in the next scene
             windSeed: old.windSeed,
             flyNow,
+            // every fetch, await and walls bake of this load stops when it is cancelled
+            signal: run.signal,
             onProgress: (p) => {
                 loading.update(p);
                 hook.loading = { stage: p.stage, loaded: p.loaded, total: p.total, fraction: p.fraction, exact: p.exact, elapsedMs: Math.round(performance.now() - t0), view: p.view, reveal: p.reveal, canFlyNow: p.canFlyNow, revealInMs: p.revealInMs };
             }
         };
         old.dispose();
-        let next: FlightSession;
+        let next: FlightSession | undefined;
         try {
             next = await FlightSession.start(canvas, opts);
-            await next.visible;
+            await abortable(next.visible, run.signal);
         } catch (e) {
             loading.remove();
+            if (isCancelled(e, run.signal)) {
+                // not a failure: no record, no "did not load" line; the session started is let go (its splats, walls, bake)
+                next?.dispose();
+                hook.sceneSwitch = { state: 'cancelled', from, to: id, reason, why: run.why, ms: Math.round(performance.now() - t0) };
+                return { kind: 'cancelled', from, fromRender, fromTitle };
+            }
             const code = e instanceof SceneError ? e.code : 'generic';
             recordFailure(id, code);
             this.log.push({ from, to: id, reason, ok: false, ms: Math.round(performance.now() - t0), code });
             hook.sceneSwitch = { state: 'failed', from, to: id, reason, code };
-            this.busyNow = false;
             console.warn(`scene ${id} did not load`, e);
-            // the scene left loaded a moment ago: back to it; when even that fails, the picker
-            if (reason !== 'back' && from !== id) {
-                await this.load(from, 'back', fromRender);
-                ctx.hud.flash(t('rotation.failed', { id }), 5000);
-                return false;
-            }
-            location.search = '';
-            return false;
+            return { kind: 'failed', from, fromRender, fromTitle };
         }
         if (base.drawScan !== false) next.renderer.startLatencyGuard(q.get('guard') !== '0');
         if (q.get('inflight') !== null) next.renderer.maxFramesInFlight = Number(q.get('inflight'));
@@ -284,10 +365,17 @@ export class SceneHost implements SceneSwitcher {
         this.log.push({ from, to: id, reason, ok: true, ms });
         hook.sceneSwitch = { state: 'done', from, to: id, reason, ms };
         beacon('scene_switch', { reason, has_collision: !!next.collision, load_ms_bucket: Math.round(ms / 1000) }, { scene_id: id });
-        this.busyNow = false;
         ctx.resume('scene');
-        return true;
+        return { kind: 'done', from, fromRender, fromTitle };
     }
+}
+
+/** How one load ended, and the scene flown before it (load() goes back to it after a failure or a Cancel). */
+interface LoadOutcome {
+    kind: 'done' | 'cancelled' | 'failed';
+    from: string;
+    fromRender?: SceneRender;
+    fromTitle: string;
 }
 
 /** The v0.2 keys were merged into the store's library once (set after the merge). */

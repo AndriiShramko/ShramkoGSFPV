@@ -4,7 +4,7 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { LoadCancelled, LoadRun, abortable, isCancelled } from '../../../apps/fly/src/app/scene-load';
+import { LoadCancelled, LoadRun, LoadSlot, abortable, afterCancel, isCancelled } from '../../../apps/fly/src/app/scene-load';
 import { BakeCancelledError, bakeBase } from '../../../apps/fly/src/bake';
 import type { BakeResult } from '../../../apps/fly/src/bake';
 
@@ -105,5 +105,103 @@ describe('the load path carries the signal (by reading the code)', () => {
         expect(w).toContain('bake: bakeOffThread, signal: stop.signal');
         expect(w).toMatch(/limits: fake, signal: stop\.signal \}\)/);
         expect(w).toMatch(/dispose: \(\) => \{\s+stop\.abort\(\);/);
+    });
+});
+
+// B-2: the flow. A fake load of three abortable steps stands for SceneHost.runLoad (DOM and engine stay out).
+const wait = (ms = 5): Promise<void> => new Promise((r) => setTimeout(r, ms));
+
+/** SceneHost.load in small: slot.next(), wait for the run replaced, then three steps; the log says what ran. */
+function fakeHost(log: string[]): { load(id: string): Promise<'done' | 'cancelled'>; slot: LoadSlot } {
+    const slot = new LoadSlot();
+    const runLoad = async (run: LoadRun, prev: LoadRun | null, id: string): Promise<'done' | 'cancelled'> => {
+        if (prev) await prev.settled;
+        if (run.signal.aborted) { log.push(`${id}:never`); return 'cancelled'; }
+        log.push(`${id}:start`);
+        try {
+            for (const step of ['lookup', 'splats', 'walls']) {
+                await abortable(wait(40), run.signal);
+                log.push(`${id}:${step}`);
+            }
+        } catch (e) {
+            if (isCancelled(e, run.signal)) { log.push(`${id}:cancelled:${run.why}`); return 'cancelled'; }
+            throw e;
+        }
+        return 'done';
+    };
+    return {
+        slot,
+        load(id) {
+            const { run, prev } = slot.next();
+            return run.watch(runLoad(run, prev, id));
+        }
+    };
+}
+
+describe('ux4b B-2: a pick during a load replaces it, Cancel stops it', () => {
+    it('afterCancel: the pilot\'s Cancel opens the scene list, a new pick goes on at once', () => {
+        expect(afterCancel('pilot')).toBe('picker');
+        expect(afterCancel('replaced')).toBe('replace');
+    });
+
+    it('a second pick cancels the first at once and starts only after the first unwound (one load on the renderer)', async () => {
+        const log: string[] = [];
+        const host = fakeHost(log);
+        const a = host.load('lublin');
+        await wait(55); // lublin is past its lookup
+        const b = host.load('wroclaw');
+        expect(host.slot.current?.why).toBeNull();
+        expect(await a).toBe('cancelled');
+        expect(await b).toBe('done');
+        expect(log).toEqual(['lublin:start', 'lublin:lookup', 'lublin:cancelled:replaced', 'wroclaw:start', 'wroclaw:lookup', 'wroclaw:splats', 'wroclaw:walls']);
+        expect(host.slot.loading).toBe(false);
+    });
+
+    it('three quick picks: the last wins, the middle one never begins', async () => {
+        const log: string[] = [];
+        const host = fakeHost(log);
+        const a = host.load('a');
+        const b = host.load('b');
+        const c = host.load('c');
+        expect(await Promise.all([a, b, c])).toEqual(['cancelled', 'cancelled', 'done']);
+        expect(log.filter((l) => l.startsWith('b'))).toEqual(['b:never']);
+        expect(log.filter((l) => l.startsWith('c'))).toEqual(['c:start', 'c:lookup', 'c:splats', 'c:walls']);
+    });
+
+    it('Cancel stops the load under way with why pilot; with none under way it says false', async () => {
+        const log: string[] = [];
+        const host = fakeHost(log);
+        expect(host.slot.cancel()).toBe(false);
+        const a = host.load('lublin');
+        await wait(55);
+        const t0 = Date.now();
+        expect(host.slot.cancel()).toBe(true);
+        expect(host.slot.cancel()).toBe(false); // a second press changes nothing
+        expect(await a).toBe('cancelled');
+        expect(Date.now() - t0).toBeLessThan(15); // at once, not after the step it was in
+        expect(log).toEqual(['lublin:start', 'lublin:lookup', 'lublin:cancelled:pilot']);
+        expect(host.slot.loading).toBe(false);
+    });
+
+    it('the host: no refusal while busy, the load\'s signal goes to the session, a cancel is no failure, Cancel on the card', () => {
+        const hs = text('apps/fly/src/app/scene-host.ts');
+        expect(hs).not.toContain('busyNow');
+        expect(hs).toContain('signal: run.signal');
+        expect(hs).toContain("onCancel: () => run.cancel('pilot')");
+        expect(hs).toMatch(/await abortable\(next\.visible, run\.signal\)/);
+        // the cancelled branch returns before recordFailure and the failure line
+        const cancelled = hs.slice(hs.indexOf('if (isCancelled(e, run.signal))'), hs.indexOf('const code = e instanceof SceneError'));
+        expect(cancelled).toContain("state: 'cancelled'");
+        expect(cancelled).toContain('next?.dispose()');
+        expect(cancelled).not.toContain('recordFailure');
+        expect(hs).toMatch(/if \(this\.picking\) return false;/);
+        const ld = text('apps/fly/src/ui/loading.ts');
+        expect(ld).toContain("'data-action': 'load-cancel'");
+        expect(ld).toContain("'aria-keyshortcuts': 'Escape'");
+        for (const l of ['en', 'es', 'pl', 'ru']) {
+            const j = JSON.parse(text(`packages/i18n/locales/fly/load/${l}.json`)) as Record<string, string>;
+            for (const k of ['load.cancel', 'load.cancel.key', 'load.cancel.done', 'load.cancel.back']) expect(j[k], `${l} ${k}`).toBeTruthy();
+            expect(j['load.cancel.back']).toContain('{title}');
+        }
     });
 });

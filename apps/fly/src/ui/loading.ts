@@ -36,6 +36,8 @@ export interface LoadingOptions {
     onFlyNow?: () => void;
     /** a scene switch in flight (E.4): a small card over the flight view instead of the whole screen */
     compact?: boolean;
+    /** Cancel (lane ux4b): stop this load; the button and key Esc on the card; none: no Cancel */
+    onCancel?: () => void;
 }
 
 const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
@@ -66,6 +68,9 @@ export class LoadingScreen {
     private readonly flyNowBtn: HTMLButtonElement;
     private readonly retryBtn: HTMLButtonElement;
     private readonly backBtn: HTMLButtonElement;
+    private readonly cancelBtn: HTMLButtonElement | null;
+    /** key Esc on the card is Cancel while the card is up (removed by finish and remove) */
+    private readonly onEsc: ((e: KeyboardEvent) => void) | null;
     /** the first view's numbers last time they changed (a wait is only "long" while nothing changes) */
     private viewSig = '';
     private viewAt = performance.now();
@@ -93,7 +98,11 @@ export class LoadingScreen {
         this.flyNowBtn = h('button', { type: 'button', class: 'btn primary', 'data-action': 'load-fly-now', hidden: true, onclick: () => o.onFlyNow?.() }, t('load.flyNow')) as HTMLButtonElement;
         this.retryBtn = h('button', { type: 'button', class: 'btn', 'data-action': 'load-retry', hidden: true, onclick: () => o.onRetry() }, t('loading.retry')) as HTMLButtonElement;
         this.backBtn = h('button', { type: 'button', class: 'btn', 'data-action': 'load-back', hidden: true, onclick: () => o.onBack() }, t('loading.back')) as HTMLButtonElement;
-        const actions = h('div', { class: 'load-actions' }, this.flyNowBtn, this.retryBtn, this.backBtn);
+        const cancel = o.onCancel;
+        this.cancelBtn = cancel
+            ? h('button', { type: 'button', class: 'btn', 'data-action': 'load-cancel', 'aria-keyshortcuts': 'Escape', title: `${t('load.cancel')} (${t('load.cancel.key')})`, onclick: () => cancel() }, t('load.cancel')) as HTMLButtonElement
+            : null;
+        const actions = h('div', { class: 'load-actions' }, this.flyNowBtn, this.retryBtn, this.backBtn, ...(this.cancelBtn ? [this.cancelBtn] : []));
         this.root = h('div', { class: o.compact ? 'loading compact' : 'loading', 'data-testid': 'loading', 'data-stage': 'connect', 'data-indeterminate': true, 'aria-busy': 'true' },
             h('div', { class: 'load-card' },
                 h('div', { class: 'load-poster' }, img),
@@ -106,6 +115,18 @@ export class LoadingScreen {
                 this.srEl,
                 actions));
         parent.append(this.root);
+        // the Cancel is there from the first moment: a wrong pick is stopped before any byte comes
+        this.root.toggleAttribute('data-actions', !!this.cancelBtn);
+        this.onEsc = cancel
+            ? (e: KeyboardEvent): void => {
+                // a dialog or the scene list over the card closes itself on Esc
+                if (e.key !== 'Escape' || e.repeat || document.querySelector('#ui .panel, dialog[open]')) return;
+                e.preventDefault();
+                e.stopPropagation();
+                cancel();
+            }
+            : null;
+        if (this.onEsc) addEventListener('keydown', this.onEsc, true);
         this.render();
         this.timer = window.setInterval(() => this.render(), 250);
     }
@@ -233,7 +254,7 @@ export class LoadingScreen {
         this.retryBtn.hidden = !actions;
         this.backBtn.hidden = !actions;
         this.flyNowBtn.hidden = !p.canFlyNow;
-        this.root.toggleAttribute('data-actions', actions || p.canFlyNow);
+        this.root.toggleAttribute('data-actions', actions || p.canFlyNow || !!this.cancelBtn);
     }
 
     /** The first view while it is prepared: files in place, splats on screen, files on their way. */
@@ -256,6 +277,8 @@ export class LoadingScreen {
         this.render();
         this.finished = true;
         clearInterval(this.timer);
+        // the scan is in: nothing left to cancel
+        this.offCancel();
         // shown before it was whole (the pilot's Fly now, a long silence): say why, and leave the bar where the bytes left it
         const partial = !!this.p?.partial;
         const why = this.p?.reveal ?? null;
@@ -286,6 +309,12 @@ export class LoadingScreen {
     remove(): void {
         this.finished = true;
         clearInterval(this.timer);
+        this.offCancel();
         this.root.remove();
+    }
+
+    private offCancel(): void {
+        if (this.cancelBtn) this.cancelBtn.hidden = true;
+        if (this.onEsc) removeEventListener('keydown', this.onEsc, true);
     }
 }

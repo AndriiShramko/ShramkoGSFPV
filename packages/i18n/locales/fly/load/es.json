@@ -6,5 +6,9 @@
   "load.view.loading": "archivos en camino: {n}",
   "load.view.soon": "se muestra en {s} s como mucho",
   "load.reveal.pilot": "Elegiste volar ya: el resto del escaneo sigue cargando mientras vuelas.",
-  "load.reveal.stall": "No llegó nada en 30 s, así que ves lo que ya está; el resto sigue cargando mientras vuelas."
+  "load.reveal.stall": "No llegó nada en 30 s, así que ves lo que ya está; el resto sigue cargando mientras vuelas.",
+  "load.cancel": "Cancelar",
+  "load.cancel.key": "tecla Esc",
+  "load.cancel.done": "Carga detenida. Elige otra escena o cierra la lista para volver.",
+  "load.cancel.back": "De vuelta en {title}"
 }
