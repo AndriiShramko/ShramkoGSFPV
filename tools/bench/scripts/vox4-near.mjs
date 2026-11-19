@@ -33,7 +33,31 @@ try {
         const s = await page.evaluate(() => {
             const v = window.__gsfpv.voxels.stats();
             const p = window.__gsfpv.session.renderer.camera.getPosition();
-            return { state: v.state, whole: v.whole, share: v.share, detail: v.detail, wallChunks: v.wallChunks, plannedChunks: v.plannedChunks, perLevel: v.perLevel, inFlight: v.inFlight, pendingUploads: v.pendingUploads, dropped: v.dropped, cam: [p.x, p.y, p.z].map((n) => Math.round(n * 100) / 100), near: v.near };
+            // the column under the camera (3x3 chunks across, every height), read from the controller's own maps
+            const c = window.__gsfpv.voxels, col = c.col, size = c.size;
+            let column = null;
+            if (col && c.occupied) {
+                const cm = size * col.voxelResolution, f = col.flipXY ? -1 : 1;
+                const dims = [Math.ceil(col.numVoxelsX / size), Math.ceil(col.numVoxelsY / size), Math.ceil(col.numVoxelsZ / size)];
+                const cx = Math.floor((f * p.x - col.gridMinX) / cm), cy = Math.floor((f * p.y - col.gridMinY) / cm), cz = Math.floor((p.z - col.gridMinZ) / cm);
+                const cells = [];
+                for (let z = cz - 1; z <= cz + 1; z++) for (let x = cx - 1; x <= cx + 1; x++) for (let y = 0; y < dims[1]; y++) {
+                    if (x < 0 || z < 0 || x >= dims[0] || z >= dims[2]) continue;
+                    const key = (z * dims[1] + y) * dims[0] + x;
+                    if (!c.occupied.has(key)) continue;
+                    // a far chunk may be drawn by a group mesh (overlay.ts groupKey: sides 2, 4, 8)
+                    let k = key;
+                    if (!c.wanted.has(k) && !c.loaded.has(k)) [2, 4, 8].some((g, slot) => {
+                        const gd = dims.map((d) => Math.ceil(d / g));
+                        const gk = -1 - ((((Math.floor(z / g) * gd[1] + Math.floor(y / g)) * gd[0] + Math.floor(x / g)) * 3) + slot);
+                        if (c.wanted.has(gk) || c.loaded.has(gk)) { k = gk; return true; }
+                        return false;
+                    });
+                    cells.push({ key, y, group: k !== key ? k : null, wanted: c.wanted.get(k) ?? null, loaded: c.loaded.get(k) ?? null, pending: c.overlay?.pending(String(k)) ?? false });
+                }
+                column = { camChunk: [cx, cy, cz], dims, gridY: [col.gridMinY, col.gridMinY + col.numVoxelsY * col.voxelResolution], cells };
+            }
+            return { state: v.state, whole: v.whole, share: v.share, detail: v.detail, wallChunks: v.wallChunks, plannedChunks: v.plannedChunks, perLevel: v.perLevel, inFlight: v.inFlight, pendingUploads: v.pendingUploads, dropped: v.dropped, cam: [p.x, p.y, p.z].map((n) => Math.round(n * 100) / 100), near: v.near, column, spawn: window.__gsfpv.session.spawn };
         });
         s.t = Math.round((Date.now() - t1) / 100) / 10;
         r.samples.push(s);
@@ -61,5 +85,6 @@ try {
     await browser.close();
 }
 writeFileSync(out, JSON.stringify(r, null, 1));
-console.log(JSON.stringify({ status: r.status, verdict: r.verdict, errors: r.errors.slice(0, 3), last: r.samples.length ? { ...r.samples[r.samples.length - 1], near: undefined } : null }));
+const lastS = r.samples.length ? r.samples[r.samples.length - 1] : null;
+console.log(JSON.stringify({ status: r.status, verdict: r.verdict, errors: r.errors.slice(0, 3), last: lastS ? { ...lastS, near: undefined, column: lastS.column ? { ...lastS.column, cells: lastS.column.cells.length, notWanted: lastS.column.cells.filter((x) => x.wanted === null).length, notLoaded: lastS.column.cells.filter((x) => x.loaded === null).length, levels: lastS.column.cells.map((x) => `${x.y}:${x.wanted}/${x.loaded}`).join(' ') } : null } : null }));
 process.exit(code);

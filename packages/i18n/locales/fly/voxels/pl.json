@@ -9,5 +9,8 @@
   "voxels.panel.fold": "Zwiń panel",
   "voxels.panel.unfold": "Rozwiń panel",
   "voxels.panel.close": "Zamknij",
-  "voxels.legendOff": "Ukryj siatkę wokseli"
+  "voxels.legendOff": "Ukryj siatkę wokseli",
+  "voxels.nearThin": "Pod dronem ściany są prawie puste (skan jest tu słaby): woksele pokazują dziurę, a dron nie uderzy tu w ziemię.",
+  "voxels.nearThinOnly": "Wybierz „{mode}”, aby zobaczyć skan.",
+  "voxels.outsideWalls": "Dron jest poza ścianami tego skanu: woksele są tylko w ich wnętrzu."
 }

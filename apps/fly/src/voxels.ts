@@ -7,6 +7,8 @@
 // in their own colour (no longer walls), and its panel's preview adds a translucent plane at the height.
 import { VoxelOverlay, VOXEL_STYLES } from '@gsfpv/render-pc';
 import type { VoxelFog, VoxelStyle } from '@gsfpv/render-pc';
+import { nearWalls } from './voxel-near';
+import type { NearChunkState, NearSummary } from './voxel-near';
 import { FLOATER_MIN_BLOCKS_MAX, ceilingCut, chunkDims, chunksNear, groupKey, overlapKeys, overlayChunkSize, planChunksAround, validCeiling } from '@gsfpv/collision';
 import type { CeilingCut, PlannedChunk, VoxelCollision } from '@gsfpv/collision';
 import { KEEPER_EVERY_MS, drawnShare, fillLeftS, keeperStep, trimFillSamples, type FillSample } from './voxel-keeper';
@@ -117,24 +119,10 @@ export interface VoxelStats {
     uploadMs: number;
     uploadMaxMs: number;
     error: string | null;
-    /** voxux4 V2: the chunks right around the camera (27 inside the grid), null before the walls are ready */
+    /** voxux4 V2: the chunks under and around the camera (collision chunksNear), null before the walls are ready */
     near: NearChunkState[] | null;
-}
-
-/** What the view holds of one chunk next to the camera (VoxelStats.near). */
-export interface NearChunkState {
-    key: number;
-    /** it holds a wall cell (the walls after the floater filter) */
-    occupied: boolean;
-    /** the level the plan wants it at / drawn at (null: none); a far group mesh covering it counts as its level */
-    wanted: number | null;
-    loaded: number | null;
-    /** its mesh waits in the upload queue or at the worker */
-    pending: boolean;
-    /** faces at the drawn level, when measured */
-    quads: number | null;
-    /** the group mesh (negative key) that draws it, if any */
-    group: number | null;
+    /** voxux4 V2: what the walls hold there (voxel-near.ts nearWalls), null before the walls are ready */
+    nearWalls: NearSummary | null;
 }
 
 export class VoxelController {
@@ -680,18 +668,20 @@ export class VoxelController {
             uploadMs: o?.uploadMs ?? 0,
             uploadMaxMs: o?.uploadMaxMs ?? 0,
             error: this.error,
-            near: this.nearState()
+            ...this.nearState()
         };
     }
 
-    /** VoxelStats.near: the plan and the drawing of the chunks right around the camera. */
-    private nearState(): NearChunkState[] | null {
+    /** VoxelStats.near and nearWalls: the plan and the drawing of the chunks under and around the camera. */
+    private nearState(): { near: NearChunkState[] | null; nearWalls: NearSummary | null } {
         const col = this.col;
-        if (!col || !this.occupied) return null;
+        if (!col || !this.occupied) return { near: null, nearWalls: null };
         const p = this.session.renderer.camera.getPosition();
         const dims = chunkDims(col, this.size);
         const inFlight = (k: number): boolean => [...this.inFlight].some((id) => id.startsWith(`${k}:`));
-        return chunksNear(col, this.size, p.x, p.y, p.z).chunks.map((c) => {
+        const found = chunksNear(col, this.size, p.x, p.y, p.z);
+        const columns = new Set(found.chunks.map((c) => c.z * dims[0] + c.x)).size;
+        const near = found.chunks.map((c): NearChunkState => {
             let key = c.key;
             let group: number | null = null;
             if (!this.wanted.has(key) && !this.loaded.has(key)) {
@@ -712,6 +702,7 @@ export class VoxelController {
                 group
             };
         });
+        return { near, nearWalls: nearWalls(found.inside, columns, this.size, near) };
     }
 
     /** Everything wanted is drawn (tests and screenshots wait for it). */
