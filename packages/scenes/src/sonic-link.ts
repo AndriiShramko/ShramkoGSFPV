@@ -6,6 +6,9 @@
 //   sonic=<lesson>     the lesson (an id of the sound package's lessons), or `start`: the start screen
 //   scene=<id>&sz=<s>  the scan a lesson flies and its Scene size, written for a lesson that flies a scan (the lesson's own world
 //                      decides what is flown, so they name it; the reader of `sz` is the shared settings' own, shared-settings.ts)
+//   course=<link>      the course flown in that scan (lane n-share, the owner's wish 2 of 2026-11-20: a flight by sound with gates
+//                      shared opens the same gates): the course feature's own parameter (apps/fly course/link.ts), carried as an
+//                      opaque token (a saved course's `<id>.v<n>`, a generated one's `g1.`/`g2.`/`g3.` link), only with a scene
 //   st=<theme>         the sound theme
 //   sc=1               calm mode (0: off)
 //   sh=up-lower        the height tone: up is a lower tone (up-higher: the usual)
@@ -41,11 +44,13 @@ export interface SonicLink {
     /** the scan a scan lesson flies, and its Scene size */
     scene?: string;
     size?: number;
+    /** the course flown in that scan, as the course feature's `course=` names it (opaque here; only with a scene) */
+    course?: string;
     sound: SonicLinkSound;
 }
 
 /** The query parameter of each part, in the order they are written (the size is the shared settings' own `sz`). */
-export const SONIC_LINK_PARAMS = { lesson: 'sonic', scene: 'scene', size: SHARED_PARAMS.size, theme: 'st', calm: 'sc', height: 'sh', frame: 'sf' } as const;
+export const SONIC_LINK_PARAMS = { lesson: 'sonic', scene: 'scene', size: SHARED_PARAMS.size, course: 'course', theme: 'st', calm: 'sc', height: 'sh', frame: 'sf' } as const;
 
 /** The sound package's defaults of the settings a link carries (contract SonicPrefs, prefs.ts defaultPrefs). */
 export const SONIC_LINK_DEFAULTS: Required<SonicLinkSound> = { theme: 'soft', calm: false, heightPolarity: 'up-higher', listenerFrame: 'heading' };
@@ -54,6 +59,8 @@ export const SONIC_LINK_DEFAULTS: Required<SonicLinkSound> = { theme: 'soft', ca
 const ID = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const LESSON_MAX = 64;
 const THEME_MAX = 40;
+/** A course link token (course/link.ts: `<scene hex>-<8 hex>.v<n>`, `g1.<seed>`, `g2.<seed>.<level><spread>`, `g3.<seed>.<b|m|p><c|w|v>`). */
+export const COURSE_TOKEN = /^[0-9a-z][0-9a-z.-]{0,63}$/;
 
 /**
  * The link the page's query carries, or null when it has no `sonic` parameter (not a sonic link). `get` is URLSearchParams.get.
@@ -69,6 +76,8 @@ export function parseSonicLink(q: { get(name: string): string | null }): SonicLi
     // the size as a shared link reads it (a plain decimal in the Scene size range), and nothing else of the shared settings
     const size = parseSharedSettings({ get: (n) => (n === SONIC_LINK_PARAMS.size ? q.get(n) : null) }).size;
     if (size !== undefined) out.size = size;
+    const course = q.get(SONIC_LINK_PARAMS.course);
+    if (out.scene !== undefined && course !== null && COURSE_TOKEN.test(course)) out.course = course;
     const theme = q.get(SONIC_LINK_PARAMS.theme);
     if (theme !== null && theme.length <= THEME_MAX && ID.test(theme)) out.sound.theme = theme;
     const calm = q.get(SONIC_LINK_PARAMS.calm);
@@ -97,6 +106,7 @@ export function sonicLinkQuery(link: SonicLink): string {
     if (link.scene !== undefined && SCENE_ID_RE.test(link.scene)) {
         p.push(`${P.scene}=${link.scene}`);
         if (link.size !== undefined) p.push(`${P.size}=${sharedNumber(link.size, 3)}`);
+        if (link.course !== undefined && COURSE_TOKEN.test(link.course)) p.push(`${P.course}=${link.course}`);
     }
     const s = link.sound;
     if (s.theme !== undefined) p.push(`${P.theme}=${encodeURIComponent(s.theme)}`);

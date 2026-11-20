@@ -133,7 +133,8 @@ const SCENE_ID = /^[A-Za-z0-9_-]{1,64}$/;
 export function parseSonicParam(raw: string | null, query?: { get(name: string): string | null }): SonicRequest {
     const v = (raw ?? '').trim();
     if (v === '' || v === 'start' || v === 'menu') return { kind: 'start' };
-    if (v === 'scan' || v === SCAN_FREE_ID) {
+    // lane n-share: 'fly' is the free flight by sound a flight's Share writes (share/flight-link.ts SOUND_FREE)
+    if (v === 'scan' || v === 'fly' || v === SCAN_FREE_ID) {
         const sceneId = (query?.get('scene') ?? '').trim();
         const szRaw = (query?.get('sz') ?? '').trim();
         const size = /^\d+(\.\d+)?$/.test(szRaw) ? Number(szRaw) : szRaw === '' ? 1 : NaN;

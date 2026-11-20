@@ -21,13 +21,13 @@
 // key list says so, and the pause menu keeps the feedback form).
 import { bindingOf } from '@gsfpv/prefs';
 import { S, attitude } from '@gsfpv/sim-core';
-import { sonicLinkPath } from '@gsfpv/scenes/sonic-link';
 import { DICTS, SCAN_FREE_ID, createSceneSampler, createTranslator } from '@shramko/sonic-fpv';
 import { estimateSpeechS } from '@shramko/sonic-fpv/audio';
 import type { AnalyticWorldInfo, FlightSample, LessonDef, LessonWorldRef, SessionEvent, SonicWorld, SpeechLine, TrackFile } from '@shramko/sonic-fpv';
 import { FlightSession } from '../session';
 import { copyText } from '../share/clipboard';
-import { KeyHelp, keyHelpLines, lessonLink, shareLesson } from './mode-keys';
+import { KeyHelp, keyHelpLines, shareLesson, soundPlace } from './mode-keys';
+import { courseOfFlight, flightLink } from '../share/flight-link';
 import { keyHintsOn } from './key-hints';
 import { KeyNames } from './key-names';
 import { ProgressPanel, followProgress, progressNow } from './progress-panel';
@@ -507,7 +507,8 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
     ctx.hook.sonicLink = null;
     ctx.sonicShare = (via) => {
         const lesson = h.lesson;
-        const url = `${location.origin}${sonicLinkPath(lessonLink(lesson, entry.setup.prefs))}`;
+        // lane n-share: the scan, the course flown there and the way of flying (share/flight-link.ts, the one writer of a flight's address)
+        const url = flightLink(soundPlace(lesson, entry.setup.prefs, courseOfFlight(ctx.hook.course, location.search)), { origin: location.origin, locale: '' });
         const keys = copyKeys();
         ctx.hook.sonicLink = { url, copied: null };
         void shareLesson({

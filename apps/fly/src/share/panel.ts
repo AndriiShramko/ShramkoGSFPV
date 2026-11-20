@@ -19,6 +19,7 @@ import { SHARE_W, SHARE_H } from './picture';
 import { copyText } from './clipboard';
 import { dataUrlBytes, inFlight, instagramCaption, kindOf, shareApiBody, shareLink, targetHref, wordsKey } from './links';
 import type { ShareDrawing, ShareEntry } from './links';
+import type { LinkCourse } from './flight-link';
 import { sharedQuery } from '@gsfpv/scenes';
 import type { SharedSettings } from '@gsfpv/scenes';
 import './share.css';
@@ -46,6 +47,8 @@ export interface ShareRequest {
      * Scene size, walls, floater cleanup, wind, collision ceiling, drone. The link carries them and POST /api/share sends them.
      */
     shared?: SharedSettings;
+    /** lane n-share: the course flown (flight-link.ts courseOfFlight); one that travels makes the link the flight's address */
+    course?: LinkCourse;
     /** the crash's impact speed, m/s (the crash panel's words) */
     speed?: number;
 }
@@ -230,7 +233,7 @@ export function openSharePanel(host: ShareHost, req: ShareRequest): { close(): v
             }
         }
         if (closed) return;
-        const url = shareLink({ entry: req.entry, sceneId: req.scene.id, inCatalogue: req.scene.inCatalogue, at, pictureUrl, drawing, shared });
+        const url = shareLink({ entry: req.entry, sceneId: req.scene.id, inCatalogue: req.scene.inCatalogue, at, pictureUrl, drawing, shared, course: req.course });
         status.textContent = failed ? t('share.failed') : pictureUrl ? t('share.ready') : t('share.ready.page');
         show(url);
     })();
