@@ -749,8 +749,16 @@ export class EditView {
         t.hidden = false;
         const w = t.offsetWidth || 160;
         const h = t.offsetHeight || 28;
-        t.style.left = `${Math.round(Math.max(4, Math.min(window.innerWidth - w - 4, x + 18)))}px`;
-        t.style.top = `${Math.round(Math.max(4, Math.min(window.innerHeight - h - 4, y + 18)))}px`;
+        const left = Math.round(Math.max(4, Math.min(window.innerWidth - w - 4, x + 18)));
+        let top = Math.round(Math.max(4, Math.min(window.innerHeight - h - 4, y + 18)));
+        // int4: a handle just above the gate bar put the tag over the bar's buttons (edit4a step 13, 844x390): then it goes
+        // above the pointer
+        const bar = document.querySelector<HTMLElement>('.ce-gatebar')?.getBoundingClientRect();
+        if (bar && bar.height > 0 && left < bar.right && bar.left < left + w && top < bar.bottom && bar.top < top + h) {
+            top = Math.round(Math.max(4, Math.min(y - 18 - h, bar.top - h - 4)));
+        }
+        t.style.left = `${left}px`;
+        t.style.top = `${top}px`;
         if (ms > 0) {
             this.hoverTimer = window.setTimeout(() => {
                 this.hoverTimer = 0;

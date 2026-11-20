@@ -132,7 +132,10 @@ the dialog's options reaching gen4a's generator are car 3's seams)
   On the build with the nine walls the Walls chip puts the bar at y 109 (train 3 I2), so the window under it began at y 167:
   over the view's middle, where Home frames the gates (edit4a 13: no gate left to click), and over the cross of edit4c's
   Add list (s8). The window now stays at the top right and narrows to the room right of the bar (--ce-beside); only with
-  less than 260 px (BESIDE_MIN: a phone upright, a long language) does it start under the bar. int4-seams.test.ts, NEG OK.
+  less than 260 px (BESIDE_MIN: a phone upright, a long language) does it start under the bar. The room is measured from
+  the window's own right edge (64 px in on a low view, left of the sound button: the first try from the view's edge left
+  the window where it was). The same step found edit4a's hover tag lying on the gate bar when the hovered handle is just
+  above it: the tag then goes above the pointer and the bar (view-mouse.ts). int4-seams.test.ts, NEG OK.
 - Probes out of date after a merge (the product right, the probe repaired, each with the reason in the probe): edit4s s9
   (key G no longer makes a course in the editor since edit4b: the probe takes Course, Generate a new course, Yes);
   edit4c and edit4a (since edit4a a click selects without framing and the one gizmo has a size box on each axis: edit4c

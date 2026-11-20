@@ -118,8 +118,11 @@ export class TopBar {
         // room right of the bar (--ce-beside); only when less than BESIDE_MIN is left does it start under the bar
         // (--ce-topbar-bottom). Under the bar always (30ae9183) put the window over the view's middle, where the gates of a
         // framed course lie, and over edit4c's Add list when the Walls chip had pushed the bar down (int4 S2, 844x390).
+        // the window is anchored by its right edge (editor.css: 64 px in on a low view, left of the sound button), so the
+        // room is measured from that edge, which its width does not move
         const bar = this.root.getBoundingClientRect();
-        const room = Math.floor(window.innerWidth - bar.right - 16);
+        const win = this.ui.querySelector('.course-editor')?.getBoundingClientRect();
+        const room = Math.floor((win && win.width > 0 ? win.right : window.innerWidth - 8) - bar.right - 8);
         if (bar.height > 0 && room < BESIDE_MIN) {
             this.ui.style.setProperty('--ce-topbar-bottom', `${Math.round(bar.bottom)}px`);
             this.ui.style.removeProperty('--ce-beside');

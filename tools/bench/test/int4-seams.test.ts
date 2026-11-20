@@ -38,7 +38,9 @@ describe('int4: edit4b top bar x the editor window on a small view (edit4a step 
     });
     it('the window goes under the bar only when the room beside it is under BESIDE_MIN (under it always, the window lay over the gates in the view\'s middle and over edit4c\'s Add list: edit4a 13, edit4c s8 with walls at 844x390)', () => {
         const place = bar.slice(bar.indexOf('private readonly place = '), bar.indexOf('/** D6:'));
-        expect(place).toMatch(/const room = Math\.floor\(window\.innerWidth - bar\.right - 16\);/);
+        // measured from the window's own right edge: on a low view editor.css keeps it 64 px in (the sound button)
+        expect(place).toMatch(/const win = this\.ui\.querySelector\('\.course-editor'\)\?\.getBoundingClientRect\(\);/);
+        expect(place).toMatch(/const room = Math\.floor\(\(win && win\.width > 0 \? win\.right : window\.innerWidth - 8\) - bar\.right - 8\);/);
         expect(place).toMatch(/if \(bar\.height > 0 && room < BESIDE_MIN\) \{\s*this\.ui\.style\.setProperty\('--ce-topbar-bottom'/);
         expect(place).toMatch(/else \{\s*this\.ui\.style\.removeProperty\('--ce-topbar-bottom'\);\s*if \(bar\.height > 0\) this\.ui\.style\.setProperty\('--ce-beside', `\$\{room\}px`\);/);
         expect(bar).toMatch(/export const BESIDE_MIN = 260;/);
@@ -55,6 +57,17 @@ describe('int4: edit4b top bar x the editor window on a small view (edit4a step 
         const block = css.slice(start, css.indexOf('\n}', start));
         expect(block).toMatch(/width: min\(380px, 48vw, var\(--ce-beside, 380px\)\);/);
         expect(block).toMatch(/top: calc\(var\(--ce-topbar-bottom, calc\(max\(8px, var\(--top-row-bottom, 78px\)\) \+ 2px\)\) \+ 6px\);/);
+    });
+});
+
+describe('int4: edit4a hover tag x the gate bar (edit4a step 13, 844x390)', () => {
+    const vm = readFileSync(join(SRC, 'course/editor/view-mouse.ts'), 'utf8');
+    const show = vm.slice(vm.indexOf('private showHoverTag('), vm.indexOf('if (ms > 0)', vm.indexOf('private showHoverTag(')));
+    it('a tag that would lie on the gate bar goes above the pointer and the bar', () => {
+        expect(show).toMatch(/document\.querySelector<HTMLElement>\('\.ce-gatebar'\)\?\.getBoundingClientRect\(\)/);
+        expect(show).toMatch(/left < bar\.right && bar\.left < left \+ w && top < bar\.bottom && bar\.top < top \+ h/);
+        expect(show).toMatch(/top = Math\.round\(Math\.max\(4, Math\.min\(y - 18 - h, bar\.top - h - 4\)\)\);/);
+        expect(show).toMatch(/t\.style\.top = `\$\{top\}px`;/);
     });
 });
 
