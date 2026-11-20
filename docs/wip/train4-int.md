@@ -46,6 +46,17 @@ aa18f1e4 of origin/main; the lead's change of 17:50 UTC: car 2 takes the lanes w
       (probes8.sh with L=logs9-final), accept-fly, the gates once on the final tree; then S2 is done.
       2026-11-20: origin/main's lead note abdf4523 and two site commits (sound page texts) merged, 6f3b0da3; the final
       release build of that head, the probes (probes9.sh, logs9-final) and the gates follow.
+      Release build of 88ccd89e (1948 files, U:/Temp/gsfpv-train4/int4/build8.log) with the nine walls from
+      U:/Temp/gsfpv-train3/walls/release, served on :6180 (serve-csp, started in the background of the run that stopped:
+      kill it by its PID when done). Probes on it (logs9-final/summary.txt): edit4c, edit4b-course-life, edit4s,
+      ux4a-messages, ux4b-phone, head4-accept, edit-mouse-wroclaw, edit4a, ux4b-cancel, vox4, vox4-switch,
+      menu4-first-minute, tails4-start-moved all rc 0; site4-links rc 1 only at its scene step (needs a local API, as in
+      car 1); sound6-walk rc 1 at firefox 3 and 4 only (chromium PASS): AudioContext still 'suspended' 2 s after the click
+      and the first speech started 25.3 s late (0.8 s on logs8), the walk took 367 s against 206 s on logs8: a loaded
+      machine (other jobs held the GPU lock until 13:28), no sound code changed since logs8 PASS. accept-fly was still
+      running when the run stopped (the subscription's reserve hook, 86 % of the window, 2026-11-20 ~13:45 UTC).
+      Left: read logs9-final/accept-fly.log (B6-B16), rerun sound6-walk alone on :6180 (logs9-final/sound6-walk-2.log),
+      the gates once, commit the evidence (2026-11-19/int4, 2026-11-20 b-fly), kill the server; then S2 is done.
 - [ ] S3 the hand-over (Car 2 parts, U:/Temp/gsfpv-train4/int4.json)
 
 ## Progress
