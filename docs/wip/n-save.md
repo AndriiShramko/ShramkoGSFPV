@@ -13,7 +13,7 @@ Temp: U:/Temp/gsfpv-train4/n-save. Evidence: evidence/2026-11-20/n-save/.
 - [x] S2 fixAll: packages/tracks/src/autofix.ts (pure; the 26 ways of the cube at growing distances, each place judged by the
   proof on the gate before, the gate and the gate after; buried gates go straight up first; the later of two crowded gates
   moves; turned along the leg, between the legs within the level's tolerance); tests packages/tracks/test/autofix.test.ts (8)
-  and tools/bench/test/save-fix-one.test.ts (2: fixes.ts proposeFixes is fixAll for one gate); NEG OK on the base for both.
+  and tools/bench/test/save-fix-one.test.ts (2: fixes.ts proposeFixes is fixAll for one gate); NEG OK on the base for both. Commit 45ddad2d.
   n-route's route() is not merged in this tree (048629d is no ancestor), so the turn is along the leg.
 - [ ] S3 the dialog and the line: `save-warnings` with `save-fix-all`, `save-as-is`, `save-show-me`; `save-fixed` + `save-undo`;
   ghosts (flash.ts); blockers one plain line; the editor's message line at least 16 px, wraps to 3 lines, never "..."; fake-DOM
@@ -38,15 +38,9 @@ applyFixes :1065, saveMine :1833, saveAdmin :~1885 (the design named :893-1754);
 
 3. Fix all moves a gate in a wall, a gate under the ground and the later of two gates on one spot the short way to a valid
    place, keeps the order, turns a gate along its leg, names a blocked start as left over. Proof:
-    RUN  v5.0.1 C:/dev/gsfpv-t7-n-save (8 passed); NEG OK on 03624451.
+   `npx vitest run packages/tracks/test/autofix.test.ts` (8 passed); NEG OK on 03624451.
 4. The edit4s offer's turn and nudge are fixAll's repair of that one gate. Proof:
-    RUN  v5.0.1 C:/dev/gsfpv-t7-n-save
-
-
- Test Files  1 passed (1)
-      Tests  2 passed (2)
-   Start at  22:40:28
-   Duration  4.55s (import 50%, transform 36%, tests 13%) (2 + 9 passed); NEG OK.
+   `npx vitest run tools/bench/test/save-fix-one.test.ts tools/bench/test/edit4s-fixes.test.ts` (2 + 9 passed); NEG OK.
 
 ## Not verified
 
