@@ -34,6 +34,14 @@ describe('int4: edit4b top bar x the editor window on a small view (edit4a step 
     it('top-bar.ts writes its bottom edge on the shared parent and takes it away when it goes', () => {
         expect(bar).toMatch(/this\.ui\.style\.setProperty\('--ce-topbar-bottom', `\$\{Math\.round\(bar\.bottom\)\}px`\)/);
         expect(bar.match(/this\.ui\.style\.removeProperty\('--ce-topbar-bottom'\)/g) ?? []).toHaveLength(2);
+        expect(bar.match(/this\.ui\.style\.removeProperty\('--ce-beside'\)/g) ?? []).toHaveLength(3);
+    });
+    it('the window goes under the bar only when the room beside it is under BESIDE_MIN (under it always, the window lay over the gates in the view\'s middle and over edit4c\'s Add list: edit4a 13, edit4c s8 with walls at 844x390)', () => {
+        const place = bar.slice(bar.indexOf('private readonly place = '), bar.indexOf('/** D6:'));
+        expect(place).toMatch(/const room = Math\.floor\(window\.innerWidth - bar\.right - 16\);/);
+        expect(place).toMatch(/if \(bar\.height > 0 && room < BESIDE_MIN\) \{\s*this\.ui\.style\.setProperty\('--ce-topbar-bottom'/);
+        expect(place).toMatch(/else \{\s*this\.ui\.style\.removeProperty\('--ce-topbar-bottom'\);\s*if \(bar\.height > 0\) this\.ui\.style\.setProperty\('--ce-beside', `\$\{room\}px`\);/);
+        expect(bar).toMatch(/export const BESIDE_MIN = 260;/);
     });
     it('the bar is watched, but its own bottom never counts for --ce-below (it pushed itself down to mid-view)', () => {
         const place = bar.slice(bar.indexOf('private readonly place = '), bar.indexOf("'--ce-below'"));
@@ -41,11 +49,12 @@ describe('int4: edit4b top bar x the editor window on a small view (edit4a step 
         const loop = place.slice(place.indexOf('for (const p of parts) {'));
         expect(loop).toMatch(/^for \(const p of parts\) \{\s*(\/\/[^\n]*\n\s*)*if \(p === this\.root\) continue;/);
     });
-    it('in the small-view block the window starts under the bar', () => {
+    it('in the small-view block the window narrows to the room beside the bar, and starts under it only when told', () => {
         const start = css.indexOf('@media (max-width: 900px), (max-height: 500px) {');
         expect(start).toBeGreaterThan(0);
         const block = css.slice(start, css.indexOf('\n}', start));
-        expect(block).toMatch(/\.course-editor \{ top: calc\(var\(--ce-topbar-bottom, 130px\) \+ 6px\); \}/);
+        expect(block).toMatch(/width: min\(380px, 48vw, var\(--ce-beside, 380px\)\);/);
+        expect(block).toMatch(/top: calc\(var\(--ce-topbar-bottom, calc\(max\(8px, var\(--top-row-bottom, 78px\)\) \+ 2px\)\) \+ 6px\);/);
     });
 });
 

@@ -235,6 +235,9 @@ async function switchPath(page: Page, origin: string, who: string): Promise<void
             await sleep(100);
             s = await hook(page);
         }
+        // int4: the prefs store writes 250 ms after a change (packages/prefs store.ts debounceMs), so the saved path is awaited as
+        // after Full course above; read at once it was still 'full' whenever the lesson opened sooner (int4 S2, two runs of three)
+        for (let i = 0; i < 50 && (await savedPath(page)) !== 'fast'; i++) await sleep(100);
         v.afterQuick = await savedPath(page);
         v.lesson = s?.lesson ?? null;
     }

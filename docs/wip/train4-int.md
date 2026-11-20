@@ -35,8 +35,10 @@ aa18f1e4 of origin/main; the lead's change of 17:50 UTC: car 2 takes the lanes w
       Shift+H, dfeb1d03 (drag cancel closes the live tag; seam 'saved'; edit4a-camera); the two live checks' probes
       repaired (edit4b-probe step 10 on live, edit-mouse-probe d.controls through the Course menu); the window under the
       top bar on a small view (30ae9183, 56e6ed71); the probes out of date (see Seams). Release build of 56e6ed71 with the
-      nine walls on :6180; every lane probe and accept-fly on it (U:/Temp/gsfpv-train4/int4/probes4.sh, logs4). Left: the
-      probe results, then the gates once on the final tree.
+      nine walls on :6180; every lane probe and accept-fly on it (U:/Temp/gsfpv-train4/int4/probes4.sh, logs4): edit4a 13
+      and edit4c s8 failed at 844x390 with walls (the window under the bar lay over the gates and the Add list: repaired,
+      the window narrows beside the bar); head4-accept and sound6-walk 11 out of date (repaired in the probes); accept-fly
+      stopped at B10 on a page load timeout. Left: a new release build, the probes again, the gates once on the final tree.
 - [ ] S3 the hand-over (Car 2 parts, U:/Temp/gsfpv-train4/int4.json)
 
 ## Progress
@@ -127,12 +129,19 @@ the dialog's options reaching gen4a's generator are car 3's seams)
   bottom to --ce-topbar-bottom, editor.css uses it), 30ae9183. That first version also counted the bar's own bottom for
   --ce-below, so on a low view the bar pushed itself down to mid-view and edit4c's Add list under it ran past the
   bottom (edit4c s8 at 844x390): the bar is now watched for its size only, 56e6ed71. int4-seams.test.ts, NEG OK both.
+  On the build with the nine walls the Walls chip puts the bar at y 109 (train 3 I2), so the window under it began at y 167:
+  over the view's middle, where Home frames the gates (edit4a 13: no gate left to click), and over the cross of edit4c's
+  Add list (s8). The window now stays at the top right and narrows to the room right of the bar (--ce-beside); only with
+  less than 260 px (BESIDE_MIN: a phone upright, a long language) does it start under the bar. int4-seams.test.ts, NEG OK.
 - Probes out of date after a merge (the product right, the probe repaired, each with the reason in the probe): edit4s s9
   (key G no longer makes a course in the editor since edit4b: the probe takes Course, Generate a new course, Yes);
   edit4c and edit4a (since edit4a a click selects without framing and the one gizmo has a size box on each axis: edit4c
   presses F like the pilot, presses the move arrow itself, and on s2 takes Tab when a far gate's few pixels missed;
   edit4a step 11 clicks only gates that no handle of the selected gate covers); edit-mouse (the Keys table's rows press
-  their key, Esc left the editor); vox4 step 3 and ux4b-cancel (tails4 moved Lublin's start onto the ground).
+  their key, Esc left the editor); vox4 step 3 and ux4b-cancel (tails4 moved Lublin's start onto the ground); head4-accept
+  step 5 (sound6 replaced 'Start the course from the beginning' by Quick start, which the probe now clicks; also a live
+  check); sound6-walk 11 (the prefs store writes 250 ms after a change: the walk now waits for the saved 'fast' as it
+  already waited for 'full').
 - Car 1's two failed live checks (release aa18f1e4), both the check out of date, not the product:
   - edit4b-course-life step 10-pointed: on the live site Save is never pressed, and the course of step 6 already had a
     problem (gate 1 in a wall), so the step tried nothing (how: [], the 'pointed' it read was step 9's). The probe now,
