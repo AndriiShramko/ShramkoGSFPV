@@ -93,7 +93,7 @@ interface Screen {
 }
 
 /** The start screen of a page entered through ?sonic=start in `locale`, with the saved progress given, on a fresh document. */
-function open(o: { locale?: Locale; progress?: Record<string, LessonProgress>; current?: string | null; overFlight?: boolean; store?: ReturnType<typeof mkStore>; request?: ReturnType<ModelMod['parseSonicParam']>; experienced?: () => boolean; onFlies?: () => void; path?: 'full' | 'fast'; noWebAudio?: boolean } = {}): Screen {
+function open(o: { locale?: Locale; progress?: Record<string, LessonProgress>; current?: string | null; overFlight?: boolean; store?: ReturnType<typeof mkStore>; request?: ReturnType<ModelMod['parseSonicParam']>; experienced?: () => boolean; onFlies?: () => void; path?: 'full' | 'fast'; noWebAudio?: boolean; short?: boolean } = {}): Screen {
     doc = stubPage();
     const store = o.store ?? mkStore();
     for (const p of Object.values(o.progress ?? {})) storeMod.saveProgress(store, p);
@@ -119,6 +119,8 @@ function open(o: { locale?: Locale; progress?: Record<string, LessonProgress>; c
         resetProgress: () => storeMod.resetProgress(store),
         ...(o.overFlight ? { onClose: () => void closed.n++ } : {})
     }, doc.body as unknown as HTMLElement);
+    // lane gap-sound: the settings open at level 'first'; the tests written for the whole list press "Show all settings" first
+    if (!o.short) byTestId(doc, 'sonic-settings-all')!.click();
     return { s, setup, store, engine, started, closed, doc };
 }
 
@@ -217,17 +219,19 @@ describe('C2 (M41-2, W7): the course from the beginning, Continue, the 28 lesson
         s.dispose();
     });
 
-    it('lane sound6 S2 (c), with progress: "Continue: <the lesson left off on>" first, with its place and state, then Quick start, then Full course; Quick start opens lesson 1 and keeps the progress', () => {
+    it('lane sound6 S2 (c) as lane gap-sound orders it (line 531), with progress: Quick start first, primary and focused, then "Continue: <the lesson left off on>" with its place and state, then Full course; Quick start opens lesson 1 and keeps the progress', () => {
         const progress = { 'walls-hall': P('walls-hall', { passed: true, attempts: 5, successes: 3 }), 'hover-height': P('hover-height', { attempts: 2, skipped: true }), 'rings-first': P('rings-first', { attempts: 2, successes: 1 }) };
         const { s, started, store } = open({ progress, current: 'rings-first' });
         const buttons = byTestId(doc, 'sonic-start-continue')!.parentElement!.querySelectorAll('button').map((b) => b.getAttribute('data-testid'));
-        expect(buttons.slice(0, 3)).toEqual(['sonic-start-continue', 'sonic-start-quick', 'sonic-start-full']);
+        expect(buttons).toEqual(['sonic-start-quick', 'sonic-start-continue', 'sonic-start-full']);
+        s.show();
+        expect(focusedId(doc)).toBe('sonic-start-quick');
         const c = byTestId(doc, 'sonic-start-continue')!;
         expect(c.textContent).toContain(`Continue: ${titleOf('rings-first')}`);
         expect(c.textContent).toContain(`${placeOf('rings-first', 'fast')}, in progress`);
-        expect(c.className).toContain('primary');
+        expect(c.className).not.toContain('primary');
         const before = JSON.stringify(storeMod.allProgress(store));
-        expect(byTestId(doc, 'sonic-start-quick')!.className).not.toContain('primary');
+        expect(byTestId(doc, 'sonic-start-quick')!.className).toContain('primary');
         expect(byTestId(doc, 'sonic-start-full')!.textContent).toContain('Your progress is kept.');
         const b = byTestId(doc, 'sonic-start-quick')!;
         expect(b.textContent).toContain('Your progress is kept.');
@@ -325,7 +329,7 @@ const lastHeard = (e: SayingEngine): { text: string; interrupt: boolean } => {
 };
 /** The control the focus is on, by its test id (or id). */
 const focusedId = (d: FakeDocument): string => d.activeElement?.getAttribute('data-testid') ?? d.activeElement?.id ?? '';
-/** A fresh page as startSonic opens it: the screen shown, the focus on its h1. */
+/** A fresh page as startSonic opens it: the screen shown, the focus on its first Start button (lane gap-sound). */
 function shown(o: Parameters<typeof open>[0] = {}): Screen {
     const x = open(o);
     x.s.show();
@@ -336,7 +340,7 @@ function shown(o: Parameters<typeof open>[0] = {}): Screen {
 const STOPS = [
     ...['#sonic-sec-start', '#sonic-sec-headphones', '#sonic-sec-lessons', '#sonic-sec-settings'],
     'sonic-start-quick', 'sonic-start-full',
-    'sonic-hp-left', 'sonic-hp-right', 'sonic-hp-behind',
+    'sonic-hp-left', 'sonic-hp-right',
     ...lessonPaths().full.map((id) => `lesson:${id}`), 'sonic-reset',
     // v13-int step 3: sound from above and below after the target height note; the sound panel and the attitude display after the frame;
     // lane sonic-beacon: the target hum showing the way after sound from above and below
@@ -355,7 +359,9 @@ const stopName = (d: FakeDocument): string => {
 describe('C3 (M41-4, W13): the start screen and the mode\'s settings as a spoken list', () => {
     it('the first key of a fresh page starts the sound and the voice says how the list works, then the stop (after it, not over it); Down goes through every stop in the page\'s order and round, each said once, with its section\'s name when the focus comes into one', () => {
         const { s, engine, setup } = shown();
-        expect(doc.activeElement?.id).toBe('sonic-h1');
+        // lane gap-sound: the page opens on Quick start (one Enter starts); this walk starts from the h1, where a screen reader reads from
+        expect(focusedId(doc)).toBe('sonic-start-quick');
+        doc.querySelector('#sonic-h1')!.focus();
         // nothing said before a press: the browser speaks only after one
         expect(engine.said).toEqual([]);
         expect(setup.audio.ac).toBeNull();
@@ -377,7 +383,7 @@ describe('C3 (M41-4, W13): the start screen and the mode\'s settings as a spoken
         const at = (name: string): string => lines[STOPS.indexOf(name)]!;
         expect(at('sonic-start-quick')).toBe(`Start. Quick start. ${EN.say('menu.path.fast-what').replace(/\.$/, '')}. Item 1 of 2.`);
         expect(at('sonic-start-full')).toBe(`Full course. ${EN.say('menu.path.full-what').replace(/\.$/, '')}. Item 2 of 2.`);
-        expect(at('sonic-hp-left')).toBe('Check your headphones. Play a sound on the left. Item 1 of 3.');
+        expect(at('sonic-hp-left')).toBe('Check your headphones. Play a sound on the left. Item 1 of 2.');
         // a lesson says its own place and state, not an item number
         // a new pilot is on the fast path (lane sound6 S2): its lessons are counted on it
         expect(at('lesson:ears-headphones')).toBe(`Lessons. ${titleOf('ears-headphones')}. Lesson 1 of ${lessonPaths().fast.length}, not started, Fast path`);
@@ -405,9 +411,9 @@ describe('C3 (M41-4, W13): the start screen and the mode\'s settings as a spoken
         const { s, engine } = shown();
         doc.key('ArrowDown');
         byTestId(doc, 'sonic-hp-right')!.focus();
-        expect(lastHeard(engine)).toEqual({ text: 'Check your headphones. Play a sound on the right. Item 2 of 3.', interrupt: true });
+        expect(lastHeard(engine)).toEqual({ text: 'Check your headphones. Play a sound on the right. Item 2 of 2.', interrupt: true });
         doc.key('ArrowDown');
-        expect(stopName(doc)).toBe('sonic-hp-behind');
+        expect(stopName(doc)).toBe(`lesson:${lessonPaths().full[0]}`);
         // the navigation's Lessons link puts the focus on the section's heading: said, and Down goes to its first lesson
         doc.querySelector('[href="#sonic-sec-lessons"]')!.click();
         expect(doc.activeElement?.id).toBe('sonic-h-lessons');
@@ -415,11 +421,11 @@ describe('C3 (M41-4, W13): the start screen and the mode\'s settings as a spoken
         doc.key('ArrowDown');
         expect(stopName(doc)).toBe(`lesson:${lessonPaths().full[0]}`);
         doc.key('ArrowUp');
-        expect(stopName(doc)).toBe('sonic-hp-behind');
+        expect(stopName(doc)).toBe('sonic-hp-right');
         // Up from a heading is the stop just before it
         doc.querySelector('[href="#sonic-sec-lessons"]')!.click();
         doc.key('ArrowUp');
-        expect(stopName(doc)).toBe('sonic-hp-behind');
+        expect(stopName(doc)).toBe('sonic-hp-right');
         s.dispose();
     });
 
@@ -520,11 +526,11 @@ describe('C3 (M41-4, W13): the start screen and the mode\'s settings as a spoken
         byTestId(doc, 'sonic-motor-level')!.focus();
         const esc = doc.key('Escape');
         expect(esc.defaultPrevented).toBe(true);
-        expect(focusedId(doc)).toBe('sonic-start-continue');
-        expect(lastHeard(engine).text).toBe(`Start. Continue: ${titleOf('hover-height')}. ${placeOf('hover-height')}, in progress. Item 1 of 3.`);
+        expect(focusedId(doc)).toBe('sonic-start-quick');
+        expect(lastHeard(engine).text).toBe(`Start. Quick start. ${EN.say('menu.path.fast-what')} Your progress is kept. Item 1 of 3.`);
         const again = doc.key('Escape');
         expect(again.defaultPrevented).toBe(false);
-        expect(focusedId(doc)).toBe('sonic-start-continue');
+        expect(focusedId(doc)).toBe('sonic-start-quick');
         s.dispose();
         const over = shown({ overFlight: true });
         byTestId(doc, 'sonic-theme')!.focus();
@@ -554,7 +560,7 @@ describe('C3 (M41-4, W13): the start screen and the mode\'s settings as a spoken
         expect(setup.update({ selfVoice: false }).ok).toBe(true);
         const k = doc.key('ArrowDown');
         expect(k.defaultPrevented).toBe(false);
-        expect(doc.activeElement?.id).toBe('sonic-h1');
+        expect(focusedId(doc)).toBe('sonic-start-quick');
         byTestId(doc, 'sonic-theme')!.focus();
         expect(doc.key('ArrowRight').defaultPrevented).toBe(false);
         byTestId(doc, 'sonic-calm')!.click();
@@ -620,6 +626,7 @@ describe('v13-int step 3: sound from above and below, the sound panel and the at
         setup.head = headRig(store).head;
         if (o.selfVoice === false) expect(setup.update({ selfVoice: false }).ok).toBe(true);
         const s = new screenMod.StartScreen({ setup, locale: 'en', request: modelMod.parseSonicParam('start'), progress: () => storeMod.allProgress(store), current: () => storeMod.currentLesson(store), onStart: () => undefined }, doc.body as unknown as HTMLElement);
+        byTestId(doc, 'sonic-settings-all')!.click();
         s.show();
         return { s, setup, store, engine: pe, started: [], closed: { n: 0 }, doc, pe };
     }
@@ -876,5 +883,65 @@ describe('lane sound6 S4: a sound that did not start says so on the screen, with
             const tr = createTranslator(l, DICTS);
             expect(keys.filter((k) => !tr.has(k)), l).toEqual([]);
         }
+    });
+});
+
+// ------------------------------------------------------------------ lane gap-sound (the owner's line 531)
+
+describe('lane gap-sound: Quick start first and focused for every pilot, no sound behind, the settings at level first', () => {
+    const settingIds = (): string[] => doc.querySelector('#sonic-sec-settings')!.querySelectorAll('[data-testid]').map((x) => x.getAttribute('data-testid') ?? '').filter((x) => x.startsWith('sonic-') && !x.startsWith('sonic-gain-') && !x.startsWith('sonic-pitch-'));
+
+    it('a returning pilot (a lesson left off on): Quick start is the first button, primary and focused when the screen opens; Continue is second and says what it resumes; a first visit the same', () => {
+        const progress = { 'corridor': P('corridor', { attempts: 2, successes: 1 }) };
+        const back = shown({ progress, current: 'corridor', short: true });
+        const group = byTestId(doc, 'sonic-start-quick')!.parentElement!;
+        expect(group.querySelectorAll('button').map((b) => b.getAttribute('data-testid'))).toEqual(['sonic-start-quick', 'sonic-start-continue', 'sonic-start-full']);
+        expect(focusedId(doc)).toBe('sonic-start-quick');
+        expect(byTestId(doc, 'sonic-start-quick')!.className).toContain('primary');
+        expect(byTestId(doc, 'sonic-start-continue')!.textContent).toContain(`Continue: ${titleOf('corridor')}`);
+        // Enter on the focused button is the native click: the quick path's first lesson
+        byTestId(doc, 'sonic-start-quick')!.click();
+        expect(back.started).toEqual(['ears-headphones']);
+        back.s.dispose();
+        const fresh = shown({ short: true });
+        expect(focusedId(doc)).toBe('sonic-start-quick');
+        fresh.s.dispose();
+    });
+
+    it('the headphone check offers left and right only, and no sonic locale keeps a line about a sound behind', () => {
+        const { s } = open({ short: true });
+        const hp = doc.querySelector('#sonic-sec-headphones')!.querySelectorAll('button').map((b) => b.getAttribute('data-testid'));
+        expect(hp).toEqual(['sonic-hp-left', 'sonic-hp-right']);
+        expect(Object.keys(screenMod.HEADPHONE_DIRS)).toEqual(['left', 'right']);
+        s.dispose();
+        for (const l of ['en', 'es', 'pl', 'ru'] as const) {
+            const keys = Object.keys(JSON.parse(readFileSync(new URL(`../../../packages/i18n/locales/fly/sonic/${l}.json`, import.meta.url), 'utf8')) as object);
+            expect(keys.filter((k) => /behind/.test(k)), l).toEqual([]);
+        }
+    });
+
+    it('the settings show the rows of level first and "Show all settings (12 more)"; its press shows all 18 and puts the focus on the first new row; a shared link with a sound setting shows all', () => {
+        const { s, engine } = shown({ short: true });
+        expect(settingIds()).toEqual(['sonic-rate', 'sonic-captions', 'sonic-sr', 'sonic-narrator', 'sonic-key-hints', 'sonic-head', 'sonic-settings-all']);
+        const all = byTestId(doc, 'sonic-settings-all')!;
+        expect(all.tagName).toBe('BUTTON');
+        expect(all.textContent).toBe('Show all settings (12 more)');
+        // a stop of the spoken list like any other
+        doc.key('ArrowDown');
+        all.focus();
+        expect(lastHeard(engine).text).toBe('Settings. Show all settings (12 more). Item 7 of 7.');
+        all.click();
+        expect(byTestId(doc, 'sonic-settings-all')).toBeNull();
+        expect(settingIds()).toHaveLength(17);
+        expect(doc.querySelector('#sonic-sec-settings')!.querySelector('summary')).not.toBeNull();
+        expect(focusedId(doc)).toBe('sonic-theme');
+        expect(lastHeard(engine).text).toBe('Sound theme: Soft. Item 1 of 18.');
+        // it stays open for this page (a redraw after a change keeps it)
+        byTestId(doc, 'sonic-calm')!.click();
+        s.render();
+        expect(byTestId(doc, 'sonic-settings-all')).toBeNull();
+        s.dispose();
+        expect(Object.entries(screenMod.SONIC_SETTING_LEVELS).every(([, v]) => v === 'first')).toBe(true);
+        expect(screenMod.sonicSettingLevel('sonic-theme')).toBe('expert');
     });
 });

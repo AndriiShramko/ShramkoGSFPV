@@ -137,13 +137,13 @@ const corridor: Control = (r) => {
 // ------------------------------------------------------------------ the first lesson of each module
 
 describe('the first lesson of each module, passed end to end by a scripted pilot', () => {
-    it('module 0, ears-headphones: sounds from the left, the right and behind, answered by digits: passed, the pass line spoken, progress saved', async () => {
+    it('module 0, ears-headphones: a sound from the left and one from the right (lane gap-sound S2), answered by digits: passed, the pass line spoken, progress saved', async () => {
         const r = await open('ears-headphones');
         expect(r.of('lesson')[0]).toMatchObject({ what: 'open', lessonId: 'ears-headphones' });
         await r.run(240000, ears(true), () => r.passed);
         expect(r.passed).toBe(true);
         const answers = r.of('answer');
-        expect(answers.length).toBeGreaterThanOrEqual(3);
+        expect(answers.length).toBeGreaterThanOrEqual(2);
         expect(answers.every((a) => a.via === 'key' && a.value !== null)).toBe(true);
         // each trial was a sound the engine played from the side the question is about, REPEAT_PLAYS times (M41-5: 'repeat-cue')
         const trials = (getLesson('ears-headphones').goals.find((g) => g.kind === 'locate') as { trials: number }).trials;

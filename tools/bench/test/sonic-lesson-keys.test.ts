@@ -121,11 +121,11 @@ describe('B1 (W3): the runner gets the pilot\'s path, key names, speaking speed 
         expect('keys' in bare).toBe(false);
     });
 
-    it('in the page the lesson stands where it is on the pilot\'s path: rings-first is lesson 6 of 8 on the fast path, 21 of 33 on the full one (28 since v0.13, the speed lessons speed-1..4 and turn-listen since train 3)', async () => {
+    it('in the page the lesson stands where it is on the pilot\'s path: rings-first is lesson 5 of 7 on the fast path (lane gap-sound S2: ears-walls left it), 21 of 33 on the full one (28 since v0.13, the speed lessons speed-1..4 and turn-listen since train 3)', async () => {
         const paths = lessonPaths();
         const fast = await open('rings-first', (r) => { r.paths = 'fast'; });
         expect(fast.host.runner!.view()).toMatchObject({ path: 'fast', lessonIndex: paths.fast.indexOf('rings-first') + 1, lessonCount: paths.fast.length });
-        expect(fast.host.runner!.view().lessonCount).toBe(8);
+        expect(fast.host.runner!.view().lessonCount).toBe(7);
         fast.dispose();
         rig = null;
         const full = await open('rings-first');

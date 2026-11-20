@@ -9,8 +9,8 @@
 //               control opening with Space and giving 14 sliders; Shift+Tab goes back the same way;
 //   operation   Space and arrows set the path, calm mode and "my screen reader speaks" (saved in the prefs collection,
 //               the captions region turns live); Enter on the headphone buttons makes the AudioContext (the first press)
-//               and the hum is louder in the left channel for left, in the right for right, and level for behind (a tap in
-//               front of the destination, per channel); Enter on a lesson hides the screen (out of the accessibility tree)
+//               and the hum is louder in the left channel for left, in the right for right (lane gap-sound: no button
+//               behind; a tap in front of the destination, per channel); Enter on a lesson hides the screen (out of the accessibility tree)
 //               and opens the flight on that lesson's world (the page's own fly()).
 // Evidence: evidence/<date>/sonic-start-keyboard.json (with the accessibility snapshot) and screenshots next to it. The
 // page draws the lesson world, so the run holds the GPU lock. How anything sounds is not judged here.
@@ -259,7 +259,8 @@ try {
     check('the viewport allows zoom (no user-scalable=no, no maximum-scale)', !!s.viewport && !/user-scalable\s*=\s*no|maximum-scale/.test(s.viewport), s.viewport);
     check('landmarks: one header, one labelled navigation, one main, one footer in the start layer', s.banner === 1 && s.nav === 1 && s.main === 1 && s.footer === 1, { banner: s.banner, nav: s.nav, main: s.main, footer: s.footer });
     check('one h1 (the product), four h2 (start, headphones, lessons, settings)', s.h1.length === 1 && s.h2.length === 4, { h1: s.h1, h2: s.h2 });
-    check('the h1 has the focus when the screen opens', s.focused === 'sonic-h1', s.focused);
+    // lane gap-sound (the owner's line 531): the screen opens on Quick start, so one Enter starts the quick lesson
+    check('Quick start has the focus when the screen opens', s.focused === 'sonic-start-quick', s.focused);
     check('eight module headings and the loudness heading are h3', s.h3.length === 9, s.h3);
     check(`${LESSONS} lessons, each a real button with a name`, s.lessons.length === LESSONS && s.lessons.every((l) => l.tag === 'BUTTON' && l.type === 'button' && l.text.length > 3), s.lessons.length);
     check('no div or span made into a button', s.divButtons === 0);
@@ -306,6 +307,10 @@ try {
     }
     check('no sideways scroll at 1280, 640 and 360 px wide', reflow.every((r) => (r.scroll as number) <= (r.client as number) + 1), reflow);
     await page.setViewportSize({ width: 1280, height: 800 });
+    // lane gap-sound: the settings open at level first; Enter on "Show all settings" draws every row for the rest of the run
+    await page.evaluate(() => document.querySelector<HTMLElement>('[data-testid="sonic-settings-all"]')!.focus());
+    await page.keyboard.press('Enter');
+    check('Enter on "Show all settings" draws the calm mode row', await until(async () => page.evaluate(() => !!document.getElementById('sonic-calm'))));
 
     // ---------------------------------------------------------------- Tab order
     await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
@@ -319,7 +324,7 @@ try {
     check('the stops follow the document: navigation, start, headphones, lessons, settings, footer', regionIdx.every((v, i) => v >= 0 && (i === 0 || v >= regionIdx[i - 1]!)), [...new Set(stops.map((x) => x.region))]);
     check(`all ${LESSONS} lessons are reached by Tab, once each`, lessonStops.length === LESSONS && new Set(lessonStops.map((x) => x.name)).size === LESSONS, lessonStops.length);
     check('the radio group is one stop (the arrow keys move inside it)', stops.filter((x) => x.type === 'radio').length === 1, stops.filter((x) => x.type === 'radio').length);
-    check('the headphone check has three buttons in the order left, right, behind', JSON.stringify(stops.filter((x) => x.region === 'headphones' && x.tag === 'button').map((x) => x.testid)) === JSON.stringify(['sonic-hp-left', 'sonic-hp-right', 'sonic-hp-behind']), stops.filter((x) => x.region === 'headphones').map((x) => x.testid));
+    check('the headphone check has two buttons in the order left, right', JSON.stringify(stops.filter((x) => x.region === 'headphones' && x.tag === 'button').map((x) => x.testid)) === JSON.stringify(['sonic-hp-left', 'sonic-hp-right']), stops.filter((x) => x.region === 'headphones').map((x) => x.testid));
     const last = stops[stops.length - 1];
     check('the last stop is the footer\'s last link (no trap: Tab goes on to the browser)', last?.region === 'footer' && last.tag === 'a', last);
 
@@ -372,7 +377,7 @@ try {
     // the headphone check by Enter: the hum is on the side asked (the AudioContext is the first key's since v0.13)
     check('the first key made the one AudioContext (the spoken list starts the sound in it)', (await page.evaluate(() => (window as unknown as { __acCount: number }).__acCount)) === 1);
     const sides: Record<string, { l: number; r: number; dB: number; lagSamples: number; itdMs: number }> = {};
-    for (const side of ['left', 'right', 'behind'] as const) {
+    for (const side of ['left', 'right'] as const) {
         await page.evaluate((id) => document.querySelector<HTMLElement>(`[data-testid="sonic-hp-${id}"]`)!.focus(), side);
         await page.keyboard.press('Enter');
         await sleep(side === 'left' ? 1500 : 700);
@@ -386,7 +391,6 @@ try {
     // a low hum is placed by the arrival time more than by the level: both are measured, left and right must agree in sign
     check('sound on the left: the left channel is louder (at least 1 dB) and leads (the right channel lags by at least 3 samples)', sides.left!.l > 1e-6 && sides.left!.dB >= 1 && sides.left!.lagSamples >= 3, sides.left);
     check('sound on the right: the right channel is louder (at least 1 dB) and leads (the left channel lags by at least 3 samples)', sides.right!.r > 1e-6 && sides.right!.dB <= -1 && sides.right!.lagSamples <= -3, sides.right);
-    check('sound behind: the two channels are level (within 1 dB) and arrive together (within 2 samples)', sides.behind!.l > 1e-6 && Math.abs(sides.behind!.dB) <= 1 && Math.abs(sides.behind!.lagSamples) <= 2, sides.behind);
     check('control: left and right are opposite pictures (balance differs by at least 3 dB, the delays have opposite signs)', Math.abs(sides.left!.dB - sides.right!.dB) >= 3 && Math.sign(sides.left!.lagSamples) === -Math.sign(sides.right!.lagSamples), { left: sides.left, right: sides.right });
 
     // ---------------------------------------------------------------- Enter on a lesson opens the flight
