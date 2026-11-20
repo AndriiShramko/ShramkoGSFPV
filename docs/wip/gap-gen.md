@@ -28,7 +28,7 @@ Negative-control ref: the S1 merge of gen4a (5f946305) and gen4b (fb7f6524): 3ef
         evidence/2026-11-19/gap-gen/place-x1.json: PLANS 126 FAILED 9; course (no NO-ROOM) 126/126, gates 126/126,
         beginnerMin 42/42, server 126/126 (Lublin 18/18), room 18/18 (Winter Garden), cityLow 18/18, time 126/126 (max
         37.4 s of 120 s); nearCore 117/126 (39e63ce9 only, see Not verified). 24 plans walked by a harder walk (eased).
-- [x] S2 race rooms (this commit)
+- [x] S2 race rooms (143bbe3d)
   - [x] race.ts: CourseNow.request (the hook's `request`, gen4b), courseFor names a generated asked course by its g2 link
         (courseLinkId), parseCourse reads 'g2.' back to { kind: 'request' }, adoptOf(ref) gives the course feature's adopt
         { seed, request } for it; a course without a request keeps 'g1.<seed>'.
