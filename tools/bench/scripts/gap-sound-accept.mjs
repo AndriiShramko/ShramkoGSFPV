@@ -16,6 +16,8 @@
 //   returningQuickFocused  the same browser opened again (a returning pilot, the progress the walk saved): Quick start first and
 //                          focused, Continue second and saying what it resumes
 //   returningNoBehind      the returning pilot's headphone check: left and right only
+//   returningContinueResumes  (the independent check's step) key Tab from the focused Quick start reaches Continue, and a mouse
+//                          click on Continue opens the lesson it named (the small room), not the headphone check again
 //
 // Usage: node tools/bench/scripts/gap-sound-accept.mjs <base, e.g. http://localhost:6781> <out.json>
 // The base serves a release (node tools/bench/scripts/serve-csp.mjs dist <port>) or is the live site (read-only: the progress
@@ -231,13 +233,28 @@ try {
     const ret = await look(back);
     step('returningQuickFocused', ret.startOrder[0] === 'sonic-start-quick' && ret.focused === 'sonic-start-quick' && ret.startOrder[1] === 'sonic-start-continue' && /^Continue: \S/.test(ret.continueText ?? ''), { order: ret.startOrder, focused: ret.focused, continueText: ret.continueText });
     step('returningNoBehind', JSON.stringify(ret.hp) === '["sonic-hp-left","sonic-hp-right"]' && ret.behind.length === 0, { headphoneButtons: ret.hp, behindButtons: ret.behind });
+
+    // 4. the independent check's step: the returning pilot who wants to go on, not start again, presses key Tab once from the
+    //    focused Quick start (the keyboard reaches Continue next) and clicks Continue with the mouse: the lesson it named opens,
+    //    not the headphone check again
+    await back.keyboard.press('Tab');
+    const tabbed = await back.evaluate(() => document.activeElement?.getAttribute('data-testid') ?? null);
+    const roomTitle = PKG_EN['lesson.walls-hall.title'];
+    await clickCentre(back, '[data-testid="sonic-start-continue"]');
+    let resumed = null;
+    for (let i = 0; i < 150 && resumed === null; i++) {
+        const hs = await hook(back).catch(() => null);
+        if (hs?.lesson) resumed = hs.lesson;
+        else await sleep(100);
+    }
+    step('returningContinueResumes', tabbed === 'sonic-start-continue' && resumed === 'walls-hall' && (ret.continueText ?? '').includes(roomTitle), { tabbed, resumed, continueText: ret.continueText, roomTitle });
 } catch (e) {
     errors.push(String(e).slice(0, 300));
 } finally {
     await browser.close();
 }
 
-const NAMES = ['firstQuickFocused', 'firstNoBehind', 'settingsShort', 'moveWithin120', 'wallsInRoom', 'noBehindOnTheWay', 'returningQuickFocused', 'returningNoBehind'];
+const NAMES = ['firstQuickFocused', 'firstNoBehind', 'settingsShort', 'moveWithin120', 'wallsInRoom', 'noBehindOnTheWay', 'returningQuickFocused', 'returningNoBehind', 'returningContinueResumes'];
 for (const n of NAMES) if (!(n in steps)) steps[n] = 'FAIL';
 const verdict = { probe: 'gap-sound-accept', base, browser: pick.kind, viewport: '1536x730@1.25', speech: 'measured en (David) lengths, else the package estimate', steps, pass: NAMES.every((n) => steps[n] === 'PASS'), facts, errors };
 mkdirSync(dirname(outFile), { recursive: true });

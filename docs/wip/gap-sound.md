@@ -127,3 +127,22 @@ Design differences (the code wins):
   failing frame (one temporary JSON write in the test) found the 16 ms gate shift in 2 runs; start there next time.
 - S3: two probe slips (the side question's id ends ':side'; a mouse click needs a scroll first) cost one 2.5 min walk each; a 10 s
   dry walk that only prints the first question id and the button boxes before the full walk would have caught both.
+- Review: most replies went to reading the two diffs (host 360 lines, package 326); the build plus the 2 min walk were one reply
+  each. A status file that listed the shared lessons the quick path changes for the Full course would have saved a check.
+
+## Review
+
+Verdict: SHIP. Independent check of 8569ba6d (one run, no repair needed).
+- Re-run: sonic-start-screen.test.ts 33 passed, NEG OK on 2d752fcc (-t "lane gap-sound"); package quick-path.test.ts 49 passed, NEG
+  OK on 53a5675 (the nine lesson files). The probe on a release of 8569ba6d (serve-csp, ?render=off, mouse at 1536x730, scale 1.25):
+  9 of 9 PASS, the room's flight 117.7 s after the click (speech 57.7 s of it). Evidence gap-sound-accept-review.json.
+- The reviewer's step added to the probe: returningContinueResumes (key Tab from the focused Quick start reaches Continue; a mouse
+  click on Continue opens the small room it named, not the headphone check). PASS. Not run against the live site (a guard, not a
+  repair).
+- DOUBT (not proven, do not hold the lane): (1) the lessons are shared by both paths, so the Full course also lost the intro lines cut
+  for the quick path (free-garden 3, rings-course 2, tunnel-gaps 2, corridor intro.1 and goal.2, rings-first target.off) while the
+  owner keeps the long course for those who need more words; the package's named-sounds test still passes. (2) start-screen.ts
+  show(): opened over a flight (pause menu, Lessons) the focus is now on Quick start, so one Enter there restarts the quick path from
+  the headphone check (progress kept) where the h1 did nothing before. (3) 117.7 s leaves 2.3 s: a slower real voice may pass 120 s.
+  (4) The probe's noBehindOnTheWay passes on the live site too: it guards, it does not prove the repair.
+  (5) sonic-int-replay.test.ts widens its slack for a gate's one-shot cues by the measured gate shift (asserted at most 1 frame).
