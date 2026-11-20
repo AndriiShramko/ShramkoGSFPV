@@ -8,24 +8,15 @@ Base: branch train4 at 2d752fcc (negative-control ref). Package branch: packages
 
 - [x] S1 the start screen (host): no 'behind' button; Quick start first and focused for every pilot, Continue second; the settings
       list at level first with 'Show all settings (n more)'. Tests NEG OK against 2d752fcc. (commit 436cc3c8)
-- [ ] S2 the quick path (package data): ears-headphones 2 trials; the wall sounds inside walls-hall's room; one short intro a later
+- [x] S2 the quick path (package data): ears-headphones 2 trials; the wall sounds inside walls-hall's room; one short intro a later
       quick lesson; quick-path.test.ts ROOM_FLIGHT_MAX_S 120 and a talk-seconds cap of the whole quick path (NEG on 53a5675).
-      DONE in the package: branch gap-sound head 150ebac296d5e618b6fd952ea342d03db43c1338 (one commit on 53a5675). Package suite
-      (node 22, `node node_modules/vitest/vitest.mjs run`): 1428 passed, 4 skipped; `pnpm typecheck` OK. NEG OK on 53a5675 for
-      both new guards: the room flies at 205.0 s > 120; ru talks 299.7 s > 165. Talk now en 131.0, es 136.0, pl 139.7, ru 163.2 s.
-      Pin moved in the main repo: commit 4199b98c.
-      LEFT (host tests that follow the package data; run `node node_modules/vitest/vitest.mjs run tools/bench/test/sonic
-      tools/bench/test/admin-sessions tools/bench/test/app-game` with $HOME/node-v22 on PATH, 1 min; log host-tests.log in TEMP):
-      a. tools/bench/test/sonic-start.test.ts:42 the fast path has 7 lessons, not 8 (title of the test too); :76 Continue expects
-         'ears-walls' after ears-headphones: now 'walls-hall'.
-      b. tools/bench/test/sonic-lesson-keys.test.ts:128 rings-first is lesson 6 of 8 on the fast path: now 5 of 7 (expected 7 to be 8).
-      c. tools/bench/test/sonic-lessons.test.ts:146 ears-headphones expects >= 3 trials: now 2 (and its title says 'behind').
-      d. tools/bench/test/sonic-int-replay.test.ts:339 beyondSafety(rings-first) = [1391] of 1818 frames: target.praise ends 2
-         frames (about 64 ms) earlier in the replay's cues than in the recording (rec t 46384 still has it, der from t 46352 not;
-         slack 1 frame). The shorter rings-first intro moved the timeline. Find why praise ends earlier in the replay (its start
-         frame in both), do not widen the slack blindly.
-      e. Not this lane (pre-existing on 2d752fcc, Shift+KeyH clash): sonic-hints.test.ts:192, sonic-in-place.test.ts:30.
-      Then commit S2 with these as 'Files changed outside the owned list' in For the lead.
+      Package: branch gap-sound head 150ebac296d5e618b6fd952ea342d03db43c1338 (one commit on 53a5675). Package suite (node 22,
+      `node node_modules/vitest/vitest.mjs run`): 1428 passed, 4 skipped; `pnpm typecheck` OK. NEG OK on 53a5675 for both new
+      guards: the room flies at 205.0 s > 120; ru talks 299.7 s > 165. Talk now en 131.0, es 136.0, pl 139.7, ru 163.2 s.
+      Pin moved in the main repo: commit 4199b98c. Host tests that follow the data (run 3): sonic-start (7 fast lessons, Continue
+      after walls-hall is corridor), sonic-lesson-keys (rings-first 5 of 7), sonic-lessons (2 headphone answers), sonic-int-replay
+      (see Design differences). Host set `vitest run tools/bench/test/sonic tools/bench/test/admin-sessions tools/bench/test/app-game`:
+      944 passed, 2 failed (pre-existing Shift+KeyH clash on 2d752fcc: sonic-hints.test.ts, sonic-in-place.test.ts).
       Keys line 'said once': apps/fly/src/sonic/lessons.ts keysDue() (line 762) says it on every step of a flying lesson; not an
       owned file, handed to the lead (see For the lead).
 - [ ] S3 the acceptance: tools/bench/scripts/gap-sound-accept.mjs by mouse at 1536x730, scale 1.25, first visit and returning pilot;
@@ -47,6 +38,11 @@ Design differences (the code wins):
   defaults to expert for anyone who never answered 'Before you fly' (a blind pilot on ?sonic=start never sees it). So the screen uses
   menu4's MenuLevel type and levelShows() with its own table SONIC_SETTING_LEVELS, viewed at level first; 'Show all settings' opens the
   rest for the page (an instance flag, like ui/settings/screen.ts's showAllRows). A shared link that sets a sound setting shows all.
+- sonic-int-replay.test.ts: with the shorter rings-first intro the second counted gate fell live at 45936 ms; the replay, which
+  finds gates on the 32 ms samples, found it at 45920 ms (matched within the comparer's 100 ms), so the gate's one-shot cues (note,
+  lap, praise) ended 2 frames early there (frame 1391) against a slack of 1. The test now measures that gate shift per lesson
+  (gateShiftFrames, at most 1 frame, asserted) and allows it only to frames where nothing but those gate cues differ (cause 'gate');
+  a control removes the praise from the replay and is still caught. The package's comparer and its slack are unchanged.
 - show() now focuses the first Start button (Quick start) instead of the h1, so one Enter starts; a screen reader reads the button
   and its description first.
 
@@ -71,7 +67,8 @@ Design differences (the code wins):
 ## For the lead
 
 - Files changed outside the owned list: tools/bench/src/sonic-start-keyboard.ts (the lab harness of the start screen: two headphone
-  buttons, Quick start focused, presses 'Show all settings' before the settings checks).
+  buttons, Quick start focused, presses 'Show all settings' before the settings checks); the host tests that count the package's lesson
+  data: tools/bench/test/sonic-start.test.ts, sonic-lesson-keys.test.ts, sonic-lessons.test.ts, sonic-int-replay.test.ts (gate shift).
 - The sound package: branch gap-sound head 150ebac296d5e618b6fd952ea342d03db43c1338 must reach the package's main together with
   car 4's package head (it is on no remote; parent 53a5675). Ask the Lodz testers to listen once after the release: no person
   listened here.
@@ -89,3 +86,5 @@ Design differences (the code wins):
 - S2 (run 2): most replies went to small test-text slips (a quote in a test title, a regex) and to a printer for the talk seconds;
   running the host suite (tools/bench/test/sonic*) right after the data change in run 1 would have shown the 5 host tests early.
   Python's open(..., 'w') writes CRLF on Windows: write with newline='' or use the Edit tool.
+- S2 (run 3): most replies went to the replay test's frame 1391: a dump of recorded vs derived cues and the derived events around the
+  failing frame (one temporary JSON write in the test) found the 16 ms gate shift in 2 runs; start there next time.
