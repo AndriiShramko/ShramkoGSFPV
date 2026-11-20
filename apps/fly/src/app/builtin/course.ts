@@ -52,7 +52,7 @@ import { addClosesQuestion, escTarget } from '../../course/editor/warn';
 import { ADD_CHOICE_KEYS, KEPT_KEY, PIECE_ADDED_KEY, PIECE_HINT_KEY, type AddChoice } from '../../course/editor/pieces-texts';
 import { AddChooser } from '../../course/editor/piece-menu';
 import { TopBar } from '../../course/editor/top-bar';
-import { ADD_RAY_M, addAction, addLift, facingFrom, pieceAction, pieceLift, placeFor } from '../../course/editor/add-place';
+import { ADD_RAY_M, addAction, addLift, facingFrom, hitPastEye, pieceAction, pieceLift, placeFor } from '../../course/editor/add-place';
 import { flyShows, modeStep, openStep, type EditMode } from '../../course/editor/fly-mode';
 import { setKeyboardArm, stopKeyboardArm } from '../../devices/keyboard';
 import { SeamBus, type ChangeBy, type EditorSeam, type MenuItem } from '../../course/editor/seam';
@@ -1273,7 +1273,11 @@ export const course: Feature = {
             const what = addWhat;
             showAdding(false);
             if (!ed) return;
-            const hit = camRay ? camRay(ray.o, ray.d, ADD_RAY_M) : null;
+            // int4: a hit that wraps the eye (an overview's eye in a tree) is passed, so the gate stands where the pilot pointed
+            const cast = camRay;
+            const hit = cast
+                ? hitPastEye((from) => cast([ray.o[0] + ray.d[0] * from, ray.o[1] + ray.d[1] * from, ray.o[2] + ray.d[2] * from], ray.d, ADD_RAY_M - from))
+                : null;
             if (what !== 'gate') return placePiece(ray, hit, what);
             // G1: lane course3's EditAction add (its kind and opening, one undo step). Lane edit4c C1 (E11): placeFor puts it
             // after the gate whose leg passes nearest to the click, facing the course's line there (add-place.ts)

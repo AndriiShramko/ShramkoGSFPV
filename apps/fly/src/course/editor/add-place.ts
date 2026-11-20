@@ -18,6 +18,26 @@ export const ADD_AHEAD_M = 6;
 export const ADD_MIN_M = 1;
 /** how far a click looks for a wall, flown m (an estimate) */
 export const ADD_RAY_M = 200;
+/** int4: a wall the click's ray meets nearer to the eye than this is the scan around the eye, not the place pointed at, flown m */
+export const ADD_EYE_CLEAR_M = ADD_MIN_M;
+/** int4: how far past such a near hit the ray starts again, flown m (about two 10 cm wall voxels) */
+export const ADD_EYE_STEP_M = 0.25;
+
+/**
+ * int4 (edit-mouse c.add, Wroclaw, two runs of three): the overview's eye has no wall test (frame.ts frameBox), so it can stand
+ * in a tree's voxels; every click then hit 0.1 m from the eye and the new gate stood at the eye, lifted out of the view. The
+ * ray goes on past what wraps the eye: `cast(from)` is the distance to a wall from `from` m along the ray (null: none).
+ * Returns the first hit at least ADD_EYE_CLEAR_M from the eye, or null.
+ */
+export function hitPastEye(cast: (from: number) => number | null): number | null {
+    let hit = cast(0);
+    for (let n = 0; hit !== null && hit < ADD_EYE_CLEAR_M && n < 16; n++) {
+        const from = hit + ADD_EYE_STEP_M;
+        const h = cast(from);
+        hit = h === null ? null : from + h;
+    }
+    return hit;
+}
 
 /**
  * review ED-4, G2: the new gate's frame stands this far above the floor the click hit beyond the walls check's margin, flown m

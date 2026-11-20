@@ -136,6 +136,11 @@ the dialog's options reaching gen4a's generator are car 3's seams)
   the window's own right edge (64 px in on a low view, left of the sound button: the first try from the view's edge left
   the window where it was). The same step found edit4a's hover tag lying on the gate bar when the hovered handle is just
   above it: the tag then goes above the pointer and the bar (view-mouse.ts). int4-seams.test.ts, NEG OK.
+- edit4a's overview eye x the Add click (edit-mouse c.add, two runs of three on 5bab5cce): Home and the editor's first view
+  frame the course without a wall test (frame.ts frameBox), so on some random Wroclaw courses the eye stood in a tree's
+  voxels; every click then hit 0.107 m from the eye and the new gate stood at the eye, lifted behind the camera plane (out
+  of view). The click's ray now goes on past a hit nearer than 1 m (add-place.ts hitPastEye), for a gate and a piece.
+  int4-add-eye.test.ts (the measured ray among its cases), NEG OK. The probe now records the editor's place for c.add.
 - Probes out of date after a merge (the product right, the probe repaired, each with the reason in the probe): edit4s s9
   (key G no longer makes a course in the editor since edit4b: the probe takes Course, Generate a new course, Yes);
   edit4c and edit4a (since edit4a a click selects without framing and the one gizmo has a size box on each axis: edit4c

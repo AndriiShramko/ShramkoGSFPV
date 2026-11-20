@@ -279,7 +279,9 @@ try {
             const b = (await until(snap, (s) => (s.gatesN ?? 0) > (a.gatesN ?? 0), 6000, 300)).v;
             const ng = b.gates && b.selected !== null ? b.gates[b.selected] : null;
             const inView = !!ng && ng[2] > 0 && ng[0] >= 0 && ng[0] < W && ng[1] >= 0 && ng[1] < H;
-            judge('c.add', (b.gatesN ?? 0) > (a.gatesN ?? 0) && inView, { gates: [a.gatesN, b.gatesN], newGate: ng, inView, line: b.topLine, said: b.said });
+            // int4: what the click gave (the eye, the ray's hit in metres, the point): a gate out of view is then explained
+            const place = await page.evaluate(() => { const v = window.__gsfpvEditView ? window.__gsfpvEditView() : null; return v ? { place: v.place, drone: v.drone, stand: v.stand ?? null } : null; });
+            judge('c.add', (b.gatesN ?? 0) > (a.gatesN ?? 0) && inView, { gates: [a.gatesN, b.gatesN], newGate: ng, inView, line: b.topLine, said: b.said, place });
         }
     }
 
