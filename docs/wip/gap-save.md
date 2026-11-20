@@ -63,6 +63,12 @@ Design differences (the code wins):
    `node tools/bench/scripts/gap-save-accept.mjs <dist> 70b50d42 <out.json>` -> open, x1.size, s5in.generatedSaved,
    whoop, x15.size, s15gen.generatedSaved, s15.emptySaved, s15small.whoopGatesSaved PASS; x100.size PASS (x99.73 by the
    slider), s100.emptySaved FAIL ('nothing fits': see Not verified). evidence/2026-11-19/gap-save/accept-local.json.
+9. Gates once on the staged tree (`gates.py --only typecheck,vitest,architecture,i18n,b18,leaks,api-unittest`):
+   typecheck, architecture, i18n, b18, api-unittest PASS; vitest FAIL (25 tests in 11 files: packages/prefs keymap and
+   catalog, tools/bench app-keys, flight-ux, tracks-keys, sonic-*, rooms-public, edit4a-camera, app-play,
+   train1-contract; key-map assertions such as 'KeyH (flight): expected messages.open to be null') and leaks FAIL
+   (apps/fly/src/app/scene-host.ts:382 MERGED_KEY): none of those files is in this lane's diff against 2d752fcc and none
+   imports a file it changed; they come from the train4 base. See For the lead.
 8. Negative control of the lane: the same probe on a build of 2d752fcc (server.ts and the package's validate.ts as they
    were, the API from `git archive 2d752fcc apps/api`, API_DIR) FAILS s15small.whoopGatesSaved: no POST, the line 'The
    site did not take the course (invalid: gates[0].shape.side: must be at least 0.05, got 0.039; ...)'; every other step
@@ -95,6 +101,8 @@ Design differences (the code wins):
   r3 (0.001); at x100 a whoop's bar rounds to 0 and its side to 0.003 (0.3 m instead of 0.34 m). Round shapes to 1e-6
   (r6, as editor.ts already has) or round the flown size before dividing by the scale.
 - Live checks after deploy: none that saves on the live site; S2's probe gap-save-accept.mjs is for a local build.
+- The gates on this branch (train4 base 2d752fcc plus this lane) fail vitest (25 key-map tests in 11 files) and leaks
+  (apps/fly/src/app/scene-host.ts:382, from ux4b): not this lane's files; they need their owners before car 4 merges.
 - Need (gap-editor): 'New empty course' keeps the transform of the course loaded before (emptyCourse in
   apps/fly/src/course/editor/parts/life-texts.ts spreads `like`; course.ts startNew keeps it) while the editor's checks
   use flownTransform(): after the pilot changes Scene size, the new course's gates are drawn at the wrong size (the
