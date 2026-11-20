@@ -1,0 +1,286 @@
+{
+ "probe": "gap-sound-accept",
+ "base": "https://gsfpv.flyreelstudio.eu",
+ "browser": "system-chrome",
+ "viewport": "1536x730@1.25",
+ "speech": "measured en (David) lengths, else the package estimate",
+ "steps": {
+  "firstQuickFocused": "FAIL",
+  "firstNoBehind": "FAIL",
+  "settingsShort": "FAIL",
+  "moveWithin120": "FAIL",
+  "wallsInRoom": "FAIL",
+  "noBehindOnTheWay": "PASS",
+  "returningQuickFocused": "FAIL",
+  "returningNoBehind": "FAIL"
+ },
+ "pass": false,
+ "facts": {
+  "firstQuickFocused": {
+   "order": [
+    "sonic-start-beginning"
+   ],
+   "focused": "sonic-h1"
+  },
+  "firstNoBehind": {
+   "headphoneButtons": [
+    "sonic-hp-left",
+    "sonic-hp-right",
+    "sonic-hp-behind"
+   ],
+   "behindButtons": [
+    "Play a sound behind you"
+   ]
+  },
+  "settingsShort": {
+   "shownFirst": [
+    "sonic-theme",
+    "sonic-calm",
+    "sonic-polarity",
+    "sonic-rate",
+    "sonic-captions",
+    "sonic-sr",
+    "sonic-narrator",
+    "sonic-motor",
+    "sonic-motor-level",
+    "sonic-height-target",
+    "sonic-height-direction",
+    "sonic-beacon",
+    "sonic-frame",
+    "sonic-look-soundPanel",
+    "sonic-look-attitude",
+    "sonic-key-hints",
+    "sonic-head"
+   ],
+   "showAll": null,
+   "shownAfter": null
+  },
+  "moveWithin120": {
+   "seconds": null,
+   "clicked": "[data-testid=\"sonic-start\"] .sonic-actions button",
+   "lessonsOpened": [
+    "ears-headphones",
+    "ears-glossary"
+   ],
+   "answers": [
+    "ears-headphones:1:1:side=Digit1",
+    "ears-headphones:1:2:side=Digit2",
+    "ears-headphones:1:3:side=Digit1"
+   ],
+   "lines": 31,
+   "linesMeasured": 14,
+   "speechSeconds": 129.1,
+   "trail": [
+    {
+     "t": 0.7,
+     "lesson": "ears-headphones",
+     "phase": "intro"
+    },
+    {
+     "t": 23.9,
+     "lesson": "ears-headphones",
+     "phase": "flying"
+    },
+    {
+     "t": 107.8,
+     "lesson": "ears-headphones",
+     "phase": "passed"
+    },
+    {
+     "t": 120.8,
+     "lesson": "ears-glossary",
+     "phase": "intro"
+    },
+    {
+     "t": 135.2,
+     "lesson": "ears-glossary",
+     "phase": "flying"
+    }
+   ]
+  },
+  "wallsInRoom": {
+   "roomKeys": []
+  },
+  "noBehindOnTheWay": {
+   "frontBackKeys": [],
+   "keysSaid": 45
+  },
+  "said": [
+   {
+    "t": 0.6,
+    "s": 1.765,
+    "text": "Headphone check"
+   },
+   {
+    "t": 2.3,
+    "s": 5.34,
+    "text": "Next, key N. Back, key B. Repeat, key Z. Menu, key Escape. Main menu, "
+   },
+   {
+    "t": 7.7,
+    "s": 7.29,
+    "text": "Let's check your headphones. Wired headphones work best, and the volum"
+   },
+   {
+    "t": 15,
+    "s": 9.63,
+    "text": "You will hear a sound on the left or on the right. Press 1 for left, 2"
+   },
+   {
+    "t": 24.6,
+    "s": 2.22,
+    "text": "Tell me where each sound is."
+   },
+   {
+    "t": 26.8,
+    "s": 4.56,
+    "text": "Put your headphones on. The side marked L goes on your left ear."
+   },
+   {
+    "t": 31.4,
+    "s": 5.34,
+    "text": "Next, key N. Back, key B. Repeat, key Z. Menu, key Escape. Main menu, "
+   },
+   {
+    "t": 36.8,
+    "s": 5.185,
+    "text": "Wired headphones work best. Bluetooth headphones add a delay."
+   },
+   {
+    "t": 42,
+    "s": 6.885,
+    "text": "Please switch off Windows Sonic, Atmos and other surround effects. The"
+   },
+   {
+    "t": 48.9,
+    "s": 1.245,
+    "text": "Sound 1 of 3."
+   },
+   {
+    "t": 54.8,
+    "s": 6.83,
+    "text": "Where is this sound? Press 1 for left, 2 for right, 3 if you are not s"
+   },
+   {
+    "t": 61.8,
+    "s": 0.985,
+    "text": "Taken: 1."
+   },
+   {
+    "t": 62.7,
+    "s": 1.245,
+    "text": "Sound 2 of 3."
+   },
+   {
+    "t": 64,
+    "s": 5.34,
+    "text": "Next, key N. Back, key B. Repeat, key Z. Menu, key Escape. Main menu, "
+   },
+   {
+    "t": 77.4,
+    "s": 6.83,
+    "text": "Where is this sound? Press 1 for left, 2 for right, 3 if you are not s"
+   },
+   {
+    "t": 84.2,
+    "s": 0.985,
+    "text": "Taken: 2."
+   },
+   {
+    "t": 85.2,
+    "s": 1.245,
+    "text": "Sound 3 of 3."
+   },
+   {
+    "t": 86.5,
+    "s": 5.34,
+    "text": "Next, key N. Back, key B. Repeat, key Z. Menu, key Escape. Main menu, "
+   },
+   {
+    "t": 99.9,
+    "s": 6.83,
+    "text": "Where is this sound? Press 1 for left, 2 for right, 3 if you are not s"
+   },
+   {
+    "t": 106.8,
+    "s": 0.985,
+    "text": "Taken: 1."
+   },
+   {
+    "t": 107.8,
+    "s": 3.455,
+    "text": "Good. Your headphones work well."
+   },
+   {
+    "t": 111.2,
+    "s": 4.655,
+    "text": "Your headphones work well. You are ready for the next step."
+   },
+   {
+    "t": 115.9,
+    "s": 3.715,
+    "text": "Lesson passed. Next, a bit harder: Meet the sounds."
+   },
+   {
+    "t": 120.8,
+    "s": 1.79,
+    "text": "Meet the sounds"
+   },
+   {
+    "t": 122.6,
+    "s": 5.34,
+    "text": "Next, key N. Back, key B. Repeat, key Z. Menu, key Escape. Main menu, "
+   },
+   {
+    "t": 128,
+    "s": 3.855,
+    "text": "In this lesson you meet every sound you will hear while flying."
+   },
+   {
+    "t": 131.8,
+    "s": 5.67,
+    "text": "I name each one and play it. You do not have to remember them all at o"
+   },
+   {
+    "t": 137.5,
+    "s": 2.17,
+    "text": "Listen to every sound."
+   },
+   {
+    "t": 139.7,
+    "s": 5.79,
+    "text": "I will name each sound you will meet and then play it. Listen to how i"
+   },
+   {
+    "t": 145.5,
+    "s": 5.34,
+    "text": "Next, key N. Back, key B. Repeat, key Z. Menu, key Escape. Main menu, "
+   },
+   {
+    "t": 150.8,
+    "s": 1.29,
+    "text": "Wall"
+   }
+  ],
+  "hookErrors": [],
+  "returningQuickFocused": {
+   "order": [
+    "sonic-start-continue",
+    "sonic-start-beginning"
+   ],
+   "focused": "sonic-h1",
+   "continueText": "Continue: Meet the soundsLesson 2 of 33, in progress"
+  },
+  "returningNoBehind": {
+   "headphoneButtons": [
+    "sonic-hp-left",
+    "sonic-hp-right",
+    "sonic-hp-behind"
+   ],
+   "behindButtons": [
+    "Play a sound behind you"
+   ]
+  }
+ },
+ "errors": []
+}

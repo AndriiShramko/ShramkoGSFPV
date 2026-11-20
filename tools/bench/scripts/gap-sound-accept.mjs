@@ -145,6 +145,7 @@ async function openStart(page) {
 }
 
 const clickCentre = async (page, sel) => {
+    await page.locator(sel).first().scrollIntoViewIfNeeded().catch(() => undefined);
     const box = await page.locator(sel).first().boundingBox();
     if (!box) return false;
     await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
@@ -191,7 +192,7 @@ try {
         if (s?.asking && s.question && s.speechQueue === 0 && answered !== s.question.id) {
             answered = s.question.id;
             const n = Number(s.question.id.split(':')[2]);
-            const key = `Digit${s.question.id.includes(':side:') && n % 2 === 0 ? 2 : 1}`;
+            const key = `Digit${s.question.id.endsWith(':side') && n % 2 === 0 ? 2 : 1}`;
             answers.push(`${s.question.id}=${key}`);
             await page.keyboard.press(key);
         }

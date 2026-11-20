@@ -19,8 +19,11 @@ Base: branch train4 at 2d752fcc (negative-control ref). Package branch: packages
       944 passed, 2 failed (pre-existing Shift+KeyH clash on 2d752fcc: sonic-hints.test.ts, sonic-in-place.test.ts).
       Keys line 'said once': apps/fly/src/sonic/lessons.ts keysDue() (line 762) says it on every step of a flying lesson; not an
       owned file, handed to the lead (see For the lead).
-- [ ] S3 the acceptance: tools/bench/scripts/gap-sound-accept.mjs by mouse at 1536x730, scale 1.25, first visit and returning pilot;
-      the live site must fail the Quick-start-first and no-behind steps.
+- [x] S3 the acceptance: tools/bench/scripts/gap-sound-accept.mjs by mouse at 1536x730, scale 1.25, first visit and returning pilot;
+      the live site must fail the Quick-start-first and no-behind steps. Release of 3eb4a9f4 (probe fixes after it: the side
+      question's id ends ':side'; a scroll before a mouse click): 8 of 8 PASS, the room's flight 117.7 s after the click. Live:
+      firstQuickFocused, firstNoBehind, settingsShort, moveWithin120, wallsInRoom, returningQuickFocused, returningNoBehind FAIL
+      (noBehindOnTheWay passes there too). Evidence evidence/2026-11-19/gap-sound/gap-sound-accept{,-live}.json.
 
 Design differences (the code wins):
 - The package's lines are text for the voice (locales), not recordings, but locales are outside this lane's package exception:
@@ -48,7 +51,16 @@ Design differences (the code wins):
 
 ## What the owner does
 
-(filled in at S3)
+1. Open https://gsfpv.flyreelstudio.eu/en/fly/?sonic=start (after the release). The first button under Start is 'Quick start',
+   already focused: one press of Enter or a click starts. Under it 'Full course' (and, if you flew before, 'Continue: <lesson>' between
+   them, with its place, e.g. 'Lesson 2 of 7, in progress').
+2. The headphone check on that screen has two buttons: 'Play a sound on the left', 'Play a sound on the right'. No 'behind'.
+3. Sound settings show 6 rows (speaking speed, captions, my screen reader speaks, narrator, key hints, turn my head) and a button
+   'Show all settings (12 more)'; a click on it shows the rest.
+4. Click 'Quick start'. The headphone check says 'Sound 1 of 2', plays it, asks where: press key 1 (left). 'Sound 2 of 2': key 2.
+   About 60 s after the click the small room opens and says, each with its sound: 'Wall', 'On your right', 'Ceiling', 'Floor', then
+   'Fly to each wall and stop close to it without touching it.' and 'Go.' at about 118 s (measured with the en voice's lengths).
+5. Leave and open the start screen again: still 'Quick start' first and focused, 'Continue: A small room' second.
 
 ## Claims
 
@@ -58,11 +70,22 @@ Design differences (the code wins):
 2. The headphone check has two buttons, left and right; no sonic locale has a 'behind' key. Same proof.
 3. The settings show 6 rows at level first (speaking speed, captions, my screen reader speaks, narrator, key hints, turn my head) and
    'Show all settings (12 more)'; its press draws all 18 and focuses Sound theme. Same proof.
+4. The quick path asks to move within 120 s of the click on Quick start: package `node node_modules/vitest/vitest.mjs run
+   test/quick-path.test.ts` (in packages/sonic-fpv) -> the room flies at 114.1 s (David), talk at most 165 s in 4 languages, NEG OK on
+   53a5675 (205.0 s; ru 299.7 s); in the page, Claim 5's probe: 117.7 s.
+5. In the served release, by mouse at 1536x730 (scale 1.25): Quick start first and focused for a first visit and a returning pilot,
+   left and right only, the short settings list, the room's flight within 120 s after only the headphone check, the four wall names in
+   the room, no front/behind line. Proof: `node tools/bench/scripts/gap-sound-accept.mjs http://localhost:<port> <out.json>` on a
+   release served by serve-csp.mjs -> pass true, 8 of 8 (evidence/2026-11-19/gap-sound/gap-sound-accept.json); the same against the
+   live site -> pass false, 7 steps FAIL (gap-sound-accept-live.json).
 
 ## Not verified
 
 - No person, no screen reader user, no phone and no real controller took part. No audio was judged.
 - tools/bench/src/sonic-start-keyboard.ts (a drawn lab harness) was edited to the new screen but not run (it draws; GPU lock).
+- The probe's seconds use the measured en voice (David) for the 13 measured lines and the package's estimate for the 7 host lines
+  (lesson titles, keys line, 'Taken', 'Sound n of 2'); a real voice, another language or a slower speech rate may pass 120 s
+  (117.7 s here, little margin). Only en and Chrome headless were walked; sound6's sonic-quick-walk.ts (Firefox, 844x390) not re-run.
 
 ## For the lead
 
@@ -75,6 +98,15 @@ Design differences (the code wins):
 - The keys line 'said once' (owner, line 531): apps/fly/src/sonic/lessons.ts keysDue() returns true on every step of a flying
   lesson. Proposal: `if (this.lesson?.world.kind !== 'none') return !this.keysSaid;` (once a lesson), with its host test.
   Not an owned file of this lane, so not changed here.
+- Deploy order: the sound package first (move to the branch gap-sound head above, merged with car 4's), then the page only (no API
+  file, no rooms, no nginx). Live check after the release: `node tools/bench/scripts/gap-sound-accept.mjs
+  https://gsfpv.flyreelstudio.eu <out.json>` must print pass true (read-only: progress only in the probe's own browser).
+- Chatter the walk shows that this lane's files cannot remove (evidence said list): the keys line ('Next, key N. Back, key B. ...',
+  5.3 s) is said in the headphone check AND again in the room (keysDue, above); after the headphone check two lines in a row say
+  'Your headphones work well' (the runner's headphones.good, packages/sonic-fpv/src/lesson/runner.ts:1681, engine source, then the
+  lesson's pass line lesson.ears-headphones.pass, 8.1 s together; one of them should go); the room waits about 10 s between its
+  four wall names. Taking out the second and the wait would bring the flight near 100 s.
+- tools/bench/scripts/gap-sound-accept.mjs is new (owned).
 - Pre-existing on 2d752fcc, not this lane: 3 tests fail on a key clash 'Shift+KeyH is bound to messages.open and sonic.headCentre'
   (rooms-public.test.ts, sonic-in-place.test.ts, train1-contract.test.ts).
 
@@ -88,3 +120,5 @@ Design differences (the code wins):
   Python's open(..., 'w') writes CRLF on Windows: write with newline='' or use the Edit tool.
 - S2 (run 3): most replies went to the replay test's frame 1391: a dump of recorded vs derived cues and the derived events around the
   failing frame (one temporary JSON write in the test) found the 16 ms gate shift in 2 runs; start there next time.
+- S3: two probe slips (the side question's id ends ':side'; a mouse click needs a scroll first) cost one 2.5 min walk each; a 10 s
+  dry walk that only prints the first question id and the button boxes before the full walk would have caught both.
