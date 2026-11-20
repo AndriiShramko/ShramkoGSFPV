@@ -102,6 +102,8 @@ async function main(): Promise<void> {
                             server: validateServerTrack(r.track).ok,
                             time: ms <= FIT_BUDGET_MS
                         };
+                        // gap-gen S1 (G7): a beginner course has the level's gatesMin, shrunk or not
+                        if (level === 'beginner') rules.beginnerMin = st.gates >= L.gatesMin;
                         if (s.id === LUBLIN) rules.cityLow = st.nearGroundShare <= CITY_NEAR_MAX;
                         if (s.id === SKULL && scale === 1) rules.x1 = st.gates >= 1;
                         if (s.id === WINTER_GARDEN) {

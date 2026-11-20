@@ -381,69 +381,69 @@ export function planCourse(input: PlanInput, hooks: PlanHooks = {}): PlanAnswer 
           : [{ tiers: [0, 2], always: true }, { tiers: [1, LOOSEST_TIER], always: false }];
     /** the opening ladder of one level: `asks` at each opening, the passes in turn, until `want` gates */
     const ladder = (asks: Ask[], want: number, tierOk: ((t: number) => boolean) | null = null): void => {
-    const enough = (): boolean => bestGates() >= want;
-    const openings = asks[0]!.rules.openings;
-    const elements = input.elements && asks[0]!.rules.level.elements.length > 1;
-    for (const pass of passes) {
-        if (enough() || late()) break;
-        if (!pass.always && bestGates() > 0 && !tierOk) continue;
-        for (let oi = 0; oi < openings.length && !late(); oi++) {
-            const opening = openings[oi]!;
-            const k = opening / RING_DIAMETER_M;
-            // a shrunk opening shrinks the legs with it (a 1 m plant tray has no 15 D leg for a whoop)
-            const shrink = opening / openings[0]!;
-            const p = scaledParams(k, COURSE_DEFAULTS);
-            const starts = startsOf(a, opening);
-            for (const ask of asks) {
-                if (late() || enough()) break;
-                const R = ask.rules;
-                const box = zoneBox(a, ask.req, R, opening);
-                if (!box) continue;
-                hooks.onStep?.('free', 0);
-                const zone2 = zoneAt(a, ask.req, R, opening, LOOSEST_TIER);
-                const { walkR, boxR } = walkReach(R, shrink);
-                const freeFrom = (spawn: Vec3): FreeSpace => freeAtMargin(walls, { spawn, bounds: clipBox(box, spawn, boxR, opening, walls.voxelResolution), unitM: a.unitM, kind: a.kind === 'room' ? 'indoor' : 'auto', goodAt: zone2, enclosureMin: 0 }, p.marginM);
-                let start = starts[0]!;
-                let free = freeFrom(start);
-                // a start in a pocket (under a housefly's body, between its legs) reaches a few cells: the air over the roof
-                // is tried too and the start whose free space holds more zone cells is kept
-                let room = zoneCount(free, k, zone2);
-                for (let si = 1; si < starts.length && room < ZONE_CANDS_PER_GATE * R.gates && !late(); si++) {
-                    const f2 = freeFrom(starts[si]!), r2 = zoneCount(f2, k, zone2);
-                    if (r2 > room) {
-                        free = f2;
-                        room = r2;
-                        start = starts[si]!;
-                    }
-                }
-                if (oi === openings.length - 1) ratio = Math.max(ratio, roomRatio(free, k, zoneAt(a, ask.req, R, opening, LOOSEST_TIER)));
-                const params = { ...p, legMinM: R.legMinM * shrink, legMaxM: R.legMaxM * shrink, spacingM: R.legMinM * shrink, turnCosMin: R.level.turnCosMin, axisCosMin: R.level.axisCosMin, gatesMin: R.level.gatesMin, gatesMax: Math.max(R.gates, R.level.gatesMax) };
-                // a zone with enough cells can still be a broken sheet (Wroclaw's eye band over 7.2 m tiles at 0.4 m cells:
-                // every walk stopped at 1-2 gates): the pass's looser tier is walked at the same opening before it shrinks
-                const lay = (t: number, v: number): void => {
-                    const place: CoursePlace = { at: zoneAt(a, ask.req, R, opening, t), start, reachM: walkR, gates: R.gates, maxGates: R.level.gatesMax, climbMax: R.level.climbMax, version: v ? `${version}.w${v}` : version, kinds: R.level.elements };
-                    hooks.onStep?.('lay', lastMs);
-                    const t0 = now ? now() : 0;
-                    const track = generateCourse(free, walls, { seed: walkSeed(request.seed, v), scene: input.scene, transform, created: input.created, spawn: start, params, place, elements, craftRadiusM: input.craftRadiusM });
-                    if (now) {
-                        lastMs = now() - t0;
-                        longest = Math.max(longest, lastMs);
-                    }
-                    if (track.gates.length > 0 && track.gates.length > bestGates() && legsWithinServer(track)) best = { track, opening, ask, tier: t };
-                };
-                // a tier with too few cells is not walked unless it is the pass's last; each tier's derived seeds are walked
-                // before the tier loosens
-                const last = pass.tiers[pass.tiers.length - 1]!;
-                const sparse = (t: number): boolean => t !== last && zoneCount(free, k, zoneAt(a, ask.req, R, opening, t)) < ZONE_CANDS_PER_GATE * R.gates;
-                for (const t of pass.tiers) {
+        const enough = (): boolean => bestGates() >= want;
+        const openings = asks[0]!.rules.openings;
+        const elements = input.elements && asks[0]!.rules.level.elements.length > 1;
+        for (const pass of passes) {
+            if (enough() || late()) break;
+            if (!pass.always && bestGates() > 0 && !tierOk) continue;
+            for (let oi = 0; oi < openings.length && !late(); oi++) {
+                const opening = openings[oi]!;
+                const k = opening / RING_DIAMETER_M;
+                // a shrunk opening shrinks the legs with it (a 1 m plant tray has no 15 D leg for a whoop)
+                const shrink = opening / openings[0]!;
+                const p = scaledParams(k, COURSE_DEFAULTS);
+                const starts = startsOf(a, opening);
+                for (const ask of asks) {
                     if (late() || enough()) break;
-                    if (sparse(t) || (tierOk && !tierOk(t))) continue;
-                    for (let v = 0; v < WALK_VARIANTS && !late() && !enough(); v++) lay(t, v);
+                    const R = ask.rules;
+                    const box = zoneBox(a, ask.req, R, opening);
+                    if (!box) continue;
+                    hooks.onStep?.('free', 0);
+                    const zone2 = zoneAt(a, ask.req, R, opening, LOOSEST_TIER);
+                    const { walkR, boxR } = walkReach(R, shrink);
+                    const freeFrom = (spawn: Vec3): FreeSpace => freeAtMargin(walls, { spawn, bounds: clipBox(box, spawn, boxR, opening, walls.voxelResolution), unitM: a.unitM, kind: a.kind === 'room' ? 'indoor' : 'auto', goodAt: zone2, enclosureMin: 0 }, p.marginM);
+                    let start = starts[0]!;
+                    let free = freeFrom(start);
+                    // a start in a pocket (under a housefly's body, between its legs) reaches a few cells: the air over the roof
+                    // is tried too and the start whose free space holds more zone cells is kept
+                    let room = zoneCount(free, k, zone2);
+                    for (let si = 1; si < starts.length && room < ZONE_CANDS_PER_GATE * R.gates && !late(); si++) {
+                        const f2 = freeFrom(starts[si]!), r2 = zoneCount(f2, k, zone2);
+                        if (r2 > room) {
+                            free = f2;
+                            room = r2;
+                            start = starts[si]!;
+                        }
+                    }
+                    if (oi === openings.length - 1) ratio = Math.max(ratio, roomRatio(free, k, zoneAt(a, ask.req, R, opening, LOOSEST_TIER)));
+                    const params = { ...p, legMinM: R.legMinM * shrink, legMaxM: R.legMaxM * shrink, spacingM: R.legMinM * shrink, turnCosMin: R.level.turnCosMin, axisCosMin: R.level.axisCosMin, gatesMin: R.level.gatesMin, gatesMax: Math.max(R.gates, R.level.gatesMax) };
+                    // a zone with enough cells can still be a broken sheet (Wroclaw's eye band over 7.2 m tiles at 0.4 m cells:
+                    // every walk stopped at 1-2 gates): the pass's looser tier is walked at the same opening before it shrinks
+                    const lay = (t: number, v: number): void => {
+                        const place: CoursePlace = { at: zoneAt(a, ask.req, R, opening, t), start, reachM: walkR, gates: R.gates, maxGates: R.level.gatesMax, climbMax: R.level.climbMax, version: v ? `${version}.w${v}` : version, kinds: R.level.elements };
+                        hooks.onStep?.('lay', lastMs);
+                        const t0 = now ? now() : 0;
+                        const track = generateCourse(free, walls, { seed: walkSeed(request.seed, v), scene: input.scene, transform, created: input.created, spawn: start, params, place, elements, craftRadiusM: input.craftRadiusM });
+                        if (now) {
+                            lastMs = now() - t0;
+                            longest = Math.max(longest, lastMs);
+                        }
+                        if (track.gates.length > 0 && track.gates.length > bestGates() && legsWithinServer(track)) best = { track, opening, ask, tier: t };
+                    };
+                    // a tier with too few cells is not walked unless it is the pass's last; each tier's derived seeds are walked
+                    // before the tier loosens
+                    const last = pass.tiers[pass.tiers.length - 1]!;
+                    const sparse = (t: number): boolean => t !== last && zoneCount(free, k, zoneAt(a, ask.req, R, opening, t)) < ZONE_CANDS_PER_GATE * R.gates;
+                    for (const t of pass.tiers) {
+                        if (late() || enough()) break;
+                        if (sparse(t) || (tierOk && !tierOk(t))) continue;
+                        for (let v = 0; v < WALK_VARIANTS && !late() && !enough(); v++) lay(t, v);
+                    }
                 }
+                if (enough()) break;
             }
-            if (enough()) break;
         }
-    }
     };
     const chain = fallbackAsks(request);
     // an ask already walked (a compact fallback's own whole-scan ask is the asked wide one) is not walked again
