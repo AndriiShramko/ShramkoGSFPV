@@ -139,8 +139,12 @@ the dialog's options reaching gen4a's generator are car 3's seams)
 - edit4a's overview eye x the Add click (edit-mouse c.add, two runs of three on 5bab5cce): Home and the editor's first view
   frame the course without a wall test (frame.ts frameBox), so on some random Wroclaw courses the eye stood in a tree's
   voxels; every click then hit 0.107 m from the eye and the new gate stood at the eye, lifted behind the camera plane (out
-  of view). The click's ray now goes on past a hit nearer than 1 m (add-place.ts hitPastEye), for a gate and a piece.
-  int4-add-eye.test.ts (the measured ray among its cases), NEG OK. The probe now records the editor's place for c.add.
+  of view). The probe now records the editor's place for c.add. A first try (pass hits nearer than 1 m) still failed one
+  run in two on 29945db2: hit 1.02 m. Measured on the release's walls in Node along both failing rays: scan on 5 and 6 of
+  the eye's 6 axes within 0.75 m, leaves along the ray to 0.4 m and to 1.3 m, then 18.5 m and 3.3 m of free air. Now: when
+  the first hit is nearer than 1 m the eye stands in the scan, and the ray goes on through it until it has crossed 1 m of
+  free air (add-place.ts hitPastEye), for a gate and a piece. int4-add-eye.test.ts (both measured rays among its cases),
+  NEG OK against 5bab5cce and against the first try.
 - Probes out of date after a merge (the product right, the probe repaired, each with the reason in the probe): edit4s s9
   (key G no longer makes a course in the editor since edit4b: the probe takes Course, Generate a new course, Yes);
   edit4c and edit4a (since edit4a a click selects without framing and the one gizmo has a size box on each axis: edit4c

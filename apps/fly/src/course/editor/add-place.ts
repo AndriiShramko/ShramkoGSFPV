@@ -18,25 +18,33 @@ export const ADD_AHEAD_M = 6;
 export const ADD_MIN_M = 1;
 /** how far a click looks for a wall, flown m (an estimate) */
 export const ADD_RAY_M = 200;
-/** int4: a wall the click's ray meets nearer to the eye than this is the scan around the eye, not the place pointed at, flown m */
+/** int4: a first wall the click's ray meets nearer to the eye than this means the eye stands in the scan, flown m */
 export const ADD_EYE_CLEAR_M = ADD_MIN_M;
-/** int4: how far past such a near hit the ray starts again, flown m (about two 10 cm wall voxels) */
+/** int4: how far past a hit in the scan around the eye the ray starts again, flown m (about two 10 cm wall voxels) */
 export const ADD_EYE_STEP_M = 0.25;
+/** int4: the free air the ray must cross before a hit counts as the place pointed at, once the eye stood in the scan, flown m */
+export const ADD_EYE_FREE_M = 1;
 
 /**
- * int4 (edit-mouse c.add, Wroclaw, two runs of three): the overview's eye has no wall test (frame.ts frameBox), so it can stand
- * in a tree's voxels; every click then hit 0.1 m from the eye and the new gate stood at the eye, lifted out of the view. The
- * ray goes on past what wraps the eye: `cast(from)` is the distance to a wall from `from` m along the ray (null: none).
- * Returns the first hit at least ADD_EYE_CLEAR_M from the eye, or null.
+ * int4 (edit-mouse c.add, Wroclaw, three runs of five): the overview's eye has no wall test (frame.ts frameBox), so it can
+ * stand in a tree's voxels; every click then hit within 0.11 m of the eye and the new gate stood at the eye, lifted out of
+ * the view. Measured on the release's walls along the two failing rays: scan on 5 and 6 of the eye's 6 axes within 0.75 m,
+ * the canopy along the ray to 0.4 m and to 1.3 m, then 18.5 m and 3.3 m of free air before the next hit.
+ * When the first hit is nearer than ADD_EYE_CLEAR_M the ray goes on through the scan around the eye, in ADD_EYE_STEP_M steps,
+ * until it has crossed ADD_EYE_FREE_M of free air: that hit is the place. `cast(from)` is the distance to a wall from `from` m
+ * along the ray (null: none). A first hit at ADD_EYE_CLEAR_M or further is returned as it is.
  */
 export function hitPastEye(cast: (from: number) => number | null): number | null {
-    let hit = cast(0);
-    for (let n = 0; hit !== null && hit < ADD_EYE_CLEAR_M && n < 16; n++) {
-        const from = hit + ADD_EYE_STEP_M;
+    const first = cast(0);
+    if (first === null || first >= ADD_EYE_CLEAR_M) return first;
+    let from = first + ADD_EYE_STEP_M;
+    for (let n = 0; n < 80; n++) {
         const h = cast(from);
-        hit = h === null ? null : from + h;
+        if (h === null) return null;
+        if (h >= ADD_EYE_FREE_M) return from + h;
+        from += h + ADD_EYE_STEP_M;
     }
-    return hit;
+    return null;
 }
 
 /**

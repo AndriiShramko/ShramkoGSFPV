@@ -1,10 +1,11 @@
 // int4 car 2 S2: a click whose ray meets the scan right at the editor's eye (the overview's eye in a tree's voxels: frame.ts
 // frameBox has no wall test) must not put the new gate at the eye, lifted out of the view (edit-mouse c.add, Wroclaw, two runs
-// of three: hit 0.107 m, the gate at screen y 3769 behind the camera plane). The ray goes on past what wraps the eye.
+// of three: hit 0.107 m, the gate at screen y 3769 behind the camera plane). The ray goes on through the scan around the eye
+// until it has crossed ADD_EYE_FREE_M of free air.
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { ADD_EYE_CLEAR_M, ADD_EYE_STEP_M, addPoint, hitPastEye } from '../../../apps/fly/src/course/editor/add-place';
+import { ADD_EYE_CLEAR_M, ADD_EYE_FREE_M, ADD_EYE_STEP_M, addPoint, hitPastEye } from '../../../apps/fly/src/course/editor/add-place';
 
 /** walls as solid intervals along the ray [start, end) in m; cast(from) = distance from `from` to the first solid, or null */
 const along = (solids: Array<[number, number]>) => (from: number): number | null => {
@@ -21,6 +22,12 @@ describe('int4: a click from an eye inside the scan', () => {
     });
     it('an eye inside a voxel (hit 0) steps out of it', () => {
         expect(hitPastEye(along([[0, 0.3], [0.45, 0.6], [5, 6]]))).toBeCloseTo(5, 9);
+    });
+    it('the measured canopy of the second failing ray (Wroclaw release walls): through 1.3 m of leaves to the branch past 3.3 m of air', () => {
+        expect(hitPastEye(along([[0, 0.1], [0.59, 0.7], [1.02, 1.3], [4.63, 5.5], [19.52, 20.5]]))).toBeCloseTo(4.63, 9);
+    });
+    it('a gap shorter than ADD_EYE_FREE_M inside the canopy does not end it', () => {
+        expect(hitPastEye(along([[0.2, 0.3], [0.2 + ADD_EYE_STEP_M + ADD_EYE_FREE_M - 0.1, 2], [6, 7]]))).toBeCloseTo(6, 9);
     });
     it('nothing beyond the near voxels: no hit (the gate goes ADD_AHEAD_M ahead, in view)', () => {
         expect(hitPastEye(along([[0.05, 0.2]]))).toBeNull();
