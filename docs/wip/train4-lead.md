@@ -132,3 +132,23 @@ of designs/t7-plan.md and `train4.py status`. Not done: the mouse walk of car 1'
 
 Cost facts (tools/gsfpv/run_cost.py in the vault): a run of 31-38 replies 0.2-0.3 M weighted tokens, 92-123 replies
 0.9-1.5 M; a window holds about 12 M (an estimate).
+
+## State, 2026-11-20 12:45 UTC: the scan's cause, the hot lane, the release guard
+
+Scene a39abad1: superspl.at publishes SOG version 3 since 2026-11-10; playcanvas 2.23.2 cannot read it (endless loader,
+or "ready" over black for streamed scans); 65 of 190 public scans fail. Diagnosis with an independent check:
+C:/dev/.gsfpv-lanes/designs/t7-scene-open.md. Repair = playcanvas 2.24.2 + splat-transform 3.12.0, proven on the bare
+engine only.
+Hot lane: hot-copy (cmd) -> hot-sog3 (prompts/t7-hot-sog3.md, copy C:/dev/gsfpv-t7-hot from origin/main) -> r-hot-sog3
+-> ship-car0 (cmd `bash C:/dev/.gsfpv-lanes/t7-hot.sh ship`: needs Verdict: SHIP, then ship_handover.py on
+U:/Temp/gsfpv-train4/hot-sog3.json into U:/Temp/gsfpv-train4/ship-car0). n-scan waits for file hot-sog3.json and does
+the rest of the repair list.
+Release guard: ship_handover.py exits 40 when origin/main holds code the candidate does not contain (outside docs/,
+*.md, packages/i18n/locales/); t4-int4.md, t4-car3.md and t6-car4.md got the paragraph MAIN MOVES (merge origin/main
+before the hand-over, re-check when it brings code). --allow-moved-main overrides by hand.
+Conductor: commit 7df1f38 in the vault paces by the five-hour window (status line 2; events WINDOW, RETRY-AFTER-WINDOW;
+set --max-runs / --not-before). Priorities: integration jobs and the hot lane 1, new lanes 2, gap lanes 3.
+plan-new is done: designs/t7-plan.md ("For the lead" at its end), six lanes n-route, n-save, n-scan, n-share, n-level,
+n-path with checks r-n-*; open decisions taken as recommended (g3 links for path-first courses, g2 kept; the level in
+the browser's prefs). Live is ac11d2c2 (car 1 + sound page texts of another session, released 11:50 UTC).
+Watchers: b8em29xja (DONE ship-car*), bunm3y3m2 (WAKE FAILED / HOLD / LIMIT), bme117exk (disk C).
