@@ -44,6 +44,8 @@ aa18f1e4 of origin/main; the lead's change of 17:50 UTC: car 2 takes the lanes w
       Seams) and ux4a-messages step 6 at 1536x730 (two runs of three: a message over the top-row buttons 2.9 s; repaired
       in the product, 3d86ffee, see Seams). Left: a new release build of the head (top-row.ts changed), every probe again
       (probes8.sh with L=logs9-final), accept-fly, the gates once on the final tree; then S2 is done.
+      2026-11-20: origin/main's lead note abdf4523 and two site commits (sound page texts) merged, 6f3b0da3; the final
+      release build of that head, the probes (probes9.sh, logs9-final) and the gates follow.
 - [ ] S3 the hand-over (Car 2 parts, U:/Temp/gsfpv-train4/int4.json)
 
 ## Progress
