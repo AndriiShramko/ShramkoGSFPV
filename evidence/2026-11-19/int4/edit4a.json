@@ -9,13 +9,13 @@
  "name": "int4",
  "query": "",
  "live": false,
- "date": "2026-11-19T22:29:17.798Z",
+ "date": "2026-11-20T12:33:29.462Z",
  "steps": {
   "1.open": {
    "ok": true,
    "mode": "edit",
    "lock": false,
-   "gates": 33,
+   "gates": 31,
    "E0": [
     -11.900656700134277,
     3.1238160133361816,
@@ -27,20 +27,20 @@
    "nav": {
     "kind": "frame-all",
     "at": [
-     4,
-     3.05,
-     25.599999999999998
+     47.6,
+     4.65,
+     38
     ]
    },
-   "eyeMoved": 87.868,
+   "eyeMoved": 104.167,
    "outside": []
   },
   "3.select": {
    "ok": true,
-   "gate": 3,
-   "selected": 3,
+   "gate": 5,
+   "selected": 5,
    "eyeMoved": 0,
-   "line": "Selected. Gate 4 of 33: ring, 1.2 m"
+   "line": "Selected. Gate 6 of 31: square, 1.2 m"
   },
   "4.orbit": {
    "ok": true,
@@ -51,20 +51,20 @@
    "nav": {
     "kind": "orbit",
     "at": [
-     23.026,
-     3.4,
-     25.814
+     20.4,
+     3.2,
+     22.4
     ]
    },
-   "distBefore": 107.672,
-   "distAfter": 107.672,
-   "eyeMoved": 94.141,
+   "distBefore": 112.991,
+   "distAfter": 112.991,
+   "eyeMoved": 82.059,
    "pivotIsGate": true
   },
   "5.pan": {
    "ok": true,
    "nav": "pan",
-   "eyeMoved": 27.978,
+   "eyeMoved": 29.256,
    "yaw": [
     2.673,
     2.673
@@ -80,16 +80,16 @@
    "nav": {
     "kind": "dolly",
     "at": [
-     23.026,
-     3.4,
-     25.814
+     20.4,
+     3.2,
+     22.4
     ]
    },
-   "distBefore": 110.153,
-   "distAfter": 74.577,
+   "distBefore": 114.72,
+   "distAfter": 77.668,
    "toGate": [
-    110.153,
-    74.577
+    114.72,
+    77.668
    ]
   },
   "7.hover": {
@@ -127,7 +127,7 @@
    "along": 0.8,
    "off": 0,
    "eyeMoved": 0,
-   "line": "Moved. Gate 4 of 33: ring, 1.2 m"
+   "line": "Moved. Gate 6 of 31: square, 1.2 m"
   },
   "9.ringY": {
    "ok": true,
@@ -138,7 +138,7 @@
    "deg": 30,
    "moved": 0,
    "eyeMoved": 0,
-   "line": "Turned. Gate 4 of 33: ring, 1.2 m"
+   "line": "Turned. Gate 6 of 31: square, 1.2 m"
   },
   "10.box": {
    "ok": true,
@@ -155,7 +155,7 @@
     1
    ],
    "eyeMoved": 0,
-   "line": "Size changed. Gate 4 of 33: ring, 1.4 m"
+   "line": "Size changed. Gate 6 of 31: square, 1.4 m"
   },
   "cancel": {
    "ok": true,
@@ -173,13 +173,13 @@
     [
      true,
      "edit",
-     "Kept where you put it. Gate 4 stays orange until the problem is gone.",
+     "Size changed. Gate 6 of 31: square, 1.4 m",
      "Click a gate to change it. Fly the course (or key Space, or your controller's arm switch) flies it at once"
     ],
     [
      true,
      "edit",
-     "Kept where you put it. Gate 4 stays orange until the problem is gone.",
+     "Size changed. Gate 6 of 31: square, 1.4 m",
      "Click a gate to change it. Fly the course (or key Space, or your controller's arm switch) flies it at once"
     ]
    ],
@@ -188,40 +188,40 @@
    "asked": false
   },
   "11.another": {
-   "ok": false,
-   "gate": 29,
+   "ok": true,
+   "gate": 0,
    "selected": 0,
    "eyeAfterClick": 0,
    "eyeAfterDrag": 0,
-   "gateMoved": 0
+   "gateMoved": 33
   },
   "12.double": {
    "ok": true,
-   "gate": 9,
-   "selected": 9,
+   "gate": 11,
+   "selected": 11,
    "screen": [
     768,
     365,
     2.39
    ],
-   "eyeMoved": 91.767
+   "eyeMoved": 127.725
   },
   "13.laptop": {
-   "ok": false,
-   "before": 9,
+   "ok": true,
+   "before": 11,
    "tried": [
     [
-     0,
+     1,
      [
-      464,
-      276,
-      66.29
+      539,
+      211,
+      130.44
      ],
-     0
+     1
     ]
    ],
-   "candidates": 7,
-   "selected": 0,
+   "candidates": 3,
+   "selected": 1,
    "line": "Click a gate to change it. Fly the course (or key Space, or your controller's arm switch) flies it at once",
    "hovered": [
     "turn",
@@ -231,23 +231,23 @@
     "topbar": [
      [
       8,
-      109,
+      144,
       426,
       52
      ]
     ],
     "gatebar": [
      [
-      269,
-      12,
+      344,
+      328,
       390,
       54
      ]
     ],
     "hoverTag": [
      [
-      470,
-      260,
+      549,
+      206,
       111,
       28
      ]
@@ -255,28 +255,23 @@
     "sizeTag": [],
     "editor": [
      [
-      400,
+      443,
       90,
-      380,
+      337,
       35
      ]
     ],
     "panels": []
    },
-   "over": [
-    [
-     "topbar",
-     "editor"
-    ]
-   ],
+   "over": [],
    "outside": []
   }
  },
  "lockBeforeEditor": true,
  "course": {
   "ok": true,
-  "ms": 27241,
-  "gates": 33
+  "ms": 14186,
+  "gates": 31
  },
  "presses": [
   {
@@ -314,9 +309,9 @@
      ]
     ],
     "stand": [
-     764,
-     314,
-     107.07
+     706,
+     441,
+     110.76
     ]
    },
    "down": {
@@ -356,9 +351,9 @@
      ]
     ],
     "stand": [
-     764,
-     314,
-     107.07
+     706,
+     441,
+     110.76
     ]
    }
   },
@@ -397,9 +392,9 @@
      ]
     ],
     "stand": [
-     764,
-     314,
-     107.07
+     706,
+     441,
+     110.76
     ]
    },
    "down": {
@@ -439,9 +434,9 @@
      ]
     ],
     "stand": [
-     794,
-     324,
-     107.07
+     736,
+     451,
+     110.76
     ]
    }
   },
@@ -1011,6 +1006,101 @@
      2.83
     ]
    }
+  },
+  {
+   "at": [
+    1027,
+    424
+   ],
+   "pre": [
+    [
+     "move",
+     "x"
+    ],
+    [
+     "move",
+     "x"
+    ]
+   ],
+   "before": {
+    "grabbed": null,
+    "dragging": false,
+    "ring": null,
+    "nav": "frame-all",
+    "sets": [
+     [
+      true,
+      1,
+      "",
+      "x"
+     ],
+     [
+      true,
+      1,
+      "",
+      ""
+     ],
+     [
+      true,
+      1,
+      "",
+      ""
+     ]
+    ],
+    "stand": [
+     1046,
+     477,
+     102.72
+    ]
+   },
+   "down": {
+    "client": [
+     1027,
+     424
+    ],
+    "offset": [
+     1027,
+     424
+    ],
+    "hit": [
+     "move",
+     "x"
+    ]
+   },
+   "taken": {
+    "grabbed": {
+     "handle": "move",
+     "axis": "x"
+    },
+    "dragging": true,
+    "ring": null,
+    "nav": "frame-all",
+    "sets": [
+     [
+      true,
+      1,
+      "x",
+      ""
+     ],
+     [
+      false,
+      1,
+      "",
+      ""
+     ],
+     [
+      false,
+      1,
+      "",
+      ""
+     ]
+    ],
+    "stand": [
+     1037,
+     453,
+     108.44
+    ]
+   }
   }
  ],
  "parts": {
@@ -1056,10 +1146,11 @@
   },
   "seen": {
    "size/xyz": 142,
-   "turn/ring:y": 685,
+   "turn/ring:y": 670,
    "turn/y": 7,
    "size/x": 22,
    "turn/ring:x": 522,
+   "size/y": 30,
    "turn/x": 2,
    "turn/ring:z": 451,
    "move/z": 32,
@@ -1068,73 +1159,136 @@
   },
   "tries": 1
  },
+ "covered11": [],
  "tried11": [
   [
    0,
    true,
-   false
-  ],
-  [
-   28,
-   false,
-   false
-  ],
-  [
-   29,
-   false,
-   false
+   true
   ]
  ],
+ "hit11": [
+  [
+   "move",
+   "x"
+  ],
+  [
+   "move",
+   "x"
+  ]
+ ],
+ "mid11": {
+  "dragging": true,
+  "grabbed": {
+   "handle": "move",
+   "axis": "x"
+  },
+  "sets": [
+   [
+    true,
+    1,
+    "x",
+    ""
+   ],
+   [
+    false,
+    1,
+    "",
+    ""
+   ],
+   [
+    false,
+    1,
+    "",
+    ""
+   ]
+  ],
+  "nav": {
+   "kind": "frame-all",
+   "at": [
+    47.6,
+    4.65,
+    38
+   ]
+  },
+  "muted": 2,
+  "lock": false
+ },
  "parts11": {
   "centre": [
-   847,
-   516
+   1046,
+   477
   ],
+  "box": {
+   "at": [
+    1050,
+    477
+   ],
+   "r": 4,
+   "a": 0,
+   "part": [
+    "size",
+    "xyz"
+   ]
+  },
   "ringY": {
    "at": [
-    878,
-    490
+    1051,
+    449
    ],
-   "r": 40,
-   "a": 320,
+   "r": 28,
+   "a": 280,
    "part": [
     "turn",
     "ring:y"
    ]
   },
+  "arrowX": {
+   "at": [
+    1027,
+    424
+   ],
+   "r": 56,
+   "a": 250,
+   "part": [
+    "move",
+    "x"
+   ]
+  },
   "seen": {
-   "turn/edge:z": 757,
-   "turn/z": 7,
-   "turn/ring:x": 453,
-   "turn/x": 1,
-   "turn/ring:y": 447,
-   "move/y": 19,
-   "turn/y": 9,
-   "move/x": 5,
-   "move/z": 30
+   "size/xyz": 156,
+   "turn/ring:z": 652,
+   "size/x": 40,
+   "turn/z": 39,
+   "turn/ring:y": 483,
+   "turn/ring:x": 488,
+   "move/x": 17,
+   "turn/y": 10,
+   "move/y": 36,
+   "move/z": 33
   },
   "tries": 1
  },
  "final": {
   "open": true,
-  "selected": 0,
-  "said": "Selected. Gate 1 of 33: ring, 1.2 m",
-  "courseGates": 33,
+  "selected": 1,
+  "said": "Selected. Gate 2 of 31: ring, 1.2 m",
+  "courseGates": 31,
   "courseOn": true,
   "mode": "edit",
   "eye": [
-   20.59282170122666,
-   56.72953538406367,
-   -49.24510538353178
+   114.74991032847619,
+   83.97231360232236,
+   -43.433670867339416
   ],
-  "yaw": 3.359759590908021,
+  "yaw": 3.8472018092011266,
   "pitch": -0.6108652381980153,
   "nav": {
    "kind": "frame-all",
    "at": [
-    4,
-    3.05,
-    25.599999999999998
+    41.2855,
+    4.65,
+    42.8
    ]
   },
   "hover": [
@@ -1145,36 +1299,36 @@
   "dragging": false,
   "stand": {
    "pos": [
-    1.2000000476837158,
-    2.4000000953674316,
-    -9.600000381469727
+    5.199999809265137,
+    2.5999999046325684,
+    -2.4000000953674316
    ],
    "quat": [
-    -0.5555697481794487,
+    -0.1950901882927788,
     0,
-    0.8314699362621742,
+    0.9807853070024489,
     0
    ],
    "scale": 1,
    "opening": 1.2,
    "screen": [
-    464,
-    276,
-    66.29
+    539,
+    211,
+    130.44
    ]
   },
   "axes": {
    "x": [
-    0.09053574604251853,
-    -0.9958932064677039
+    0.274721127897378,
+    -0.961523947640823
    ],
    "y": [
-    0.09950371902099892,
-    -0.9950371902099892
+    0.3417430630867044,
+    -0.939793423488437
    ],
    "z": [
-    -0.9899494936611665,
-    -0.1414213562373095
+    -0.9662349396012463,
+    -0.25766265056033233
    ]
   },
   "handles": true,
@@ -1183,10 +1337,7 @@
   "hoverTag": "Turn around Y",
   "cursor": "grab"
  },
- "fails": [
-  "11.another",
-  "13.laptop"
- ],
+ "fails": [],
  "log": [
   "console: Failed to load resource: the server responded with a status of 404 (Not Found)",
   "console: Failed to load resource: the server responded with a status of 403 ()",

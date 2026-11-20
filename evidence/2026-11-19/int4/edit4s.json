@@ -8,12 +8,12 @@
   730
  ],
  "dsf": 1.25,
- "date": "2026-11-19T22:21:37.102Z",
+ "date": "2026-11-20T12:16:25.208Z",
  "steps": {
   "open": {
    "ok": true,
    "lock": "CANVAS",
-   "courseMs": 18207,
+   "courseMs": 20245,
    "gates": 39,
    "source": "generated"
   },
@@ -26,21 +26,21 @@
    "pressed": true,
    "status": 429,
    "key": "course.save.problem.rate",
-   "line": "Too many new courses from this computer this hour. Your course is kept as a draft. Save again after 00:22.",
+   "line": "Too many new courses from this computer this hour. Your course is kept as a draft. Save again after 14:16.",
    "again": {
     "x": 1427.5,
     "y": 664,
     "w": 175,
     "h": 26,
     "disabled": true,
-    "text": "Save again after 00:22"
+    "text": "Save again after 14:16"
    },
    "drafts": 1,
    "unchanged": true
   },
   "s7.untouchedSaved": {
    "ok": true,
-   "saved": "70b50d42-e6a5e270",
+   "saved": "70b50d42-1b32adbd",
    "problem": {
     "status": null,
     "key": null,
@@ -52,12 +52,12 @@
     {
      "path": "/api/tracks",
      "status": 429,
-     "at": 1795126926269
+     "at": 1795177017009
     },
     {
      "path": "/api/tracks",
      "status": 201,
-     "at": 1795126928680
+     "at": 1795177021010
     }
    ]
   },
@@ -81,9 +81,9 @@
   },
   "s2.draftIn3s": {
    "ok": true,
-   "ms": 1515,
+   "ms": 1516,
    "drafts": 4,
-   "newest": 1795126946633,
+   "newest": 1795177038885,
    "edit4": true
   },
   "s3.restored": {
@@ -106,8 +106,8 @@
     -2.3
    ],
    "m": 0,
-   "restored": 1795126946633,
-   "line": "Your unsaved course from 23:22 is back (Versions: 4 kept). Key Ctrl+Z takes it away. | Your unsaved course from 23:22 is back (Versions: 4 kept). Key Ctrl+Z takes it away."
+   "restored": 1795177038885,
+   "line": "Your unsaved course from 13:17 is back (Versions: 4 kept). Key Ctrl+Z takes it away. | Your unsaved course from 13:17 is back (Versions: 4 kept). Key Ctrl+Z takes it away."
   },
   "s4.versions": {
    "ok": true,
@@ -116,15 +116,15 @@
    "n": 4,
    "first": [
     {
-     "text": "23:22 · gates: 39 · moved a gate",
+     "text": "13:17 · gates: 39 · moved a gate",
      "shown": true
     },
     {
-     "text": "23:22 · gates: 39 · changed a gate's shape",
+     "text": "13:17 · gates: 39 · changed a gate's shape",
      "shown": true
     },
     {
-     "text": "23:22 · gates: 39 · turned a gate",
+     "text": "13:17 · gates: 39 · turned a gate",
      "shown": true
     }
    ]
@@ -160,7 +160,7 @@
     {
      "path": "/api/tracks",
      "status": 201,
-     "at": 1795126979236
+     "at": 1795177071427
     }
    ],
    "problem": {
@@ -171,7 +171,7 @@
   },
   "s9.generateDropsForReal": {
    "ok": true,
-   "ms": 6092,
+   "ms": 11163,
    "open": true,
    "newCourse": true,
    "restored": null,
@@ -183,24 +183,24 @@
   {
    "path": "/api/tracks",
    "status": 429,
-   "at": 1795126926269
+   "at": 1795177017009
   },
   {
    "path": "/api/tracks",
    "status": 201,
-   "at": 1795126928680
+   "at": 1795177021010
   },
   {
    "path": "/api/tracks",
    "status": 201,
-   "at": 1795126979236
+   "at": 1795177071427
   }
  ],
  "notRun": [],
  "open": {
   "ok": true,
   "lock": "CANVAS",
-  "courseMs": 18207,
+  "courseMs": 20245,
   "gates": 39,
   "source": "generated"
  },

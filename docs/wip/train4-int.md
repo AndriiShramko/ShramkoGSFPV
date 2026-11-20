@@ -57,6 +57,26 @@ aa18f1e4 of origin/main; the lead's change of 17:50 UTC: car 2 takes the lanes w
       running when the run stopped (the subscription's reserve hook, 86 % of the window, 2026-11-20 ~13:45 UTC).
       Left: read logs9-final/accept-fly.log (B6-B16), rerun sound6-walk alone on :6180 (logs9-final/sound6-walk-2.log),
       the gates once, commit the evidence (2026-11-19/int4, 2026-11-20 b-fly), kill the server; then S2 is done.
+      Run of 2026-11-20 ~17:05 UTC: accept-fly on 88ccd89e: B6 B7 B9-B14 B16 PASS, B15 FAIL only at its LSB control:
+      the same flight as on c4e3ffdc (5631 records, 2 lives, the same crash point) but the scenario's flip began at
+      tick 24173 instead of ~5650 (a slow start on the loaded machine), so the tamper at the absolute tick 10000 (B15_TICK)
+      met idle throttle -1 (tamperedValue -1, hash unchanged). The check's timing, not the product; if the rerun fails
+      the same way, make B15 tamper at the first record after the flight's start (flip.startTick) instead of tick 10000.
+      Gates on the final tree (356fc8ff: 88ccd89e + this status), all PASS rc 0 (U:/Temp/gsfpv-gates-20261120-180850,
+      U:/Temp/gsfpv-train4/int4/gates3.log); a6-reference is in the vitest gate (not yet looked at in the log).
+      Started in the background, still running when the run stopped (the five-hour window at 99 %, the hook's
+      publication reserve): the server serve-csp on :6180 for dist (serve10.log) and probes10.sh (accept-fly B15 alone,
+      then sound6-walk alone; results in logs9-final/summary.txt as accept-fly-b15 and sound6-walk-2, ALLDONE at the end).
+      origin/main a59bd3db (two lead notes and STATE.md, docs only) is not merged yet: merge it before S3 (gates enough).
+      Left: read the two reruns, grep a6-reference in the vitest log, commit the evidence, kill the server
+      (its node process on :6180), then S2 is done.
+      Run of 2026-11-20 ~18:40 UTC: the reruns read: sound6-walk-2 PASS (chromium and firefox, first wall cue 8.3 s);
+      accept-fly B15 FAIL again the same way (flip at tick 21833, tamper at 10000 met throttle -1). Repaired in the check:
+      B15's controls now tamper 4300 ticks after the flip's start (B15_AFTER_FLIP; the old tick 10000 against a flip at
+      ~5650-5710 on 11-15, 11-16, 11-19; the crash comes ~13500 ticks after the flip, so the tamper is in powered flight).
+      The gates' vitest on 356fc8ff: 441 files passed, 1 skipped, 5628 tests (a6-reference alone again: 1/1 PASS). The server was
+      already gone. origin/main d72fe5f8 (lead notes and STATE.md, docs only) merged. Left: B15 alone on the dist of
+      88ccd89e (no app source changed since; probes11.sh, logs9-final/accept-fly-b15-2.log), then S2 is done.
 - [ ] S3 the hand-over (Car 2 parts, U:/Temp/gsfpv-train4/int4.json)
 
 ## Progress

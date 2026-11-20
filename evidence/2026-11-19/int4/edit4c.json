@@ -7,13 +7,13 @@
  ],
  "dsf": 1.25,
  "live": false,
- "date": "2026-11-19T22:33:48.211Z",
+ "date": "2026-11-20T12:14:14.650Z",
  "steps": {
   "s1.open": {
    "verdict": "PASS",
    "mode": "edit",
    "gates": 39,
-   "onPage": 19,
+   "onPage": 39,
    "under": [
     "CANVAS.#view",
     "CANVAS.#view",
@@ -22,187 +22,166 @@
    ],
    "screen": [
     [
-     1358,
-     449,
-     7.22
+     1012,
+     400,
+     10.18
     ],
     [
-     1693,
-     425,
-     10.15
+     1155,
+     380,
+     17.05
     ],
     [
-     1931,
-     420,
-     12.79
+     1232,
+     376,
+     23.97
     ],
     [
-     2053,
-     398,
-     14.65
+     1266,
+     364,
+     28.88
     ],
     [
-     2047,
-     398,
-     15.07
+     1265,
+     364,
+     29.63
     ],
     [
-     2042,
-     398,
-     15.48
+     1263,
+     364,
+     30.37
     ],
     [
-     2036,
-     398,
-     15.9
+     1262,
+     364,
+     31.12
     ],
     [
-     2189,
-     392,
-     17.14
+     1300,
+     361,
+     35.69
     ],
     [
-     2215,
-     392,
-     17.18
+     1306,
+     361,
+     36.12
     ],
     [
-     2240,
-     392,
-     17.21
+     1311,
+     361,
+     36.55
     ],
     [
-     2240,
-     393,
-     19.43
+     1311,
+     362,
+     41.27
     ],
     [
-     1905,
-     393,
-     27.58
+     1226,
+     361,
+     50.98
     ]
    ],
    "selected": 0,
    "stand": [
-    1358,
-    449,
-    7.22
+    1012,
+    400,
+    10.18
    ],
-   "lock": "CANVAS"
+   "lock": null
   },
   "s2.add": {
-   "verdict": "FAIL",
-   "judged": null,
+   "verdict": "PASS",
+   "judged": {
+    "leg": 22,
+    "clickedAt": [
+     1097,
+     360
+    ],
+    "armed": true,
+    "grew": true,
+    "newIndex": 23,
+    "wantIndex": 23,
+    "hitM": 134.42655351504536,
+    "offDeg": 0,
+    "neighbours": [
+     "g23",
+     "g24"
+    ],
+    "wasLeg": [
+     "g23",
+     "g24"
+    ],
+    "between": true,
+    "legDepth": 109.1,
+    "hidden": false
+   },
    "tries": [
     {
-     "leg": 23,
+     "leg": 1,
      "clickedAt": [
-      1366,
-      394
+      1194,
+      378
      ],
      "armed": true,
-     "grew": false,
+     "grew": true,
      "newIndex": 0,
-     "wantIndex": 24,
-     "hitM": null,
-     "legDepth": 74.11,
+     "wantIndex": 2,
+     "hitM": 11.162062082089573,
+     "legDepth": 23.97,
      "hidden": true
     },
     {
-     "leg": 34,
+     "leg": 10,
      "clickedAt": [
-      1304,
-      396
+      1269,
+      362
      ],
      "armed": true,
-     "grew": false,
+     "grew": true,
      "newIndex": 0,
-     "wantIndex": 35,
-     "hitM": null,
-     "legDepth": 78.63,
+     "wantIndex": 11,
+     "hitM": 9.474056948317443,
+     "legDepth": 50.98,
      "hidden": true
     },
     {
-     "selectedFar": 38,
-     "now": 0
-    },
-    {
-     "leg": 23,
+     "leg": 13,
      "clickedAt": [
-      1366,
-      394
+      1166,
+      347
      ],
      "armed": true,
-     "grew": false,
+     "grew": true,
      "newIndex": 0,
-     "wantIndex": 24,
-     "hitM": null,
-     "legDepth": 74.11,
+     "wantIndex": 14,
+     "hitM": 11.89992968487728,
+     "legDepth": 72.77,
      "hidden": true
     },
     {
-     "leg": 34,
+     "leg": 22,
      "clickedAt": [
-      1304,
-      396
+      1097,
+      360
      ],
      "armed": true,
-     "grew": false,
-     "newIndex": 0,
-     "wantIndex": 35,
-     "hitM": null,
-     "legDepth": 78.63,
-     "hidden": true
-    },
-    {
-     "selectedFar": 38,
-     "now": 0
-    },
-    {
-     "leg": 23,
-     "clickedAt": [
-      1366,
-      394
+     "grew": true,
+     "newIndex": 23,
+     "wantIndex": 23,
+     "hitM": 134.42655351504536,
+     "offDeg": 0,
+     "neighbours": [
+      "g23",
+      "g24"
      ],
-     "armed": true,
-     "grew": false,
-     "newIndex": 0,
-     "wantIndex": 24,
-     "hitM": null,
-     "legDepth": 74.11,
-     "hidden": true
-    },
-    {
-     "leg": 34,
-     "clickedAt": [
-      1304,
-      396
+     "wasLeg": [
+      "g23",
+      "g24"
      ],
-     "armed": true,
-     "grew": false,
-     "newIndex": 0,
-     "wantIndex": 35,
-     "hitM": null,
-     "legDepth": 78.63,
-     "hidden": true
-    },
-    {
-     "selectedFar": 38,
-     "now": 0
-    },
-    {
-     "leg": 23,
-     "clickedAt": [
-      1366,
-      394
-     ],
-     "armed": true,
-     "grew": false,
-     "newIndex": 0,
-     "wantIndex": 24,
-     "hitM": null,
-     "legDepth": 74.11,
-     "hidden": true
+     "between": true,
+     "legDepth": 109.1,
+     "hidden": false
     }
    ]
   },
@@ -220,7 +199,7 @@
     }
    ],
    "refused": null,
-   "said": "The new gate is red. Gate 2 stands in a wall. Pull its arrows to move it out into the open, or delete it with the cross on its bar."
+   "said": "The new gate is red. The way from gate 1 to gate 2 goes through a wall. Pull the arrows of gate 2 until the straight way between them is clear, or delete it wit"
   },
   "s3.undo": {
    "verdict": "PASS",
@@ -249,7 +228,7 @@
     }
    ],
    "refused": null,
-   "said": "Triple horizontal added: gates 1 to 3. Fly in through gate 1, turn round, back through the next."
+   "said": "The new gate is red. The way from gate 2 to gate 3 goes through a wall. Pull the arrows of gate 3 until the straight way between them is clear, or delete it wit"
   },
   "s4.undo": {
    "verdict": "PASS",
@@ -439,12 +418,12 @@
  },
  "ready": {
   "status": "ready",
-  "s": 2
+  "s": 4
  },
  "lockAfterClick": "CANVAS",
  "course": {
   "ok": true,
-  "s": 20,
+  "s": 26,
   "gates": 39
  },
  "tags": [
@@ -529,8 +508,6 @@
    }
   }
  ],
- "fails": [
-  "s2.add"
- ],
+ "fails": [],
  "log": []
 }

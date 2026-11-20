@@ -93,22 +93,22 @@
   "5-cost": {
    "pass": true,
    "fogType": "linear",
-   "msFogOn": 7.23,
-   "msFogOff": 6.88,
+   "msFogOn": 7.09,
+   "msFogOff": 7.58,
    "on": [
-    8.7,
-    7.2,
-    5.2
+    9.1,
+    4.4,
+    7.1
    ],
    "off": [
-    8.8,
-    4.8,
-    6.9
+    7.6,
+    5.3,
+    9.2
    ],
    "uncapped": true
   },
   "3-lublin": {
-   "pass": false,
+   "pass": true,
    "walls": true,
    "mode": "only",
    "nearWalls": {
@@ -151,7 +151,7 @@
  "errors": [],
  "wroclawWalls": {
   "ok": true,
-  "s": 4
+  "s": 9
  },
  "picks": [
   {
@@ -181,6 +181,6 @@
   "mode": "only",
   "panelOpen": true
  },
- "seconds": 100,
- "pass": false
+ "seconds": 143,
+ "pass": true
 }
