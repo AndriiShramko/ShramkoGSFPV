@@ -7,7 +7,7 @@ Base: branch train4 at 2d752fcc (negative-control ref). Package branch: packages
 ## Status
 
 - [x] S1 the start screen (host): no 'behind' button; Quick start first and focused for every pilot, Continue second; the settings
-      list at level first with 'Show all settings (n more)'. Tests NEG OK against 2d752fcc. (commit: see git log, 'gap-sound S1')
+      list at level first with 'Show all settings (n more)'. Tests NEG OK against 2d752fcc. (commit 436cc3c8)
 - [ ] S2 the quick path (package data): ears-headphones 2 trials; the wall sounds inside walls-hall's room; one short intro a later
       quick lesson; quick-path.test.ts ROOM_FLIGHT_MAX_S 120 and a talk-seconds cap of the whole quick path (NEG on 53a5675).
 - [ ] S3 the acceptance: tools/bench/scripts/gap-sound-accept.mjs by mouse at 1536x730, scale 1.25, first visit and returning pilot;
