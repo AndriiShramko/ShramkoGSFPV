@@ -8,6 +8,11 @@
 //   3 the micro-greens ab5efa0e at x15 the same way: a course, no refusal, >= 5 gates, gates under the leaves' top
 //     (plan stats underTopShare >= 0.8)
 //   4 Hallstatt 1994c65c at x1: Pro, Whole scene (wide), Build: a course, no refusal
+//   5 (the lane's review) a guest joins a room whose host flies a dialog course of another level: on a fresh Hallstatt
+//     page (the pilot's own pick: the default medium compact) the room's course is adopted as app/builtin/rooms.ts hands
+//     it (rooms/race.ts adoptOf of the host's 'g2.' id: { seed, request }): the page lays the host's pro wide course
+//     (hook.request), not its own pick. The room service is not run: the hook is the one rooms.ts calls.
+// env ONLY=5 (a comma list): only those steps (the live control of step 5 needs no other).
 // Usage: node tools/bench/scripts/gap-gen-accept.mjs <base with /en> <out.json>
 // env: COURSE_MS (the wait for a course, default 240000). Read-only on any site: nothing is saved, sent or created (no
 // save button is pressed; a generated course and the Scene size live only in the tab's own profile). Exit 1 on a failure.
@@ -26,8 +31,12 @@ const SIZE = 15;
 const SKULL_SCAN = [-50.054, 9.3, -7.687];
 /** the start pose and gate 1 within this many flown m of the skull at x15 (the skull itself is about 3 m across there;
  *  the audit's beginner plans start 6.2-6.7 m from it) */
-const REACH_M = Number(process.env.SKULL_REACH_M ?? 8);
+// review: every Build draws a new seed; gate 1 stood 7.2 m and 9.2 m from the skull on two presses (live: 773 m), so 8 m
+// judged the seed, not the placement
+const REACH_M = Number(process.env.SKULL_REACH_M ?? 12);
 const GATES_MIN = 5, UNDER_TOP_MIN = 0.8;
+const ONLY = process.env.ONLY ? new Set(process.env.ONLY.split(',').map(Number)) : null;
+const want = (...n) => !ONLY || n.some((k) => ONLY.has(k));
 const REFUSAL = /No course fits|No gate your drone passes fits/i;
 const pick = pickBrowser({ expected: chromium.executablePath() });
 const browser = await chromium.launch({ ...pick.launch, headless: true });
@@ -149,7 +158,7 @@ const r3 = (n) => (typeof n === 'number' ? Math.round(n * 1000) / 1000 : n);
 
 try {
     // 1-2 the skull at x15, Beginner compact
-    {
+    if (want(1, 2)) {
         const { ctx, page } = await openPage('5dfeb49b');
         const sz = await sceneSize(page, SIZE);
         check(1, 'skull: Scene size x15 by the menu slider', sz.lock && sz.slider && Math.abs(sz.size - SIZE) / SIZE <= 0.01, sz);
@@ -169,7 +178,7 @@ try {
         await ctx.close();
     }
     // 3 the micro-greens at x15, Beginner compact
-    {
+    if (want(3)) {
         const { ctx, page } = await openPage('ab5efa0e');
         const sz = await sceneSize(page, SIZE);
         const g = await generate(page, 'beginner', 'compact', true);
@@ -181,7 +190,7 @@ try {
         await ctx.close();
     }
     // 4 Hallstatt at x1, Pro, the whole scene
-    {
+    if (want(4)) {
         const { ctx, page } = await openPage('1994c65c');
         const scale = await page.evaluate(() => window.__gsfpv.scale?.size() ?? null);
         const g = await generate(page, 'pro', 'wide', false);
@@ -190,9 +199,29 @@ try {
             { scale, dialog: g.dialog, gates: g.s.gates, refusal: g.refusal, texts: g.s.texts, ms: g.ms, stats: st && { kind: st.kind, gates: st.gates, outside: st.outside } });
         await ctx.close();
     }
+    // 5 a room guest whose own pick differs adopts the host's dialog course (the 'g2.' id's { seed, request })
+    if (want(5)) {
+        const { ctx, page } = await openPage('1994c65c');
+        const host = { seed: 4242, level: 'pro', spread: 'wide', anyQuality: false };
+        const own = await page.evaluate(() => { const c = window.__gsfpv.course; return { adopt: !!(c && c.adopt), gates: c ? c.gates : 0 }; });
+        if (own.adopt) await page.evaluate((r) => window.__gsfpv.course.adopt({ seed: r.seed, request: { ...r } }), host);
+        const t0 = Date.now();
+        let s;
+        for (;;) {
+            s = await page.evaluate(READ);
+            if ((s.gates > 0 && s.drawn > 0) || Date.now() - t0 > COURSE_MS) break;
+            await sleep(200);
+        }
+        const r = s.request;
+        const same = !!r && r.seed === host.seed && r.level === host.level && r.spread === host.spread && r.anyQuality === host.anyQuality;
+        check(5, 'room guest (own pick medium compact) adopts the host pro wide dialog course: the page lays the host ask',
+            own.adopt && same && s.gates >= 1 && s.drawn > 0,
+            { adopt: own.adopt, host, laidRequest: r, gates: s.gates, ms: Date.now() - t0, plan: s.plan && s.plan.ok ? { gates: s.plan.stats.gates } : null });
+        await ctx.close();
+    }
 } catch (e) { out.fail = String(e).slice(0, 300); console.log('FAIL', out.fail); }
 const failed = out.steps.filter((q) => !q.pass).map((q) => q.step);
-out.verdict = { pass: !out.fail && failed.length === 0 && out.steps.length === 4, failed };
+out.verdict = { pass: !out.fail && failed.length === 0 && out.steps.length === (ONLY ? ONLY.size : 5), failed };
 save();
 console.log(JSON.stringify(out.verdict));
 await browser.close();

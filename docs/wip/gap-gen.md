@@ -177,6 +177,27 @@ Negative-control ref: the S1 merge of gen4a (5f946305) and gen4b (fb7f6524): 3ef
   (accept-local.json laid.droneToGate1M), so 'start at the skull' is true for the course but not yet for the pilot.
 - S3 live checks after deploy: gap-gen-accept.mjs against the site (4/4 PASS expected).
 
+## Review
+
+Verdict: SHIP (independent check, r-gap-gen; review file U:/Temp/gsfpv-train4/reviews/gap-gen.md).
+- Repaired (PROVEN): the live room board path. rooms.ts hands a room's 'g2.' course to hook.adopt as { seed, request }, but
+  apps/fly/src/app/builtin/course.ts adopt read only `seed` and laid it with the guest's own dialog pick: the guest's course id
+  differed from the room's and RoomBoard.look never reported its laps (no message). Lane gap-editor (owner of course.ts) has
+  no work copy in car 4, so the line under For the lead would not come. Now course.ts adopt lays a 'g2.' course with the
+  asker's level and spread and a 'g1.' course by the old generator (as its link); hook.ts adopt takes the request.
+  Files outside the owned list: apps/fly/src/app/builtin/course.ts, apps/fly/src/course/hook.ts (one type).
+- Proof: gap-gen-accept.mjs step 5 (new): a fresh Hallstatt page (own pick medium compact) adopts { seed 4242, pro wide }:
+  local build PASS (laid request pro wide, 24 gates); live site FAIL (no request, the seed's 40 gates), as the negative
+  control (evidence/2026-11-19/gap-gen/review-accept-*.json). The lane's build before the repair was not built a second time.
+- Probe: step 2's reach 8 m judged the random seed (gate 1 7.2, 9.2, 6.9 m on three presses; live 773 m): now 12 m.
+  Local run 4/5 with 8 m (step 2 at 9.2 m), then steps 1-2 PASS again (6.9 m); steps 3-5 PASS.
+- Re-run: gap-gen-plan, gap-gen-scale, gap-gen-race 15/15; NEG OK for gap-gen-scale (generate.ts, plan.ts) and gap-gen-race
+  (race.ts) vs 3ef3d4bf. Plan time max 37.4 s at x1 (gen4a 42.6 s; FIT_BUDGET_MS 120 s).
+- Open for the lead (not a regression, owner-facing): at x15 the drone stays 802 m from the skull course (live: 26 m from its
+  course at the scene's edge); the page says the distance and shows the arrow. Moving the drone to the course start is
+  course.ts work (spawn at the start pose, then respawnStart). A guest in Fly by Sound: race-page lays elements, the
+  course feature single gates (not measured; the race page is off).
+
 ## Cost notes
 
 - S1: ~45 replies; most went to finding why beginner/medium had no course on tiny scans (the prompt's 'one level easier'
@@ -190,3 +211,4 @@ Negative-control ref: the S1 merge of gen4a (5f946305) and gen4b (fb7f6524): 3ef
 - S3 (run 2, ~40 replies): the start turn (a diagnostic of each turn's checkTrack issues settled it in two runs) and the
   probe's reading of the laid course (inUse() is null before the course is flown: saveCheck gives gate 1 and the start).
   Cheaper: read hook.ts once before writing a probe that reads the course.
+- Review (~28 replies): most went to tracing the live room board path (board.ts look, course.ts adopt) and the probe runs. Cheaper: grep `adopt` in course.ts first; run the local and live probes in parallel in the background.

@@ -98,7 +98,17 @@ export const course: Feature = {
         hook.look = () => ({ ...stage.look, roles: [...stage.look.roles] });
         hook.splash = () => ({ ...hud.splashState });
         // lane race, L1: the room's course is built here as if this pilot made it (rooms/board.ts calls it via the hook)
-        hook.adopt = (c) => ('seed' in c ? generate(c.seed >>> 0) : void loadServer(0, true, c));
+        // review of lane gap-gen: a room's asked course (its 'g2.' id, rooms/race.ts adoptOf) is laid with the asker's level
+        // and spread, a 'g1.' course by the old generator as its link is: every racer lays the host's course, not their own ask
+        hook.adopt = (c) => {
+            if ('id' in c) return void loadServer(0, true, c);
+            if ('request' in c) {
+                const { seed, ...asked } = c.request;
+                request = asked;
+                return generate(seed >>> 0);
+            }
+            generate(c.seed >>> 0, 'legacy');
+        };
         hook.clockText = () => document.querySelector('[data-testid=course-hud]')?.textContent?.trim() ?? null;
         const stage = new CourseStage(ctx.renderer);
         const hud = new CourseHud(ctx.ui);
