@@ -93,3 +93,42 @@ Not verified: the estimate of twenty runs a window; ship_handover.py beyond its 
 ## Not verified at the start
 
 The estimate of the end (about 4 hours after the start) and of the cost (about 65 agent runs) are estimates. No lane has run with this conductor before: its first events are the proof.
+
+## State, 2026-11-20 12:15 UTC: the night, five new wishes, the new layout (READ THIS FIRST)
+
+Live: still car 1, release aa18f1e4. STATE.md's top is stale (it names 89c9c86e): repair it when car 2 goes live.
+
+The night. The subscription (Max) counts five-hour windows (resets seen at 01:30, 06:30, 11:30, next 16:30 UTC). int4
+(car 2) merged its seven lanes at 21:40 and has been in S2 since: real seams between the four editor lanes (the editor
+window under the top bar on a low view, a click's ray through scan near the eye, probes of one lane broken by another).
+The window cut its long run three times (04:23, about 09:40, 11:21 UTC) and the conductor retried hourly. Its commits
+are safe; each run continues from "## Status" of C:/dev/gsfpv-v13-int/docs/wip/train4-int.md. Restarted 11:41 UTC with a
+stage-size rule in its prompt (about 40 tool calls, then LANE-STAGE-LEFT S2) and max_runs 14.
+Done at night with SHIP: gap-gen, gap-save, gap-sound. Eyes done: eye-editor (8 not ok), eye-gen4a (3), eye-view (2).
+
+The owner's messages 73 and 74 (vault brief): five wishes. The lead's decisions: C:/dev/.gsfpv-lanes/designs/t7-brief.md
+(1 Save never refuses: fix all / save as is / show me; 2 a shared link opens the same scene, course and way of flying;
+3 course level Beginner / Intermediate / Pro with rules; 4 the light path and path-first generation; 5 every superspl.at
+scan opens; 6 the eyes' findings routed to lanes).
+
+Jobs added 11:41 UTC: base7 (branch t7-base in C:/dev/gsfpv-t7-base = the integration head of 11:41 + gap-gen + gap-save
++ gap-sound + the joined package commit; writes U:/Temp/gsfpv-train4/t7-base.txt when its gates pass) and plan-new
+(prompts/t7-plan.md: P1 plan designs/t7-plan.md, P2 prompts t7-*.md and the rewritten t4-car3.md and t6-car4.md,
+P3 t7-copies.sh, the jobs, car3 after base7, car4 after the new checks; added with --wake).
+New layout: car 3 = ONE merge of t7-base on the integration copy after car 2; car 4 = the new lanes + gap lanes 4-7
+that say SHIP. Minecraft stays held.
+
+Workflow wf_1638040d-a1f (shramko-t7-kickoff), started 11:41 UTC: (a) diagnosis of scene a39abad1 ->
+designs/t7-scene-open.md with an independent check; (b) train4.py paced by the five-hour window (reads rate_limit_event
+of the run logs: no new model runs from 90 %, a refused run waits for the reset; set --max-runs, --not-before), with a
+review. Check its result before trusting either.
+
+Watchers of this session: bunm3y3m2 (WAKE FAILED / HOLD / LIMIT), borl0ozyn (DONE ship-car*, WAKE DONE plan-new),
+bme117exk (disk C under 10 GB).
+
+On wake: ship-car2 done -> read U:/Temp/gsfpv-train4/ship-car2/ (ship.log, live.log, LIVE-CHECKS-FAILED.txt), check
+release.json, repair STATE.md, tell the owner what is live and how it was checked. plan-new done -> read "For the lead"
+of designs/t7-plan.md and `train4.py status`. Not done: the mouse walk of car 1's roads on the live site.
+
+Cost facts (tools/gsfpv/run_cost.py in the vault): a run of 31-38 replies 0.2-0.3 M weighted tokens, 92-123 replies
+0.9-1.5 M; a window holds about 12 M (an estimate).
