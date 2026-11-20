@@ -79,7 +79,8 @@ async function until(cond: () => boolean, ms: number): Promise<boolean> {
 beforeAll(async () => {
     port = await freePort();
     child = spawn(process.env.PYTHON ?? 'python', ['-X', 'utf8', '-u', 'apps/rooms/rooms.py', '--host', '127.0.0.1', '--port', String(port)], { cwd: ROOT, stdio: 'ignore' });
-    const end = Date.now() + 10000;
+    // t7-base: 1.7 s alone; under the whole suite beside other lanes 10 s was not enough (two gate runs of three)
+    const end = Date.now() + 30000;
     while (!(await canConnect(port))) {
         if (Date.now() > end || child.exitCode !== null) {
             stop();
@@ -87,7 +88,7 @@ beforeAll(async () => {
         }
         await sleep(100);
     }
-}, 20000);
+}, 40000);
 
 afterAll(() => {
     for (const s of sockets) s.close();
