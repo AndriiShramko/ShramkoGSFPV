@@ -354,7 +354,12 @@ try {
     await key('Home');
     await sleep(1200);
     const s11 = await snap();
-    const c11 = await pickable(onScreen(s11));
+    // int4: only gates whose point no handle of the selected gate covers (the view's own hit test): on the merged tree's
+    // course the two nearest gates stood under gate 1's turn ring, so their clicks took the ring, not the gate
+    const c11all = await pickable(onScreen(s11));
+    const free11 = await page.evaluate((pts) => pts.map(([x, y]) => !(window.__gsfpvEditHit && window.__gsfpvEditHit(x, y))), c11all.map((c) => c.g));
+    const c11 = c11all.filter((_, i) => free11[i]);
+    res.covered11 = c11all.filter((_, i) => !free11[i]).map((c) => c.i);
     const pref = c11.find((c) => c.i === Number(env.GATE11 ?? 7));
     const order11 = pref ? [pref, ...c11.filter((c) => c !== pref)] : c11;
     let g7 = order11[0];

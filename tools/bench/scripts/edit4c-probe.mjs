@@ -211,8 +211,18 @@ try {
     await sleep(300);
 
     // s2: a gate between two gates far apart
+    // int4: since edit4a (E1) a click selects without framing; the pilot frames with key F. When the far gate's click did not
+    // select it (a gate 80 m away is a few pixels), key Tab takes the next one, as the gate bar's Next does; then F frames it
+    // so its legs come near enough for a click to reach them.
+    const frameNext = async () => {
+        const last = tries[tries.length - 1];
+        if (!last || last.selectedFar === undefined || last.now !== last.selectedFar) { await page.keyboard.press('Tab'); await settle(); }
+        await page.keyboard.press('KeyF');
+        await settle();
+        tries.push({ framed: (await snap()).selected });
+    };
+    let tries = [];
     {
-        let tries = [];
         let found = null;
         let judged = null;
         for (let n = 0; n < 4 && !judged; n++) {
@@ -222,7 +232,7 @@ try {
             const ls = await legs(s);
             if (!ls.length) {
                 const far = (s.gates || []).map((p, i) => ({ p, i })).filter(({ p, i }) => i !== s.selected && p[2] > 0 && p[0] > 40 && p[0] < W - 40 && p[1] > 110 && p[1] < H - 90).sort((x, y) => y.p[2] - x.p[2])[0];
-                if (far) { await click(far.p[0], far.p[1], 800); await settle(); tries.push({ selectedFar: far.i, now: (await snap()).selected }); } else await backOff();
+                if (far) { await click(far.p[0], far.p[1], 800); await settle(); tries.push({ selectedFar: far.i, now: (await snap()).selected }); await frameNext(); } else await backOff();
                 continue;
             }
             for (const leg of ls.slice(0, 6)) {
@@ -255,6 +265,7 @@ try {
                 // every leg tried stood behind the scan: select the farthest gate on the page (the view frames it) and go on
                 const far = (s.gates || []).map((p, i) => ({ p, i })).filter(({ p, i }) => i !== s.selected && p[2] > 0 && p[0] > 40 && p[0] < W - 40 && p[1] > 110 && p[1] < H - 90).sort((x, y) => y.p[2] - x.p[2])[0];
                 if (far) { await click(far.p[0], far.p[1], 800); await settle(); tries.push({ selectedFar: far.i, now: (await snap()).selected }); }
+                await frameNext();
             }
         }
         found = judged && judged.between && judged.offDeg <= 15 ? judged : null;
