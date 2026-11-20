@@ -19,6 +19,7 @@ import { RING_MIN_DRONE_DIAMETERS, SMALLEST_DRONE_RADIUS_M, freeAtMargin, scaled
 import { FREE_DEFAULTS, clearanceM, cellCentre } from './freespace';
 import type { FreeSpace } from './freespace';
 import { flownStart } from './check';
+import { MAX_LEG_M } from './server';
 import { analyzeScan, scanTile } from './scan';
 import type { ScanAnalysis } from './scan';
 import { LEVELS, VOXEL_VIEW_GATES, courseLinkId } from './request';
@@ -33,8 +34,6 @@ export const CITY_LOW_M = 4;
 export const ZONE_CANDS_PER_GATE = 8;
 /** compact: the zone's radius is at least this many shortest legs (ESTIMATE, design: 3 legs) */
 export const COMPACT_LEGS = 3;
-/** the most a leg may be, flown m (server.ts / apps/api/tracks.py MAX_LEG_M) */
-const MAX_LEG_M = 60;
 /** gen4a A3: walks per zone tier (the asked seed, then seeds derived from it) while the course stays under gatesMin (a
  *  street walk turns corners and no late gate sees the start: Wroclaw beginner seed 1 closed at 1 gate) */
 export const WALK_VARIANTS = 3;
@@ -228,6 +227,46 @@ export function clipBox(box: { min: Vec3; max: Vec3 }, start: Vec3, reachM: numb
     return out;
 }
 
+/** How far an asked course reaches from its start, flown m (shrink: the opening against the level's). */
+export interface WalkReach {
+    /** the out half keeps within it (CoursePlace.reachM): the zone, and the diameter of a circle of the loop's own length
+     *  (gates x the mean leg / pi; the start is on the loop, not at its centre), never under half of the server's 60 m leg
+     *  (two gates within it of the start are within 60 m of each other). A 127 m zone let a pro course wander out and its
+     *  closing leg pass the server's 60 m (1994c65c). */
+    readonly walkR: number;
+    /** the free-space box's half size around the start (clipBox): the walk's reach and one leg past it (the way home starts
+     *  from the out half's last gate), never more than the whole loop laid out straight. That straight loop (24 x 20 m pro
+     *  legs: 260 m) over 1994c65c (voxel 0.8 m) gave a box of 3.2 m cells against a 0.43 m gate: pro wide had no course at
+     *  all (audit run 4); with this box, 24 gates in 1.8 s. */
+    readonly boxR: number;
+}
+
+export function walkReach(R: PlanRules, shrink: number): WalkReach {
+    const legMax = R.legMaxM * shrink;
+    const reach = (R.gates * legMax) / 2 + legMax;
+    const loopR = Math.max((R.gates * (R.legMinM * shrink + legMax) * 0.5) / Math.PI, MAX_LEG_M / 2);
+    const walkR = Math.min(R.zoneR, loopR);
+    return { walkR, boxR: Math.min(reach, walkR + legMax) };
+}
+
+/**
+ * Every leg of a track within the server's MAX_LEG_M, flown m: validateServerTrack's own leg rule (each gate to the next,
+ * and the last to the first when the course has laps). planCourse keeps no course the Save would refuse: Lublin pro wide
+ * seed 2 walked a 61 m leg from gate 1 to gate 2 (audit run 5); its other rules (a whoop's gate size in scene units over
+ * x5.6) are the format's, not the walk's, and are not asked here.
+ */
+export function legsWithinServer(track: TrackFile): boolean {
+    const s = track.transform[0];
+    const g = track.gates;
+    const legs: [number, number][] = g.slice(1).map((_, i) => [i, i + 1]);
+    if ((track.laps ?? 1) > 1 && g.length > 1) legs.push([g.length - 1, 0]);
+    return legs.every(([a, b]) => {
+        const p = g[a]!.pos, q = g[b]!.pos;
+        const dx = p[0]! - q[0]!, dy = p[1]! - q[1]!, dz = p[2]! - q[2]!;
+        return Math.sqrt(dx * dx + dy * dy + dz * dz) * s <= MAX_LEG_M;
+    });
+}
+
 /** where the walk starts: over the core, half way between its ground and its roof or ceiling (a street at eye height;
  *  the walk takes the nearest zone cell) */
 function startOf(a: ScanAnalysis, openingM: number): Vec3 {
@@ -258,7 +297,10 @@ function letters(r: CourseRequest): string {
 export function planCourse(input: PlanInput, hooks: PlanHooks = {}): PlanAnswer {
     const { walls, transform, request } = input;
     const now = hooks.deadline?.now;
-    const late = (): boolean => !!hooks.deadline && hooks.deadline.now() >= hooks.deadline.at;
+    /** the longest lay so far, ms: a lay that would end past the deadline is not started (fit.ts fitCourse's rule, review
+     *  T2-6 / CV-5: the page's watchdog ends a worker that runs on past FIT_BUDGET_MS and the pilot gets only a failure) */
+    let longest = 0;
+    const late = (): boolean => !!hooks.deadline && hooks.deadline.now() + longest >= hooks.deadline.at;
     hooks.onStep?.('analyse', 0);
     const a = analyzeScan(walls, transform);
     const rules = planRules(request, input.craftRadiusM || SMALLEST_DRONE_RADIUS_M, a);
@@ -310,14 +352,8 @@ export function planCourse(input: PlanInput, hooks: PlanHooks = {}): PlanAnswer 
                 if (!box) continue;
                 hooks.onStep?.('free', 0);
                 const zone2 = zoneAt(a, ask.req, R, opening, LOOSEST_TIER);
-                const legMax = R.legMaxM * shrink;
-                const reach = (R.gates * legMax) / 2 + legMax;
-                // the walk keeps within the diameter of a circle of the loop's own length (gates x the mean leg / pi; the start is on
-                // the loop, not at its centre): a 127 m zone let a pro
-                // course wander out and its closing leg pass the server's 60 m (1994c65c); never under half of 60 m (two gates
-                // within it of the start are within 60 m of each other)
-                const loopR = Math.max((R.gates * (R.legMinM * shrink + legMax) * 0.5) / Math.PI, MAX_LEG_M / 2);
-                const freeFrom = (spawn: Vec3): FreeSpace => freeAtMargin(walls, { spawn, bounds: clipBox(box, spawn, reach, opening, walls.voxelResolution), unitM: a.unitM, kind: a.kind === 'room' ? 'indoor' : 'auto', goodAt: zone2, enclosureMin: 0 }, p.marginM);
+                const { walkR, boxR } = walkReach(R, shrink);
+                const freeFrom = (spawn: Vec3): FreeSpace => freeAtMargin(walls, { spawn, bounds: clipBox(box, spawn, boxR, opening, walls.voxelResolution), unitM: a.unitM, kind: a.kind === 'room' ? 'indoor' : 'auto', goodAt: zone2, enclosureMin: 0 }, p.marginM);
                 let start = starts[0]!;
                 let free = freeFrom(start);
                 // a start in a pocket (under a housefly's body, between its legs) reaches a few cells: the air over the roof
@@ -336,12 +372,15 @@ export function planCourse(input: PlanInput, hooks: PlanHooks = {}): PlanAnswer 
                 // a zone with enough cells can still be a broken sheet (Wroclaw's eye band over 7.2 m tiles at 0.4 m cells:
                 // every walk stopped at 1-2 gates): the pass's looser tier is walked at the same opening before it shrinks
                 const lay = (t: number, v: number): void => {
-                    const place: CoursePlace = { at: zoneAt(a, ask.req, R, opening, t), start, reachM: Math.min(R.zoneR, loopR), gates: R.gates, maxGates: R.level.gatesMax, climbMax: R.level.climbMax, version: v ? `${version}.w${v}` : version };
+                    const place: CoursePlace = { at: zoneAt(a, ask.req, R, opening, t), start, reachM: walkR, gates: R.gates, maxGates: R.level.gatesMax, climbMax: R.level.climbMax, version: v ? `${version}.w${v}` : version };
                     hooks.onStep?.('lay', lastMs);
                     const t0 = now ? now() : 0;
                     const track = generateCourse(free, walls, { seed: walkSeed(request.seed, v), scene: input.scene, transform, created: input.created, spawn: start, params, place, elements, craftRadiusM: input.craftRadiusM });
-                    if (now) lastMs = now() - t0;
-                    if (track.gates.length > 0 && track.gates.length > bestGates()) best = { track, opening };
+                    if (now) {
+                        lastMs = now() - t0;
+                        longest = Math.max(longest, lastMs);
+                    }
+                    if (track.gates.length > 0 && track.gates.length > bestGates() && legsWithinServer(track)) best = { track, opening };
                 };
                 // a tier with too few cells is not walked unless it is the pass's last; each tier's derived seeds are walked
                 // before the tier loosens

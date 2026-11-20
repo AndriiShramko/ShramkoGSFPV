@@ -371,7 +371,10 @@ function walkCourse(free: FreeSpace, walls: VoxelCollision, opts: CourseOptions,
     let all: number[] = [];
     for (let i = 0; i < free.room.length; i++) if (free.room[i]! >= 0 && clearanceM(free, i) >= (opts.quality ? EYE_FREE_M : RING_MIN_FREE_M) * k) all.push(i);
     // gen4a A2: only the cells of the asked zone
-    if (P) all = all.filter((i) => P.at(cellCentre(free, i)));
+    // the zone is asked at the position the gate is stored at (toScan rounds to the mm): a cell centre a hair inside a
+    // tile edge (Winter Garden: tiles of 3.328 m, an edge at z -7.168) was stored on the edge, in the tile beyond it, where
+    // the room has no ceiling; the audit counted those gates outside the glass
+    if (P) all = all.filter((i) => P.at(toFlown(toScan(cellCentre(free, i)))));
     // G2: only cells in the dense band over a well-scanned tile, when there are enough of them
     const Q = opts.quality;
     let banded = false;

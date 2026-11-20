@@ -22,7 +22,7 @@
 //   footprint tiles with territory in at least FOOT_COV of their cells, holes closed by FOOT_CLOSE tiles.
 //   core      the centre of the CORE_R x extentM window richest in excess detail (over a flat floor's 1 a column);
 //             coreRadiusM holds half that excess within
-//             twice that window.
+//             twice that window's size.
 //   kind      the first rule that holds: room, plants, object, cityAbove, else street; no territory: unknown (KIND_RULES).
 import { blockDims, forEachBlock } from '@gsfpv/collision';
 import type { SceneTransform, Vec3, VoxelCollision } from './types';
@@ -332,7 +332,7 @@ export function analyzeScan(walls: VoxelCollision, transform: SceneTransform): S
     const midY = layerY(0) + (ny * blockM) / 2;
     let core: Vec3 = [(ex0 + ex1) / 2, midY, (ez0 + ez1) / 2];
     if (bestT >= 0) {
-        // the detail-weighted centroid over twice the window (an object at the window's edge pulls it back)
+        // the detail-weighted centroid over twice the window's size: an object at the window's edge pulls it back
         let w = 0, sx = 0, sz = 0;
         const btx = bestT % nx, btz = (bestT - btx) / nx, m2 = 2 * m;
         for (let Z = Math.max(0, btz - m2); Z <= Math.min(nz - 1, btz + m2); Z++) for (let X = Math.max(0, btx - m2); X <= Math.min(nx - 1, btx + m2); X++) {
