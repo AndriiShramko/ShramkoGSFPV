@@ -204,3 +204,25 @@ gsfpv-loadq, gsfpv-site-sound and gsfpv-v03 (15.3 GB by its plan). Not moved: C:
 Not done: the mouse walk of car 1's roads on the live site; econ4.md into the skills; no new Workflow was started
 (the window is the bottleneck and the conductor is the orchestrator).
 Still open for the owner (asked in the new chat): the answer to the feedback's author in the Facebook thread.
+
+## State, 2026-11-20 22:00 UTC: the tutorial plan is in, the queue is fair (READ THIS FIRST)
+
+Live: still ac11d2c2. int4 ended stage S2 at 21:53 UTC and runs S3, the hand-over of car 2; ship-car2 (no model)
+follows by itself. The window that opened at 21:30 UTC stood at 68 % at 21:53 (three lanes and the lead's wake).
+plan-tutor is done (3 runs): designs/t8-plan.md, lanes tutor-moment (the package: the moment machine, the first set),
+tutor-say (after n-share: say only what is new) and tutor-air (after tutor-say and tutor-moment's contract: the first
+flight is the tutorial), checks r-tutor-*, car5 and ship-car5; copies made by t8-copies. Its five open calls are taken
+as recommended (the end of t8-plan.md). The tutorial chain hangs on n-share, which had not run once.
+The conductor (vault, .claude/tools/gsfpv/train4.py) changed: ready jobs of one priority now start in the order of
+their last start (the one that waited longest first; it was by name, which starved n-share, plan-tutor and every late
+name while one slot went round the early names), and `set --priority P` exists (never 0: it reads as 5).
+Priorities now: 1 int4, the cars, the hot lane; 2 n-share, tutor-*, r-tutor-*, r-n-share; 3 the other n-* lanes and
+their checks; 4 the gap lanes 4-7.
+Car order, to decide when the checks are in: car5 waits for car4 as planned; if r-tutor-* say SHIP before car 4's
+lanes are ready, put car 5 before car 4 (add car5 again with --after car3,r-tutor-say,r-tutor-moment,r-tutor-air,
+r-n-share and adjust prompts t8-car5.md and t6-car4.md: tutor-say carries n-share's commits).
+The lead's watcher (vault, .claude/tools/gsfpv/lead_watch.sh) wakes on WAKE FAILED / BLOCKED / HOLD / LIMIT / END and
+on DONE or RETRY-LATER of ship-car*, not on WAKE DONE of a car (the release job needs no lead); while the plan says
+the window is closed it holds the wake until the reset.
+The site sound page's session was told on the coop board that Quick start and the listening part change with the
+tutorial car. For the owner after that car is live: the three questions of t8-plan.md Part D for Dawid and the testers.
