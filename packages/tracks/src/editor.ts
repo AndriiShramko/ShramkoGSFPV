@@ -8,12 +8,12 @@
 import { quatMultiply, quatNormalize, quatRotate } from '@shramko/sonic-fpv';
 import type { ObjectShape, Quat, SceneTransform, TrackGate, Vec3 } from '@shramko/sonic-fpv';
 import type { VoxelCollision } from '@gsfpv/collision';
-import { MARGIN_M, checkTrack } from './check';
+import { MARGIN_M, NEAR_GRID_M, checkTrack } from './check';
 import type { TrackReport } from './check';
 import type { Course } from './format';
 import { toTrackV1 } from './format';
 import { RING_TUBE_M, SQUARE_BAR_M } from './generate';
-import { SERVER_MAX_GATES, MAX_GATE_SIZE_M } from './server';
+import { MAX_COORD, MAX_LEG_M, NAME_EXTRA, NAME_LEN, SERVER_MAX_GATES, MAX_GATE_SIZE_M, TITLE_EXTRA, TITLE_LEN, textIssues } from './server';
 import { PIECE_BAR_M, PIECE_OPENING_M, pieceLayout, type PieceKind } from './pieces';
 
 /** tracks-plan 2.11 key table: arrows 0.1 m (Shift 1 m), Q / E 15 degrees, Insert 4 m ahead (estimates of the plan) */
@@ -67,9 +67,10 @@ export function reportProblems(r: TrackReport): CourseProblem[] {
 /** Re-checks a course; the editor's only view of the walls. */
 export type CourseCheck = (course: Course) => CourseProblem[];
 
-/** The proof on the scan's walls (flown, flownCollision) at `marginM`, without the free radii (milliseconds per change). */
+/** The proof on the scan's walls (flown, flownCollision) at `marginM`, without the free radii (milliseconds per change).
+ *  Lane n-save (Decision 6): a gate in the free air within NEAR_GRID_M of the walls' grid is no problem here. */
 export function wallsCheck(walls: VoxelCollision, transform: SceneTransform, marginM = MARGIN_M): CourseCheck {
-    return (course) => reportProblems(checkTrack(toTrackV1(course), walls, transform, marginM, false));
+    return (course) => reportProblems(checkTrack(toTrackV1(course), walls, transform, marginM, false, false, NEAR_GRID_M));
 }
 
 export interface EditorState {
@@ -130,9 +131,123 @@ export function openEditor(course: Course, check: CourseCheck, selected = 0): Ed
     return { course, selected: course.gates.length === 0 ? -1 : Math.max(0, Math.min(course.gates.length - 1, selected)), undo: [], redo: [], problems: check(course) };
 }
 
-/** Saving is allowed only while the course has no problem at all (tracks-plan 2.11). */
+/**
+ * Lane n-save (the owner's wish 1 of 2026-11-20, t7-plan Part C 4): two classes of findings at Save. A blocker is only what
+ * the server refuses (apps/api/tracks.py validate_track and _bounds, server.ts validateServerTrack: no gate, too many gates,
+ * a gate too big, a leg too long, a point too far, a name refused); a warning is everything a pilot may live with, and
+ * warnings never block Save.
+ */
+export type StoreBlockerKind = 'no-gates' | 'too-many-gates' | 'gate-too-big' | 'leg-too-long' | 'too-far' | 'name-refused';
+export type SaveWarningKind = 'in-scan' | 'under-ground' | 'same-place' | 'too-close' | 'sharp-turn' | 'blocked-start' | 'leg-blocked' | 'wrong-way' | 'no-order';
+/** the kinds in the order the Save dialog lists them */
+export const SAVE_WARNING_KINDS: readonly SaveWarningKind[] = ['in-scan', 'under-ground', 'same-place', 'too-close', 'sharp-turn', 'blocked-start', 'leg-blocked', 'wrong-way', 'no-order'];
+export const STORE_BLOCKER_KINDS: readonly StoreBlockerKind[] = ['no-gates', 'too-many-gates', 'gate-too-big', 'leg-too-long', 'too-far', 'name-refused'];
+
+/** One thing the server would refuse. `gate`: the gate it is about ('start' for the start); `limit`: the server's number
+ *  (gates, flown m, scan units); `field`: for 'name-refused', which text ('name' or 'title'). */
+export interface StoreBlocker {
+    readonly kind: StoreBlockerKind;
+    readonly gate?: string;
+    readonly limit?: number;
+    readonly field?: 'name' | 'title';
+}
+/** One warning: the gates it is about (a leg: its two ends; the start: none). */
+export interface SaveWarning {
+    readonly kind: SaveWarningKind;
+    readonly gates: readonly string[];
+}
+export interface SaveVerdict {
+    readonly blockers: readonly StoreBlocker[];
+    readonly warnings: readonly SaveWarning[];
+}
+
+/** two gates nearer than this (flown m, centre to centre) stand on one spot (t7-plan Part C 4: under 0.3 m) */
+export const SAME_PLACE_M = 0.3;
+
+const asWarningKind = (code: string): SaveWarningKind | null => {
+    if (code === 'outside' || code === 'gate-wall' || code === 'wall-in-opening') return 'in-scan';
+    if (code === 'start-wall' || code === 'no-start') return 'blocked-start';
+    if (code === 'leg-wall') return 'leg-blocked';
+    if (code === 'gate-direction') return 'wrong-way';
+    return (SAVE_WARNING_KINDS as readonly string[]).includes(code) ? (code as SaveWarningKind) : null;
+};
+
+/**
+ * The Save verdict of a course (t7-plan Part C 4): `problems` are the editor's (CourseProblem), `warnings` the live ones
+ * of warn.ts with the gate's id; `names` the pilot's name and course title when the page has them. Pure. Blockers mirror
+ * the server's first class exactly; every problem and warning becomes a SaveWarning (one per kind and gates), in
+ * SAVE_WARNING_KINDS order. A live 'leg-long' is the blocker 'leg-too-long' when the server refuses the leg, else nothing.
+ */
+export function saveVerdict(course: Course, problems: readonly CourseProblem[], warnings: readonly { code: string; gate?: string }[] = [], names?: { readonly name?: string; readonly title?: string }): SaveVerdict {
+    const gates = course.gates;
+    const s = course.transform[0];
+    const blockers: StoreBlocker[] = [];
+    if (gates.length === 0) blockers.push({ kind: 'no-gates' });
+    if (gates.length > SERVER_MAX_GATES) blockers.push({ kind: 'too-many-gates', limit: SERVER_MAX_GATES });
+    for (const g of gates) if (openingOf(g.shape) * s > MAX_GATE_SIZE_M) blockers.push({ kind: 'gate-too-big', gate: g.id, limit: MAX_GATE_SIZE_M });
+    const far = (p: readonly number[]): boolean => p.some((c) => !(c <= MAX_COORD && c >= -MAX_COORD));
+    for (const g of gates) if (far(g.pos)) blockers.push({ kind: 'too-far', gate: g.id, limit: MAX_COORD });
+    if (course.start && far(course.start.pos)) blockers.push({ kind: 'too-far', gate: 'start', limit: MAX_COORD });
+    // the server stops at its first long leg (tracks.py _bounds); every one is named here so the pilot sees them all
+    const legs: [number, number][] = gates.slice(1).map((_, i) => [i, i + 1]);
+    if (course.laps > 1 && gates.length > 1) legs.push([gates.length - 1, 0]);
+    for (const [a, b] of legs) if (dist(gates[a]!.pos, gates[b]!.pos) * s > MAX_LEG_M) blockers.push({ kind: 'leg-too-long', gate: gates[a]!.id, limit: MAX_LEG_M });
+    if (names) {
+        const name: string[] = [];
+        const title: string[] = [];
+        if (names.name !== undefined) textIssues('author.name', names.name, NAME_LEN, NAME_EXTRA, name);
+        if (names.title !== undefined) textIssues('title', names.title, TITLE_LEN, TITLE_EXTRA, title);
+        if (name.length > 0) blockers.push({ kind: 'name-refused', field: 'name' });
+        if (title.length > 0) blockers.push({ kind: 'name-refused', field: 'title' });
+    }
+
+    const found: SaveWarning[] = [];
+    const seen = new Set<string>();
+    const add = (kind: SaveWarningKind, ids: readonly string[]): void => {
+        const key = `${kind}:${ids.join('>')}`;
+        if (seen.has(key)) return;
+        seen.add(key);
+        found.push({ kind, gates: ids });
+    };
+    // two gates on one spot, from the course itself (the live warnings name only the gate being placed)
+    const onSpot = new Set<string>();
+    for (let i = 0; i < gates.length; i++) {
+        for (let j = i + 1; j < gates.length; j++) {
+            if (dist(gates[i]!.pos, gates[j]!.pos) * s < SAME_PLACE_M) {
+                onSpot.add(gates[i]!.id);
+                onSpot.add(gates[j]!.id);
+            }
+        }
+    }
+    for (const g of gates) if (onSpot.has(g.id)) add('same-place', [g.id]);
+    for (const p of problems) {
+        const kind = asWarningKind(p.code)!;
+        if (p.code === 'leg-wall') add(kind, [p.from, p.to]);
+        else if (p.code === 'start-wall' || p.code === 'no-start') add(kind, []);
+        else add(kind, [p.gate]);
+    }
+    for (const w of warnings) {
+        let kind = asWarningKind(w.code);
+        if (!kind) continue;
+        if (kind === 'too-close' && w.gate !== undefined && onSpot.has(w.gate)) kind = 'same-place';
+        add(kind, w.gate === undefined ? [] : [w.gate]);
+    }
+    const rank = (w: SaveWarning): number => SAVE_WARNING_KINDS.indexOf(w.kind);
+    const order = new Map(gates.map((g, i) => [g.id, i]));
+    const at = (w: SaveWarning): number => (w.gates.length === 0 ? -1 : (order.get(w.gates[0]!) ?? gates.length));
+    found.sort((a, b) => rank(a) - rank(b) || at(a) - at(b));
+    return { blockers, warnings: found };
+}
+
+const dist = (a: readonly number[], b: readonly number[]): number => {
+    const x = a[0]! - b[0]!, y = a[1]! - b[1]!, z = a[2]! - b[2]!;
+    return Math.sqrt(x * x + y * y + z * z);
+};
+
+/** Lane n-save: Save is allowed whenever the server would store the course (no blocker); warnings never block it. Before
+ *  (tracks-plan 2.11) any problem at all refused it. */
 export function canSave(s: EditorState): boolean {
-    return s.problems.length === 0 && s.course.gates.length > 0;
+    return saveVerdict(s.course, s.problems).blockers.length === 0;
 }
 
 const r3 = (v: number): number => {
