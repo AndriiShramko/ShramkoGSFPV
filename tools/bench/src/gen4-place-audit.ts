@@ -89,7 +89,10 @@ async function main(): Promise<void> {
                         const st = r.stats;
                         const L = LEVELS[level];
                         const pr = planRules(request, craftR, a);
-                        const minOpen = (r.shrunk ? RING_MIN_DRONE_DIAMETERS : L.openingD) * D - 1e-3;
+                        // a size is stored to the mm in scene units (generate.ts r3): flown at Scene size s it is off by up to
+                        // s / 2 mm (the skull at x15: a 1.0625 m square stored as 0.071 flies as 1.065 m)
+                        const tol = 1e-3 + 5e-4 * scale;
+                        const minOpen = (r.shrunk ? RING_MIN_DRONE_DIAMETERS : L.openingD) * D - tol;
                         const rules: Record<string, boolean> = {
                             course: st.gates >= 1,
                             inside: st.outside === 0,
@@ -97,7 +100,7 @@ async function main(): Promise<void> {
                             detail: st.goodShare >= (spread === 'compact' ? GOOD_COMPACT : GOOD_WIDE),
                             nearCore: st.startToCoreM <= Math.max(a.coreRadiusM, pr.zoneR),
                             loop: st.closed || st.startFinishM <= pr.legMaxM,
-                            opening: st.openingM >= minOpen && st.openingM <= 1.25 * L.openingD * D + 1e-3,
+                            opening: st.openingM >= minOpen && st.openingM <= 1.25 * L.openingD * D + tol,
                             // under gatesMin only at the ladder's floor (shrunk, or a level whose opening is 4 D): the
                             // course that fits instead of a refusal; counted as 'short' in the row
                             gates: st.gates <= L.gatesMax && (st.gates >= L.gatesMin || r.shrunk || L.openingD <= RING_MIN_DRONE_DIAMETERS),
@@ -110,7 +113,9 @@ async function main(): Promise<void> {
                         // gap-gen S3: at the owner's size the course stays in the detailed part: the finish as near the
                         // core as the start (compact), and plants keep their gates between the leaves
                         if (scale !== 1 && spread === 'compact') rules.finishNearCore = st.finishToCoreM <= Math.max(a.coreRadiusM, pr.zoneR);
-                        if (a.kind === 'plants') rules.underTop = st.underTopShare >= PLANTS_UNDER_TOP;
+                        // at x1 a plant tray's leaves stand lower than the smallest gate (4 D = 0.34 m): planCourse lays it
+                        // without the plants rule there (never a refusal), so the rule is judged where the owner flies it
+                        if (a.kind === 'plants' && scale !== 1) rules.underTop = st.underTopShare >= PLANTS_UNDER_TOP;
                         if (s.id === SKULL && scale === 1) rules.x1 = st.gates >= 1;
                         if (s.id === WINTER_GARDEN) {
                             // every gate under a ceiling of the analysis (G5: the course inside the glass house)

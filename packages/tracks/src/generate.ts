@@ -284,6 +284,11 @@ const dot = (a: Vec3, b: Vec3): number => a[0] * b[0] + a[1] * b[1] + a[2] * b[2
 const len = (a: Vec3): number => Math.sqrt(dot(a, a));
 const dist2 = (a: Vec3, b: Vec3): number => dot(sub(a, b), sub(a, b));
 
+/** gap-gen S3 (brief: 'the start and the finish in the most detailed part'): an asked course (CoursePlace) tries this many
+ *  gates nearest the spawn as gate 1 before it keeps the walk's own (the skull at x15, pro: the nearest turn failed its
+ *  proof and gate 1 stood 19.7 m from the core while another stood 2.3 m from it); the old g1 course tries one, as its links
+ *  were shared */
+export const START_TRIES = 6;
 /**
  * Stage X3 (train 3, lane fix3a): a closed course starts at the gate nearest the scene's spawn (straight distance, flown
  * world; ties keep the lower number). The ring is turned, not changed: the same gates in the same places, the same direction
@@ -298,21 +303,18 @@ export function startNearSpawn(
     spawn: Vec3,
     toFlown: (q: Vec3) => Vec3,
     proven: (gates: TrackGate[], startYaw: number) => boolean,
-    yawOf: (gates: readonly TrackGate[]) => number
+    yawOf: (gates: readonly TrackGate[]) => number,
+    tries = 1
 ): TrackGate[] {
     if (course.length < 2) return [...course];
-    let k = 0;
-    let best = Infinity;
-    course.forEach((g, i) => {
-        const d = dist2(toFlown(g.pos as Vec3), spawn);
-        if (d < best) {
-            best = d;
-            k = i;
-        }
-    });
-    if (k === 0) return [...course];
-    const turned = [...course.slice(k), ...course.slice(0, k)].map((g, i) => ({ ...g, id: `g${i + 1}` }));
-    return proven(turned, yawOf(turned)) ? turned : [...course];
+    // the gates nearest the spawn first (a tie keeps the walk's order); gate 1 of the walk ends the search: it needs no turn
+    const order = course.map((g, i) => ({ i, d: dist2(toFlown(g.pos as Vec3), spawn) })).sort((a, b) => a.d - b.d || a.i - b.i);
+    for (const { i: k } of order.slice(0, Math.max(1, tries))) {
+        if (k === 0) break;
+        const turned = [...course.slice(k), ...course.slice(0, k)].map((g, i) => ({ ...g, id: `g${i + 1}` }));
+        if (proven(turned, yawOf(turned))) return turned;
+    }
+    return [...course];
 }
 
 /**
@@ -821,7 +823,7 @@ function walkCourse(free: FreeSpace, walls: VoxelCollision, opts: CourseOptions,
     // records the turn (the server keeps a fixed list of params keys, the version is a free string)
     const walked = course;
     // review FY-4: the turned ring's first leg (start to the gate nearest the spawn) is judged for a poor scan too
-    if (laps > 1) course = startNearSpawn(course, opts.spawn ?? startW, toFlown, (gs, yaw) => legWell(startW, toFlown(gs[0]!.pos)) && checkTrack(build(gs, yaw, startW, laps), walls, T, p.marginM, false, true).ok, (gs) => nearestYaw(sub(toFlown(gs[0]!.pos), startW)));
+    if (laps > 1) course = startNearSpawn(course, opts.spawn ?? startW, toFlown, (gs, yaw) => legWell(startW, toFlown(gs[0]!.pos)) && checkTrack(build(gs, yaw, startW, laps), walls, T, p.marginM, false, true).ok, (gs) => nearestYaw(sub(toFlown(gs[0]!.pos), startW)), P ? START_TRIES : 1);
     const startShift = course.length ? Math.max(0, walked.findIndex((g) => g.pos === course[0]!.pos)) : 0;
     let startYaw = course.length ? nearestYaw(sub(toFlown(course[0]!.pos), startW)) : 0;
     // course4 C4: the proven course composed into elements; each element is proven with its neighbours, and the whole
