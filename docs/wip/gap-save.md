@@ -120,3 +120,26 @@ Design differences (the code wins):
 - S2: the most replies went to the probe's page handles (pause menu, drone cards, the slider under a late-loading 3D
   card, the editor's way checks refusing clicked gates) and to finding that the old rule passes the default 1.5 m gates
   at x15; a shared probe helper for 'set Scene size' and 'place N gates' would make it cheaper.
+- Review: the most replies went to the review step's handles (the window's list scrolls inside the window, Courses is a
+  Course menu item, the page's debug view holds no transform); a probe helper 'open a stored course by title' and the
+  course's transform in window.__gsfpvEditView would make it cheaper.
+
+## Review
+
+Verdict: SHIP (independent check, 2026-11-20; the full review is U:/Temp/gsfpv-train4/reviews/gap-save.md).
+
+- Diff: only owned files (apps/api/tracks.py, packages/tracks/src/server.ts, the package's src/track/validate.ts on its
+  branch gap-save 7f20f89, their tests, the probe, this file). The flight, keys, pause, touch, Fly by Sound, the course
+  clock and the edit mode are untouched; no text for people added. The three validators take the scale the same way
+  (0 < s <= 1000, else 1), so a course at scale 1 meets the numbers it met before.
+- Run again: size-flown + fixtures + the package's track.test (vitest PASS), the API's tracks tests (52 OK); NEG OK for
+  tracks.py against 2d752fcc (7 failures) and for the package's validate.ts against 53a5675.
+- Read-only on the live site (GET only): the stored courses of scans 5dfeb49b, 70b50d42, 39e63ce9 (one course, scale
+  3.074) all pass the new tracks.py rule, so no stored course is newly refused there.
+- The probe on a release build of fa356b96 with the local API: every step PASS but s100.emptySaved (known, the generator
+  and the editor, For the lead). The review's own step review.reopenSmall (Course menu, Courses, Open on 'gap-save x15',
+  then on 'gap-save x15 small') PASS: the page loads the stored x15 course back with its 0.039-unit gates, no problem,
+  and the local API holds it at scale 15.35. evidence/2026-11-19/gap-save/accept-review.json.
+- DOUBT (not holding): the probe's flownM fields are always null (window.__gsfpvEditView has no transform); no step is
+  judged on them.
+- Not checked by the review: x100 by the page (unreachable on this scan), any drawn picture, a phone or a controller.
