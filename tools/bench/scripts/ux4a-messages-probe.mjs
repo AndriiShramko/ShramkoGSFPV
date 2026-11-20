@@ -63,7 +63,10 @@ const SAMPLER = () => {
         const ui = document.getElementById('ui');
         const row = document.querySelector('.top-actions');
         const rr = row ? row.getBoundingClientRect() : null;
-        S.faults[k] = { at: v, n: 1, t: Math.round(performance.now()), crowded: !!ui && ui.classList.contains('note-crowded'), row: rr ? `${Math.round(rr.left)},${Math.round(rr.top)} ${Math.round(rr.width)}x${Math.round(rr.height)}` : null };
+        // and what the top row's measure (ui/top-row.ts layoutTopRow) would read now: how many notes, the first one's width
+        const notes = ui ? [...ui.querySelectorAll(':scope > .hud-note')] : [];
+        S.faults[k] = { at: v, n: 1, t: Math.round(performance.now()), crowded: !!ui && ui.classList.contains('note-crowded'), row: rr ? `${Math.round(rr.left)},${Math.round(rr.top)} ${Math.round(rr.width)}x${Math.round(rr.height)}` : null,
+            notes: notes.map((e) => `${e.className}${e.hidden ? ' hidden' : ''} w${e.offsetWidth} p${e.offsetParent ? 1 : 0}`), rowInUi: !!row && row.parentElement === ui, topRowBottom: ui ? ui.style.getPropertyValue('--top-row-bottom') : null };
     };
     const name = (e) => `${e.tagName.toLowerCase()}.${String(e.className).trim().split(/\s+/).slice(0, 2).join('.')}${e.dataset && e.dataset.action ? '[' + e.dataset.action + ']' : ''}`;
     setInterval(() => {
@@ -75,6 +78,16 @@ const SAMPLER = () => {
         const tops = [...document.querySelectorAll('.top-actions button')].filter(vis);
         const osd = [...document.querySelectorAll('#ui .osd')].filter((e) => vis(e) && (e.textContent ?? '').trim() !== '');
         const side = W < 900 || H < 500;
+        // a timeline of what the top row's measure reads (the note's width, the row's left and width, the class): a fault
+        // shows which change the layout missed
+        {
+            const ui = document.getElementById('ui');
+            const row = document.querySelector('.top-actions');
+            const rr = row ? row.getBoundingClientRect() : null;
+            const k = `note w${root && !root.hidden ? root.offsetWidth : 0} row ${rr ? Math.round(rr.left) + '+' + Math.round(rr.width) : '-'} crowded ${!!ui && ui.classList.contains('note-crowded')}`;
+            S.timeline ??= [];
+            if (S.timeline.length < 80 && (S.timeline.length === 0 || S.timeline[S.timeline.length - 1].k !== k)) S.timeline.push({ t: Math.round(now), k });
+        }
         let keyNodes = 0;
         for (const el of els) {
             if (!vis(el)) continue;
@@ -107,7 +120,7 @@ const seen = (page) => page.evaluate(() => {
     const S = window.__ux4a;
     const rows = [];
     for (const L of Object.values(S.lines)) for (const [text, T] of Object.entries(L.texts)) rows.push({ id: L.id, key: L.key, font: L.font, kind: T.kind, text, first: T.first, last: T.last, ms: Math.round(T.last - T.first) });
-    return { rows, maxKeyNodes: S.maxKeyNodes, faults: S.faults, samples: S.samples, now: performance.now() };
+    return { rows, maxKeyNodes: S.maxKeyNodes, faults: S.faults, samples: S.samples, now: performance.now(), timeline: S.timeline };
 });
 
 async function pollUntil(page, fn, ms) {
@@ -304,7 +317,7 @@ async function runSize({ w, h, dsf }) {
 
     // ---- 6: where every line stood, every 100 ms of the run ----
     const s = await seen(page);
-    step(6, 'every message: inside the view, over no top-row button or OSD, outside the middle third', s.samples > 100 && Object.keys(s.faults).length === 0, { samples: s.samples, faults: s.faults });
+    step(6, 'every message: inside the view, over no top-row button or OSD, outside the middle third', s.samples > 100 && Object.keys(s.faults).length === 0, { samples: s.samples, faults: s.faults, ...(Object.keys(s.faults).length ? { timeline: s.timeline } : {}) });
     res.lines = s.rows.map((r) => ({ id: r.id, key: r.key, kind: r.kind, ms: r.ms, font: r.font, text: r.text.slice(0, 100) }));
     await ctx.close();
 }

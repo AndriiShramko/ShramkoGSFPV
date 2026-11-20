@@ -38,7 +38,11 @@ aa18f1e4 of origin/main; the lead's change of 17:50 UTC: car 2 takes the lanes w
       nine walls on :6180; every lane probe and accept-fly on it (U:/Temp/gsfpv-train4/int4/probes4.sh, logs4): edit4a 13
       and edit4c s8 failed at 844x390 with walls (the window under the bar lay over the gates and the Add list: repaired,
       the window narrows beside the bar); head4-accept and sound6-walk 11 out of date (repaired in the probes); accept-fly
-      stopped at B10 on a page load timeout. Left: a new release build, the probes again, the gates once on the final tree.
+      stopped at B10 on a page load timeout. Then builds of 5bab5cce, 29945db2, 030d11d1 (the Add click from an eye in the
+      scan) with probes (probes8.sh, logs8 on 030d11d1): all PASS but site4-links (only its scene step: needs a local API, as
+      in car 1), edit4b-course-life step 1-open-numbers (labels [] with 19 gates; passed on 5bab5cce: under study) and
+      ux4a-messages step 6 at 1536x730 (two runs of three: a message over the top-row buttons 2.9 s; repaired in the
+      product, see Seams). Left: edit4b step 1, a new release build, the probes again, the gates once on the final tree.
 - [ ] S3 the hand-over (Car 2 parts, U:/Temp/gsfpv-train4/int4.json)
 
 ## Progress
@@ -154,6 +158,14 @@ the dialog's options reaching gen4a's generator are car 3's seams)
   step 5 (sound6 replaced 'Start the course from the beginning' by Quick start, which the probe now clicks; also a live
   check); sound6-walk 11 (the prefs store writes 250 ms after a change: the walk now waits for the saved 'fast' as it
   already waited for 'full').
+- ux4a's message stack x the top row (ui/top-row.ts; ux4a-messages step 6 at 1536x730 on 030d11d1, two runs of three): a
+  new line 471 px wide, centred, reached x 1004 over the row's buttons from x 892 (Sound, Full screen, Messages) for 2.9 s.
+  The stack keeps class hud-note, so the top row moves it under the buttons, but its ResizeObserver only queued a layout
+  for the next animation frame, and with the scan rendering headless a frame took seconds (the probe's new timeline: note
+  w471 at 8212 ms, crowded at 11107 ms). A pilot sees the same for one frame, longer on a weak GPU. The observer's
+  callback now lays out at once (before paint); nothing laid out there changes an observed size, so no observer loop.
+  int4-top-row.test.ts, NEG OK. The probe's fault now records the notes, the row's parent and --top-row-bottom, and step 6
+  carries the timeline when it fails.
 - Car 1's two failed live checks (release aa18f1e4), both the check out of date, not the product:
   - edit4b-course-life step 10-pointed: on the live site Save is never pressed, and the course of step 6 already had a
     problem (gate 1 in a wall), so the step tried nothing (how: [], the 'pointed' it read was step 9's). The probe now,
