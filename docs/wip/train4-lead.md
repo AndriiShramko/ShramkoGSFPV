@@ -187,7 +187,9 @@ The new lead's watcher: U:/Temp/gsfpv-train4/lead/lead_watch.sh, a background ta
 ' WAKE ' or ' DONE ship-car' line of events.log, or under 5 GB free on C:. An event seen before the window's reset is
 delivered at 21:31 UTC: a lead woken in a closed window can do nothing and only pays for the wake.
 Live: still ac11d2c2 (release.json read at 16:58 UTC). STATE.md got the missing entry of car 1.
-Window: 92 % at 17:10 UTC with n-route, n-path and hot-sog3 running, so int4 (car 2) gets no slot before 21:30 UTC.
+Window: 91 % at 17:09 UTC (new runs start up to 95 %). int4 (car 2) took the slot n-route left and runs since
+17:07 UTC (run 3 of 14, stage S2); if the window closes on it, its commits stay and the conductor retries after the
+reset at 21:30 UTC. The lead tools are also in the vault: .claude/tools/gsfpv/suspend_tree.ps1 and lead_watch.sh.
 plan-tutor was registered again with priority 1 and --wake. It had priority 2, and the ready jobs sort by priority and
 then by name, so the one slot left for priority 2 would have gone round n-path, n-route, n-save, n-share and never
 reached it. After the reset the three slots serve hot-sog3, int4 and plan-tutor first. `set` cannot change a priority:
