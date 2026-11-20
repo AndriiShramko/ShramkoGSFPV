@@ -6,10 +6,8 @@
   "sonic.flight.label": "Fly by Sound: the flight. Every key goes to the simulator.",
   "sonic.footer.about": "About Fly by Sound and its source code",
   "sonic.footer.leave": "Leave Fly by Sound and open the simulator",
-  "sonic.hp.behind": "Play a sound behind you",
   "sonic.hp.heading": "Check your headphones",
   "sonic.hp.left": "Play a sound on the left",
-  "sonic.hp.playing.behind": "Playing a sound behind you.",
   "sonic.hp.playing.left": "Playing a sound on your left.",
   "sonic.hp.playing.right": "Playing a sound on your right.",
   "sonic.hp.right": "Play a sound on the right",
@@ -124,5 +122,6 @@
   "sonic.say.inPlaceOn": "Fly by Sound is on, right where you are.",
   "sonic.say.inPlaceIntro": "You hear the walls as you come near them, and your height. {off} switches Fly by Sound off, {course} makes a course of gates here, {keys} says all the keys. To learn step by step, press {menu} and choose the lessons.",
   "sonic.say.inPlaceIntroCourse": "You hear the walls as you come near them, and your height. The hum leads you to the next gate of the course. {off} switches Fly by Sound off, {keys} says all the keys. To learn step by step, press {menu} and choose the lessons.",
-  "sonic.say.gateBehind": "The gate is behind you."
+  "sonic.say.gateBehind": "The gate is behind you.",
+  "sonic.settings.showAll": "Show all settings ({n} more)"
 }

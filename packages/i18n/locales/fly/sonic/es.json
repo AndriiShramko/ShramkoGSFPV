@@ -6,10 +6,8 @@
   "sonic.flight.label": "Fly by Sound: el vuelo. Todas las teclas van al simulador.",
   "sonic.footer.about": "Acerca de Fly by Sound y su código fuente",
   "sonic.footer.leave": "Salir de Fly by Sound y abrir el simulador",
-  "sonic.hp.behind": "Reproducir un sonido detrás de ti",
   "sonic.hp.heading": "Comprueba tus auriculares",
   "sonic.hp.left": "Reproducir un sonido a la izquierda",
-  "sonic.hp.playing.behind": "Reproduciendo un sonido detrás de ti.",
   "sonic.hp.playing.left": "Reproduciendo un sonido a tu izquierda.",
   "sonic.hp.playing.right": "Reproduciendo un sonido a tu derecha.",
   "sonic.hp.right": "Reproducir un sonido a la derecha",
@@ -124,5 +122,6 @@
   "sonic.say.inPlaceOn": "Fly by Sound está encendido, justo donde estás.",
   "sonic.say.inPlaceIntro": "Oyes las paredes al acercarte a ellas, y tu altura. {off} apaga Fly by Sound, {course} crea aquí un recorrido de puertas, {keys} dice todas las teclas. Para aprender paso a paso, pulsa {menu} y elige las lecciones.",
   "sonic.say.inPlaceIntroCourse": "Oyes las paredes al acercarte a ellas, y tu altura. El zumbido te lleva a la siguiente puerta del recorrido. {off} apaga Fly by Sound, {keys} dice todas las teclas. Para aprender paso a paso, pulsa {menu} y elige las lecciones.",
-  "sonic.say.gateBehind": "La puerta está detrás de ti."
+  "sonic.say.gateBehind": "La puerta está detrás de ti.",
+  "sonic.settings.showAll": "Mostrar todos los ajustes ({n} más)"
 }
