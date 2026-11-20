@@ -10,8 +10,9 @@
  *
  * The numbers drawn are those of the sound package's default theme Soft (packages/sonic-fpv/themes/soft.json and
  * src/theme/schema.ts, src/cues/rules.ts, src/cues/beacon.ts, src/lesson/runner.ts at the recorded submodule):
- * height 0.5 m per scale step over steps 3 to 17; wall knocks every 1400 ms at 4 s before the hit down to 110 ms at
- * the hit (logarithmic), urgent under 1.5 s; target hum on course within 8 degrees of the nose (an octave higher).
+ * height 0.5 m per scale step over steps 3 to 17; a wall knocks from 2.5 s before the hit (src/sense/sampler.ts
+ * ONSET_TTC_S), every 539 ms there down to 110 ms at the hit (logarithmic: the pulse rule runs from 1400 ms at 4 s),
+ * urgent under 1.5 s; target hum on course within 8 degrees of the nose (an octave higher).
  */
 import type { ReactNode } from "react";
 
@@ -98,9 +99,11 @@ function HeightFig() {
 
 /** Seconds of the wall figure's approach and the times of its knocks (the Soft theme's pulse rule). */
 const WALL_S = 4;
+/** A wall turns on under this time to contact, s (the sound package's ONSET_TTC_S): the strip's first 1.5 s stay silent. */
+const WALL_ONSET_S = 2.5;
 function wallKnocks(): number[] {
   const out: number[] = [];
-  for (let t = 0; t < WALL_S; ) {
+  for (let t = WALL_S - WALL_ONSET_S; t < WALL_S; ) {
     out.push(t);
     const x = Math.min(1, (WALL_S - t) / 4); // ttc / ttcFarS
     t += (110 * (1400 / 110) ** x) / 1000; // expLerp(periodNearMs, periodFarMs, x), ms -> s
