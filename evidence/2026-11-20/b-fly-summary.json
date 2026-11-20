@@ -7,8 +7,8 @@
       "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "why": "installed"
     },
-    "date": "2026-11-20T17:31:58.638Z",
-    "gitHead": "356fc8ff",
+    "date": "2026-11-20T21:44:31.644Z",
+    "gitHead": "84bb4b6f",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
@@ -17,7 +17,7 @@
   "site": "http://localhost:6180",
   "gpuLock": "C:/dev/.gpu-lock",
   "items": {
-    "B15": false
+    "B15": true
   },
   "render": "on"
 }

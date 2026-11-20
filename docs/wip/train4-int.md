@@ -77,6 +77,11 @@ aa18f1e4 of origin/main; the lead's change of 17:50 UTC: car 2 takes the lanes w
       The gates' vitest on 356fc8ff: 441 files passed, 1 skipped, 5628 tests (a6-reference alone again: 1/1 PASS). The server was
       already gone. origin/main d72fe5f8 (lead notes and STATE.md, docs only) merged. Left: B15 alone on the dist of
       88ccd89e (no app source changed since; probes11.sh, logs9-final/accept-fly-b15-2.log), then S2 is done.
+      B15 on the dist of 88ccd89e (the only non-doc change since the build is accept-fly.ts): PASS; the start was late
+      again (flip at tick 19053), the controls at 23353 met throttle -0.375, LSB fired (0.016 m), twitch fired (0.36 m);
+      the new tab's hash equals the saved one; CPU x4 997.5 steps/s. The negative control: the old tick 10000 failed on
+      the two late starts before (21833, 24173). So B6-B16 all PASS on the build of 88ccd89e (B15 with the repaired
+      check). The server is stopped (probes11.sh kills it). Left: the gates once on the final head, then S2 is done.
 - [ ] S3 the hand-over (Car 2 parts, U:/Temp/gsfpv-train4/int4.json)
 
 ## Progress
