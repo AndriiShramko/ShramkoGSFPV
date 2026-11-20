@@ -9,7 +9,7 @@ Temp: U:/Temp/gsfpv-train4/n-save. Evidence: evidence/2026-11-20/n-save/.
 - [x] S1 the verdict: saveVerdict in packages/tracks/src/editor.ts (blockers mirror the server, warnings never block), canSave is
   `blockers.length === 0`; the near-grid rule (checkTrack `nearGridM`, wallsCheck passes NEAR_GRID_M 10 m; the generator's calls
   stay strict); tests packages/tracks/test/save-verdict.test.ts + tools/bench/test/save-verdict-api.test.ts (local apps/api round
-  trip on port 6901); NEG OK on the base. Commit: see `git log --oneline -- docs/wip/n-save.md` (S1).
+  trip on port 6901); NEG OK on the base. Commit c2fef1f1.
 - [ ] S2 fixAll (packages/tracks/src/autofix.ts, pure): every offending gate the shortest way to a valid place, order kept,
   leftovers named; tests on the scan worlds (gate in a wall, two on one spot, under the ground) + NEG; fixes.ts proposeFixes
   delegates to it for one selected warning.
