@@ -4,7 +4,7 @@ Design: C:/dev/.gsfpv-lanes/designs/t7-scene-open.md (Repair, smallest change). 
 
 ## Status
 
-- [x] S1 the bump (commit: see git log, "hot-sog3 S1"): playcanvas 2.23.2 -> 2.24.2 (packages/render-pc/package.json, apps/fly/package.json), @playcanvas/splat-transform 3.6.4 -> 3.12.0 (apps/fly/package.json), lock with one engine (`pnpm why playcanvas`), typecheck and the gates without a browser, repairs of what the new engine breaks, the "unsupported SOG version" error mapped to the plain unsupported-format line if it is a few lines.
+- [x] S1 the bump (f0e84dce): playcanvas 2.23.2 -> 2.24.2 (packages/render-pc/package.json, apps/fly/package.json), @playcanvas/splat-transform 3.6.4 -> 3.12.0 (apps/fly/package.json), lock with one engine (`pnpm why playcanvas`), typecheck and the gates without a browser, repairs of what the new engine breaks, the "unsupported SOG version" error mapped to the plain unsupported-format line if it is a few lines.
 - [ ] S2 the proof on the whole app (hot-sog3-scans.mjs a-e).
 - [ ] S3 the hand-over (live check scans-open, merge origin/main, this file, U:/Temp/gsfpv-train4/hot-sog3.json).
 
