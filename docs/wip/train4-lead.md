@@ -175,3 +175,30 @@ THIS SESSION IS HEAVY (about 300 thousand tokens of context on the top model): i
 took about a quarter of a five-hour window (38 % was seen nine minutes into the window; an estimate, not a measurement).
 A new lead session should start from this file and should not set watchers that wake the old one.
 Open for the owner: whether to answer the author of the feedback in the Facebook thread and invite him as a tester.
+
+## State, 2026-11-20 17:25 UTC: a new lead session took over (READ THIS FIRST)
+
+The lead is now a new, small chat (the owner pasted the old lead's last message into it). The old chat ('Simulator:
+token optimisation and lessons') must stay asleep: its two live watchers (disk C under 10 GB; DONE ship-car*) were
+SUSPENDED, not killed, because a background task that ends wakes its session. Tool:
+U:/Temp/gsfpv-train4/lead/suspend_tree.ps1 -RootPid 93952 -Marker "DISK C LOW" and -RootPid 101276 -Marker
+"DONE ship-car"; -Resume gives them back; they end with the app. The disk one would have fired within two minutes.
+The new lead's watcher: U:/Temp/gsfpv-train4/lead/lead_watch.sh, a background task of the new chat. It exits on a new
+' WAKE ' or ' DONE ship-car' line of events.log, or under 5 GB free on C:. An event seen before the window's reset is
+delivered at 21:31 UTC: a lead woken in a closed window can do nothing and only pays for the wake.
+Live: still ac11d2c2 (release.json read at 16:58 UTC). STATE.md got the missing entry of car 1.
+Window: 92 % at 17:10 UTC with n-route, n-path and hot-sog3 running, so int4 (car 2) gets no slot before 21:30 UTC.
+plan-tutor was registered again with priority 1 and --wake. It had priority 2, and the ready jobs sort by priority and
+then by name, so the one slot left for priority 2 would have gone round n-path, n-route, n-save, n-share and never
+reached it. After the reset the three slots serve hot-sog3, int4 and plan-tutor first. `set` cannot change a priority:
+`add` with the same name replaces the job (only for a job that never ran, and not in the first seconds of a minute,
+when the tick runs).
+On WAKE DONE plan-tutor: read 'For the lead' of designs/t8-plan.md and release its held jobs.
+Disk C: 9.97 GB free at 17:05 UTC. Measured with U:/Temp/gsfpv-train4/lead/dev_sizes.py: C:/dev holds 101 work
+copies, 54.6 GB without node_modules, and the big part is bench caches (.cache) of old copies. Moved to U: with
+junctions by the disk-c skill (`offload.py move`, ledger `offload.py list`): the .cache of ShramkoSonicFPV,
+gsfpv-loadq, gsfpv-site-sound and gsfpv-v03 (15.3 GB by its plan). Not moved: C:/dev/ShramkoGSFPV/.cache (4.95 GB,
+317 links inside: the tool refuses it) and ~/.claude/projects (25.7 GB of session logs: the owner decides).
+Not done: the mouse walk of car 1's roads on the live site; econ4.md into the skills; no new Workflow was started
+(the window is the bottleneck and the conductor is the orchestrator).
+Still open for the owner (asked in the new chat): the answer to the feedback's author in the Facebook thread.
