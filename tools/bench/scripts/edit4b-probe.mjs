@@ -259,7 +259,13 @@ try {
         await eyeRest();
         const b = await snap();
         await press('.ce-save-mine', 0);
-        const got = await until(snap, (v) => v.said !== b.said && v.flash.length > 0, 3000, 100);
+        let got = await until(async () => ({ v: await snap(), offer: await boxOf('.course-editor .ce-fix-offer .ce-fix-show') }), (x) => (x.v.said !== b.said && x.v.flash.length > 0) || !!x.offer, 8000, 100);
+        // int4: since edit4s (E7) a Save whose problems have small corrections first offers them; its 'Show me' is the
+        // pilot's way to the named gate (course.ts refusedSave -> pointAtWrong), so the probe presses it there
+        const offered = !!got.v.offer && got.v.v.flash.length === 0;
+        if (offered) await press('.course-editor .ce-fix-offer .ce-fix-show', 0);
+        got = await until(snap, (v) => v.said !== b.said && v.flash.length > 0, 3000, 100);
+        if (offered) res.log.push('save offered corrections: Show me pressed');
         await sleep(1500);
         const later = await snap();
         save = { said: got.v.said, flash: got.v.flash, pointed: got.v.b?.pointed ?? null, selected: got.v.selected, wrong: got.v.wrong, eyeMoved: Math.round(dist(later.eye, b.eye) * 1000) / 1000, nameAsked: later.windows };
