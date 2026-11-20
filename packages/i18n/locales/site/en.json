@@ -1074,7 +1074,7 @@
         "title": "Walls: the nearer the hit, the faster the knocks",
         "text": [
           "A wall knocks from its own side, left or right. The knocks follow the seconds left before you would hit it, not the metres.",
-          "With 4 seconds left, about one knock every 1.4 seconds; just before the hit, one every 0.11 seconds. Closer than 2 metres, nearness alone quickens them too.",
+          "A wall begins to knock when less than 2.5 seconds are left: about one knock every 0.54 seconds. Just before the hit, one every 0.11 seconds. Closer than 2 metres, nearness alone quickens them too, and within 0.8 metres a wall is heard even when you are not flying toward it.",
           "With less than 1.5 seconds left, the other sounds turn down so that the wall stands out."
         ]
       },
@@ -1119,7 +1119,7 @@
     "how": {
       "title": "How can one fly by sound at all?",
       "text": "The simulator turns what the drone's camera sees into sound. In your headphones you hear where a wall is, where the way is open and where the next ring is.",
-      "items": ["You hear a wall early. The sound depends on how many seconds are left before you would hit it, not on metres.", "Height is a tone that glides. The height you need has its own note: when the tones match, you are there.", "A short chime marks an open way. If you fly the wrong way, the app tells you.", "What matters sounds from its own side, left or right. That is why you need headphones.", "The motor is silent at first, so you hear only the cues. You can switch its sound on and set its volume in the settings.", "A voice leads the lessons: 28 lessons, from hovering to walls, corridors, six tunnels and rings at three heights. There are small rooms for a micro drone and a lesson in a real place captured as 3DGS (a Gaussian splat): Winter Garden.", "The menus and settings speak too: Escape opens a spoken lesson menu.", "For low vision, the lesson rooms are drawn in strong contrast and there is a large horizon display. For deaf pilots, a panel shows the sound cues."]
+      "items": ["You hear a wall early. The sound depends on how many seconds are left before you would hit it, not on metres.", "Height is a tone that glides. The height you need has its own note: when the tones match, you are there.", "A short chime marks an open way. If you fly the wrong way, the app tells you.", "What matters sounds from its own side, left or right. That is why you need headphones.", "The motor is silent at first, so you hear only the cues. You can switch its sound on and set its volume in the settings.", "A voice leads the lessons: 33 lessons and a short fast path, from hovering to walls, corridors, six tunnels, rings at three heights and speed up to 4.5 metres per second. There are small rooms for a micro drone and a lesson in a real place captured as 3DGS (a Gaussian splat): Winter Garden.", "The menus and settings speak too: Escape opens a spoken lesson menu.", "For low vision, the lesson rooms are drawn in strong contrast and there is a large horizon display. For deaf pilots, a panel shows the sound cues."]
     },
     "need": {
       "title": "What do I need?",
@@ -1135,9 +1135,9 @@
       "title": "What works today and what does not yet",
       "tested": "What has been tested: sighted FPV pilots, the author and his friends, have flown with their eyes closed and passed corridors and obstacles by sound alone. It works. What has not happened yet: pilots who are blind from birth have not tried it. Their feedback is what we need to find the problems and make orientation by sound better. We listen to every report and turn it into fixes.",
       "worksTitle": "Works today",
-      "works": ["28 lessons with a voice, and the sound cues.", "A keyboard, a gamepad or a radio.", "Recording your flight together with your voice, sending it to the author, a short survey.", "A link to a lesson with your sound settings (the L key).", "English, Spanish, Polish and Russian."],
+      "works": ["33 lessons with a voice and a short fast path, and the sound cues.", "Sound in any scan: the Backslash key turns Fly by Sound on in the middle of a flight, and Shift+G builds a course of gates there. The hum leads you from gate to gate, and the voice says the time of each lap.", "Flying with others: outside a sound lesson, the 9 key opens “Fly with others” and joins the open room on your scan. Who joins and who leaves is said aloud.", "A keyboard, a gamepad or a radio.", "Recording your flight together with your voice, sending it to the author, a short survey.", "A link to a lesson with your sound settings (the L key).", "English, Spanish, Polish and Russian."],
       "notYetTitle": "Not yet",
-      "notYet": ["The mode has not been tried with NVDA or JAWS in practice.", "Phones and tablets are not tested; for now you need a computer.", "There are no obstacle courses with a timer by sound yet, and no flying together with other pilots. They are planned; we give no dates.", "Native speakers have not yet listened to the Spanish, Polish and Russian voice lines."],
+      "notYet": ["The mode has not been tried with NVDA or JAWS in practice.", "Phones and tablets are not tested; for now you need a computer.", "Native speakers have not yet listened to the Spanish, Polish and Russian voice lines."],
       "goal": "Where this leads. There are two goals. First: blind people taking part in international competitions as FPV pilots. Second: a phone app. The camera sees the surroundings, the app analyses them and builds a sound map, and a blind person walks with headphones on, orienting by sound. Both are tested here in the simulator first: it is simpler, and many blind people can take part in analysing and improving how an image is turned into sound."
     },
     "test": {
@@ -1190,7 +1190,7 @@
       "lesson": ["Prepare a computer with Chrome or Edge and wired headphones for each student. Calibrate the volume beforehand.", "Start with the headphone check and the hovering lesson. Then the student goes at their own pace: R returns to the last checkpoint, holding R starts the lesson again.", "The first time, a helper sits nearby: connects the radio and confirms the consent to record.", "After the lesson, ask the student what they heard. If they agree, they can say it in a recording, and their feedback reaches us together with the flight.", "The L key copies a link to the lesson with its sound settings. Give it to the student to continue at home.", "Braille schools and organisations of blind people: write to us if you want a trial lesson or a group of testers."]
     },
     "press": {
-      "facts": "Facts: free, no account; 28 lessons; English, Spanish, Polish, Russian; MIT licence; made by Andrii Shramko, FPV pilot and 3DGS specialist.",
+      "facts": "Facts: free, no account; 33 lessons; English, Spanish, Polish, Russian; MIT licence; made by Andrii Shramko, FPV pilot and 3DGS specialist.",
       "write": "Write to the author",
       "call": "Book a call"
     },
