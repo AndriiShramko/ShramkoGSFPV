@@ -47,6 +47,29 @@ Negative-control ref: the S1 merge of gen4a (5f946305) and gen4b (fb7f6524): 3ef
     does not depend on it.
 - [ ] S3 his scale and the acceptance (--enlarged 5dfeb49b,ab5efa0e with plants share and start/finish to core;
       gap-gen-accept.mjs by mouse; live control fails the 5dfeb49b step)
+  - [x] PlanStats.finishToCoreM (the last gate; gate 1 when closed) and underTopShare (gate top edge under the tile's
+        roofTop, the plants rule of zoneRule); audit rules finishNearCore (enlarged compact) and underTop (plants, judged
+        only when flown enlarged: at x1 the micro-greens stand lower than the 4 D gate and planCourse lays without the plants
+        rule, share 0 there). Audit size tolerance 1 mm + scale/2 mm (sizes are stored to the mm in scene units: x15
+        turned a 1.0625 m square into 1.065 m and failed 'opening' on 18 plans). e82fb6eb, 492cfbba
+  - [x] an asked closed course tries the START_TRIES (6) gates nearest the spawn as gate 1 (generate.ts startNearSpawn
+        `tries`; the old g1 course keeps one try, its links are shared). gap-gen-scale.test.ts 3/3, NEG OK vs 3ef3d4bf;
+        packages/tracks 181/181. 492cfbba
+  - [x] audit --enlarged --scenes 5dfeb49b,ab5efa0e -> evidence/2026-11-19/gap-gen/place-x15.json: 72 plans, every rule
+        green but 'server' (30 red, see For the lead): course 72/72, nearCore 72/72, finishNearCore 18/18, underTop 18/18
+        (micro-greens x15: share 1 on every plan), beginnerMin 24/24, opening 72/72. Gate 1 to the core at x15: skull beginner
+        6.2-6.7 m, medium 6.2 / 12.2-12.7 m, pro 5.8 / 17.7-19.4 m (seeds 1 / 2-3); micro-greens beginner 4.3-5.4 m.
+  - [ ] LEFT 1: skull medium/pro seeds 2-3 still start 12-19 m from the core (the skull itself is ~3 m at x15). Cause
+        measured (diagnostic parked at U:/Temp/gsfpv-train4/gap-gen/_gapgen-diag.ts, copy it into tools/bench/src to run:
+        `npx tsx src/_gapgen-diag.ts 5dfeb49b pro 15 3`): every turn to a near-core gate fails checkTrack because the leg
+        from the spawn crosses the new gate 1 66-72 deg off its axis (35 allowed), and the ring's own closing leg into the
+        old gate 1 is 59 deg off (the walk's lap-1 proof never judged it). Next: a turned ring's start pose stands on the new
+        gate 1's approach (back along its axis, clear), and the turned ring is proven with that start; test + NEG; audit again.
+  - [ ] LEFT 2: the release is built (dist/, this tree at 492cfbba); copy the nine walls folders into dist/walls, serve on
+        6740, run `node tools/bench/scripts/gap-gen-accept.mjs http://localhost:6740/en <out>` (written, never run yet:
+        fix REACH_M.skull to a constant, e.g. 8 m, before the run), then against https://gsfpv.flyreelstudio.eu/en (must
+        FAIL step 2), evidence under evidence/2026-11-19/gap-gen/, kill the server, delete dist/.
+  - [ ] LEFT 3: What the owner does, Claims 7-9, gates.py once, LANE-DONE.
 
 ## What the owner does
 
@@ -93,6 +116,13 @@ Negative-control ref: the S1 merge of gen4a (5f946305) and gen4b (fb7f6524): 3ef
 - PlanAnswer has a new field `eased` (the course was laid nearer the core than asked or by a sharper walk). If the page
   should say it, gen4b's worker.ts PlanNote and course.ts would pass and show it (not this lane's files).
 - Deploy: page only (packages/tracks is bundled into the page and its worker).
+- S3: packages/tracks/src/generate.ts startNearSpawn (outside closeAt, the lane's only generate.ts line): a `tries`
+  parameter and START_TRIES for asked courses; the g1 path is unchanged.
+- S3: a course laid at Scene size x15 on a scan of a few centimetres cannot be saved: its sizes in scene units are under
+  the track format's minimums (packages/sonic-fpv src/track/validate.ts diameter/side >= 0.05, tube/bar >= 0.005, and
+  apps/api tracks.py the same): the micro-greens beginner ring at x15 is 0.057 with tube 0.004; medium/pro openings
+  0.51/0.34 m flown are 0.034/0.023 scene units. 30 of 72 x15 plans fail 'server' for this alone. The fix is in the sound
+  package's repository and tracks.py (smaller minimums, or the size stored in flown metres with the scale): not this lane.
 - S2 files: apps/fly/src/rooms/race.ts, race-page.ts, apps/fly/src/app/builtin/rooms.ts (owned), the new test
   tools/bench/test/gap-gen-race.test.ts. apps/rooms is unchanged (the course id is opaque there): no rooms deploy.
 - S2 needs one line in apps/fly/src/app/builtin/course.ts (lane gap-editor's file), hook.adopt at line ~101, so a room's
@@ -110,3 +140,5 @@ Negative-control ref: the S1 merge of gen4a (5f946305) and gen4b (fb7f6524): 3ef
 - S2: ~25 replies; most went to tracing where the room's course is built (race-page, board, rooms.ts, course.ts adopt).
   Cheaper: grep `adopt` and `parseCourse` across apps/fly at once; neg_control.py needs "npx.cmd ..." as one argument on
   Windows (bare npx: FileNotFoundError).
+- S3 (run 1, ~45 replies, stage left): most went to the x15 audit's reds (opening by mm rounding, server by format minimums,
+  the start turn's proof). Cheaper: run the diagnostic script (checkTrack issues of each turn) before changing the turn.
