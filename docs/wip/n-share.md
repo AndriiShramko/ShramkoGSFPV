@@ -9,7 +9,7 @@ the sound lessons, not the scene.
 - [x] S1 the table: tools/bench/test/share-links-table.test.ts (14 rows/checks); apps/fly/src/share/flight-link.ts (flightLink,
       readFlightLink, courseOfFlight); shareLink, ctx.sonicShare (through mode-keys.ts soundPlace) write through flightLink; the sound
       link carries `course=`; `sonic=fly` reads as the free flight in that scene. NEG OK twice on the base (all changed files; and only
-      sonic-link.ts + start-model.ts, the row "flight by sound with gates"). Commit: see git log "n-share S1".
+      sonic-link.ts + start-model.ts, the row "flight by sound with gates"). Commit 26dc3f8e.
 - [ ] S2 the landing: a fresh profile on a link with a scene (with or without sonic) gets one screen with one main button that starts
       that flight (one click for sound and pointer lock); lessons a small second link. An unsaved hand-built course: Share offers
       "Save and share" (the editor's Save) or the scene alone with one line. Unit tests (start-model order for a scene link with
