@@ -35,6 +35,12 @@ describe('int4: edit4b top bar x the editor window on a small view (edit4a step 
         expect(bar).toMatch(/this\.ui\.style\.setProperty\('--ce-topbar-bottom', `\$\{Math\.round\(bar\.bottom\)\}px`\)/);
         expect(bar.match(/this\.ui\.style\.removeProperty\('--ce-topbar-bottom'\)/g) ?? []).toHaveLength(2);
     });
+    it('the bar is watched, but its own bottom never counts for --ce-below (it pushed itself down to mid-view)', () => {
+        const place = bar.slice(bar.indexOf('private readonly place = '), bar.indexOf("'--ce-below'"));
+        expect(place).toMatch(/this\.root\]/);
+        const loop = place.slice(place.indexOf('for (const p of parts) {'));
+        expect(loop).toMatch(/^for \(const p of parts\) \{\s*(\/\/[^\n]*\n\s*)*if \(p === this\.root\) continue;/);
+    });
     it('in the small-view block the window starts under the bar', () => {
         const start = css.indexOf('@media (max-width: 900px), (max-height: 500px) {');
         expect(start).toBeGreaterThan(0);

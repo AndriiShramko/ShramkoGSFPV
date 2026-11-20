@@ -103,6 +103,8 @@ export class TopBar {
         }
         let below = 0;
         for (const p of parts) {
+            // the bar is watched for its size only: its own bottom must not push it down (it walked to mid-view at 844x390)
+            if (p === this.root) continue;
             const r = p.getBoundingClientRect();
             if (r.height > 0 && r.top < window.innerHeight / 2) below = Math.max(below, r.bottom);
         }
