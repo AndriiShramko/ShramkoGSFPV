@@ -152,3 +152,26 @@ plan-new is done: designs/t7-plan.md ("For the lead" at its end), six lanes n-ro
 n-path with checks r-n-*; open decisions taken as recommended (g3 links for path-first courses, g2 kept; the level in
 the browser's prefs). Live is ac11d2c2 (car 1 + sound page texts of another session, released 11:50 UTC).
 Watchers: b8em29xja (DONE ship-car*), bunm3y3m2 (WAKE FAILED / HOLD / LIMIT), bme117exk (disk C).
+
+## State, 2026-11-20 16:50 UTC: the tutorial feedback, the window, what is queued (READ THIS FIRST)
+
+Live: still ac11d2c2 (car 1 + the sound page texts of another session). Nothing of this train went live today: the
+five-hour window ended about 14:15 UTC and every job waited until 16:30 (this window resets 21:30 UTC).
+The owner raised the five-hour boundary (message 75): the hook's line is 97 % (limit_reserve.py priority --h5-line 97),
+the conductor starts new runs up to 95 % (five_stop in the plan).
+Incident 12:36-12:56 UTC: the hook's new five-hour publication reserve (its line was 85 %) refused the train's prompts.
+The refusal text echoes the prompt, whose last line names the markers, so the conductor counted stages: n-route, n-save,
+n-share and gap-editor lost all their runs with no work done. Repaired: gsfpv_lanes.last_result returns (no result, True)
+for a text with operation blocked by hook (vault commit 00fa862); the runs were given back.
+Message 76: the feedback of a low-vision pilot about the Fly by Sound tutorial (chaotic, too much at once, the menu
+buttons read at every step, sounds should be brought in at the action with a pause). The owner's earlier wishes about
+the lessons are built in sound6 (car 2) and gap-sound (t7-base) and are not live. Decisions: designs/t8-tutor-brief.md
+(say only what is new; the first flight is the tutorial; one new sound at a time with the other layers silent; a moment
+= freeze, one sentence, the sound alone, the task; a What is this sound key; at most eight moments; short speech; large
+text for low vision; the numbers that prove it). Planner job plan-tutor (prompts/t8-plan.md) writes designs/t8-plan.md,
+the lanes tutor-*, their checks, and car 5 if they cannot ride car 4.
+Queue at 16:50 UTC: running n-route, n-path, hot-sog3; ready int4, n-save, n-share, plan-tutor, gap lanes 4-7.
+THIS SESSION IS HEAVY (about 300 thousand tokens of context on the top model): its wake after a pause of three hours
+took about a quarter of a five-hour window (38 % was seen nine minutes into the window; an estimate, not a measurement).
+A new lead session should start from this file and should not set watchers that wake the old one.
+Open for the owner: whether to answer the author of the feedback in the Facebook thread and invite him as a tester.
