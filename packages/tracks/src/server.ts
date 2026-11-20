@@ -113,12 +113,15 @@ function vec(x: unknown): [number, number, number] | null {
 function boundIssues(r: Record<string, unknown>, issues: string[]): void {
     const gates = Array.isArray(r.gates) ? (r.gates as unknown[]) : [];
     const pts: [number, number, number][] = [];
+    const t = r.transform;
+    const s = Array.isArray(t) && t.length === 4 && isNum(t[0]) && t[0] > 0 && t[0] <= 1000 ? t[0] : null;
     gates.forEach((g, i) => {
         const shape = typeof g === 'object' && g !== null ? (g as Record<string, unknown>).shape : null;
         if (typeof shape === 'object' && shape !== null) {
             const sh = shape as Record<string, unknown>;
             const big = 'diameter' in sh ? sh.diameter : sh.side;
-            if (isNum(big) && big > MAX_GATE_SIZE_M) issues.push(`gates[${i}].shape: must be at most ${MAX_GATE_SIZE_M} m across on the server`);
+            // lane gap-save: in flown m (times the scale, as a leg; 1 while the transform is refused), so a gate keeps its size at any Scene size
+            if (isNum(big) && big * (s ?? 1) > MAX_GATE_SIZE_M) issues.push(`gates[${i}].shape: must be at most ${MAX_GATE_SIZE_M} m across flown on the server`);
         }
         const pos = vec(typeof g === 'object' && g !== null ? (g as Record<string, unknown>).pos : null);
         if (!pos) return;
@@ -127,8 +130,6 @@ function boundIssues(r: Record<string, unknown>, issues: string[]): void {
     });
     const start = typeof r.start === 'object' && r.start !== null ? vec((r.start as Record<string, unknown>).pos) : null;
     if (start && start.some(far)) issues.push(`start.pos: must be within ${MAX_COORD} of the origin`);
-    const t = r.transform;
-    const s = Array.isArray(t) && t.length === 4 && isNum(t[0]) && t[0] > 0 && t[0] <= 1000 ? t[0] : null;
     if (s === null || pts.length === 0 || pts.length !== gates.length) return;
     const legs: [number, number][] = pts.slice(1).map((_, i) => [i, i + 1]);
     if (isNum(r.laps) && r.laps > 1 && pts.length > 1) legs.push([pts.length - 1, 0]);

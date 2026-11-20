@@ -1,0 +1,25 @@
+{
+  "about": "Lane gap-save: one table of gate sizes at many Scene sizes, run against the sound package's validateTrack and packages/tracks/src/server.ts (packages/tracks/test/size-flown.test.ts) and apps/api/tracks.py (apps/api/tests/test_tracks_sizes.py). Each row is built from tracks/valid-basic.json: transform [scale, 0, 0, 0], every gate's and the start's pos divided by the scale (the same flown course), every gate the row's shape with its sizes in FLOWN m divided by the scale. 'ok' is the server's verdict; 'format_ok' (when given) is validateTrack's, which allows 100 m where the server allows 20 m. Whoop 65 mm: a 0.34 m square, 0.028 m bar (gen4a). 5 inch: the generator's 1.5 m square with a 0.1 m bar and its 1.2 m ring with a 0.08 m tube.",
+  "rows": [
+    { "name": "whoop x1", "scale": 1, "shape": { "kind": "square", "side": 0.34, "bar": 0.028 }, "ok": true },
+    { "name": "whoop x5.6", "scale": 5.6, "shape": { "kind": "square", "side": 0.34, "bar": 0.028 }, "ok": true },
+    { "name": "whoop x15", "scale": 15, "shape": { "kind": "square", "side": 0.34, "bar": 0.028 }, "ok": true },
+    { "name": "whoop x100", "scale": 100, "shape": { "kind": "square", "side": 0.34, "bar": 0.028 }, "ok": true },
+    { "name": "whoop x0.1", "scale": 0.1, "shape": { "kind": "square", "side": 0.34, "bar": 0.028 }, "ok": true },
+    { "name": "5 inch x1", "scale": 1, "shape": { "kind": "square", "side": 1.5, "bar": 0.1 }, "ok": true },
+    { "name": "5 inch x5.6", "scale": 5.6, "shape": { "kind": "square", "side": 1.5, "bar": 0.1 }, "ok": true },
+    { "name": "5 inch x15", "scale": 15, "shape": { "kind": "square", "side": 1.5, "bar": 0.1 }, "ok": true },
+    { "name": "5 inch x100", "scale": 100, "shape": { "kind": "square", "side": 1.5, "bar": 0.1 }, "ok": true },
+    { "name": "5 inch x0.1", "scale": 0.1, "shape": { "kind": "square", "side": 1.5, "bar": 0.1 }, "ok": true },
+    { "name": "5 inch ring x15", "scale": 15, "shape": { "kind": "ring", "diameter": 1.2, "tube": 0.08 }, "ok": true },
+    { "name": "5 inch ring x100", "scale": 100, "shape": { "kind": "ring", "diameter": 1.2, "tube": 0.08 }, "ok": true },
+    { "name": "a 3 m gate x0.1 (30 scene units, 3 m flown)", "scale": 0.1, "shape": { "kind": "square", "side": 3, "bar": 0.1 }, "ok": true },
+    { "name": "refused: a 0.03 m opening x1", "scale": 1, "shape": { "kind": "square", "side": 0.03, "bar": 0.005 }, "ok": false },
+    { "name": "refused: a 0.03 m opening x15", "scale": 15, "shape": { "kind": "square", "side": 0.03, "bar": 0.005 }, "ok": false },
+    { "name": "refused: a 0.003 m bar x15", "scale": 15, "shape": { "kind": "square", "side": 0.34, "bar": 0.003 }, "ok": false },
+    { "name": "refused: a 0.003 m tube x100", "scale": 100, "shape": { "kind": "ring", "diameter": 1.2, "tube": 0.003 }, "ok": false },
+    { "name": "refused on the server: a 25 m gate x0.1", "scale": 0.1, "shape": { "kind": "square", "side": 25, "bar": 0.1 }, "ok": false, "format_ok": true },
+    { "name": "refused on the server: a 25 m gate x15", "scale": 15, "shape": { "kind": "square", "side": 25, "bar": 0.1 }, "ok": false, "format_ok": true },
+    { "name": "refused: a 150 m gate x0.1", "scale": 0.1, "shape": { "kind": "square", "side": 150, "bar": 0.1 }, "ok": false, "format_ok": false }
+  ]
+}
