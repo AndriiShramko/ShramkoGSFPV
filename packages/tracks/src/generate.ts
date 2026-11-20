@@ -23,7 +23,7 @@ import type { QualityMap } from './quality';
 import type { FreeSpace } from './freespace';
 import { createRng } from './rng';
 import { composeElements } from './elements';
-import type { Composed } from './elements';
+import type { Composed, ElementKind } from './elements';
 import { MAX_LEG_M, SERVER_MAX_GATES } from './server';
 import type { Rng } from './rng';
 
@@ -137,6 +137,8 @@ export interface CoursePlace {
     readonly climbMax: number;
     /** generator.version of the course ('5.<b|m|p><c|w|v>'); '.e2' and '.s<shift>' are added as for the old walk */
     readonly version: string;
+    /** the element kinds composed (gap-gen S1: LEVELS[level].elements); absent: every kind */
+    readonly kinds?: readonly ElementKind[];
 }
 
 /** CR-1, CR-4: the walk of one generateCourse call, handed to CourseOptions.onWalk */
@@ -830,7 +832,7 @@ function walkCourse(free: FreeSpace, walls: VoxelCollision, opts: CourseOptions,
         const comp = composeElements({
             gates: course, closed: laps > 1, start: startW, toFlown: (q) => toFlown(q), toScan, s, k, marginM: p.marginM, sweeper,
             axisOf: (g) => { const q = g.quat; const w = q[0], y = q[2]; return [r6(-2 * w * y), 0, r6(-(1 - 2 * y * y))]; },
-            legWell, rng: (opts.rng ?? createRng)((seed ^ 0x5eed1) >>> 0), maxGates: Math.min(SERVER_MAX_GATES, P?.maxGates ?? SERVER_MAX_GATES),
+            legWell, rng: (opts.rng ?? createRng)((seed ^ 0x5eed1) >>> 0), maxGates: Math.min(SERVER_MAX_GATES, P?.maxGates ?? SERVER_MAX_GATES), kinds: P?.kinds,
             proven: (gs, from) => checkTrack(build(gs, nearestYaw(sub(toFlown(gs[0]!.pos), from)), from, 1), walls, T, p.marginM, false, true).ok
         });
         opts.onElements?.(comp);

@@ -124,8 +124,9 @@ export interface PlanStats {
     readonly nearGroundShare: number;
     readonly openingM: number;
 }
-/** shrunk: the level's opening did not fit and a smaller one (down to 4 D) was used; fitSize: the Scene size at which the
- *  4 D gate fits, or null when none does */
+/** shrunk: the level's opening did not fit and a smaller one (down to 4 D) was used; eased: the asked request laid no
+ *  course at all and the course is the one of an easier ask (compact, then one level easier: plan.ts fallbackAsks);
+ *  fitSize: the Scene size at which the 4 D gate fits, or null when none does */
 export type PlanAnswer =
-    | { readonly ok: true; readonly track: TrackFile; readonly stats: PlanStats; readonly start: { readonly pos: Vec3; readonly yawDeg: number }; readonly shrunk: boolean }
+    | { readonly ok: true; readonly track: TrackFile; readonly stats: PlanStats; readonly start: { readonly pos: Vec3; readonly yawDeg: number }; readonly shrunk: boolean; readonly eased: boolean }
     | { readonly ok: false; readonly reason: 'no-room'; readonly kind: ScanKind; readonly fitSize: number | null };

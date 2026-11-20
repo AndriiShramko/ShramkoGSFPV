@@ -54,12 +54,16 @@ function qmul(q: Quat, r: Quat): Quat {
     return [r6(aw * bw - ax * bx - ay * by - az * bz), r6(aw * bx + ax * bw + ay * bz - az * by), r6(aw * by - ax * bz + ay * bw + az * bx), r6(aw * bz + ax * by - ay * bx + az * bw)];
 }
 
-/** the element a draw of `u` in [0, 1) picks by ELEMENT_SHARES */
-export function elementOf(u: number): ElementKind {
+/** the element a draw of `u` in [0, 1) picks by ELEMENT_SHARES; with `kinds` (gap-gen S1: the level's LEVELS.elements)
+ *  only among those, by their shares scaled to sum to 1 (no kinds: every kind, the draws of the old courses) */
+export function elementOf(u: number, kinds?: readonly ElementKind[]): ElementKind {
+    const shares = kinds ? ELEMENT_SHARES.filter(([k]) => kinds.includes(k)) : ELEMENT_SHARES;
+    let sum = 0;
+    for (const [, share] of shares) sum += share;
     let acc = 0;
-    for (const [k, share] of ELEMENT_SHARES) {
+    for (const [k, share] of shares) {
         acc += share;
-        if (u < acc) return k;
+        if ((kinds ? u * sum : u) < acc) return k;
     }
     return 'single';
 }
@@ -123,6 +127,9 @@ export interface ComposeInput {
     readonly rng: Rng;
     /** most gates in a course (server.ts SERVER_MAX_GATES) */
     readonly maxGates: number;
+    /** the element kinds drawn (an asked course: its level's LEVELS.elements; medium has no flat square and no cube); none:
+     *  every kind */
+    readonly kinds?: readonly ElementKind[];
 }
 
 export interface Composed {
@@ -202,7 +209,7 @@ export function composeElements(c: ComposeInput): Composed {
         };
         let put: TrackGate[] | null = null;
         if (!fixed) {
-            const d = elementOf(u);
+            const d = elementOf(u, c.kinds);
             drawn[d]++;
             if (d === 'single' && spare === 0) placed.single++;
             else {

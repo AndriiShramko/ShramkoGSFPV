@@ -1,7 +1,7 @@
 // Lane gen4a, stage A3: planCourse (packages/tracks/src/plan.ts) over the baked walls and the CDN walls of the catalogue
 // scans, every level x spread x seed, each course judged by the rules of design gen4.md section 6 (G1-G7). Node only, no
 // browser. One row per plan: the answer, its stats, the time and PASS/FAIL per rule; a summary per rule at the end.
-//   npx tsx src/gen4-place-audit.ts [--walls DIR] [--scenes a,b] [--seeds 1,2,3] [--enlarged] [--out FILE]
+//   npx tsx src/gen4-place-audit.ts [--walls DIR] [--scenes a,b] [--seeds 1,2,3] [--levels beginner,pro] [--enlarged] [--out FILE]
 import { existsSync, readdirSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { gunzipSync } from 'node:zlib';
@@ -24,7 +24,7 @@ const ENLARGED = ['5dfeb49b', 'ab5efa0e'];
 /** design section 6 */
 const LUBLIN = '2f1ddf5f', WINTER_GARDEN = '7a475d38', SKULL = '5dfeb49b';
 const GOOD_COMPACT = 0.8, GOOD_WIDE = 0.6, CITY_NEAR_MAX = 0.2;
-const LEVEL_NAMES: CourseLevel[] = ['beginner', 'medium', 'pro'];
+const LEVEL_NAMES: CourseLevel[] = (arg('--levels')?.split(',') as CourseLevel[] | undefined) ?? ['beginner', 'medium', 'pro'];
 const SPREADS: CourseSpread[] = ['compact', 'wide'];
 
 function wallsFromDir(dir: string): VoxelCollision {
@@ -117,7 +117,7 @@ async function main(): Promise<void> {
                         }
                         judge(rules);
                         const failed = Object.entries(rules).filter(([, v]) => !v).map(([k]) => k);
-                        rows.push({ ...head, ok: true, shrunk: r.shrunk, short: st.gates < L.gatesMin, stats: { ...st, startFinishM: r3(st.startFinishM), startToCoreM: r3(st.startToCoreM), goodShare: r3(st.goodShare), nearGroundShare: r3(st.nearGroundShare), openingM: r3(st.openingM) }, coreRadiusM: r3(a.coreRadiusM), zoneR: r3(pr.zoneR), rules, failed });
+                        rows.push({ ...head, ok: true, shrunk: r.shrunk, eased: r.eased, short: st.gates < L.gatesMin, stats: { ...st, startFinishM: r3(st.startFinishM), startToCoreM: r3(st.startToCoreM), goodShare: r3(st.goodShare), nearGroundShare: r3(st.nearGroundShare), openingM: r3(st.openingM) }, coreRadiusM: r3(a.coreRadiusM), zoneR: r3(pr.zoneR), rules, failed });
                         console.log(`${s.id} x${scale} ${level} ${spread} ${seed} ${a.kind} gates ${st.gates} open ${r3(st.openingM)}${r.shrunk ? ' shrunk' : ''} good ${r3(st.goodShare)} ${ms} ms ${failed.length ? 'FAIL ' + failed.join(',') : 'PASS'}`);
                     }
         }

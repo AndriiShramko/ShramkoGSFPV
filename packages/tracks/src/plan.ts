@@ -23,7 +23,7 @@ import { MAX_LEG_M } from './server';
 import { analyzeScan, scanTile } from './scan';
 import type { ScanAnalysis } from './scan';
 import { LEVELS, VOXEL_VIEW_GATES, courseLinkId } from './request';
-import type { CourseRequest, LevelRules, PlanAnswer, PlanHooks, PlanInput, PlanStats } from './request';
+import type { CourseLevel, CourseRequest, LevelRules, PlanAnswer, PlanHooks, PlanInput, PlanStats } from './request';
 import type { SceneTransform, TrackFile, TrackGate, Vec3 } from './types';
 
 /** a tile is well scanned from this share of the scan's best tenth (ESTIMATE, design section 3) */
@@ -62,8 +62,47 @@ export interface PlanRules {
     readonly gates: number;
 }
 
-export function planRules(request: CourseRequest, craftRadiusM: number, a: ScanAnalysis): PlanRules {
-    const level = LEVELS[request.level];
+/** the level one step harder (beginner -> medium -> pro; pro stays): its walk turns sharper and its legs are shorter */
+export const HARDER: Readonly<Record<CourseLevel, CourseLevel>> = { beginner: 'medium', medium: 'pro', pro: 'pro' };
+
+/**
+ * gap-gen S1: the rules of `level` walked by the walk of `walk`: the turn, axis and climb rules and the shortest leg of
+ * `walk`; the opening ladder, the gate counts and the elements stay the level's. A street has no room for a beginner's loop
+ * of 60 degree turns (Wroclaw 70b50d42 beginner: 2 of 5 gates) and a skull on a table at x1 none for a medium's 105
+ * degree turns (no course at all, while pro's 150 degree turns laid 3 gates): the opening is what makes a level easy to
+ * fly, so a sharper walk with the level's own gates is kept over a short course or none.
+ */
+export function walkedBy(level: CourseLevel, walk: CourseLevel): LevelRules {
+    const own = LEVELS[level], w = LEVELS[walk];
+    return walk === level ? own : { ...own, legMinD: Math.min(own.legMinD, w.legMinD), turnCosMin: w.turnCosMin, axisCosMin: w.axisCosMin, climbMax: w.climbMax };
+}
+
+/** one ask of the fallback chain: the request laid (its level's gates) and the level whose walk lays it */
+export interface FallbackAsk {
+    readonly req: CourseRequest;
+    readonly walk: CourseLevel;
+}
+
+/**
+ * gap-gen S1 (G1: never a refusal at the size he flies): the asks walked in turn while no course at all was laid: the asked
+ * one; compact when wide was asked (the walk keeps near the core: a smaller box, a shorter loop); then compact with the walk
+ * of each harder level (the design said 'one level easier'; an easier level has a larger gate, longer legs and gentler
+ * turns, so it never fits where the asked one did not; the code wins). The course keeps the asked link (the chain is fixed,
+ * so the same link lays the same course).
+ */
+export function fallbackAsks(request: CourseRequest): FallbackAsk[] {
+    const out: FallbackAsk[] = [{ req: request, walk: request.level }];
+    const compact: CourseRequest = { ...request, spread: 'compact', anyQuality: false };
+    if (request.spread === 'wide' || request.anyQuality) out.push({ req: compact, walk: request.level });
+    for (let w = request.level; HARDER[w] !== w; ) {
+        w = HARDER[w];
+        out.push({ req: compact, walk: w });
+    }
+    return out;
+}
+
+export function planRules(request: CourseRequest, craftRadiusM: number, a: ScanAnalysis, walk: CourseLevel = request.level): PlanRules {
+    const level = walkedBy(request.level, walk);
     const D = 2 * craftRadiusM;
     const openings: number[] = [];
     for (let d = level.openingD; d > RING_MIN_DRONE_DIAMETERS; d = Math.max(RING_MIN_DRONE_DIAMETERS, d * 0.75)) openings.push(d * D);
@@ -303,18 +342,23 @@ export function planCourse(input: PlanInput, hooks: PlanHooks = {}): PlanAnswer 
     const late = (): boolean => !!hooks.deadline && hooks.deadline.now() + longest >= hooks.deadline.at;
     hooks.onStep?.('analyse', 0);
     const a = analyzeScan(walls, transform);
-    const rules = planRules(request, input.craftRadiusM || SMALLEST_DRONE_RADIUS_M, a);
-    // a compact course that keeps under gatesMin in the core's zone is laid over the whole scan too (a bare room's core is
-    // a corner) before the opening steps down; the version letters stay the asked ones
-    const asks: { req: CourseRequest; rules: PlanRules }[] = [{ req: request, rules }];
-    if (request.spread === 'compact' && !request.anyQuality) {
-        const wide: CourseRequest = { ...request, spread: 'wide' };
-        asks.push({ req: wide, rules: planRules(wide, input.craftRadiusM || SMALLEST_DRONE_RADIUS_M, a) });
-    }
+    const craftR = input.craftRadiusM || SMALLEST_DRONE_RADIUS_M;
+    const rules = planRules(request, craftR, a);
+    /** the asks of one ladder: `req` itself, and when it is compact the same over the whole scan (a compact course that
+     *  keeps under gatesMin in the core's zone is laid over the whole scan too: a bare room's core is a corner) before the
+     *  opening steps down; the version letters stay the asked ones */
+    type Ask = FallbackAsk & { rules: PlanRules };
+    const asksOf = (req: CourseRequest, walk: CourseLevel): Ask[] => {
+        const out: Ask[] = [{ req, walk, rules: planRules(req, craftR, a, walk) }];
+        if (req.spread === 'compact' && !req.anyQuality) {
+            const wide: CourseRequest = { ...req, spread: 'wide' };
+            out.push({ req: wide, walk, rules: planRules(wide, craftR, a, walk) });
+        }
+        return out;
+    };
     const version = `${GENERATOR_VERSION_PLAN}.${letters(request)}`;
-    const elements = input.elements && rules.level.elements.length > 1;
     // set inside `lay` (a closure): the cast keeps TypeScript from narrowing it to null here
-    let best = null as { track: TrackFile; opening: number } | null;
+    let best = null as { track: TrackFile; opening: number; ask: FallbackAsk; tier: number } | null;
     const bestGates = (): number => best?.track.gates.length ?? 0;
     let lastMs = 0;
     /** the 4 D gate's room at this size (fitSize of a no-room answer) */
@@ -323,7 +367,6 @@ export function planCourse(input: PlanInput, hooks: PlanHooks = {}): PlanAnswer 
     // plants (G6: between the leaves): the ladder keeps it there (Winter Garden pro laid gates outside the glass), and only a
     // scan with no course at all under it is laid again without it (never a refusal: a plant tray flown at x1)
     const strictKind = a.kind === 'room' || a.kind === 'cityAbove' || a.kind === 'plants';
-    const enough = (): boolean => bestGates() >= rules.level.gatesMin;
     // the quality rule is a zone rule too (G3: the course in the best scanned part): every opening of the ladder is tried
     // with it, and a short course in the good part is kept over a full one beside it (Forest Floor beginner: 5 gates at
     // 10 D with 0.4-0.6 of them on good tiles before; 2 gates on good tiles at the ladder's floor now)
@@ -336,17 +379,23 @@ export function planCourse(input: PlanInput, hooks: PlanHooks = {}): PlanAnswer 
         : strictKind
           ? [{ tiers: [0], always: true }, { tiers: [1], always: false }, { tiers: [2], always: false }, { tiers: [LOOSEST_TIER], always: false }]
           : [{ tiers: [0, 2], always: true }, { tiers: [1, LOOSEST_TIER], always: false }];
+    /** the opening ladder of one level: `asks` at each opening, the passes in turn, until `want` gates */
+    const ladder = (asks: Ask[], want: number, tierOk: ((t: number) => boolean) | null = null): void => {
+    const enough = (): boolean => bestGates() >= want;
+    const openings = asks[0]!.rules.openings;
+    const elements = input.elements && asks[0]!.rules.level.elements.length > 1;
     for (const pass of passes) {
-        if (enough() || late() || (!pass.always && bestGates() > 0)) break;
-        for (let oi = 0; oi < rules.openings.length && !late(); oi++) {
-            const opening = rules.openings[oi]!;
+        if (enough() || late()) break;
+        if (!pass.always && bestGates() > 0 && !tierOk) continue;
+        for (let oi = 0; oi < openings.length && !late(); oi++) {
+            const opening = openings[oi]!;
             const k = opening / RING_DIAMETER_M;
             // a shrunk opening shrinks the legs with it (a 1 m plant tray has no 15 D leg for a whoop)
-            const shrink = opening / rules.openings[0]!;
+            const shrink = opening / openings[0]!;
             const p = scaledParams(k, COURSE_DEFAULTS);
             const starts = startsOf(a, opening);
             for (const ask of asks) {
-                if (late() || bestGates() >= rules.level.gatesMin) break;
+                if (late() || enough()) break;
                 const R = ask.rules;
                 const box = zoneBox(a, ask.req, R, opening);
                 if (!box) continue;
@@ -367,12 +416,12 @@ export function planCourse(input: PlanInput, hooks: PlanHooks = {}): PlanAnswer 
                         start = starts[si]!;
                     }
                 }
-                if (oi === rules.openings.length - 1) ratio = Math.max(ratio, roomRatio(free, k, zoneAt(a, ask.req, R, opening, LOOSEST_TIER)));
+                if (oi === openings.length - 1) ratio = Math.max(ratio, roomRatio(free, k, zoneAt(a, ask.req, R, opening, LOOSEST_TIER)));
                 const params = { ...p, legMinM: R.legMinM * shrink, legMaxM: R.legMaxM * shrink, spacingM: R.legMinM * shrink, turnCosMin: R.level.turnCosMin, axisCosMin: R.level.axisCosMin, gatesMin: R.level.gatesMin, gatesMax: Math.max(R.gates, R.level.gatesMax) };
                 // a zone with enough cells can still be a broken sheet (Wroclaw's eye band over 7.2 m tiles at 0.4 m cells:
                 // every walk stopped at 1-2 gates): the pass's looser tier is walked at the same opening before it shrinks
                 const lay = (t: number, v: number): void => {
-                    const place: CoursePlace = { at: zoneAt(a, ask.req, R, opening, t), start, reachM: walkR, gates: R.gates, maxGates: R.level.gatesMax, climbMax: R.level.climbMax, version: v ? `${version}.w${v}` : version };
+                    const place: CoursePlace = { at: zoneAt(a, ask.req, R, opening, t), start, reachM: walkR, gates: R.gates, maxGates: R.level.gatesMax, climbMax: R.level.climbMax, version: v ? `${version}.w${v}` : version, kinds: R.level.elements };
                     hooks.onStep?.('lay', lastMs);
                     const t0 = now ? now() : 0;
                     const track = generateCourse(free, walls, { seed: walkSeed(request.seed, v), scene: input.scene, transform, created: input.created, spawn: start, params, place, elements, craftRadiusM: input.craftRadiusM });
@@ -380,7 +429,7 @@ export function planCourse(input: PlanInput, hooks: PlanHooks = {}): PlanAnswer 
                         lastMs = now() - t0;
                         longest = Math.max(longest, lastMs);
                     }
-                    if (track.gates.length > 0 && track.gates.length > bestGates() && legsWithinServer(track)) best = { track, opening };
+                    if (track.gates.length > 0 && track.gates.length > bestGates() && legsWithinServer(track)) best = { track, opening, ask, tier: t };
                 };
                 // a tier with too few cells is not walked unless it is the pass's last; each tier's derived seeds are walked
                 // before the tier loosens
@@ -388,17 +437,37 @@ export function planCourse(input: PlanInput, hooks: PlanHooks = {}): PlanAnswer 
                 const sparse = (t: number): boolean => t !== last && zoneCount(free, k, zoneAt(a, ask.req, R, opening, t)) < ZONE_CANDS_PER_GATE * R.gates;
                 for (const t of pass.tiers) {
                     if (late() || enough()) break;
-                    if (sparse(t)) continue;
+                    if (sparse(t) || (tierOk && !tierOk(t))) continue;
                     for (let v = 0; v < WALK_VARIANTS && !late() && !enough(); v++) lay(t, v);
                 }
             }
             if (enough()) break;
         }
     }
+    };
+    const chain = fallbackAsks(request);
+    // an ask already walked (a compact fallback's own whole-scan ask is the asked wide one) is not walked again
+    const walked = new Set<string>();
+    const keyOf = (x: FallbackAsk): string => `${x.req.spread}.${x.req.anyQuality}.${x.walk}`;
+    for (let i = 0; i < chain.length && !best && !late(); i++) {
+        const asks = asksOf(chain[i]!.req, chain[i]!.walk).filter((x) => !walked.has(keyOf(x)));
+        for (const x of asks) walked.add(keyOf(x));
+        if (asks.length) ladder(asks, rules.level.gatesMin);
+    }
+    // a course under gatesMin is walked once more by the next harder walk (walkedBy) down the asked level's openings, in the
+    // passes a course already laid skips too, but in no tier looser than the short course's own (G3: a short course in the
+    // good part is kept over a full one beside it); it is kept only with more gates
+    if (best && bestGates() < rules.level.gatesMin && HARDER[best.ask.walk] !== best.ask.walk && !late()) {
+        const own = best.tier;
+        ladder(asksOf(best.ask.req, HARDER[best.ask.walk]), rules.level.gatesMin, (t) => t === own || t === 0 || own === LOOSEST_TIER);
+    }
     if (!best) return { ok: false, reason: 'no-room', kind: a.kind, fitSize: fitSizeFor(transform[0], ratio) };
     const track: TrackFile = { ...best.track, id: courseLinkId(request), title: courseTitle(request.seed) };
     const start = flownStart(track, transform) ?? { pos: a.core, yawDeg: 0 };
-    return { ok: true, track, stats: placementStats(track, a, transform), start, shrunk: best.opening < rules.openings[0]! - 1e-9 };
+    // eased: laid nearer the core than asked or by a sharper walk than the level's (fallbackAsks, the short course's walk)
+    const b = best.ask;
+    const eased = b.walk !== request.level || b.req.anyQuality !== request.anyQuality || (request.spread === 'wide' && b.req.spread === 'compact');
+    return { ok: true, track, stats: placementStats(track, a, transform), start, shrunk: best.opening < rules.openings[0]! - 1e-9, eased };
 }
 
 /** a gate's opening and its reach above and below its centre, flown m */
