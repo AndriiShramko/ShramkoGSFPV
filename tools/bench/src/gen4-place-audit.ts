@@ -24,6 +24,8 @@ const ENLARGED = ['5dfeb49b', 'ab5efa0e'];
 /** design section 6 */
 const LUBLIN = '2f1ddf5f', WINTER_GARDEN = '7a475d38', SKULL = '5dfeb49b';
 const GOOD_COMPACT = 0.8, GOOD_WIDE = 0.6, CITY_NEAR_MAX = 0.2;
+/** gap-gen S3 (G6): plants flown at the owner's size keep this share of gates under the leaves' top */
+const PLANTS_UNDER_TOP = 0.8;
 const LEVEL_NAMES: CourseLevel[] = (arg('--levels')?.split(',') as CourseLevel[] | undefined) ?? ['beginner', 'medium', 'pro'];
 const SPREADS: CourseSpread[] = ['compact', 'wide'];
 
@@ -105,6 +107,10 @@ async function main(): Promise<void> {
                         // gap-gen S1 (G7): a beginner course has the level's gatesMin, shrunk or not
                         if (level === 'beginner') rules.beginnerMin = st.gates >= L.gatesMin;
                         if (s.id === LUBLIN) rules.cityLow = st.nearGroundShare <= CITY_NEAR_MAX;
+                        // gap-gen S3: at the owner's size the course stays in the detailed part: the finish as near the
+                        // core as the start (compact), and plants keep their gates between the leaves
+                        if (scale !== 1 && spread === 'compact') rules.finishNearCore = st.finishToCoreM <= Math.max(a.coreRadiusM, pr.zoneR);
+                        if (a.kind === 'plants') rules.underTop = st.underTopShare >= PLANTS_UNDER_TOP;
                         if (s.id === SKULL && scale === 1) rules.x1 = st.gates >= 1;
                         if (s.id === WINTER_GARDEN) {
                             // every gate under a ceiling of the analysis (G5: the course inside the glass house)
@@ -119,8 +125,8 @@ async function main(): Promise<void> {
                         }
                         judge(rules);
                         const failed = Object.entries(rules).filter(([, v]) => !v).map(([k]) => k);
-                        rows.push({ ...head, ok: true, shrunk: r.shrunk, eased: r.eased, short: st.gates < L.gatesMin, stats: { ...st, startFinishM: r3(st.startFinishM), startToCoreM: r3(st.startToCoreM), goodShare: r3(st.goodShare), nearGroundShare: r3(st.nearGroundShare), openingM: r3(st.openingM) }, coreRadiusM: r3(a.coreRadiusM), zoneR: r3(pr.zoneR), rules, failed });
-                        console.log(`${s.id} x${scale} ${level} ${spread} ${seed} ${a.kind} gates ${st.gates} open ${r3(st.openingM)}${r.shrunk ? ' shrunk' : ''} good ${r3(st.goodShare)} ${ms} ms ${failed.length ? 'FAIL ' + failed.join(',') : 'PASS'}`);
+                        rows.push({ ...head, ok: true, shrunk: r.shrunk, eased: r.eased, short: st.gates < L.gatesMin, stats: { ...st, startFinishM: r3(st.startFinishM), startToCoreM: r3(st.startToCoreM), finishToCoreM: r3(st.finishToCoreM), underTopShare: r3(st.underTopShare), goodShare: r3(st.goodShare), nearGroundShare: r3(st.nearGroundShare), openingM: r3(st.openingM) }, coreRadiusM: r3(a.coreRadiusM), zoneR: r3(pr.zoneR), rules, failed });
+                        console.log(`${s.id} x${scale} ${level} ${spread} ${seed} ${a.kind} gates ${st.gates} open ${r3(st.openingM)}${r.shrunk ? ' shrunk' : ''} good ${r3(st.goodShare)} top ${r3(st.underTopShare)} core ${r3(st.startToCoreM)}/${r3(st.finishToCoreM)} of ${r3(Math.max(a.coreRadiusM, pr.zoneR))} ${ms} ms ${failed.length ? 'FAIL ' + failed.join(',') : 'PASS'}`);
                     }
         }
     }

@@ -484,7 +484,7 @@ export function placementStats(track: TrackFile, scan: ScanAnalysis, transform: 
     const toFlown = (q: readonly number[]): Vec3 => [s * q[0]! + transform[1], s * q[1]! + transform[2], s * q[2]! + transform[3]];
     const gs = track.gates.map((g) => ({ pos: toFlown(g.pos), ...gateSize(g, s) }));
     const closed = track.laps > 1;
-    let good = 0, outside = 0, under = 0, near = 0;
+    let good = 0, outside = 0, under = 0, near = 0, underTop = 0;
     for (const g of gs) {
         const t = scanTile(scan, g.pos);
         if (t >= 0 && scan.quality[t]! >= GOOD_Q) good++;
@@ -493,6 +493,8 @@ export function placementStats(track: TrackFile, scan: ScanAnalysis, transform: 
         const gt = t >= 0 ? scan.groundTop[t]! : NaN;
         if (Number.isFinite(gt) && g.pos[1] - g.half < gt + lowEdgeM(scan, g.opening) - 1e-6) under++;
         if (Number.isFinite(gt) && g.pos[1] < gt + CITY_LOW_M * scan.unitM) near++;
+        // under the leaves' top: the gate's top edge under the tile's highest roofs (the plants rule of zoneRule)
+        if (t >= 0 && Number.isFinite(scan.roofTop[t]!) && g.pos[1] + g.half <= scan.roofTop[t]! + 1e-6) underTop++;
     }
     const n = gs.length;
     const first = gs[0], last = gs[n - 1];
@@ -503,6 +505,8 @@ export function placementStats(track: TrackFile, scan: ScanAnalysis, transform: 
         closed,
         startFinishM: closed || !first || !last ? 0 : d3(last.pos, first.pos),
         startToCoreM: first ? Math.sqrt(flat2(first.pos, scan.core)) : 0,
+        finishToCoreM: closed ? (first ? Math.sqrt(flat2(first.pos, scan.core)) : 0) : last ? Math.sqrt(flat2(last.pos, scan.core)) : 0,
+        underTopShare: n ? underTop / n : 0,
         goodShare: n ? good / n : 0,
         outside,
         underGround: under,

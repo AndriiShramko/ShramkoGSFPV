@@ -114,6 +114,10 @@ export interface PlanStats {
     readonly startFinishM: number;
     /** gate 1 to the analysis core, flown m */
     readonly startToCoreM: number;
+    /** the finish (the last gate; gate 1 when closed) to the analysis core, flown m */
+    readonly finishToCoreM: number;
+    /** share of gates whose top edge is under the leaves' top (roofTop of its tile): plants G6 */
+    readonly underTopShare: number;
     /** share of gates on tiles of quality >= GOOD_Q */
     readonly goodShare: number;
     /** gates outside the scanned territory (must be 0) */
