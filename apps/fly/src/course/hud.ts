@@ -151,6 +151,8 @@ export class CourseHud {
         add(this.parent.querySelector(':scope > .top-actions'));
         // review FX-4: the walls box (top centre) holds the walls line while a course waits for its walls
         add(this.parent.querySelector(':scope > .bake-box'));
+        // lane gen4b B2: the course's progress or no-room box (course/progress-box.ts), top centre too
+        add(this.parent.querySelector(':scope > .gen-box'));
         if (!this.el.hidden) add(this.el);
         this.avoid = out;
     }

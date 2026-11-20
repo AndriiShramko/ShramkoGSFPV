@@ -1,6 +1,8 @@
 // The course as a link (train 1, lane tracks, T2): `&course=g1.<seed in base 36>`. The deterministic generator rebuilds
 // the same course from the seed on the same walls; on other walls it builds another one (or none), and the page says so.
 // The local best lap per track id, version and drone lives in localStorage (one small JSON object).
+import { parseCourseLink } from '@gsfpv/tracks/request';
+import type { CourseLink } from '@gsfpv/tracks/request';
 
 const PARAM = 'course';
 const RE = /^g1\.([0-9a-z]{1,7})$/;
@@ -12,6 +14,13 @@ export function seedOfLink(search: string): number | null {
     if (!m) return null;
     const seed = parseInt(m[1]!, 36);
     return Number.isFinite(seed) && seed >= 0 && seed <= 0xffffffff ? seed : null;
+}
+
+/** Lane gen4b B2: the generated course a link names: 'g1.<seed>' (the old generator, legacy) or 'g2.<seed>.<level><spread>'
+ *  (the course the pilot asked for, packages/tracks request.ts), or null. */
+export function courseOfLink(search: string): CourseLink | null {
+    const v = new URLSearchParams(search).get(PARAM);
+    return v === null ? null : parseCourseLink(v);
 }
 
 /** A served course the link names: `course=<scene hex>-<8 hex>` (the server's id, tracks.py SERVER_ID; the admin's

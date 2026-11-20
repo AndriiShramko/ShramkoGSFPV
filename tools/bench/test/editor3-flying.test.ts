@@ -181,7 +181,11 @@ describe('editor3 E3: flying inside the edit mode', () => {
     });
 
     it('the page does not pause the flight for the editor and gives the keys to the flight while armed', () => {
-        expect(COURSE_TS).not.toMatch(/ctx\.pause\('panel'\)/);
+        // lane gen4b: the one 'panel' pause is the Generate dialog's (the flight waits for the pilot's yes), never the editor's
+        const pauses = COURSE_TS.match(/ctx\.pause\('panel'\)/g) ?? [];
+        expect(pauses.length).toBeLessThanOrEqual(1);
+        const dialogOpener = COURSE_TS.slice(COURSE_TS.indexOf('const openGenerateDialog'), COURSE_TS.indexOf('hook.generateDialog ='));
+        expect(COURSE_TS.replace(dialogOpener, '')).not.toMatch(/ctx\.pause\('panel'\)/);
         expect(COURSE_TS).toMatch(/ctx\.keys\.block\(\(\) => ed !== null && mode === 'edit'[,)]/);
         // J1 (E5): the edit branch also thins the course arrows before it returns editFrame()
         expect(COURSE_TS).toMatch(/if \(ed\) \{[^}]*\s+return editFrame\(\);/);

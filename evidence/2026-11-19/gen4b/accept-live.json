@@ -1,0 +1,136 @@
+{
+ "base": "https://gsfpv.flyreelstudio.eu/en",
+ "scene": "2f1ddf5f",
+ "lublin": "2f1ddf5f",
+ "render": false,
+ "viewport": "1536x730@1.25",
+ "steps": [
+  {
+   "step": 1,
+   "name": "open the scene at x1",
+   "pass": true,
+   "detail": {
+    "scale": 1,
+    "gates": 0
+   }
+  },
+  {
+   "step": 2,
+   "name": "menu -> dialog in view, cross 44 px, nothing built",
+   "pass": false,
+   "detail": {
+    "how": {
+     "lock": true,
+     "menu": true,
+     "item": true
+    },
+    "dialog": null,
+    "gates": 19,
+    "W": 1536,
+    "H": 730
+   }
+  },
+  {
+   "step": 3,
+   "name": "click Beginner, Compact, Build",
+   "pass": false,
+   "detail": {
+    "pressed": [
+     false,
+     false,
+     false
+    ],
+    "dialogGone": true,
+    "request": null
+   }
+  },
+  {
+   "step": 4,
+   "name": "progress box: 16 px, in view, never back, until the answer",
+   "pass": false,
+   "detail": {
+    "samples": 0,
+    "withBox": 0,
+    "pcts": [],
+    "minFont": null,
+    "inView": true,
+    "steps": [],
+    "lastText": null,
+    "ms": 3
+   }
+  },
+  {
+   "step": 5,
+   "name": "course shown: gates >= 1, outside 0, closed",
+   "pass": false,
+   "detail": {
+    "gates": 19,
+    "drawn": 125,
+    "plan": null
+   }
+  },
+  {
+   "step": 6,
+   "name": "start line visible >= 8 s",
+   "pass": false,
+   "detail": {
+    "line": null,
+    "shownMs": 0,
+    "lastNote": "Gates: 19. Fly through START to start the clock. Shift+T hides the course"
+   }
+  },
+  {
+   "step": 7,
+   "name": "dialog again: 'Replaces' line, Cancel keeps the course",
+   "pass": false,
+   "detail": {
+    "replaces": null,
+    "cancelled": false,
+    "same": true,
+    "gates": 19
+   }
+  },
+  {
+   "step": 8,
+   "name": "again: Replace -> a new course",
+   "pass": false,
+   "detail": {
+    "built": false,
+    "seed": [
+     1671719478,
+     487531709
+    ],
+    "gates": 25,
+    "ms": 3
+   }
+  },
+  {
+   "step": 10,
+   "name": "dialog at 844x390: no overlap, in view, buttons >= 44 px",
+   "pass": false,
+   "detail": {
+    "parts": 0,
+    "dialog": null,
+    "scrolls": null,
+    "overlaps": [],
+    "outside": [],
+    "small": []
+   }
+  }
+ ],
+ "errors": [],
+ "verdict": {
+  "pass": false,
+  "failed": [
+   2,
+   3,
+   4,
+   5,
+   6,
+   7,
+   8,
+   10
+  ],
+  "pending": []
+ }
+}

@@ -36,7 +36,8 @@ describe('QW-1, QW-2, QW-6: the course and walls lines pass their own sound', ()
         expect(course).toContain("sayLine(end.spoken, ev === 'done' ? { kind: 'fanfare' } : { kind: 'lap' })");
     });
     it('Shift+G with no course plays the falling sound, a press while busy the wait sound', () => {
-        expect(course).toContain("sayLine(text, { kind: 'wrong-side' })");
+        // lane gen4b: fail() says `spoken` (by default its text; null when the no-room box speaks for itself)
+        expect(course).toContain("if (spoken !== null) sayLine(spoken, { kind: 'wrong-side' })");
         expect(course).toContain("sayLine(hook.progress, { kind: 'answer', what: 'wait' })");
     });
     it('a failed walls build and the picture-may-stop warning reach the speaker with their kind', () => {

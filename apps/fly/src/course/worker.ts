@@ -2,9 +2,10 @@
 // flown walls' octree, runs freeSpace and generateCourse of @gsfpv/tracks and answers the track. Measured in Node
 // (docs/wip/tracks.md, Findings): 0.7-1.4 s a course on Winter Garden, 21.5-23.9 s on 887f27aa, so never on the page's thread.
 import { VoxelCollision, FlippedVoxelCollision } from '@gsfpv/collision';
-import { COURSE_DEFAULTS, FIT_BUDGET_MS, checkTrack, fitCourse, freeAtMargin, freeSpace, generateCourse, goodForGate, marginOf, qualityBounds, qualityMap, sceneUnitM } from '@gsfpv/tracks';
+import { COURSE_DEFAULTS, FIT_BUDGET_MS, SMALLEST_DRONE_RADIUS_M, checkTrack, fitCourse, freeAtMargin, freeSpace, generateCourse, goodForGate, marginOf, planCourse, qualityBounds, qualityMap, sceneUnitM } from '@gsfpv/tracks';
+import type { CourseRequest, PlanStats, PlanStep, ScanKind } from '@gsfpv/tracks';
 import type { TrackFile } from '@shramko/sonic-fpv';
-import { FREE_SPACE_MS, courseTryMs, layTries } from './progress';
+import { FREE_SPACE_MS, courseTryMs, layTries, planStepMs } from './progress';
 import { metadataOf } from './grid';
 import type { CourseGrid } from './grid';
 
@@ -27,7 +28,15 @@ export interface CourseJob {
     elements?: boolean;
     /** course5 Z2 (A3, review CU-7): the flown craft's boundRadius, flown m: the ladder's smallest gate lets it pass */
     craftRadiusM?: number;
+    /** lane gen4b B2: the pilot's choice in the dialog (or a 'g2.' link): planCourse lays it. Absent: a 'g1.' link's seed,
+     *  laid by the old path below, so old links rebuild the very same course */
+    request?: CourseRequest;
 }
+
+/** lane gen4b B2: what planCourse said besides the track (the page's hook, the probes, the no-room box) */
+export type PlanNote =
+    | { readonly ok: true; readonly stats: PlanStats; readonly shrunk: boolean }
+    | { readonly ok: false; readonly kind: ScanKind; readonly fitSize: number | null };
 
 /** T3: prove a course from the server on the pilot's own walls before it is shown (checkTrack, unmeasured, as the generator). */
 export interface CheckJob {
@@ -42,8 +51,8 @@ export interface CheckJob {
 
 export type FromCourseWorker =
     /** stage G1-progress: a step starts ('free': the free space; 'lay': one try of the obstacles), with its expected ms */
-    | { t: 'progress'; job: number; step: 'free' | 'lay'; estMs: number }
-    | { t: 'track'; job: number; track: TrackFile | null; short?: boolean; proven?: boolean; ms: number }
+    | { t: 'progress'; job: number; step: PlanStep; estMs: number }
+    | { t: 'track'; job: number; track: TrackFile | null; short?: boolean; proven?: boolean; ms: number; plan?: PlanNote }
     | { t: 'checked'; job: number; ok: boolean; issues: string[]; ms: number }
     | { t: 'error'; job: number; message: string };
 
@@ -72,6 +81,18 @@ scope.onmessage = (e) => {
     try {
         const meta = metadataOf(m.grid, m.nodes.length, m.leaf.length);
         const walls = m.grid.flip ? new FlippedVoxelCollision(meta, m.nodes, m.leaf) : new VoxelCollision(meta, m.nodes, m.leaf);
+        if (m.request) {
+            // gen4 design section 3: the course the pilot asked for (level, spread, the voxels-only view), every step announced
+            const res = m.grid.res;
+            const a = planCourse(
+                { walls, transform: m.transform, spawn: m.spawn, scene: m.scene, created: m.created, craftRadiusM: m.craftRadiusM ?? SMALLEST_DRONE_RADIUS_M, request: m.request, elements: m.elements === true },
+                { onStep: (step, estMs) => scope.postMessage({ t: 'progress', job: m.job, step, estMs: planStepMs(step, estMs, res) }), deadline: { at: t0 + FIT_BUDGET_MS, now: () => performance.now() } }
+            );
+            const ms = Math.round(performance.now() - t0);
+            if (a.ok) scope.postMessage({ t: 'track', job: m.job, track: a.track, ms, plan: { ok: true, stats: a.stats, shrunk: a.shrunk } });
+            else scope.postMessage({ t: 'track', job: m.job, track: null, ms, plan: { ok: false, kind: a.kind, fitSize: a.fitSize } });
+            return;
+        }
         scope.postMessage({ t: 'progress', job: m.job, step: 'free', estMs: FREE_SPACE_MS });
         // G2: where the scan is good (the dense height band over well-scanned tiles, from these walls): the free space covers
         // the well-scanned extent and the gates go into the band along all of it; no good tile keeps the box around the spawn
