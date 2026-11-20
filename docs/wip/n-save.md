@@ -10,9 +10,11 @@ Temp: U:/Temp/gsfpv-train4/n-save. Evidence: evidence/2026-11-20/n-save/.
   `blockers.length === 0`; the near-grid rule (checkTrack `nearGridM`, wallsCheck passes NEAR_GRID_M 10 m; the generator's calls
   stay strict); tests packages/tracks/test/save-verdict.test.ts + tools/bench/test/save-verdict-api.test.ts (local apps/api round
   trip on port 6901); NEG OK on the base. Commit c2fef1f1.
-- [ ] S2 fixAll (packages/tracks/src/autofix.ts, pure): every offending gate the shortest way to a valid place, order kept,
-  leftovers named; tests on the scan worlds (gate in a wall, two on one spot, under the ground) + NEG; fixes.ts proposeFixes
-  delegates to it for one selected warning.
+- [x] S2 fixAll: packages/tracks/src/autofix.ts (pure; the 26 ways of the cube at growing distances, each place judged by the
+  proof on the gate before, the gate and the gate after; buried gates go straight up first; the later of two crowded gates
+  moves; turned along the leg, between the legs within the level's tolerance); tests packages/tracks/test/autofix.test.ts (8)
+  and tools/bench/test/save-fix-one.test.ts (2: fixes.ts proposeFixes is fixAll for one gate); NEG OK on the base for both.
+  n-route's route() is not merged in this tree (048629d is no ancestor), so the turn is along the leg.
 - [ ] S3 the dialog and the line: `save-warnings` with `save-fix-all`, `save-as-is`, `save-show-me`; `save-fixed` + `save-undo`;
   ghosts (flash.ts); blockers one plain line; the editor's message line at least 16 px, wraps to 3 lines, never "..."; fake-DOM
   tests + NEG; repair the Save steps of the edit4b and edit-mouse probes.
@@ -34,6 +36,18 @@ applyFixes :1065, saveMine :1833, saveAdmin :~1885 (the design named :893-1754);
 2. The local API stores that course as it is and gives the same gates back. Proof:
    `N_SAVE_TMP=U:/Temp/gsfpv-train4/n-save npx vitest run tools/bench/test/save-verdict-api.test.ts` (1 passed); NEG OK.
 
+3. Fix all moves a gate in a wall, a gate under the ground and the later of two gates on one spot the short way to a valid
+   place, keeps the order, turns a gate along its leg, names a blocked start as left over. Proof:
+    RUN  v5.0.1 C:/dev/gsfpv-t7-n-save (8 passed); NEG OK on 03624451.
+4. The edit4s offer's turn and nudge are fixAll's repair of that one gate. Proof:
+    RUN  v5.0.1 C:/dev/gsfpv-t7-n-save
+
+
+ Test Files  1 passed (1)
+      Tests  2 passed (2)
+   Start at  22:40:28
+   Duration  4.55s (import 50%, transform 36%, tests 13%) (2 + 9 passed); NEG OK.
+
 ## Not verified
 
 - No person, phone or real controller took part in any check of this lane.
@@ -44,9 +58,13 @@ applyFixes :1065, saveMine :1833, saveAdmin :~1885 (the design named :893-1754);
 
 - Files changed outside the owned list: packages/tracks/test/editor.test.ts and fit.test.ts (two assertions that said "a
   problem blocks saving": they now say Save is allowed while the problems stay).
+- S2: packages/tracks/src/index.ts exports autofix.ts (one line); apps/fly/src/course/editor/warn.ts CLOSE_GAP_M is now
+  tracks' APART_GAP_M (same 0.2 m).
 - Deploy order: page only (no API file changed so far).
 
 ## Cost notes
 
 - S1: most replies went to finding how the earlier lane ran the API in a test (it used a Python unittest; a spawn of
   apps/api/server.py with PORT and DATA_DIR was simpler). A pointer to that recipe in docs/agent-map.md would save four replies.
+- S2: most replies went to test fixtures (a reversed gate within 3 m is a turn round, the yaw table is 22.5 degrees per
+  step); a note on yawQuatStep and TURN_PAIR_M in the scan-worlds header would save three replies.
