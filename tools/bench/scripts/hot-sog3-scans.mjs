@@ -70,7 +70,8 @@ try {
             if (/^Failed to load resource: the server responded with a status of 40[34]/.test(t)) { r.probes403++; return; }
             r.console.push(t.slice(0, 240));
         });
-        const url = `${base}/fly/?scene=${id}`;
+        // nowarn: past the first-visit warning screen (without it the scan never starts loading); howToFly off: no lesson overlay
+        const url = `${base}/fly/?scene=${id}&nowarn=1&set.input.howToFly=false`;
         const t0 = Date.now();
         try {
             await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 });
