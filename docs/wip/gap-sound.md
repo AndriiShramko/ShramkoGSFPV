@@ -107,8 +107,13 @@ Design differences (the code wins):
   lesson's pass line lesson.ears-headphones.pass, 8.1 s together; one of them should go); the room waits about 10 s between its
   four wall names. Taking out the second and the wait would bring the flight near 100 s.
 - tools/bench/scripts/gap-sound-accept.mjs is new (owned).
-- Pre-existing on 2d752fcc, not this lane: 3 tests fail on a key clash 'Shift+KeyH is bound to messages.open and sonic.headCentre'
-  (rooms-public.test.ts, sonic-in-place.test.ts, train1-contract.test.ts).
+- Gates once on 5125bc8f (typecheck,vitest,architecture,i18n,b18,leaks,catalog): typecheck, architecture, i18n, catalog, B18 PASS;
+  vitest FAIL, leaks FAIL, both pre-existing on the base, not this lane:
+  - vitest: 25 tests in 11 files, nearly all on the key clash 'Shift+KeyH is bound to messages.open and sonic.headCentre'
+    (packages/prefs/test/catalog, keymap; tools/bench/test/app-keys, app-play, edit4a-camera, flight-ux, rooms-public, sonic-hints,
+    sonic-in-place, tracks-keys, train1-contract). With this lane's sources put back to 2d752fcc they still fail (neg_control.py
+    --ref 2d752fcc --files start-screen.ts + the 4 sonic locales -> 'NEG OK: the test failed on the old code'). No lane file is among them.
+  - leaks: apps/fly/src/app/scene-host.ts:382 MERGED_KEY (23 characters): the file is unchanged by this lane (git diff 2d752fcc empty).
 
 ## Cost notes
 
