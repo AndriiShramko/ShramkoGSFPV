@@ -141,11 +141,20 @@ try {
 
     // 1 open: numbers in the hook and the same on screen
     let s = await until(snap, (x) => x.open && x.mode === 'edit' && (x.b?.numbers?.labels?.length ?? 0) > 0, 4000);
+    // int4 car 2: the editor opens at the flight camera (editor3 E2) and since edit4a nothing frames gate 1 on open (the
+    // owner's rule E1: the view never moves by itself), so a drone that looked away from the course leaves no gate in view
+    // (13 gates, no label: one run of three on 030d11d1). The pilot's way to the course is Home (edit4a frameAll).
+    let home = false;
+    if (!s.ok && s.v.open && s.v.mode === 'edit' && (s.v.ids?.length ?? 0) > 0) {
+        home = true;
+        await page.keyboard.press('Home'); // a key without text (key() sends text)
+        s = await until(snap, (x) => x.open && x.mode === 'edit' && (x.b?.numbers?.labels?.length ?? 0) > 0, 4000);
+    }
     const N = s.v.ids ? s.v.ids.length : 0;
     const labels = s.v.b?.numbers?.labels ?? [];
     const onScreen = s.v.nums.map(Number).sort((a, b) => a - b);
     judge('1-open-numbers', s.ok && N > 0 && labels.every((n) => n >= 1 && n <= N) && JSON.stringify([...labels].sort((a, b) => a - b)) === JSON.stringify(onScreen),
-        { gates: N, labels, onScreen, mode: s.v.mode });
+        { gates: N, labels, onScreen, mode: s.v.mode, home, numbers: s.v.b?.numbers ?? null });
     if (!s.v.open) throw new Error('edit view did not open');
     if (env.SHOT !== '0') {
         mkdirSync(SHOTS, { recursive: true });

@@ -40,9 +40,10 @@ aa18f1e4 of origin/main; the lead's change of 17:50 UTC: car 2 takes the lanes w
       the window narrows beside the bar); head4-accept and sound6-walk 11 out of date (repaired in the probes); accept-fly
       stopped at B10 on a page load timeout. Then builds of 5bab5cce, 29945db2, 030d11d1 (the Add click from an eye in the
       scan) with probes (probes8.sh, logs8 on 030d11d1): all PASS but site4-links (only its scene step: needs a local API, as
-      in car 1), edit4b-course-life step 1-open-numbers (labels [] with 19 gates; passed on 5bab5cce: under study) and
-      ux4a-messages step 6 at 1536x730 (two runs of three: a message over the top-row buttons 2.9 s; repaired in the
-      product, see Seams). Left: edit4b step 1, a new release build, the probes again, the gates once on the final tree.
+      in car 1), edit4b-course-life step 1-open-numbers (no gate in view on open: the probe out of date, repaired, see
+      Seams) and ux4a-messages step 6 at 1536x730 (two runs of three: a message over the top-row buttons 2.9 s; repaired
+      in the product, 3d86ffee, see Seams). Left: a new release build of the head (top-row.ts changed), every probe again
+      (probes8.sh with L=logs9-final), accept-fly, the gates once on the final tree; then S2 is done.
 - [ ] S3 the hand-over (Car 2 parts, U:/Temp/gsfpv-train4/int4.json)
 
 ## Progress
@@ -166,6 +167,13 @@ the dialog's options reaching gen4a's generator are car 3's seams)
   callback now lays out at once (before paint); nothing laid out there changes an observed size, so no observer loop.
   int4-top-row.test.ts, NEG OK. The probe's fault now records the notes, the row's parent and --top-row-bottom, and step 6
   carries the timeline when it fails.
+- edit4b's numbers on open x edit4a's camera rule (edit4b-course-life step 1-open-numbers, one run of three on 030d11d1,
+  and logs8): the editor opens at the flight camera (editor3 E2), and since edit4a nothing frames gate 1 on open (the
+  owner's rule E1: the view never moves by itself); after the probe's flight the drone looked away from the course, so
+  no gate was in view (13 gates, no label, no arrow). The product follows its rules; the probe now presses Home (edit4a's
+  frame all, the pilot's way to the course) when no label is up after opening, and records it (home). Forced once: Home,
+  8 gates, labels = on screen, PASS. For the lead (not a seam break, not repaired): nothing points to the course when the
+  editor opens looking away from it; a hint 'Home shows the whole course' would help a new pilot.
 - Car 1's two failed live checks (release aa18f1e4), both the check out of date, not the product:
   - edit4b-course-life step 10-pointed: on the live site Save is never pressed, and the course of step 6 already had a
     problem (gate 1 in a wall), so the step tried nothing (how: [], the 'pointed' it read was step 9's). The probe now,
