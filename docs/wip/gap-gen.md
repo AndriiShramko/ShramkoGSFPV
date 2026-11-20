@@ -45,8 +45,9 @@ Negative-control ref: the S1 merge of gen4a (5f946305) and gen4b (fb7f6524): 3ef
   - Difference from the prompt: course.ts's adopt (lane gap-editor's file) reads only `seed` from what rooms.ts hands it
     and builds it with this pilot's own dialog choice: one line there is needed (For the lead). The race page (race-page.ts)
     does not depend on it.
-- [ ] S3 his scale and the acceptance (--enlarged 5dfeb49b,ab5efa0e with plants share and start/finish to core;
-      gap-gen-accept.mjs by mouse; live control fails the 5dfeb49b step)
+- [x] S3 his scale and the acceptance (--enlarged 5dfeb49b,ab5efa0e with plants share and start/finish to core;
+      gap-gen-accept.mjs by mouse; live control fails the 5dfeb49b step) (e82fb6eb, 492cfbba, 80be9ce9, fa64f902, 2aa0a877,
+      the closing commit)
   - [x] PlanStats.finishToCoreM (the last gate; gate 1 when closed) and underTopShare (gate top edge under the tile's
         roofTop, the plants rule of zoneRule); audit rules finishNearCore (enlarged compact) and underTop (plants, judged
         only when flown enlarged: at x1 the micro-greens stand lower than the 4 D gate and planCourse lays without the plants
@@ -59,21 +60,39 @@ Negative-control ref: the S1 merge of gen4a (5f946305) and gen4b (fb7f6524): 3ef
         green but 'server' (30 red, see For the lead): course 72/72, nearCore 72/72, finishNearCore 18/18, underTop 18/18
         (micro-greens x15: share 1 on every plan), beginnerMin 24/24, opening 72/72. Gate 1 to the core at x15: skull beginner
         6.2-6.7 m, medium 6.2 / 12.2-12.7 m, pro 5.8 / 17.7-19.4 m (seeds 1 / 2-3); micro-greens beginner 4.3-5.4 m.
-  - [ ] LEFT 1: skull medium/pro seeds 2-3 still start 12-19 m from the core (the skull itself is ~3 m at x15). Cause
-        measured (diagnostic parked at U:/Temp/gsfpv-train4/gap-gen/_gapgen-diag.ts, copy it into tools/bench/src to run:
-        `npx tsx src/_gapgen-diag.ts 5dfeb49b pro 15 3`): every turn to a near-core gate fails checkTrack because the leg
-        from the spawn crosses the new gate 1 66-72 deg off its axis (35 allowed), and the ring's own closing leg into the
-        old gate 1 is 59 deg off (the walk's lap-1 proof never judged it). Next: a turned ring's start pose stands on the new
-        gate 1's approach (back along its axis, clear), and the turned ring is proven with that start; test + NEG; audit again.
-  - [ ] LEFT 2: the release is built (dist/, this tree at 492cfbba); copy the nine walls folders into dist/walls, serve on
-        6740, run `node tools/bench/scripts/gap-gen-accept.mjs http://localhost:6740/en <out>` (written, never run yet:
-        fix REACH_M.skull to a constant, e.g. 8 m, before the run), then against https://gsfpv.flyreelstudio.eu/en (must
-        FAIL step 2), evidence under evidence/2026-11-19/gap-gen/, kill the server, delete dist/.
-  - [ ] LEFT 3: What the owner does, Claims 7-9, gates.py once, LANE-DONE.
+  - [x] the start turn (was LEFT 1): generate.ts turnToSpawn for asked rings: every turn with the scan's start first (the
+        old START_TRIES search, so the synthetic city's pro seed 2 keeps its cube frames), then the nearest turn with the
+        start pose moved onto the new gate 1's approach (START_BACK_M 4, 2, 8 m back on its axis, in the zone, clear) and up
+        to SEAM_DROPS (3) of the walk's first gates left out while minGates holds (the lap seam into them was 37-59 deg off
+        the axis). gap-gen-scale.test 7/7, NEG OK for each commit against the code before it (80be9ce9, then fa64f902); packages/tracks 185/185.
+        fa64f902, 2aa0a877
+  - [x] audit again -> place-x15.json: 72 plans, every rule green but 'server' (the same 30, format minimums, For the
+        lead). Gate 1 to the core, skull compact x15: beginner 6.2-6.7 m, medium 6.2 / 2.3 / 2.3 m (seed 2 was 12.7, seed 3
+        12.2), pro 5.8 / 17.7 / 5.3 m (seed 3 was 19.4). Pro seed 2 stays 17.7 m: the lap seam into every early gate is
+        36.8-170 deg off its axis for 0-5 gates left out (measured), a limit of that walk, not of the turn.
+  - [x] acceptance (was LEFT 2): `node tools/bench/scripts/gap-gen-accept.mjs http://localhost:6740/en
+        evidence/2026-11-19/gap-gen/accept-local.json` on the release built from this tree (sha 2aa0a877 in the build line,
+        walls of U:/Temp/gsfpv-train3/walls/release) -> 4/4 PASS: skull x15 beginner compact 8 gates, no refusal, start pose
+        0.7 m and gate 1 7.2 m from the skull (REACH_M 8); micro-greens x15 7 gates, underTopShare 1; Hallstatt x1 pro whole
+        scene 24 gates. Mouse at 1536x730, device scale 1.25, pointer lock by a click, the menu's own slider and dialog,
+        ?render=off (no picture judged, no GPU lock). The probe reads the laid course through CourseHook.saveCheck (read
+        only), which the live site has too, so both are judged alike.
+  - [x] live control: the same probe against https://gsfpv.flyreelstudio.eu/en -> accept-live.json FAIL [2, 3]: the
+        skull x15 course of the live site starts 798 m from the skull (gate 1 773 m: at the scene's edge, the owner's own
+        words). Step 3 fails there only because the live page has no plan stats (no underTopShare to judge); step 4
+        passes there too (Hallstatt x1 was never refused). Read only: nothing saved, sent or created; dist deleted.
+  - [x] gates.py --only typecheck,vitest,architecture,i18n,b18,leaks on the staged tree: all PASS (once).
 
 ## What the owner does
 
-(filled in S3)
+1. Opens https://gsfpv.flyreelstudio.eu/en/fly/?scene=5dfeb49b (the skull), clicks into the scene, presses key Esc.
+2. In the menu drags Scene size to x15. Presses 'Generate a course', picks Beginner and Compact, presses Build.
+3. Sees in about 3 s: 'Gates: 8. The start gate is ... m away: follow the arrow'. The course stands at the skull: its
+   start pose is under a metre from it and gate 1 about 7 m (measured on the local build). No 'enlarge the scene' text.
+   His drone still stands where the scene puts it (about 800 m away at x15): he follows the arrow (see For the lead).
+4. The same on the micro-greens (ab5efa0e) at x15: 7 gates under the leaves' top.
+5. On Hallstatt (1994c65c) at x1 with Pro and Whole scene: 24 gates, no refusal.
+6. In a race room the host's dialog course is the one every guest lays (S2), whatever the guest's own dialog says.
 
 ## Claims
 
@@ -93,6 +112,18 @@ Negative-control ref: the S1 merge of gen4a (5f946305) and gen4b (fb7f6524): 3ef
    spread, seed), the service keeps it, a guest whose own dialog says beginner wide lays the host's pro compact gates.
    `npx vitest run tools/bench/test/gap-gen-race.test.ts` -> 2/2 pass; NEG OK vs 3ef3d4bf.
 
+7. At Scene size x15 on the skull an asked course is laid at the skull: the start pose 0.7 m and gate 1 7.2 m from it, 8
+   gates, no refusal; the micro-greens x15 lay 7 gates under the leaves' top; Hallstatt x1 pro whole scene lays 24 gates.
+   `node tools/bench/scripts/gap-gen-accept.mjs http://localhost:6740/en evidence/2026-11-19/gap-gen/accept-local.json`
+   on the local release -> 4/4 PASS; against the live site -> FAIL steps 2 and 3 (live: the skull course 798 m away).
+8. Gate 1 of an asked closed course stands near the core at x15: skull compact 2.3-6.7 m on 8 of 9 plans (pro seed 2:
+   17.7 m), micro-greens 2.4-16.7 m; every gate of the micro-greens under the leaves' top (underTop 18/18).
+   `npx tsx tools/bench/src/gen4-place-audit.ts --enlarged --scenes 5dfeb49b,ab5efa0e --out
+   ../../evidence/2026-11-19/gap-gen/place-x15.json` (from tools/bench) -> every rule green but server (30, For the lead).
+9. A ring turned to start near the core moves its start pose onto gate 1's approach and leaves out up to 3 of the walk's
+   first gates when the scan's start cannot prove it; a course the old turn proved is unchanged.
+   `npx vitest run packages/tracks/test/gap-gen-scale.test.ts` -> 7/7 pass; NEG OK.
+
 ## Not verified
 
 - No person, phone or real controller took part; no page was opened in S1 (Node audit and unit tests only).
@@ -108,6 +139,12 @@ Negative-control ref: the S1 merge of gen4a (5f946305) and gen4b (fb7f6524): 3ef
   in the worker. The board path (the room's course adopted by the course feature) is right only after the course.ts line
   under For the lead. A guest in Fly by Sound lays the asked course with the level's elements in the race page, while
   its course feature (courseElements(ctx.sonic)) would lay single gates: not measured.
+
+- S3: the acceptance ran with ?render=off (no picture looked at) in headless Chrome; the course was never flown through.
+- S3: at x15 the drone stays at the scene's spawn, about 800 m from the course at the skull (the page says how far and
+  points the arrow). Moving the pilot to the course start is course.ts (lane gap-editor), see For the lead.
+- S3: skull x15 pro seed 2 starts 17.7 m from the core (the walk's lap seam cannot be proven near it). The skull's
+  x15 audit used the local walls of the CDN; the page's own run measured gate 1 at 7.2 m (scale 15.03 by the slider).
 
 ## For the lead
 
@@ -132,6 +169,14 @@ Negative-control ref: the S1 merge of gen4a (5f946305) and gen4b (fb7f6524): 3ef
   and widen CourseHook.adopt in apps/fly/src/course/hook.ts to race.ts AdoptRef. Without it a guest adopting the room's
   course from the board lays the seed with its own dialog choice, gets another id and offers it as the room's course.
 
+- S3: generate.ts besides closeAt: turnToSpawn, START_BACK_M, SEAM_DROPS and the `from` start in the asked course's
+  build (the start pose of an asked ring may now stand on gate 1's approach instead of the scan's start cell).
+- S3, owner-facing, course.ts (lane gap-editor): after an asked course is laid while the drone is parked, the drone should
+  stand at the course's start pose (the sonic mode's place(): the session's spawn moves to the pose, then
+  respawnStart()), or the start line should offer the respawn key. At x15 on the skull the drone stands 805 m from gate 1
+  (accept-local.json laid.droneToGate1M), so 'start at the skull' is true for the course but not yet for the pilot.
+- S3 live checks after deploy: gap-gen-accept.mjs against the site (4/4 PASS expected).
+
 ## Cost notes
 
 - S1: ~45 replies; most went to finding why beginner/medium had no course on tiny scans (the prompt's 'one level easier'
@@ -142,3 +187,6 @@ Negative-control ref: the S1 merge of gen4a (5f946305) and gen4b (fb7f6524): 3ef
   Windows (bare npx: FileNotFoundError).
 - S3 (run 1, ~45 replies, stage left): most went to the x15 audit's reds (opening by mm rounding, server by format minimums,
   the start turn's proof). Cheaper: run the diagnostic script (checkTrack issues of each turn) before changing the turn.
+- S3 (run 2, ~40 replies): the start turn (a diagnostic of each turn's checkTrack issues settled it in two runs) and the
+  probe's reading of the laid course (inUse() is null before the course is flown: saveCheck gives gate 1 and the start).
+  Cheaper: read hook.ts once before writing a probe that reads the course.
