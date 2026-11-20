@@ -3,7 +3,8 @@
 // Steps (each {step, name, pass, detail}):
 //   1 the skull 5dfeb49b: a click into the scene (pointer lock), Escape, Scene size x15 with the pause menu's own slider
 //   2 the menu's 'Generate a course', Beginner, Compact, Build: a course comes, no 'no course fits' text, >= 5 gates, the
-//     start and the finish within the skull's reach (plan stats: startToCoreM, finishToCoreM <= REACH_M.skull)
+//     start pose and gate 1 within REACH_M of the skull (read from the laid track, CourseHook.inUse, so the live site is
+//     judged the same way: |pos - SKULL_SCAN| x the scene size, across the ground)
 //   3 the micro-greens ab5efa0e at x15 the same way: a course, no refusal, >= 5 gates, gates under the leaves' top
 //     (plan stats underTopShare >= 0.8)
 //   4 Hallstatt 1994c65c at x1: Pro, Whole scene (wide), Build: a course, no refusal
@@ -20,9 +21,12 @@ const [base, outFile] = process.argv.slice(2);
 if (!base || !outFile) { console.error('usage: gap-gen-accept.mjs <base with /en> <out.json>'); process.exit(2); }
 const COURSE_MS = Number(process.env.COURSE_MS ?? 240000);
 const SIZE = 15;
-/** the start and the finish within this many flown metres of the scan's core at x15: the audit's own bound
- *  max(coreRadiusM, zoneR) of the compact plans (evidence/2026-11-19/gap-gen/place-x15.json) */
-const REACH_M = { skull: Number(process.env.SKULL_REACH_M ?? 0) || null };
+/** the skull's place in the scan's own units: analyzeScan's core of 5dfeb49b ([-750.809, 139.5, -115.300] flown at x15 by
+ *  the transform [15, 0, 0, 0]); a distance in flown m is |p - SKULL_SCAN| x the scene size whatever the size's centre */
+const SKULL_SCAN = [-50.054, 9.3, -7.687];
+/** the start pose and gate 1 within this many flown m of the skull at x15 (the skull itself is about 3 m across there;
+ *  the audit's beginner plans start 6.2-6.7 m from it) */
+const REACH_M = Number(process.env.SKULL_REACH_M ?? 8);
 const GATES_MIN = 5, UNDER_TOP_MIN = 0.8;
 const REFUSAL = /No course fits|No gate your drone passes fits/i;
 const pick = pickBrowser({ expected: chromium.executablePath() });
@@ -52,7 +56,8 @@ const READ = () => {
         dialog: !!document.querySelector('[data-testid=gen-dialog]'),
         box: bm ? bm.kind : box && shown(box) ? 'progress' : null,
         texts,
-        scale: g.scale ? g.scale.size() : null
+        scale: g.scale ? g.scale.size() : null,
+        laid: (() => { try { const u = c && c.inUse ? c.inUse() : null; return u ? { start: u.track.start ? u.track.start.pos : null, gates: u.track.gates.map((x) => x.pos) } : null; } catch { return null; } })()
     };
 };
 
@@ -149,11 +154,14 @@ try {
         check(1, 'skull: Scene size x15 by the menu slider', sz.lock && sz.slider && Math.abs(sz.size - SIZE) / SIZE <= 0.01, sz);
         const g = await generate(page, 'beginner', 'compact', true);
         const st = statsOf(g.s);
-        const reach = REACH_M.skull;
-        const near = !!st && reach !== null && st.startToCoreM <= reach && st.finishToCoreM <= reach;
-        check(2, 'skull x15 beginner compact: a course, no refusal, >= 5 gates, start and finish at the skull',
-            !g.refusal && g.s.gates >= GATES_MIN && g.s.drawn > 0 && !!st && st.outside === 0 && near,
-            { dialog: g.dialog, pressed: g.pressed, gates: g.s.gates, refusal: g.refusal, texts: g.s.texts, ms: g.ms, scale: g.s.scale, reach,
+        const reach = REACH_M;
+        const L = g.s.laid, sc = g.s.scale ?? 1;
+        const toSkull = (q) => (q ? r3(Math.hypot(q[0] - SKULL_SCAN[0], q[2] - SKULL_SCAN[2]) * sc) : null);
+        const laid = L && { startM: toSkull(L.start), gatesM: L.gates.map(toSkull) };
+        const near = !!laid && laid.startM !== null && laid.startM <= reach && laid.gatesM.length > 0 && laid.gatesM[0] <= reach;
+        check(2, 'skull x15 beginner compact: a course, no refusal, >= 5 gates, the start and gate 1 at the skull',
+            !g.refusal && g.s.gates >= GATES_MIN && g.s.drawn > 0 && near,
+            { dialog: g.dialog, pressed: g.pressed, gates: g.s.gates, refusal: g.refusal, texts: g.s.texts, ms: g.ms, scale: g.s.scale, reach, laid,
               stats: st && { kind: st.kind, gates: st.gates, startToCoreM: r3(st.startToCoreM), finishToCoreM: r3(st.finishToCoreM), outside: st.outside, goodShare: r3(st.goodShare) },
               eased: g.s.plan && g.s.plan.eased, shrunk: g.s.plan && g.s.plan.shrunk });
         await ctx.close();

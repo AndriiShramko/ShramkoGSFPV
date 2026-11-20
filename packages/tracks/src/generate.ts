@@ -320,6 +320,10 @@ export function startNearSpawn(
 /** gap-gen S3: how far back along gate 1's axis (flown m, tried in this order) the start of a turned asked ring stands */
 export const START_BACK_M: readonly number[] = [4, 2, 8];
 
+/** gap-gen S3: at most this many of the walk's first gates are left out of a turned ring (the skull x15 pro seed 2: the
+ *  walk's gate 2 still met the seam 36.8 deg off its axis once gate 1 was out) */
+export const SEAM_DROPS = 3;
+
 /** A closed asked course turned to begin near the core: its gates and the start pose (flown); `from` null keeps the
  *  scan's start */
 export interface TurnedRing {
@@ -334,7 +338,7 @@ export interface TurnedRing {
  * measured on that course: (1) the start pose moves onto the new gate 1's approach, START_BACK_M behind it on its axis (the
  * leg from the scan's start crossed it 66-72 deg off its axis, 35 allowed); (2) the walk's own gate 1 is left out when the
  * ring keeps `minGates` without it (the lap's leg from the walk's last gate into it is now flown and was 59 deg off: the walk
- * flew the start in between). Every turn with the scan's start goes first (what startNearSpawn with `tries` laid stays
+ * flew the start in between), and so on up to SEAM_DROPS of the walk's first gates (they leaned on the start). Every turn with the scan's start goes first (what startNearSpawn with `tries` laid stays
  * the same: the synthetic city's pro seed 2 lost its cube frames to a nearer turn with a moved start), then the nearest
  * turn with a moved start; nothing proven keeps the walk's order and start.
  */
@@ -365,7 +369,7 @@ export function turnToSpawn(
     for (const k of near) {
         const turned = [...course.slice(k), ...course.slice(0, k)];
         const variants = [ids(turned)];
-        if (turned.length - 1 >= minGates) variants.push(ids(turned.filter((g) => g !== course[0])));
+        for (let j = 1; j <= SEAM_DROPS && j < k && turned.length - j >= minGates; j++) variants.push(ids(turned.filter((g) => !course.slice(0, j).includes(g))));
         for (const gs of variants) {
             const g1 = toFlown(gs[0]!.pos as Vec3);
             const ax = axisOf(gs[0]!);

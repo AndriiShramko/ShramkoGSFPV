@@ -3,7 +3,7 @@
 // The skull's pro ring turned to its nearest gate failed the proof, and the walk's gate 1 stayed 19.7 m from the core while
 // another gate stood 2.3 m from it: an asked course tries the next nearest gates too (START_TRIES), the old g1 course one.
 import { describe, expect, it } from 'vitest';
-import { START_BACK_M, START_TRIES, startNearSpawn, turnToSpawn } from '../src';
+import { SEAM_DROPS, START_BACK_M, START_TRIES, startNearSpawn, turnToSpawn } from '../src';
 import type { TrackGate, Vec3 } from '../src';
 
 const gate = (i: number, pos: Vec3): TrackGate => ({ id: `g${i + 1}`, shape: { kind: 'ring', diameter: 1.2, tube: 0.05 }, pos, quat: [1, 0, 0, 0], direction: 'forward' });
@@ -51,6 +51,13 @@ describe('gap-gen S3: a turned asked ring starts on its gate 1 approach', () => 
         const got = turnToSpawn(ring, [0, 1, 0], same, axis, (gs, from) => onApproach(gs, from) && !gs.some((g) => key(g) === key(ring[0]!)), START_TRIES, 6);
         expect(got.gates.map(key)).toEqual(ring.map(key));
         expect(got.from).toBeNull();
+    });
+    it('the walk gates 1 and 2 left out when gate 2 still meets the seam off its axis (SEAM_DROPS)', () => {
+        expect(SEAM_DROPS).toBeGreaterThanOrEqual(2);
+        const without2 = (gs: TrackGate[]): boolean => !gs.some((g) => key(g) === key(ring[0]!) || key(g) === key(ring[1]!));
+        const got = turnToSpawn(ring, [0, 1, 0], same, axis, (gs, from) => onApproach(gs, from) && without2(gs), START_TRIES, 3);
+        expect(got.gates.map(key)).toEqual([ring[4]!, ring[5]!, ring[2]!, ring[3]!].map(key));
+        expect(got.from).toEqual([1, 1, 4]);
     });
     it('a turn the scan start proves keeps that start', () => {
         const got = turnToSpawn(ring, [0, 1, 0], same, axis, (_gs, from) => from === null, START_TRIES, 4);
