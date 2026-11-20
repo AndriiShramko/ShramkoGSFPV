@@ -85,7 +85,11 @@ aa18f1e4 of origin/main; the lead's change of 17:50 UTC: car 2 takes the lanes w
       Gates once on the final head 89b2203f: all PASS rc 0 (typecheck, vitest 441 files / 5628 tests, api-unittest,
       architecture, i18n, catalog, b18, leaks; U:/Temp/gsfpv-gates-20261120-224507, int4/gates4.log). S2 is done: the
       tree handed over in S3 is this one plus status notes; S3 starts with `git fetch origin` and the MAIN MOVES rule.
-- [ ] S3 the hand-over (Car 2 parts, U:/Temp/gsfpv-train4/int4.json)
+- [ ] S3 the hand-over (Car 2 parts, U:/Temp/gsfpv-train4/int4.json). 2026-11-20 run: `git fetch origin`: origin/main
+      has no commit that is not in HEAD (nothing to merge, the S2 gates stand for the code). Seven new read-only live
+      checks committed (ee0f5348); their negative control against the live site (car 1's release) runs in the background:
+      U:/Temp/gsfpv-train4/int4/live-neg2/summary.txt. Deploy order, Live checks, What the owner should try, Not
+      verified written (Car 2). Left: read live-neg2, write its result under Live checks, int4.json, commit.
 
 ## Progress
 
@@ -240,6 +244,25 @@ Car 1 (from the merged lanes' 'For the lead' and `git diff origin/main HEAD -- a
    page alone works (the camera is refused, the setting says so and turns off); nginx alone is harmless.
 6. Walls: no new walls; deploy/release-walls.sh need not run.
 
+Car 2 (what changed since car 1's release aa18f1e4: `git diff aa18f1e4 HEAD -- apps/api deploy packages/sonic-fpv`)
+
+1. The sound package FIRST: its main must hold 53a567591f2b273fd9d80cbea4e509a4a7447843 before the page. It is a
+   fast-forward of the package's main today (e334c6e, 'Merge branch train5'): 15 commits of lanes sonic4, sonic5 and
+   sound6 (quick path as the default, no front or behind in any lesson, the first wall knock within 12 s, the brake cue
+   'Slow-down notes', Firefox's older listener setters). The commit is on no remote yet: it lives in sound6's package
+   copy C:/dev/ShramkoSonicFPV, branch quick1 (and in this work copy's submodule); push from there.
+2. The API files: server.py and tracks.py (lane edit4s E9): a create the store refuses (4xx) gives its hit back to the
+   hour's count and counts in its own count of 60 refused bodies an hour; every 429 of /api/tracks carries Retry-After;
+   creates per client and hour 10 -> 20. Upload both and restart the API (gsfpv-api) before the page; the page alone
+   works with the old API too (without Retry-After its words name the hour's end). apps/api tests: test_tracks.py,
+   test_tracks_edit.py (the gates' api-unittest PASS).
+3. The page: one release of this head (apps/fly, the site, the generated catalogue). As in car 1 the build fetches
+   MediaPipe's face model once (cached).
+4. Rooms: no (nothing under apps/api/rooms changed).
+5. nginx: no (deploy/nginx.conf unchanged since aa18f1e4; edit4s: the tracks location does not hide Retry-After,
+   test_nginx_tracks.py).
+6. Walls: no new walls (vox4 changes only how the voxels are drawn; the S2 build used the nine release walls).
+
 ## Live checks
 
 Car 1. After the release and the nginx reload: `LIVE_ONLY=<names> bash deploy/live-checks.sh <outdir>` with the names
@@ -267,6 +290,35 @@ lane repairs (evidence/2026-11-19/int4-car1/live-neg.json): site4-links 12 of 12
 menu4-first-minute 10 of 15; tails4-start-moved 3 of 9 (the three spawnOverGround); head4-accept 10 of 12 (offLoadsNothing
 and otherPageRefuses pass, as on the lane's own live control); head4-camera-headers: /en/fly/ has camera=() today.
 The lanes' own runs on the release build of 4707f7d2 (S2) gave the PASS side of the same probes.
+
+Car 2. After the sound package, the API restart and the page: `LIVE_ONLY=<names> bash deploy/live-checks.sh <outdir>`
+with the names below (the hand-over's live_only), then the whole file as usual.
+
+New in deploy/live-checks.sh (ee0f5348; read-only, each honours LIVE_ONLY through run(), a failed probe exits non-zero
+and FAILs its line; each passed on the release build of 88ccd89e in S2):
+- ux4a-messages: ux4a-messages-probe.mjs, render off (the report form is opened and closed, never sent)
+- ux4b-cancel: ux4b-cancel-probe.mjs, drawn, in the GPU lock (a pick, Cancel, the cross, key N)
+- vox4-voxels-only: vox4-probe.mjs with BENCH_UNCAPPED=1, drawn, in the GPU lock
+- edit4a-gizmo: edit4a-probe.mjs on 70b50d42 at 1536x730, drawn, in the GPU lock (never Save, Send, Vote, Create)
+- edit4c-warnings: edit4c-probe.mjs with COURSE=g1.1 and render off, in the GPU lock (the course stays in the page)
+- edit4s-drafts: edit4s-probe.mjs with the https address (the probe aborts every request but GET to /api/; s7, s8 not
+  run); judged: open, s1-s5, s9. s6 is left out: it needs the stored version's 201, which the probe refuses to send there.
+  The judge tested on S2's local evidence: PASS when marked live, FAIL with s3 false, FAIL when not live.
+- sound6-quick-walk: sonic-quick-walk.ts with SITE, render off (Chromium, then Firefox steps 1-4)
+
+Car 1's two failed live checks, repaired in the check (the product was right; see Seams, Car 2, the last item):
+edit4b-course-life (step 10-pointed) and edit-mouse-wroclaw (step d.controls); both PASS on the release build of
+88ccd89e in S2 (logs9-final). They run again after the release (in live_only).
+
+Existing names that cover what changed: accept-fly (B6-B16; B15's tamper now relative to the flip, 3b8bfd96),
+head4-accept (step 5 clicks Quick start since sound6), edit-mode-wroclaw (edit4a's click and arrow), voxels-alone-wroclaw
+and voxel-panel-wroclaw (vox4, ux4b's walls panel), sonic-in-place-tunis, sonic-course-wroclaw and narrator-off (sound6's
+package), menu4-first-minute (ux4a's Messages item in the pause menu).
+
+Left out on purpose: vox4-switch.mjs (it compares two scan switches' reveal times; over the live CDN the first switch warms
+the cache for the second), edit4s's s6, s7, s8 (they store a course on the server).
+
+Negative control before the release, against the live site (car 1's release aa18f1e4): see Status S3 (live-neg2).
 
 ## What the owner should try
 
@@ -298,6 +350,35 @@ site4: brief lines 533-536; edit4b: brief lines 541-556). No person, phone, came
    refused Save that names a gate selects that gate, its number flashes 3 times, the view does not turn. Key G no longer
    makes a course in the editor (Course, Generate a new course does, with a question).
 
+Car 2, in the order of his messages (sound6: brief lines 531-532; edit4a: 543-548; edit4s: 543-544, 549-550, 559-560;
+edit4c: 545-546, 557-558, 561-562; ux4a: 555-556; ux4b and vox4: 565-566, vox4 also 577-578). No person, phone or
+controller took part in any check.
+
+1. Fly by Sound, the quick way (sound6). Headphones on, /en/fly/?sonic=start: the first button is "Quick start"; one
+   click and the sound starts at once, the first wall knock comes within about 12 s. The headphone check asks only left
+   and right (no "behind or in front"), and no lesson says front or behind. Back at the start: Continue, Quick start,
+   then Full course (the long course for those who want it). In the glossary the brake cue is "Slow-down notes".
+2. Moving around in the editor (edit4a). A scan, Keyboard, click into the scene, take off, Shift+G, Shift+B. A click on a
+   gate selects it and the view stays still. Drag empty space: the view orbits; Shift+drag pans; the wheel moves towards
+   the cursor. Home shows every gate, F frames the selected one, a double click frames another. One gizmo on the gate:
+   the arrows move it, the rings turn it, the small boxes change its opening; Esc during a drag puts it back.
+3. Saving (edit4s). Move a gate, then reload the page and open the editor: the course is back, the line says so with the
+   time; the editor's window, Versions, lists it. Turn a gate the wrong way and Save: an offer of small corrections names
+   that gate; "Correct and save" fixes and saves it. A refused save keeps the course as a draft and says when to try
+   again; 20 new courses an hour now, and refused ones do not use them up.
+4. Building the course (edit4c). Add opens a list: one gate, Double vertical, Triple horizontal and the others. A click
+   between two gates far apart puts the new gate between them, facing their line; one Undo removes a whole group. Drag a
+   gate towards the next one: a warning tag follows it; on release "Keep it here?": Put back, or Keep (the gate stays
+   orange until it is fixed).
+5. Messages (ux4a). Generate a course: the lines are large and stay long enough to read; a problem stays with a cross, a
+   line saying what to do and "Send to the author" (opens the report form with the problem's text). The top row's
+   Messages button (or Shift+J) lists the past lines.
+6. Cancel a scan (ux4b). P, Change scan, pick a big scan: while it loads, Cancel stops it and the old scan flies on; pick
+   another. On a phone held across the Cancel card is in view.
+7. Voxels only (vox4). The walls chip, "Voxels only": the scan is gone completely (no frozen picture with holes), the
+   voxels are shaded (tops lighter than sides) and far ones fade into the fog. On Lublin the panel says the walls near the
+   drone are thin; "Over the scan" brings the scan back.
+
 ## Not verified
 
 Car 1
@@ -315,6 +396,21 @@ Car 1
   (no schema setting carries them in an exported file): a decision for the lead.
 - head4: the .wasm under /fly/headtrack/ has no hash in its name but an immutable cache; a later MediaPipe version must
   move the folder (HEAD_ASSET_DIR), not overwrite the file.
+
+Car 2
+- gen4a and gen4b are car 3: the editor's Generate dialog (gen4b) and its options reaching the generator (gen4a) were
+  not seams of this car.
+- No person, phone, real controller or headphones took part; the phone steps at phone sizes in headless browsers only.
+- The positive side of the seven new live checks waits for the release; before it only their negative side ran, and
+  the edit4s-drafts judge on S2's local evidence. edit4s's stored save (s6, s7) and the refused-create rule (s8, E9)
+  are proven only on a local API (S2 PASS) and by apps/api's unit tests, never on the live server (they store).
+- The release candidate is HEAD; the S2 release build and its probes were of 88ccd89e. Since then only accept-fly.ts
+  (B15's timing), deploy/live-checks.sh and docs changed; no app source.
+- sound6-walk failed once on a loaded machine in Firefox (AudioContext still 'suspended' 2 s after the click); alone it
+  passed in both browsers. A weak computer may start the sound late.
+- For the lead, not repaired: the editor opens at the flight camera and nothing points to the course when it looks away
+  (a hint 'Home shows the whole course' would help); vox4's voxel failure and ux4b's walls failure still say their
+  problems in their panels' status lines, not through ux4a's message service.
 
 ## Cost notes
 
