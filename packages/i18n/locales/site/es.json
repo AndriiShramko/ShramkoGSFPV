@@ -1074,7 +1074,7 @@
         "title": "Paredes: cuanto más cerca el choque, más rápidos los golpes",
         "text": [
           "Una pared golpea desde su propio lado, a la izquierda o a la derecha. Los golpes siguen los segundos que faltan para chocar, no los metros.",
-          "A 4 segundos del choque, un golpe cada 1,4 segundos más o menos; justo antes, uno cada 0,11 segundos. A menos de 2 metros, la cercanía por sí sola también los acelera.",
+          "Una pared empieza a golpear cuando faltan menos de 2,5 segundos para el choque: un golpe cada 0,54 segundos más o menos. Justo antes, uno cada 0,11 segundos. A menos de 2 metros, la cercanía por sí sola también los acelera, y a menos de 0,8 metros la pared se oye aunque no vueles hacia ella.",
           "Cuando faltan menos de 1,5 segundos, los demás sonidos bajan para que la pared se oiga clara."
         ]
       },
@@ -1119,7 +1119,7 @@
     "how": {
       "title": "¿Cómo se puede volar de oído?",
       "text": "El simulador convierte en sonido lo que ve la cámara del dron. En los auriculares oyes dónde hay una pared, dónde el paso está libre y dónde está el siguiente aro.",
-      "items": ["La pared se oye con antelación. El sonido depende de cuántos segundos faltan para chocar, no de los metros.", "La altura es un tono que se desliza. La altura que buscas tiene su propia nota: cuando los tonos coinciden, has llegado.", "Un timbre corto marca un paso libre. Si vas en la dirección equivocada, la aplicación te lo dice.", "Lo importante suena desde su lado, a la izquierda o a la derecha. Por eso hacen falta auriculares.", "Al principio el motor no suena, así que solo oyes las indicaciones. Su sonido se activa y su volumen se ajusta en la configuración.", "Una voz guía las lecciones: 28 lecciones, desde mantenerse en el aire hasta paredes, pasillos, seis túneles y aros a tres alturas. Hay salas pequeñas para un microdron y una lección en un lugar real capturado como 3DGS (un Gaussian splat): Winter Garden.", "Los menús y la configuración también hablan: Escape abre un menú de la lección por voz.", "Para baja visión, las salas de las lecciones se dibujan con mucho contraste y hay un indicador de horizonte grande. Para pilotos sordos, un panel muestra las indicaciones sonoras."]
+      "items": ["La pared se oye con antelación. El sonido depende de cuántos segundos faltan para chocar, no de los metros.", "La altura es un tono que se desliza. La altura que buscas tiene su propia nota: cuando los tonos coinciden, has llegado.", "Un timbre corto marca un paso libre. Si vas en la dirección equivocada, la aplicación te lo dice.", "Lo importante suena desde su lado, a la izquierda o a la derecha. Por eso hacen falta auriculares.", "Al principio el motor no suena, así que solo oyes las indicaciones. Su sonido se activa y su volumen se ajusta en la configuración.", "Una voz guía las lecciones: 33 lecciones y un camino rápido corto, desde mantenerse en el aire hasta paredes, pasillos, seis túneles, aros a tres alturas y velocidad de hasta 4,5 metros por segundo. Hay salas pequeñas para un microdron y una lección en un lugar real capturado como 3DGS (un Gaussian splat): Winter Garden.", "Los menús y la configuración también hablan: Escape abre un menú de la lección por voz.", "Para baja visión, las salas de las lecciones se dibujan con mucho contraste y hay un indicador de horizonte grande. Para pilotos sordos, un panel muestra las indicaciones sonoras."]
     },
     "need": {
       "title": "¿Qué necesito?",
@@ -1135,9 +1135,9 @@
       "title": "Qué funciona ya y qué todavía no",
       "tested": "Lo que ya se ha probado: pilotos FPV que ven, el autor y sus amigos, han volado con los ojos cerrados y han superado pasillos y obstáculos solo de oído. Funciona. Lo que aún no ha pasado: ningún piloto ciego de nacimiento lo ha probado todavía. Sus comentarios son lo que necesitamos para encontrar los problemas y mejorar la orientación por sonido. Escuchamos cada comentario y lo convertimos en mejoras.",
       "worksTitle": "Funciona hoy",
-      "works": ["28 lecciones con voz y las indicaciones sonoras.", "Teclado, mando o radio.", "Grabar tu vuelo junto con tu voz, enviarlo al autor y una breve encuesta.", "Un enlace a una lección con tu configuración de sonido (tecla L).", "Inglés, español, polaco y ruso."],
+      "works": ["33 lecciones con voz y un camino rápido corto, y las indicaciones sonoras.", "Sonido en cualquier escaneo: la tecla barra invertida (Backslash) activa Fly by Sound en pleno vuelo, y Shift+G crea allí un circuito de puertas. El zumbido te lleva de puerta en puerta y la voz dice el tiempo de cada vuelta.", "Volar con otros: fuera de una lección de sonido, la tecla 9 abre «Volar con otros» y te lleva a la sala abierta de tu escaneo. Se dice en voz alta quién entra y quién sale.", "Teclado, mando o radio.", "Grabar tu vuelo junto con tu voz, enviarlo al autor y una breve encuesta.", "Un enlace a una lección con tu configuración de sonido (tecla L).", "Inglés, español, polaco y ruso."],
       "notYetTitle": "Todavía no",
-      "notYet": ["El modo no se ha probado en la práctica con NVDA ni con JAWS.", "No se ha probado en teléfonos ni tabletas; por ahora hace falta un ordenador.", "Aún no hay circuitos con obstáculos y cronómetro por sonido, ni vuelos junto a otros pilotos. Están previstos, sin fechas.", "Ningún hablante nativo ha escuchado todavía las frases en español, polaco y ruso."],
+      "notYet": ["El modo no se ha probado en la práctica con NVDA ni con JAWS.", "No se ha probado en teléfonos ni tabletas; por ahora hace falta un ordenador.", "Ningún hablante nativo ha escuchado todavía las frases en español, polaco y ruso."],
       "goal": "Hacia dónde va. Hay dos objetivos. El primero: que las personas ciegas puedan participar en competiciones internacionales como pilotos FPV. El segundo: una aplicación para el teléfono. La cámara ve el entorno, la aplicación lo analiza y crea un mapa sonoro, y una persona ciega camina con auriculares orientándose por el sonido. Los dos se prueban primero aquí, en el simulador: es más sencillo y permite que muchas personas ciegas participen en analizar y mejorar cómo se convierte una imagen en sonido."
     },
     "test": {
@@ -1190,7 +1190,7 @@
       "lesson": ["Prepara un ordenador con Chrome o Edge y auriculares con cable para cada alumno. Calibra el volumen de antemano.", "Empieza con la prueba de auriculares y la lección de mantenerse en el aire. Después cada alumno avanza a su ritmo: R vuelve al último punto de control y mantener R pulsada reinicia la lección.", "La primera vez, un ayudante se sienta al lado: conecta la radio y confirma el consentimiento para grabar.", "Después de la lección, pregunta al alumno qué ha oído. Si está de acuerdo, puede decirlo en una grabación y su opinión nos llegará junto con el vuelo.", "La tecla L copia un enlace a la lección con su configuración de sonido. Dáselo al alumno para que siga en casa.", "Escuelas y organizaciones de personas ciegas: escríbenos si queréis una clase de prueba o un grupo de personas que lo prueben."]
     },
     "press": {
-      "facts": "Datos: gratis, sin cuenta; 28 lecciones; inglés, español, polaco y ruso; licencia MIT; creado por Andrii Shramko, piloto FPV y especialista en 3DGS.",
+      "facts": "Datos: gratis, sin cuenta; 33 lecciones; inglés, español, polaco y ruso; licencia MIT; creado por Andrii Shramko, piloto FPV y especialista en 3DGS.",
       "write": "Escribir al autor",
       "call": "Reservar una llamada"
     },
