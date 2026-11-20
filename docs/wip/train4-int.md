@@ -33,8 +33,10 @@ aa18f1e4 of origin/main; the lead's change of 17:50 UTC: car 2 takes the lanes w
 - [ ] S2 the seams between car 2 lanes (and with car 1), the one full check, the two failed live checks of car 1.
       Done so far: origin/main's lead note a3806503 merged; seams b3e62a93 (Messages on Shift+L), the K help line for
       Shift+H, dfeb1d03 (drag cancel closes the live tag; seam 'saved'; edit4a-camera); the two live checks' probes
-      repaired (edit4b-probe step 10 on live, edit-mouse-probe d.controls through the Course menu). Left: gates, build,
-      probes, accept-fly, the two live checks run.
+      repaired (edit4b-probe step 10 on live, edit-mouse-probe d.controls through the Course menu); the window under the
+      top bar on a small view (30ae9183, 56e6ed71); the probes out of date (see Seams). Release build of 56e6ed71 with the
+      nine walls on :6180; every lane probe and accept-fly on it (U:/Temp/gsfpv-train4/int4/probes4.sh, logs4). Left: the
+      probe results, then the gates once on the final tree.
 - [ ] S3 the hand-over (Car 2 parts, U:/Temp/gsfpv-train4/int4.json)
 
 ## Progress
@@ -119,6 +121,24 @@ the dialog's options reaching gen4a's generator are car 3's seams)
   that point.ts calls it once.
 - head4's start-screen row x sound6's rows: merged in S1 (sonic-start-screen.test.ts keeps both, 18 settings); the gates run
   it.
+- edit4b's longer top bar (car 1) x the editor window on a small view (found by edit4a's step 13 at 844x390): the bar's
+  seven buttons reach past x 400, where the window began beside it, so the window covered the bar's last buttons. On a
+  view narrower than 900 px or lower than 500 px the window now starts under the bar (top-bar.ts place() writes the bar's
+  bottom to --ce-topbar-bottom, editor.css uses it), 30ae9183. That first version also counted the bar's own bottom for
+  --ce-below, so on a low view the bar pushed itself down to mid-view and edit4c's Add list under it ran past the
+  bottom (edit4c s8 at 844x390): the bar is now watched for its size only, 56e6ed71. int4-seams.test.ts, NEG OK both.
+- Probes out of date after a merge (the product right, the probe repaired, each with the reason in the probe): edit4s s9
+  (key G no longer makes a course in the editor since edit4b: the probe takes Course, Generate a new course, Yes);
+  edit4c and edit4a (since edit4a a click selects without framing and the one gizmo has a size box on each axis: edit4c
+  presses F like the pilot, presses the move arrow itself, and on s2 takes Tab when a far gate's few pixels missed;
+  edit4a step 11 clicks only gates that no handle of the selected gate covers); edit-mouse (the Keys table's rows press
+  their key, Esc left the editor); vox4 step 3 and ux4b-cancel (tails4 moved Lublin's start onto the ground).
+- Car 1's two failed live checks (release aa18f1e4), both the check out of date, not the product:
+  - edit4b-course-life step 10-pointed: on the live site Save is never pressed, and the course of step 6 already had a
+    problem (gate 1 in a wall), so the step tried nothing (how: [], the 'pointed' it read was step 9's). The probe now,
+    on live only, undoes gates until no gate has a problem, then makes the problem the step judges (711f2520).
+  - edit-mouse-wroclaw d.controls: 'courses' and 'keys' were 'not on screen' because edit4b (car 1) moved Courses and Keys
+    into the top bar's Course menu; the probe now opens Course and presses the item, the pilot's path (711f2520).
 
 ## Deploy order
 
