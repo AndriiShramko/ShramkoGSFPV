@@ -200,7 +200,32 @@ def _join(path: str, key) -> str:
     return f"{path}[{key}]" if isinstance(key, int) else (key if path == "" else f"{path}.{key}")
 
 
-def _shape(c: _Collector, v, path: str) -> None:
+def _scale(root: dict):
+    """transform[0] when it is a valid scale, else None: flown m = scene units x this scale."""
+    t = root.get("transform")
+    return t[0] if isinstance(t, list) and len(t) == 4 and _is_num(t[0]) and 0 < t[0] <= 1000 else None
+
+
+# A gate's size rules in FLOWN m (scene units x transform[0], the unit a leg is checked in; validate.ts GATE_OPENING_M,
+# GATE_BAR_M): a course laid at any Scene size passes, one at scale 1 meets the numbers it met before (lane gap-save).
+GATE_OPENING_M = (0.05, 100.0)
+GATE_BAR_M = (0.005, 10.0)
+
+
+def _flown_size(c: _Collector, v, path: str, s: float, rule: tuple[float, float]):
+    n = c.number(v, path)
+    if n is None:
+        return None
+    m = n * s
+    shown = f"{n}" if s == 1 else f"{n} x scale {s} = {m} m"
+    if m < rule[0]:
+        c.add(path, f"must be at least {rule[0]:g} m flown, got {shown}")
+    if m > rule[1]:
+        c.add(path, f"must be at most {rule[1]:g} m flown, got {shown}")
+    return n
+
+
+def _shape(c: _Collector, v, path: str, s: float) -> None:
     rec = c.record(v, path)
     if rec is None:
         return
@@ -209,8 +234,8 @@ def _shape(c: _Collector, v, path: str) -> None:
         return
     big, small = ("diameter", "tube") if kind == "ring" else ("side", "bar")
     c.keys(rec, path, ("kind", big, small))
-    a = c.number(rec.get(big), _join(path, big), 0.05, 100)
-    b = c.number(rec.get(small), _join(path, small), 0.005, 10)
+    a = _flown_size(c, rec.get(big), _join(path, big), s, GATE_OPENING_M)
+    b = _flown_size(c, rec.get(small), _join(path, small), s, GATE_BAR_M)
     if a is not None and b is not None and b > a:
         c.add(_join(path, small), f"must not exceed the {big}")
 
@@ -297,7 +322,7 @@ def validate_track(obj) -> list[tuple[str, str]]:
                     c.add(_join(path, "id"), f"'{gid}' is used twice")
                 seen.add(gid)
             if "shape" in rec:
-                _shape(c, rec["shape"], _join(path, "shape"))
+                _shape(c, rec["shape"], _join(path, "shape"), _scale(root) or 1)
             if "pos" in rec:
                 c.vec3(rec["pos"], _join(path, "pos"))
             if "quat" in rec:
@@ -430,12 +455,13 @@ def _bounds(c: _Collector, root: dict) -> None:
     """Positions inside MAX_COORD and legs at most MAX_LEG_M flown m, so lengthM is finite and a course stays near its scan."""
     gates = root.get("gates") if isinstance(root.get("gates"), list) else []
     pts = []
+    s = _scale(root)
     for i, g in enumerate(gates):
         shape = g.get("shape") if isinstance(g, dict) else None
-        if isinstance(shape, dict):   # tracks-plan 2.8: a gate is 0.05-20 m across on the server (the format allows 100)
+        if isinstance(shape, dict):   # tracks-plan 2.8: a gate is 0.05-20 m across flown on the server (the format allows 100)
             big = shape.get("diameter", shape.get("side"))
-            if _is_num(big) and big > MAX_GATE_SIZE_M:
-                c.add(f"gates[{i}].shape", f"must be at most {MAX_GATE_SIZE_M:g} m across on the server")
+            if _is_num(big) and big * (s or 1) > MAX_GATE_SIZE_M:
+                c.add(f"gates[{i}].shape", f"must be at most {MAX_GATE_SIZE_M:g} m across flown on the server")
         pos = g.get("pos") if isinstance(g, dict) else None
         if isinstance(pos, list) and len(pos) == 3 and all(_is_num(x) for x in pos):
             if any(abs(x) > MAX_COORD for x in pos):
@@ -446,8 +472,6 @@ def _bounds(c: _Collector, root: dict) -> None:
     if isinstance(st, dict) and isinstance(st.get("pos"), list) and len(st["pos"]) == 3 and all(_is_num(x) for x in st["pos"]):
         if any(abs(x) > MAX_COORD for x in st["pos"]):
             c.add("start.pos", f"must be within {MAX_COORD:g} of the origin")
-    t = root.get("transform")
-    s = t[0] if isinstance(t, list) and len(t) == 4 and _is_num(t[0]) and 0 < t[0] <= 1000 else None
     if s is None or not pts or len(pts) != len(gates):
         return
     legs = list(zip(pts, pts[1:]))
