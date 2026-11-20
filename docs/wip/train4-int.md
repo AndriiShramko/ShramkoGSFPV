@@ -289,3 +289,4 @@ Car 1
 
 - S1 (car 2, resumed run): 12 replies; most went to the sound6 merge's package pin, whose commit existed only in sound6's
   copy (fetched from there). Cheaper: the lane writing its package head and where it lives into 'For the lead'.
+- S2 (car 2, run of 2026-11-20 noon): about 40 calls for two findings (ux4a step 6, edit4b step 1); the most went to finding why each failed only sometimes, because the probes recorded the verdict but not the state behind it. Cheaper: each probe's failing step carries the page state it judged (here the top row's timeline, the numbers hook), as both now do.
