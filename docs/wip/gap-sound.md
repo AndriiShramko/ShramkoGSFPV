@@ -10,23 +10,24 @@ Base: branch train4 at 2d752fcc (negative-control ref). Package branch: packages
       list at level first with 'Show all settings (n more)'. Tests NEG OK against 2d752fcc. (commit 436cc3c8)
 - [ ] S2 the quick path (package data): ears-headphones 2 trials; the wall sounds inside walls-hall's room; one short intro a later
       quick lesson; quick-path.test.ts ROOM_FLIGHT_MAX_S 120 and a talk-seconds cap of the whole quick path (NEG on 53a5675).
-      IN PROGRESS: package branch gap-sound, WIP commit ddb996c (data done: fast path without ears-walls; walls-hall intro =
-      cue.safety.wall.name(left), dir.right(right), ceiling(up), floor(down), goal.1; corridor = height tone name, intro.3/.4/.5,
-      goal.1; tunnel-gaps = intro.3, goal.1; rings-first = intro.1, cue.height.target.name, goal.1; rings-course, free-garden =
-      goal.1; versions bumped; docs counts 8 -> 7). David: the room flies at 114.1 s (was 205.0), the path's flights all begin by
-      271.5 s (was 471.2). Schedule printer: U:/Temp/gsfpv-train4/gap-sound/zz-scratch.test.ts (copy into the package's test/ to run).
-      LEFT (package `npx vitest run`, 8 failing):
-      a. test/sonic-keys.test.ts startup error: node:util styleText (Node too old for this file? check on 53a5675 first).
-      b. lessons.test.ts:60 my new rule: a module-0 lesson has no goal line (only require goal.1 when the catalogue has one).
-      c. lessons.test.ts:82 'fill every parameter': a text of 3 chars or less ('Wall'? 'Pared'?): allow cue names or lengthen check.
-      d. quick-path talk cap: ru 163.2 s > 150: measure all four, set the cap above the largest (old value on 53a5675 for the note).
-      e. replay.test.ts:276 (regex of the older-build line), :333 (an expected 3 for the headphone check: now 2).
-      f. report.test.ts:146 rings-course deviation control (7.565 vs 7.924): the intro got shorter, the scripted path changed.
-      g. runner.test.ts 'progress carries on' (rings-first view: lessonIndex on the fast path, now one less).
-      h. world-scale.test.ts walls-hall 'calls its room small' (it read intro.1, now not said: the title says 'A small room').
-      Then: NEG of quick-path (ROOM_FLIGHT and talk cap) on 53a5675, `pnpm typecheck` in the package, the final package commit
-      (amend the WIP into a proper message), move the pin in the main repo, and the host keys line 'said once'
-      (apps/fly/src/sonic/lessons.ts keysDue: a flying lesson says it every step; not an owned file, decide or hand to the lead).
+      DONE in the package: branch gap-sound head 150ebac296d5e618b6fd952ea342d03db43c1338 (one commit on 53a5675). Package suite
+      (node 22, `node node_modules/vitest/vitest.mjs run`): 1428 passed, 4 skipped; `pnpm typecheck` OK. NEG OK on 53a5675 for
+      both new guards: the room flies at 205.0 s > 120; ru talks 299.7 s > 165. Talk now en 131.0, es 136.0, pl 139.7, ru 163.2 s.
+      Pin moved in the main repo: commit 4199b98c.
+      LEFT (host tests that follow the package data; run `node node_modules/vitest/vitest.mjs run tools/bench/test/sonic
+      tools/bench/test/admin-sessions tools/bench/test/app-game` with $HOME/node-v22 on PATH, 1 min; log host-tests.log in TEMP):
+      a. tools/bench/test/sonic-start.test.ts:42 the fast path has 7 lessons, not 8 (title of the test too); :76 Continue expects
+         'ears-walls' after ears-headphones: now 'walls-hall'.
+      b. tools/bench/test/sonic-lesson-keys.test.ts:128 rings-first is lesson 6 of 8 on the fast path: now 5 of 7 (expected 7 to be 8).
+      c. tools/bench/test/sonic-lessons.test.ts:146 ears-headphones expects >= 3 trials: now 2 (and its title says 'behind').
+      d. tools/bench/test/sonic-int-replay.test.ts:339 beyondSafety(rings-first) = [1391] of 1818 frames: target.praise ends 2
+         frames (about 64 ms) earlier in the replay's cues than in the recording (rec t 46384 still has it, der from t 46352 not;
+         slack 1 frame). The shorter rings-first intro moved the timeline. Find why praise ends earlier in the replay (its start
+         frame in both), do not widen the slack blindly.
+      e. Not this lane (pre-existing on 2d752fcc, Shift+KeyH clash): sonic-hints.test.ts:192, sonic-in-place.test.ts:30.
+      Then commit S2 with these as 'Files changed outside the owned list' in For the lead.
+      Keys line 'said once': apps/fly/src/sonic/lessons.ts keysDue() (line 762) says it on every step of a flying lesson; not an
+      owned file, handed to the lead (see For the lead).
 - [ ] S3 the acceptance: tools/bench/scripts/gap-sound-accept.mjs by mouse at 1536x730, scale 1.25, first visit and returning pilot;
       the live site must fail the Quick-start-first and no-behind steps.
 
@@ -38,6 +39,10 @@ Design differences (the code wins):
 - The room no longer names the height tone and the target note (owner's list: wall, right wall, ceiling, floor, then move); the
   corridor names the height tone, rings-first the target note, where it first sounds (test/named-sounds.test.ts).
 - tunnel-gaps keeps its intro.3 (the chime above and below, with the setting's caveat of review E2), not one line.
+- The corridor keeps its three explaining lines (the way-through chime 15.4 s, the stages and reset 9.6 s, the target hum 10.2 s,
+  en): reviews R3 and E2 pin them (test/named-sounds.test.ts) and they are the pilot's only words for sounds the pilot flies by. So the
+  talk cap is 165 s (ru 163.2 s), not lower; a shorter corridor needs new, shorter lines, which this lane may not write.
+- A cue's name may be 1 to 3 letters (ru 'floor' is 3): lessons.test.ts's 'more than 3 characters' rule exempts cue.*.name.
 - The sound start screen has no access to the pilot's ui.menuLevel (SonicHost is only the prefs collections), and that setting
   defaults to expert for anyone who never answered 'Before you fly' (a blind pilot on ?sonic=start never sees it). So the screen uses
   menu4's MenuLevel type and levelShows() with its own table SONIC_SETTING_LEVELS, viewed at level first; 'Show all settings' opens the
@@ -67,6 +72,12 @@ Design differences (the code wins):
 
 - Files changed outside the owned list: tools/bench/src/sonic-start-keyboard.ts (the lab harness of the start screen: two headphone
   buttons, Quick start focused, presses 'Show all settings' before the settings checks).
+- The sound package: branch gap-sound head 150ebac296d5e618b6fd952ea342d03db43c1338 must reach the package's main together with
+  car 4's package head (it is on no remote; parent 53a5675). Ask the Lodz testers to listen once after the release: no person
+  listened here.
+- The keys line 'said once' (owner, line 531): apps/fly/src/sonic/lessons.ts keysDue() returns true on every step of a flying
+  lesson. Proposal: `if (this.lesson?.world.kind !== 'none') return !this.keysSaid;` (once a lesson), with its host test.
+  Not an owned file of this lane, so not changed here.
 - Pre-existing on 2d752fcc, not this lane: 3 tests fail on a key clash 'Shift+KeyH is bound to messages.open and sonic.headCentre'
   (rooms-public.test.ts, sonic-in-place.test.ts, train1-contract.test.ts).
 
@@ -75,3 +86,6 @@ Design differences (the code wins):
 - S1: the most replies went to reading the 880-line test file in slices; a list of test names with the ids they touch would be cheaper.
 - S2 (run 1): the package's guard tests (own catalogue lines, versions, named sounds, trials) each needed a read and an edit; a run of
   the package suite on a throwaway data change first, to list every test that pins lesson data, would have saved about 10 replies.
+- S2 (run 2): most replies went to small test-text slips (a quote in a test title, a regex) and to a printer for the talk seconds;
+  running the host suite (tools/bench/test/sonic*) right after the data change in run 1 would have shown the 5 host tests early.
+  Python's open(..., 'w') writes CRLF on Windows: write with newline='' or use the Edit tool.
