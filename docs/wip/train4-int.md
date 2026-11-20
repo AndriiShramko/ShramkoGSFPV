@@ -30,7 +30,7 @@ aa18f1e4 of origin/main; the lead's change of 17:50 UTC: car 2 takes the lanes w
       2540dea0 sound6 (resumed after the outage: the sound6 merge was half done; its two conflicts finished, the package
       checked out at the new pin). Car 3: gen4a (no review file, both looks), gen4b (needs gen4a). The car 2 list is
       closed. Every merged lane head is an ancestor of HEAD; pnpm -r typecheck rc 0 on 2540dea0; sonic start tests 44/44.
-- [ ] S2 the seams between car 2 lanes (and with car 1), the one full check, the two failed live checks of car 1.
+- [x] S2 the seams between car 2 lanes (and with car 1), the one full check, the two failed live checks of car 1.
       Done so far: origin/main's lead note a3806503 merged; seams b3e62a93 (Messages on Shift+L), the K help line for
       Shift+H, dfeb1d03 (drag cancel closes the live tag; seam 'saved'; edit4a-camera); the two live checks' probes
       repaired (edit4b-probe step 10 on live, edit-mouse-probe d.controls through the Course menu); the window under the
@@ -81,7 +81,10 @@ aa18f1e4 of origin/main; the lead's change of 17:50 UTC: car 2 takes the lanes w
       again (flip at tick 19053), the controls at 23353 met throttle -0.375, LSB fired (0.016 m), twitch fired (0.36 m);
       the new tab's hash equals the saved one; CPU x4 997.5 steps/s. The negative control: the old tick 10000 failed on
       the two late starts before (21833, 24173). So B6-B16 all PASS on the build of 88ccd89e (B15 with the repaired
-      check). The server is stopped (probes11.sh kills it). Left: the gates once on the final head, then S2 is done.
+      check). The server is stopped (probes11.sh kills it).
+      Gates once on the final head 89b2203f: all PASS rc 0 (typecheck, vitest 441 files / 5628 tests, api-unittest,
+      architecture, i18n, catalog, b18, leaks; U:/Temp/gsfpv-gates-20261120-224507, int4/gates4.log). S2 is done: the
+      tree handed over in S3 is this one plus status notes; S3 starts with `git fetch origin` and the MAIN MOVES rule.
 - [ ] S3 the hand-over (Car 2 parts, U:/Temp/gsfpv-train4/int4.json)
 
 ## Progress
@@ -328,3 +331,6 @@ Car 1
 - S1 (car 2, resumed run): 12 replies; most went to the sound6 merge's package pin, whose commit existed only in sound6's
   copy (fetched from there). Cheaper: the lane writing its package head and where it lives into 'For the lead'.
 - S2 (car 2, run of 2026-11-20 noon): about 40 calls for two findings (ux4a step 6, edit4b step 1); the most went to finding why each failed only sometimes, because the probes recorded the verdict but not the state behind it. Cheaper: each probe's failing step carries the page state it judged (here the top row's timeline, the numbers hook), as both now do.
+- S2 (car 2, run of 2026-11-20 evening): 20 calls; the most went to B15 failing twice at an absolute tick that a slow
+  start on a loaded machine moved into idle throttle. Cheaper: checks that tamper or judge at a moment of the flight
+  (relative to an event they record) instead of an absolute tick.
