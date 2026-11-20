@@ -208,7 +208,7 @@ try {
      * the clicks the pilot holds key W (the view forward) until the gate just set is behind the view, so the course goes on
      * the way he looks and every gate faces the way in
      */
-    async function threeGates() {
+    async function threeGates(shrink = 0) {
         const by = [], walked = [];
         for (let k = 0; k < 3; k++) {
             const pressed = await page.evaluate(() => document.querySelector('.ce-topbar [data-top="add"]')?.getAttribute('aria-pressed') === 'true');
@@ -217,6 +217,8 @@ try {
             await click(W * 0.5, H * (k === 0 ? 0.62 : 0.45), 900);
             const n1 = (await snap()).egates ?? 0;
             by.push(n1 - n0);
+            for (let m = 0; m < shrink; m++) { await page.keyboard.press('Minus'); await sleep(120); }
+            if (shrink) { await sleep(400); by.push({ shrunk: (await snap()).topLine?.slice(0, 80) ?? null }); }
             if (k === 2) break;
             const t0 = Date.now();
             await page.mouse.move(W * 0.5, H * 0.6);
@@ -306,6 +308,12 @@ try {
     const f15 = flown(await snap());
     const s15 = await saveAs('gap-save x15');
     judge('s15.emptySaved', g15.gates === 3 && s15.ok, { menu: n15, gates: g15, flownM: f15, save: s15 });
+    // the whoop's own gates: each new gate made as small as the editor allows (key Minus ten times: 1.5 m to 0.5 m flown,
+    // 0.033 scene units at x15, under the old rule's 0.05 scene units)
+    const n15s = await courseMenu('new');
+    const g15s = await threeGates(10);
+    const s15s = await saveAs('gap-save x15 small');
+    judge('s15small.whoopGatesSaved', g15s.gates === 3 && g15s.shapes?.every((sh) => (sh.side ?? sh.diameter) < 0.05) && s15s.ok, { menu: n15s, gates: g15s, save: s15s });
     await closeEditor();
 
     // ---- the whoop at x100: the slider's right end, the scene opened again (no course loaded), a new empty course
