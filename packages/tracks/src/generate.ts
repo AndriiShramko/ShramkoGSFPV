@@ -317,6 +317,67 @@ export function startNearSpawn(
     return [...course];
 }
 
+/** gap-gen S3: how far back along gate 1's axis (flown m, tried in this order) the start of a turned asked ring stands */
+export const START_BACK_M: readonly number[] = [4, 2, 8];
+
+/** A closed asked course turned to begin near the core: its gates and the start pose (flown); `from` null keeps the
+ *  scan's start */
+export interface TurnedRing {
+    readonly gates: TrackGate[];
+    readonly from: Vec3 | null;
+}
+
+/**
+ * gap-gen S3 (brief: 'the start and the finish in the most detailed part'; the skull 5dfeb49b at x15, pro seed 3: the walk
+ * went out 78 m and came back to 3.3 m of the core, gate 1 stood 19.4 m from it). An asked ring is turned to one of its
+ * `tries` gates nearest the spawn like startNearSpawn, but a turn the scan's start cannot prove gets two more chances,
+ * measured on that course: (1) the start pose moves onto the new gate 1's approach, START_BACK_M behind it on its axis (the
+ * leg from the scan's start crossed it 66-72 deg off its axis, 35 allowed); (2) the walk's own gate 1 is left out when the
+ * ring keeps `minGates` without it (the lap's leg from the walk's last gate into it is now flown and was 59 deg off: the walk
+ * flew the start in between). Every turn with the scan's start goes first (what startNearSpawn with `tries` laid stays
+ * the same: the synthetic city's pro seed 2 lost its cube frames to a nearer turn with a moved start), then the nearest
+ * turn with a moved start; nothing proven keeps the walk's order and start.
+ */
+export function turnToSpawn(
+    course: readonly TrackGate[],
+    spawn: Vec3,
+    toFlown: (q: Vec3) => Vec3,
+    axisOf: (g: TrackGate) => Vec3,
+    proven: (gates: TrackGate[], from: Vec3 | null) => boolean,
+    tries: number,
+    minGates: number
+): TurnedRing {
+    const keep: TurnedRing = { gates: [...course], from: null };
+    if (course.length < 2) return keep;
+    const order = course.map((g, i) => ({ i, d: dist2(toFlown(g.pos as Vec3), spawn) })).sort((a, b) => a.d - b.d || a.i - b.i);
+    const ids = (gs: readonly TrackGate[]): TrackGate[] => gs.map((g, i) => ({ ...g, id: `g${i + 1}` }));
+    const near: number[] = [];
+    for (const { i: k } of order.slice(0, Math.max(1, tries))) {
+        if (k === 0) break;
+        near.push(k);
+    }
+    // first every turn with the scan's start (the courses startNearSpawn laid keep their order, start and elements), then
+    // the moved start and the walk's gate 1 left out
+    for (const k of near) {
+        const gs = ids([...course.slice(k), ...course.slice(0, k)]);
+        if (proven(gs, null)) return { gates: gs, from: null };
+    }
+    for (const k of near) {
+        const turned = [...course.slice(k), ...course.slice(0, k)];
+        const variants = [ids(turned)];
+        if (turned.length - 1 >= minGates) variants.push(ids(turned.filter((g) => g !== course[0])));
+        for (const gs of variants) {
+            const g1 = toFlown(gs[0]!.pos as Vec3);
+            const ax = axisOf(gs[0]!);
+            for (const back of START_BACK_M) {
+                const from: Vec3 = [g1[0] - ax[0] * back, g1[1] - ax[1] * back, g1[2] - ax[2] * back];
+                if (proven(gs, from)) return { gates: gs, from };
+            }
+        }
+    }
+    return keep;
+}
+
 /**
  * Review FX-5: generator.version of a course; a closed ring turned to start near the spawn adds `.s<shift>` (its gate 1
  * was gate shift + 1 of the walk), so course/link.ts bestKey keeps its best laps apart from the unturned order. A course
@@ -823,33 +884,44 @@ function walkCourse(free: FreeSpace, walls: VoxelCollision, opts: CourseOptions,
     // records the turn (the server keeps a fixed list of params keys, the version is a free string)
     const walked = course;
     // review FY-4: the turned ring's first leg (start to the gate nearest the spawn) is judged for a poor scan too
-    if (laps > 1) course = startNearSpawn(course, opts.spawn ?? startW, toFlown, (gs, yaw) => legWell(startW, toFlown(gs[0]!.pos)) && checkTrack(build(gs, yaw, startW, laps), walls, T, p.marginM, false, true).ok, (gs) => nearestYaw(sub(toFlown(gs[0]!.pos), startW)), P ? START_TRIES : 1);
+    const axisOf = (g: TrackGate): Vec3 => { const q = g.quat; const w = q[0], y = q[2]; return [r6(-2 * w * y), 0, r6(-(1 - 2 * y * y))]; };
+    // gap-gen S3: an asked ring may start on its new gate 1's approach (turnToSpawn); `from` is then the course's start
+    let from = startW;
+    if (laps > 1 && P) {
+        const t = turnToSpawn(course, opts.spawn ?? startW, toFlown, axisOf, (gs, at) => {
+            const s0 = at ?? startW;
+            if (at && (!P.at(at) || !sweeper.free(at, toFlown(gs[0]!.pos), p.marginM))) return false;
+            return legWell(s0, toFlown(gs[0]!.pos)) && checkTrack(build(gs, nearestYaw(sub(toFlown(gs[0]!.pos), s0)), s0, laps), walls, T, p.marginM, false, true).ok;
+        }, START_TRIES, p.gatesMin);
+        course = t.gates;
+        if (t.from) from = t.from;
+    } else if (laps > 1) course = startNearSpawn(course, opts.spawn ?? startW, toFlown, (gs, yaw) => legWell(startW, toFlown(gs[0]!.pos)) && checkTrack(build(gs, yaw, startW, laps), walls, T, p.marginM, false, true).ok, (gs) => nearestYaw(sub(toFlown(gs[0]!.pos), startW)), 1);
     const startShift = course.length ? Math.max(0, walked.findIndex((g) => g.pos === course[0]!.pos)) : 0;
-    let startYaw = course.length ? nearestYaw(sub(toFlown(course[0]!.pos), startW)) : 0;
+    let startYaw = course.length ? nearestYaw(sub(toFlown(course[0]!.pos), from)) : 0;
     // course4 C4: the proven course composed into elements; each element is proven with its neighbours, and the whole
     // course once more (a course that fails it keeps its single gates)
     let composed = false;
     if (opts.elements && course.length > 0) {
         const single = course;
         const comp = composeElements({
-            gates: course, closed: laps > 1, start: startW, toFlown: (q) => toFlown(q), toScan, s, k, marginM: p.marginM, sweeper,
-            axisOf: (g) => { const q = g.quat; const w = q[0], y = q[2]; return [r6(-2 * w * y), 0, r6(-(1 - 2 * y * y))]; },
+            gates: course, closed: laps > 1, start: from, toFlown: (q) => toFlown(q), toScan, s, k, marginM: p.marginM, sweeper,
+            axisOf,
             legWell, rng: (opts.rng ?? createRng)((seed ^ 0x5eed1) >>> 0), maxGates: Math.min(SERVER_MAX_GATES, P?.maxGates ?? SERVER_MAX_GATES), kinds: P?.kinds,
-            proven: (gs, from) => checkTrack(build(gs, nearestYaw(sub(toFlown(gs[0]!.pos), from)), from, 1), walls, T, p.marginM, false, true).ok
+            proven: (gs, at) => checkTrack(build(gs, nearestYaw(sub(toFlown(gs[0]!.pos), at)), at, 1), walls, T, p.marginM, false, true).ok
         });
         opts.onElements?.(comp);
         // gen4a A2: an asked course keeps its composed elements only when every gate of them stands in its zone
         const inZone = !P || comp.gates.every((g) => P.at(toFlown(g.pos as Vec3)));
         if (inZone && (comp.gates.length !== single.length || comp.gates.some((g, i) => g.shape.kind !== single[i]!.shape.kind))) {
-            const yaw = nearestYaw(sub(toFlown(comp.gates[0]!.pos), startW));
-            if (checkTrack(build(comp.gates, yaw, startW, laps), walls, T, p.marginM, false, true).ok) {
+            const yaw = nearestYaw(sub(toFlown(comp.gates[0]!.pos), from));
+            if (checkTrack(build(comp.gates, yaw, from, laps), walls, T, p.marginM, false, true).ok) {
                 course = comp.gates;
                 startYaw = yaw;
                 composed = true;
             }
         }
     }
-    const shell = build(course, startYaw, startW, laps);
+    const shell = build(course, startYaw, from, laps);
     // unmeasured: the free-radius probes of a measured proof took about 5 s on the three-room test world (time-scratch run,
     // docs/wip/tracks.md Findings); the caller measures when it needs the numbers
     const proof = course.length ? checkTrack(shell, walls, T, p.marginM, false, true) : null;
