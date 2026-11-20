@@ -1,0 +1,86 @@
+{
+ "base": "https://gsfpv.flyreelstudio.eu/en",
+ "viewport": "1536x730@1.25",
+ "steps": [
+  {
+   "step": 1,
+   "name": "skull: Scene size x15 by the menu slider",
+   "pass": true,
+   "detail": {
+    "lock": true,
+    "menu": true,
+    "slider": true,
+    "size": 15.032363891601562
+   }
+  },
+  {
+   "step": 2,
+   "name": "skull x15 beginner compact: a course, no refusal, >= 5 gates, the start and gate 1 at the skull",
+   "pass": false,
+   "detail": {
+    "dialog": false,
+    "pressed": [],
+    "gates": 34,
+    "refusal": null,
+    "texts": [
+     "V: off → over the scan → voxels only · C: walls on / off",
+     "Click to fly, or press W or Space to take off"
+    ],
+    "ms": 1991,
+    "scale": 15.032363891601562,
+    "reach": 8,
+    "laid": {
+     "startM": 798.264,
+     "gate1M": 773.489,
+     "droneToGate1M": 26.14
+    },
+    "stats": null,
+    "eased": null,
+    "shrunk": null
+   }
+  },
+  {
+   "step": 3,
+   "name": "micro-greens x15 beginner compact: a course, no refusal, >= 5 gates, under the leaves' top",
+   "pass": false,
+   "detail": {
+    "size": 15.032363891601562,
+    "dialog": false,
+    "gates": 41,
+    "refusal": null,
+    "texts": [
+     "V: off → over the scan → voxels only · C: walls on / off",
+     "Click to fly, or press W or Space to take off"
+    ],
+    "ms": 1542,
+    "stats": null
+   }
+  },
+  {
+   "step": 4,
+   "name": "Hallstatt x1 pro whole scene: a course, no refusal",
+   "pass": true,
+   "detail": {
+    "scale": 1,
+    "dialog": false,
+    "gates": 39,
+    "refusal": null,
+    "texts": [
+     "V: off → over the scan → voxels only · C: walls on / off",
+     "Click to fly, or press W or Space to take off",
+     "Gates: 39. Fly through START to start the clock. Shift+T hides the course"
+    ],
+    "ms": 1598,
+    "stats": null
+   }
+  }
+ ],
+ "errors": [],
+ "verdict": {
+  "pass": false,
+  "failed": [
+   2,
+   3
+  ]
+ }
+}

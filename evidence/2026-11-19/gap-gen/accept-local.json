@@ -1,0 +1,106 @@
+{
+ "base": "http://localhost:6740/en",
+ "viewport": "1536x730@1.25",
+ "steps": [
+  {
+   "step": 1,
+   "name": "skull: Scene size x15 by the menu slider",
+   "pass": true,
+   "detail": {
+    "lock": true,
+    "menu": true,
+    "slider": true,
+    "size": 15.032363891601562
+   }
+  },
+  {
+   "step": 2,
+   "name": "skull x15 beginner compact: a course, no refusal, >= 5 gates, the start and gate 1 at the skull",
+   "pass": true,
+   "detail": {
+    "dialog": true,
+    "pressed": [
+     true,
+     true,
+     true
+    ],
+    "gates": 8,
+    "refusal": null,
+    "texts": [
+     "V: off → over the scan → voxels only · C: walls on / off",
+     "Click to fly, or press W or Space to take off",
+     "Gates: 8. The start gate is 815 m away: follow the arrow. Key Shift+T hides the course"
+    ],
+    "ms": 3694,
+    "scale": 15.032363891601562,
+    "reach": 8,
+    "laid": {
+     "startM": 0.719,
+     "gate1M": 7.226,
+     "droneToGate1M": 804.514
+    },
+    "stats": {
+     "kind": "room",
+     "gates": 8,
+     "startToCoreM": 7.231,
+     "finishToCoreM": 7.231,
+     "outside": 0,
+     "goodShare": 1
+    },
+    "shrunk": false
+   }
+  },
+  {
+   "step": 3,
+   "name": "micro-greens x15 beginner compact: a course, no refusal, >= 5 gates, under the leaves' top",
+   "pass": true,
+   "detail": {
+    "size": 15.032363891601562,
+    "dialog": true,
+    "gates": 7,
+    "refusal": null,
+    "texts": [
+     "V: off → over the scan → voxels only · C: walls on / off",
+     "Click to fly, or press W or Space to take off",
+     "Gates: 7. The start gate is 99 m away: follow the arrow. Key Shift+T hides the course"
+    ],
+    "ms": 1531,
+    "stats": {
+     "kind": "plants",
+     "gates": 7,
+     "underTopShare": 1,
+     "startToCoreM": 8.42,
+     "finishToCoreM": 8.42,
+     "outside": 0
+    }
+   }
+  },
+  {
+   "step": 4,
+   "name": "Hallstatt x1 pro whole scene: a course, no refusal",
+   "pass": true,
+   "detail": {
+    "scale": 1,
+    "dialog": true,
+    "gates": 24,
+    "refusal": null,
+    "texts": [
+     "V: off → over the scan → voxels only · C: walls on / off",
+     "Click to fly, or press W or Space to take off",
+     "Gates: 24. The start gate is 54 m away: follow the arrow. Key Shift+T hides the course"
+    ],
+    "ms": 2465,
+    "stats": {
+     "kind": "street",
+     "gates": 24,
+     "outside": 0
+    }
+   }
+  }
+ ],
+ "errors": [],
+ "verdict": {
+  "pass": true,
+  "failed": []
+ }
+}

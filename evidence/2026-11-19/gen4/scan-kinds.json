@@ -1,0 +1,608 @@
+{
+ "what": "gen4a A1 scan-kind-audit: analyzeScan kind against hand labels",
+ "rules": {
+  "zoneR": 2,
+  "objectR": 0.25,
+  "roomCeilingShare": 0.38,
+  "roomLeafMin": 0.2,
+  "roomClosedShare": 0.6,
+  "roomLeafMax": 0.5,
+  "plantsLeafShare": 0.3,
+  "plantsCeilingMax": 0.2,
+  "objectReliefShare": 0.4,
+  "cityReliefM": 6,
+  "cityCeilingMax": 0.15
+ },
+ "match": 11,
+ "labelled": 14,
+ "rows": [
+  {
+   "id": "0230d903",
+   "scale": 1,
+   "label": "street",
+   "kind": "cityAbove",
+   "match": false,
+   "voxelM": 0.2,
+   "tileM": 10.4,
+   "tiles": [
+    49,
+    46
+   ],
+   "extentM": 461.6,
+   "core": [
+    -60.023,
+    12,
+    -101.716
+   ],
+   "coreRadiusM": 76.64,
+   "ms": 336,
+   "measures": {
+    "footprintTiles": 1424,
+    "zoneTiles": 552,
+    "ceilingShare": 0.128,
+    "leafShare": 0.063,
+    "coreDetailShare": 0.385,
+    "reliefM": 23.2,
+    "reliefShare": 0.05
+   },
+   "qualityHist": [
+    197,
+    153,
+    113,
+    125,
+    111,
+    213,
+    156,
+    103,
+    66,
+    187
+   ]
+  },
+  {
+   "id": "1994c65c",
+   "scale": 1,
+   "label": "street",
+   "kind": "street",
+   "match": true,
+   "voxelM": 0.4,
+   "tileM": 24,
+   "tiles": [
+    40,
+    47
+   ],
+   "extentM": 1076.8,
+   "core": [
+    -35.2,
+    -7.2,
+    7.274
+   ],
+   "coreRadiusM": 126.851,
+   "ms": 295,
+   "measures": {
+    "footprintTiles": 1322,
+    "zoneTiles": 347,
+    "ceilingShare": 0.238,
+    "leafShare": 0,
+    "coreDetailShare": 0.64,
+    "reliefM": 24,
+    "reliefShare": 0.022
+   },
+   "qualityHist": [
+    204,
+    273,
+    207,
+    195,
+    129,
+    43,
+    39,
+    39,
+    44,
+    149
+   ]
+  },
+  {
+   "id": "2f1ddf5f",
+   "scale": 1,
+   "label": "cityAbove",
+   "kind": "cityAbove",
+   "match": true,
+   "voxelM": 0.2,
+   "tileM": 17.6,
+   "tiles": [
+    44,
+    50
+   ],
+   "extentM": 820,
+   "core": [
+    -271.158,
+    -11.2,
+    166.615
+   ],
+   "coreRadiusM": 138.657,
+   "ms": 1442,
+   "measures": {
+    "footprintTiles": 1493,
+    "zoneTiles": 573,
+    "ceilingShare": 0.131,
+    "leafShare": 0.047,
+    "coreDetailShare": 0.367,
+    "reliefM": 16.8,
+    "reliefShare": 0.02
+   },
+   "qualityHist": [
+    180,
+    86,
+    88,
+    111,
+    131,
+    166,
+    181,
+    179,
+    141,
+    230
+   ]
+  },
+  {
+   "id": "70b50d42",
+   "scale": 1,
+   "label": "street",
+   "kind": "street",
+   "match": true,
+   "voxelM": 0.1,
+   "tileM": 7.2,
+   "tiles": [
+    40,
+    51
+   ],
+   "extentM": 334.4,
+   "core": [
+    -15.824,
+    12.4,
+    31.121
+   ],
+   "coreRadiusM": 53.685,
+   "ms": 608,
+   "measures": {
+    "footprintTiles": 1108,
+    "zoneTiles": 551,
+    "ceilingShare": 0.282,
+    "leafShare": 0.106,
+    "coreDetailShare": 0.441,
+    "reliefM": 15.6,
+    "reliefShare": 0.047
+   },
+   "qualityHist": [
+    153,
+    106,
+    93,
+    124,
+    89,
+    102,
+    97,
+    98,
+    70,
+    176
+   ]
+  },
+  {
+   "id": "9baef54b",
+   "scale": 1,
+   "label": "street",
+   "kind": "street",
+   "match": true,
+   "voxelM": 0.1,
+   "tileM": 6.4,
+   "tiles": [
+    50,
+    40
+   ],
+   "extentM": 293.6,
+   "core": [
+    10.139,
+    13.8,
+    -5.763
+   ],
+   "coreRadiusM": 47.33,
+   "ms": 623,
+   "measures": {
+    "footprintTiles": 1051,
+    "zoneTiles": 582,
+    "ceilingShare": 0.321,
+    "leafShare": 0.124,
+    "coreDetailShare": 0.47,
+    "reliefM": 23.2,
+    "reliefShare": 0.079
+   },
+   "qualityHist": [
+    103,
+    119,
+    110,
+    127,
+    126,
+    96,
+    85,
+    77,
+    61,
+    147
+   ]
+  },
+  {
+   "id": "ab5efa0e",
+   "scale": 1,
+   "label": "plants",
+   "kind": "plants",
+   "match": true,
+   "voxelM": 0.05,
+   "tileM": 0.2,
+   "tiles": [
+    30,
+    29
+   ],
+   "extentM": 5.8,
+   "core": [
+    -0.064,
+    1,
+    0.459
+   ],
+   "coreRadiusM": 1.203,
+   "ms": 13,
+   "measures": {
+    "footprintTiles": 682,
+    "zoneTiles": 453,
+    "ceilingShare": 0.093,
+    "leafShare": 0.353,
+    "coreDetailShare": 0.401,
+    "reliefM": 2,
+    "reliefShare": 0.345
+   },
+   "qualityHist": [
+    3,
+    64,
+    120,
+    74,
+    71,
+    68,
+    63,
+    58,
+    59,
+    102
+   ]
+  },
+  {
+   "id": "ab5efa0e",
+   "scale": 15,
+   "label": "plants",
+   "kind": "plants",
+   "match": true,
+   "voxelM": 0.75,
+   "tileM": 3,
+   "tiles": [
+    30,
+    29
+   ],
+   "extentM": 87,
+   "core": [
+    -0.954,
+    15,
+    6.884
+   ],
+   "coreRadiusM": 18.041,
+   "ms": 14,
+   "measures": {
+    "footprintTiles": 682,
+    "zoneTiles": 453,
+    "ceilingShare": 0.093,
+    "leafShare": 0.353,
+    "coreDetailShare": 0.401,
+    "reliefM": 30,
+    "reliefShare": 0.345
+   },
+   "qualityHist": [
+    3,
+    64,
+    120,
+    74,
+    71,
+    68,
+    63,
+    58,
+    59,
+    102
+   ]
+  },
+  {
+   "id": "ba7aa29d",
+   "scale": 1,
+   "label": "street",
+   "kind": "street",
+   "match": true,
+   "voxelM": 0.2,
+   "tileM": 8.8,
+   "tiles": [
+    35,
+    48
+   ],
+   "extentM": 390.4,
+   "core": [
+    20.432,
+    10.4,
+    21.327
+   ],
+   "coreRadiusM": 69.873,
+   "ms": 200,
+   "measures": {
+    "footprintTiles": 669,
+    "zoneTiles": 572,
+    "ceilingShare": 0.26,
+    "leafShare": 0.093,
+    "coreDetailShare": 0.756,
+    "reliefM": 22.4,
+    "reliefShare": 0.057
+   },
+   "qualityHist": [
+    129,
+    74,
+    82,
+    68,
+    36,
+    38,
+    39,
+    51,
+    46,
+    106
+   ]
+  },
+  {
+   "id": "d10c5638",
+   "scale": 1,
+   "label": "object",
+   "kind": "object",
+   "match": true,
+   "voxelM": 0.05,
+   "tileM": 0.6,
+   "tiles": [
+    38,
+    27
+   ],
+   "extentM": 21.4,
+   "core": [
+    6.806,
+    19.7,
+    -1.648
+   ],
+   "coreRadiusM": 3.523,
+   "ms": 22,
+   "measures": {
+    "footprintTiles": 553,
+    "zoneTiles": 344,
+    "ceilingShare": 0.468,
+    "leafShare": 0.548,
+    "coreDetailShare": 0.759,
+    "reliefM": 14.4,
+    "reliefShare": 0.673
+   },
+   "qualityHist": [
+    91,
+    153,
+    30,
+    26,
+    28,
+    30,
+    31,
+    37,
+    40,
+    87
+   ]
+  },
+  {
+   "id": "eb5f51dc",
+   "scale": 1,
+   "label": "street",
+   "kind": "street",
+   "match": true,
+   "voxelM": 0.4,
+   "tileM": 25.6,
+   "tiles": [
+    49,
+    38
+   ],
+   "extentM": 1161.6,
+   "core": [
+    -429.861,
+    -20,
+    217.685
+   ],
+   "coreRadiusM": 149.071,
+   "ms": 463,
+   "measures": {
+    "footprintTiles": 830,
+    "zoneTiles": 263,
+    "ceilingShare": 0.43,
+    "leafShare": 0,
+    "coreDetailShare": 0.469,
+    "reliefM": 329.6,
+    "reliefShare": 0.284
+   },
+   "qualityHist": [
+    195,
+    119,
+    82,
+    88,
+    64,
+    52,
+    58,
+    37,
+    30,
+    105
+   ]
+  },
+  {
+   "id": "5dfeb49b",
+   "scale": 1,
+   "label": "object",
+   "kind": "room",
+   "match": false,
+   "voxelM": 0.05,
+   "tileM": 2.6,
+   "tiles": [
+    50,
+    41
+   ],
+   "extentM": 117.6,
+   "core": [
+    -50.054,
+    9.3,
+    -7.687
+   ],
+   "coreRadiusM": 20.493,
+   "ms": 1692,
+   "measures": {
+    "footprintTiles": 1200,
+    "zoneTiles": 563,
+    "ceilingShare": 0.728,
+    "leafShare": 0,
+    "coreDetailShare": 0.458,
+    "reliefM": 23,
+    "reliefShare": 0.196
+   },
+   "qualityHist": [
+    14,
+    38,
+    67,
+    231,
+    125,
+    206,
+    201,
+    96,
+    47,
+    175
+   ]
+  },
+  {
+   "id": "5dfeb49b",
+   "scale": 15,
+   "label": "object",
+   "kind": "room",
+   "match": false,
+   "voxelM": 0.75,
+   "tileM": 39,
+   "tiles": [
+    50,
+    41
+   ],
+   "extentM": 1764,
+   "core": [
+    -750.809,
+    139.5,
+    -115.3
+   ],
+   "coreRadiusM": 307.397,
+   "ms": 1891,
+   "measures": {
+    "footprintTiles": 1200,
+    "zoneTiles": 563,
+    "ceilingShare": 0.728,
+    "leafShare": 0,
+    "coreDetailShare": 0.458,
+    "reliefM": 345,
+    "reliefShare": 0.196
+   },
+   "qualityHist": [
+    14,
+    38,
+    67,
+    231,
+    125,
+    206,
+    201,
+    96,
+    47,
+    175
+   ]
+  },
+  {
+   "id": "7a475d38",
+   "scale": 1,
+   "label": "room",
+   "kind": "room",
+   "match": true,
+   "voxelM": 0.032,
+   "tileM": 3.328,
+   "tiles": [
+    49,
+    37
+   ],
+   "extentM": 155.136,
+   "core": [
+    -7.656,
+    3.712,
+    -6.419
+   ],
+   "coreRadiusM": 21.521,
+   "ms": 571,
+   "measures": {
+    "footprintTiles": 429,
+    "zoneTiles": 282,
+    "ceilingShare": 0.411,
+    "leafShare": 0.348,
+    "coreDetailShare": 0.742,
+    "reliefM": 13.952,
+    "reliefShare": 0.09
+   },
+   "qualityHist": [
+    109,
+    39,
+    38,
+    40,
+    38,
+    31,
+    24,
+    28,
+    25,
+    57
+   ]
+  },
+  {
+   "id": "39e63ce9",
+   "scale": 1,
+   "label": "room",
+   "kind": "room",
+   "match": true,
+   "voxelM": 0.05,
+   "tileM": 0.6,
+   "tiles": [
+    40,
+    29
+   ],
+   "extentM": 21.4,
+   "core": [
+    -2.775,
+    1.2,
+    4.055
+   ],
+   "coreRadiusM": 3.246,
+   "ms": 13,
+   "measures": {
+    "footprintTiles": 611,
+    "zoneTiles": 354,
+    "ceilingShare": 0.431,
+    "leafShare": 0.33,
+    "coreDetailShare": 0.57,
+    "reliefM": 4.8,
+    "reliefShare": 0.224
+   },
+   "qualityHist": [
+    78,
+    86,
+    46,
+    41,
+    41,
+    54,
+    68,
+    52,
+    50,
+    95
+   ]
+  }
+ ]
+}

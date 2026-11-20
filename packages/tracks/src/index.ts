@@ -15,3 +15,6 @@ export * from './server';
 export * from './format';
 export * from './editor';
 export * from './pieces';
+export * from './request';
+export * from './scan';
+export * from './plan';

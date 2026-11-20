@@ -2,6 +2,10 @@
 // proposal names, the countdown lines, the laps a page reports, and what each race message says. No DOM here:
 // app/builtin/rooms.ts wires it to the course (apps/fly/src/course, read through its public classes), Node tests run it
 // (tools/bench/test/rooms-race.test.ts).
+// Lane gap-gen S2: a course of the 'Generate a course' dialog is named by its g2 link (level, spread, seed: courseLinkId of
+// @gsfpv/tracks/request), so every racer builds the asker's course, never one of their own level and spread.
+import { courseLinkId, parseCourseLink } from '@gsfpv/tracks/request';
+import type { CourseRequest } from '@gsfpv/tracks/request';
 
 /** The race in a room. Off: the two-browser probe rooms-race.ts has not yet seen a lap on a real scan's course (train 2
  *  wave 2, docs/wip/train2b-lead.md); turn it on only after that probe passes. Off, app/builtin/rooms.ts neither loads
@@ -30,9 +34,24 @@ export interface RaceMsg {
 }
 
 /** What the page knows of its course now (window.__gsfpv.course, apps/fly/src/course/hook.ts). */
-export interface CourseNow { on: boolean; source: 'none' | 'generated' | 'server'; track: { id: string; version: number } | null; seed: number | null }
+export interface CourseNow {
+    on: boolean; source: 'none' | 'generated' | 'server'; track: { id: string; version: number } | null; seed: number | null;
+    /** lane gen4b: what the generated course asked for (the dialog's level and spread); absent for a 'g1.' course */
+    request?: CourseRequest;
+}
 
-export type CourseRef = { kind: 'seed'; seed: number } | { kind: 'saved'; id: string; version: number };
+/** 'seed': the old generator ('g1.<seed>'); 'request': the asked course ('g2.' link); 'saved': a course on the server */
+export type CourseRef = { kind: 'seed'; seed: number } | { kind: 'request'; request: CourseRequest } | { kind: 'saved'; id: string; version: number };
+
+/** What the course feature's hook.adopt is handed for a room's course (apps/fly/src/app/builtin/course.ts). */
+export type AdoptRef = { seed: number } | { seed: number; request: CourseRequest } | { id: string; version: number };
+
+/** The room's course as the course feature builds it here: an asked course keeps the asker's level and spread. */
+export function adoptOf(ref: CourseRef): AdoptRef {
+    if (ref.kind === 'seed') return { seed: ref.seed };
+    if (ref.kind === 'request') return { seed: ref.request.seed, request: { ...ref.request } };
+    return { id: ref.id, version: ref.version };
+}
 
 const COURSE_RE = /^[0-9A-Za-z._-]{1,64}$/;
 
@@ -43,6 +62,7 @@ const COURSE_RE = /^[0-9A-Za-z._-]{1,64}$/;
 export function courseFor(now: CourseNow | null | undefined, saved: readonly { id: string; version: number }[], newSeed: number): string {
     if (now?.on && now.track) {
         if (now.source === 'server') return `${now.track.id}.v${now.track.version}`;
+        if (now.source === 'generated' && now.request) return courseLinkId(now.request);
         if (now.source === 'generated' && now.seed !== null) return `g1.${now.seed >>> 0}`;
     }
     const s = saved[0];
@@ -57,6 +77,10 @@ export function parseCourse(id: string): CourseRef | null {
     if (g) {
         const seed = Number(g[1]);
         return seed <= 0xffffffff ? { kind: 'seed', seed } : null;
+    }
+    if (id.startsWith('g2.')) {
+        const l = parseCourseLink(id);
+        return l?.kind === 'request' ? { kind: 'request', request: l.request } : null;
     }
     const v = /^(.+)\.v(\d{1,9})$/.exec(id);
     return v ? { kind: 'saved', id: v[1]!, version: Number(v[2]) } : null;

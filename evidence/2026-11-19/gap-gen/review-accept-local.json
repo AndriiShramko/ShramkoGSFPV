@@ -1,0 +1,133 @@
+{
+ "base": "http://localhost:6741/en",
+ "viewport": "1536x730@1.25",
+ "steps": [
+  {
+   "step": 1,
+   "name": "skull: Scene size x15 by the menu slider",
+   "pass": true,
+   "detail": {
+    "lock": true,
+    "menu": true,
+    "slider": true,
+    "size": 15.032363891601562
+   }
+  },
+  {
+   "step": 2,
+   "name": "skull x15 beginner compact: a course, no refusal, >= 5 gates, the start and gate 1 at the skull",
+   "pass": false,
+   "detail": {
+    "dialog": true,
+    "pressed": [
+     true,
+     true,
+     true
+    ],
+    "gates": 8,
+    "refusal": null,
+    "texts": [
+     "V: off → over the scan → voxels only · C: walls on / off",
+     "Click to fly, or press W or Space to take off",
+     "Gates: 8. The start gate is 812 m away: follow the arrow. Key Shift+T hides the course"
+    ],
+    "ms": 3951,
+    "scale": 15.032363891601562,
+    "reach": 8,
+    "laid": {
+     "startM": 0.719,
+     "gate1M": 9.241,
+     "droneToGate1M": 802.229
+    },
+    "stats": {
+     "kind": "room",
+     "gates": 8,
+     "startToCoreM": 9.246,
+     "finishToCoreM": 9.246,
+     "outside": 0,
+     "goodShare": 1
+    },
+    "shrunk": false
+   }
+  },
+  {
+   "step": 3,
+   "name": "micro-greens x15 beginner compact: a course, no refusal, >= 5 gates, under the leaves' top",
+   "pass": true,
+   "detail": {
+    "size": 15.032363891601562,
+    "dialog": true,
+    "gates": 5,
+    "refusal": null,
+    "texts": [
+     "V: off → over the scan → voxels only · C: walls on / off",
+     "Click to fly, or press W or Space to take off",
+     "Gates: 5. The start gate is 96 m away: follow the arrow. Key Shift+T hides the course"
+    ],
+    "ms": 1527,
+    "stats": {
+     "kind": "plants",
+     "gates": 5,
+     "underTopShare": 1,
+     "startToCoreM": 4.282,
+     "finishToCoreM": 4.282,
+     "outside": 0
+    }
+   }
+  },
+  {
+   "step": 4,
+   "name": "Hallstatt x1 pro whole scene: a course, no refusal",
+   "pass": true,
+   "detail": {
+    "scale": 1,
+    "dialog": true,
+    "gates": 24,
+    "refusal": null,
+    "texts": [
+     "V: off → over the scan → voxels only · C: walls on / off",
+     "Click to fly, or press W or Space to take off",
+     "Gates: 24. The start gate is 54 m away: follow the arrow. Key Shift+T hides the course"
+    ],
+    "ms": 2688,
+    "stats": {
+     "kind": "street",
+     "gates": 24,
+     "outside": 0
+    }
+   }
+  },
+  {
+   "step": 5,
+   "name": "room guest (own pick medium compact) adopts the host pro wide dialog course: the page lays the host ask",
+   "pass": true,
+   "detail": {
+    "adopt": true,
+    "host": {
+     "seed": 4242,
+     "level": "pro",
+     "spread": "wide",
+     "anyQuality": false
+    },
+    "laidRequest": {
+     "seed": 4242,
+     "level": "pro",
+     "spread": "wide",
+     "anyQuality": false
+    },
+    "gates": 24,
+    "ms": 1389,
+    "plan": {
+     "gates": 24
+    }
+   }
+  }
+ ],
+ "errors": [],
+ "verdict": {
+  "pass": false,
+  "failed": [
+   2
+  ]
+ }
+}
