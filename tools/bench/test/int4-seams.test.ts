@@ -142,6 +142,16 @@ describe('int4 car 3: edit4b New empty course x gap-gen start x gap-save flown s
         expect(e.generator).toBeNull();
         expect(e.scene).toEqual(like.scene);
     });
+    it('the page writes the scene spawn as its start pose (the editor refuses a course with no start): flown back to the spawn', async () => {
+        const { startAtSpawn } = await import('../../../apps/fly/src/course/editor/parts/life-texts');
+        const { flownStart } = await import('../../../packages/tracks/src/check');
+        const T = [15.35, 1, -2, 3] as const;
+        const start = startAtSpawn([40, 2, -9, 135], T);
+        const back = flownStart({ start } as unknown as Parameters<typeof flownStart>[0], T);
+        expect(back!.yawDeg).toBe(135);
+        back!.pos.forEach((v, i) => expect(v).toBeCloseTo([40, 2, -9][i]!, 4));
+        expect(course).toMatch(/const start = file\.start \?\? startAtSpawn\(ctx\.session\.spawn, file\.transform\);\s*edSource = \{ \.\.\.file, start, /);
+    });
     it('life.ts hands the seam\'s flown() to it', () => {
         const life = readFileSync(join(SRC, 'course/editor/parts/life.ts'), 'utf8');
         expect(life).toMatch(/emptyCourse\(seam\.trackNow\(\), t\(LIFE_LINES\.newTitle\), seam\.flown\(\)\)/);

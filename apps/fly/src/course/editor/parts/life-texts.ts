@@ -1,7 +1,7 @@
 // Lane edit4b, the course's life (design edit4 section 3): the words of the questions before a step that drops the
 // pilot's gates, the Course menu's items and the empty course's lines. Pure: no DOM, no i18n import, so a Node test holds
 // the keys to the four languages (packages/i18n/locales/fly/course-life/*.json).
-import type { SceneTransform, TrackFile } from '@shramko/sonic-fpv';
+import type { Pose, SceneTransform, TrackFile } from '@shramko/sonic-fpv';
 import type { LossQuestion } from '../seam';
 
 /** One question as the dialog shows it: the locale keys and their values. */
@@ -45,11 +45,22 @@ export function lossText(q: LossQuestion): AskText | null {
 /**
  * A new empty course of the same scene: no gate, one lap, the pilot's own title. int4 car 3: it is laid out for the scene
  * as the pilot flies it now (the seam's flown(): a Scene size changed since the old course counts) and starts at
- * the scene's own spawn (start null): an asked course's start may stand far off on its gate 1's approach (gap-gen), and the
- * gates the pilot clicks into the view would meet a wall on the way from there.
+ * the scene's own spawn (start null; the page's startNew writes it as a pose with startAtSpawn, the editor's checks need
+ * one): an asked course's start may stand far off on its gate 1's approach (gap-gen), and the gates the pilot clicks into
+ * the view would meet a wall on the way from there.
  */
 export function emptyCourse(like: TrackFile, title: string, flown: SceneTransform): TrackFile {
     return { ...like, transform: [flown[0], flown[1], flown[2], flown[3]], start: null, gates: [], laps: 1, title, parent: null, generator: null, author: { kind: 'person', name: like.author.kind === 'person' ? like.author.name : '' } };
+}
+
+/**
+ * The scene's spawn (the session's spawn: flown metres and yaw degrees) as a course start in the course's own units:
+ * flown = s * p + t (packages/tracks check.ts flownStart), so p = (flown - t) / s, rounded to 1e-6 like the editor's gates.
+ */
+export function startAtSpawn(spawn: readonly [number, number, number, number], transform: SceneTransform): Pose {
+    const s = transform[0];
+    const r6 = (v: number): number => Math.round(v * 1e6) / 1e6;
+    return { pos: [r6((spawn[0] - transform[1]) / s), r6((spawn[1] - transform[2]) / s), r6((spawn[2] - transform[3]) / s)], yawDeg: r6(spawn[3]) };
 }
 
 /** The lines this part says on the top bar */

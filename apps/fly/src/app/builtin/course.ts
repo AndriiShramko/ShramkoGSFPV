@@ -62,6 +62,7 @@ import { setKeyboardArm, stopKeyboardArm } from '../../devices/keyboard';
 import { SeamBus, type ChangeBy, type EditorSeam, type MenuItem } from '../../course/editor/seam';
 import { installParts } from '../../course/editor/parts';
 import { askOpen } from '../../course/editor/parts/life-ask';
+import { startAtSpawn } from '../../course/editor/parts/life-texts';
 import { COURSE_MENU_HUB } from '../../course/editor/bar-place';
 import { Vec3 } from 'playcanvas';
 import type { EditAction, EditOutcome } from '@gsfpv/tracks';
@@ -1670,7 +1671,9 @@ export const course: Feature = {
             if (!ed) return;
             // lane edit4s: the course as it stands is kept as a draft before the new one replaces it
             keeper?.beforeLoss('new');
-            edSource = { ...file, id: freshId(file.id), version: 1 };
+            // int4 car 3: a course without a start (edit4b's New empty course) starts at the scene's spawn; the checks need a pose
+            const start = file.start ?? startAtSpawn(ctx.session.spawn, file.transform);
+            edSource = { ...file, start, id: freshId(file.id), version: 1 };
             hook.saved = null;
             hook.source = 'new';
             ed = openEditor(upgradeTrack(edSource), keepProblems, -1);
