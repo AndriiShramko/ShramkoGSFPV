@@ -13,6 +13,7 @@
 //  10 a sentence naming a gate (a gate put on top of gate 2: the check refuses it): that gate selected, its number flashing,
 //     the eye unchanged
 //  11 at 844x390: the Course menu and the question inside the view, their crosses 44 px
+//  13 (int4 car 3) Course > Generate, Yes: the Generate dialog without a second unsaved line, Build: the editor on the new course
 //   node tools/bench/scripts/edit4b-probe.mjs <address with /en> <scan> <WxH> <device scale> <name> <out.json>
 // env: COURSE_MS (wait for the course, default 480000), QUERY (more query, e.g. &render=off), SHOTS (picture folder, default
 // U:/Temp/gsfpv-train4/shots; SHOT=0 none). Never presses Save, send, vote or create; on an address that is not localhost
@@ -129,6 +130,7 @@ try {
     await key('Space', ' ', { hold: 1500 });
     await key('KeyW', 'w', { hold: 600 });
     await key('KeyG', 'g', { shift: true });
+    res.genDialog = await page.waitForSelector('[data-testid=gen-dialog]', { timeout: 4000 }).then(() => page.locator('[data-testid=gen-dialog] [data-action="gen-build"]').click().then(() => true), () => false); // int4 car 3: gen4b's Shift+G opens the Generate dialog first (nothing replaced before a yes): Build by mouse
     const gen = await until(snap, (s) => (s.courseGates ?? 0) > 0 && s.courseOn, Number(env.COURSE_MS || 480000), 1000);
     res.course = { ok: gen.ok, ms: gen.ms, gates: gen.v.courseGates };
     if (!gen.ok) throw new Error('no course');
@@ -306,6 +308,21 @@ try {
         judge('12-esc-closes-first', menuOpen && m.menu === 0 && m.open && m.mode === 'edit' && asked.ok && q.ask === 0 && q.open
             && JSON.stringify(q.ids) === JSON.stringify(a.ids),
             { menuOpen, menuEsc: { menu: m.menu, open: m.open, said: m.said }, asked: asked.ok, askEsc: { ask: q.ask, open: q.open, gates: q.ids?.length ?? null, said: q.said }, gates0: a.ids?.length ?? null });
+    }
+
+    // 13 (int4 car 3, the t7-base seam): Course > Generate a new course, Yes: gen4b's Generate dialog opens without a second
+    // unsaved warning; its Build by mouse makes a new course and the editor opens again on it (nothing is stored)
+    {
+        const ids13 = (await snap()).ids;
+        const r13 = await courseItem('generate', 'yes');
+        const dlg = await page.waitForSelector('[data-testid=gen-dialog]', { timeout: 4000 }).then(() => true, () => false);
+        const lost = dlg ? await page.locator('[data-testid=gen-dialog] [data-testid=gen-lost]').count() : null;
+        if (dlg) await page.locator('[data-testid=gen-dialog] [data-action="gen-build"]').click();
+        const back = await until(snap, (x) => x.open && x.mode === 'edit' && (x.ids?.length ?? 0) > 0 && JSON.stringify(x.ids) !== JSON.stringify(ids13),
+            Number(env.COURSE_MS || 480000), 1000);
+        judge('13-generate-yes-dialog', r13.asked && dlg && lost === 0 && back.ok,
+            { ...r13, dialog: dlg, lostLine: lost, ms: back.ms, open: back.v.open, mode: back.v.mode, gates: back.v.ids?.length ?? null, gates0: ids13?.length ?? null });
+        await sleep(800);
     }
 
     // 11 at 844x390: the menu and the question inside the view, crosses 44 px

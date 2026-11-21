@@ -186,6 +186,7 @@ try {
     await click(W / 2, H / 2, 900);
     res.lockBeforeEditor = (await snap()).lock;
     await key('KeyG', { shift: true });
+    res.genDialog = await page.waitForSelector('[data-testid=gen-dialog]', { timeout: 4000 }).then(() => page.locator('[data-testid=gen-dialog] [data-action="gen-build"]').click().then(() => true), () => false); // int4 car 3: gen4b's Shift+G opens the Generate dialog first (nothing replaced before a yes): Build by mouse
     const gen = await until(snap, (s) => (s.courseGates ?? 0) > 0 && s.courseOn, Number(env.COURSE_MS || 480000), 1000);
     res.course = { ok: gen.ok, ms: gen.ms, gates: gen.v.courseGates };
     if (!gen.ok) throw new Error('no course');

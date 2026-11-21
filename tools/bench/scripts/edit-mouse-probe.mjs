@@ -183,6 +183,7 @@ try {
             res.takeoff = { hudBefore: h0, hudAfter: s1.hud, lock: s1.lock };
         }
         await key('KeyG', { shift: true });
+        res.genDialog = await page.waitForSelector('[data-testid=gen-dialog]', { timeout: 4000 }).then(() => page.locator('[data-testid=gen-dialog] [data-action="gen-build"]').click().then(() => true), () => false); // int4 car 3: gen4b's Shift+G opens the Generate dialog first (nothing replaced before a yes): Build by mouse
         if (EARLY === 'building') {
             await sleep(1200);
             res.buildingAtB = await snap();
