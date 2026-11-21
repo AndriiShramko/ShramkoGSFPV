@@ -1,0 +1,216 @@
+{
+  "check": "tutor-moment S4: the first set flown by the scripted pilot (packages/sonic-fpv test/first-set.test.ts)",
+  "package_sha": "a017e447ef9c8593c74eb316adc3fd9960090376",
+  "command": "cd packages/sonic-fpv && FIRST_SET_OUT=<file> npx vitest run test/first-set.test.ts",
+  "result": "20 passed",
+  "negative_control": "NEG OK on package 719aaf5 (19 of 20 fail there)",
+  "speech": "measured Windows voices David, Helena, Paulina, Irina; lines with parameters by the package estimate",
+  "bounds": {
+    "FIRST_MOVE_MAX_S": 60,
+    "WORDS_BEFORE_MOVE_MAX": 60,
+    "SENTENCES_MAX": 2,
+    "SET_MAX_S": 420
+  },
+  "rows": [
+    {
+      "run": "en:full",
+      "firstMoveS": 38.8,
+      "wordsBeforeMove": 57,
+      "longestPromptSentences": 2,
+      "moments": [
+        "wall-ahead:safety.wall",
+        "height:height.tone",
+        "target:target.hum",
+        "way-through:safety.free",
+        "gate-height:height.target",
+        "gate-passed:target.note",
+        "speed:speed.tick",
+        "brake:speed.brake"
+      ],
+      "setS": 297.8,
+      "lessonS": {
+        "ears-headphones": 33.2,
+        "walls-hall": 59.1,
+        "corridor": 90,
+        "tunnel-gaps": 25.9,
+        "rings-first": 46.5,
+        "rings-course": 43.1
+      }
+    },
+    {
+      "run": "es:full",
+      "firstMoveS": 40.9,
+      "wordsBeforeMove": 58,
+      "longestPromptSentences": 2,
+      "moments": [
+        "wall-ahead:safety.wall",
+        "height:height.tone",
+        "target:target.hum",
+        "way-through:safety.free",
+        "gate-height:height.target",
+        "gate-passed:target.note",
+        "speed:speed.tick",
+        "brake:speed.brake"
+      ],
+      "setS": 302.3,
+      "lessonS": {
+        "ears-headphones": 35.2,
+        "walls-hall": 58.6,
+        "corridor": 90.5,
+        "tunnel-gaps": 24.7,
+        "rings-first": 48,
+        "rings-course": 45.2
+      }
+    },
+    {
+      "run": "pl:full",
+      "firstMoveS": 40.5,
+      "wordsBeforeMove": 52,
+      "longestPromptSentences": 2,
+      "moments": [
+        "wall-ahead:safety.wall",
+        "height:height.tone",
+        "target:target.hum",
+        "way-through:safety.free",
+        "gate-height:height.target",
+        "gate-passed:target.note",
+        "speed:speed.tick",
+        "brake:speed.brake"
+      ],
+      "setS": 308.4,
+      "lessonS": {
+        "ears-headphones": 34,
+        "walls-hall": 63.5,
+        "corridor": 90.8,
+        "tunnel-gaps": 24.1,
+        "rings-first": 50,
+        "rings-course": 46
+      }
+    },
+    {
+      "run": "ru:full",
+      "firstMoveS": 46,
+      "wordsBeforeMove": 50,
+      "longestPromptSentences": 2,
+      "moments": [
+        "wall-ahead:safety.wall",
+        "height:height.tone",
+        "target:target.hum",
+        "way-through:safety.free",
+        "gate-height:height.target",
+        "gate-passed:target.note",
+        "speed:speed.tick",
+        "brake:speed.brake"
+      ],
+      "setS": 326.6,
+      "lessonS": {
+        "ears-headphones": 37.6,
+        "walls-hall": 68,
+        "corridor": 92.2,
+        "tunnel-gaps": 25.8,
+        "rings-first": 52.8,
+        "rings-course": 50.2
+      }
+    },
+    {
+      "run": "en:new",
+      "firstMoveS": 33.2,
+      "wordsBeforeMove": 42,
+      "longestPromptSentences": 2,
+      "moments": [
+        "wall-ahead:safety.wall",
+        "height:height.tone",
+        "target:target.hum",
+        "way-through:safety.free",
+        "gate-height:height.target",
+        "gate-passed:target.note",
+        "speed:speed.tick",
+        "brake:speed.brake"
+      ],
+      "setS": 222.8,
+      "lessonS": {
+        "ears-headphones": 33.2,
+        "walls-hall": 27.2,
+        "corridor": 69.1,
+        "tunnel-gaps": 48.1,
+        "rings-first": 21.7,
+        "rings-course": 23.4
+      }
+    },
+    {
+      "run": "es:new",
+      "firstMoveS": 35.2,
+      "wordsBeforeMove": 44,
+      "longestPromptSentences": 2,
+      "moments": [
+        "wall-ahead:safety.wall",
+        "height:height.tone",
+        "target:target.hum",
+        "way-through:safety.free",
+        "gate-height:height.target",
+        "gate-passed:target.note",
+        "speed:speed.tick",
+        "brake:speed.brake"
+      ],
+      "setS": 226.1,
+      "lessonS": {
+        "ears-headphones": 35.2,
+        "walls-hall": 27.5,
+        "corridor": 69.7,
+        "tunnel-gaps": 48.1,
+        "rings-first": 22.1,
+        "rings-course": 23.4
+      }
+    },
+    {
+      "run": "pl:new",
+      "firstMoveS": 34,
+      "wordsBeforeMove": 38,
+      "longestPromptSentences": 2,
+      "moments": [
+        "wall-ahead:safety.wall",
+        "height:height.tone",
+        "target:target.hum",
+        "way-through:safety.free",
+        "gate-height:height.target",
+        "gate-passed:target.note",
+        "speed:speed.tick",
+        "brake:speed.brake"
+      ],
+      "setS": 225.5,
+      "lessonS": {
+        "ears-headphones": 34,
+        "walls-hall": 27.8,
+        "corridor": 69.3,
+        "tunnel-gaps": 48.1,
+        "rings-first": 22.5,
+        "rings-course": 23.8
+      }
+    },
+    {
+      "run": "ru:new",
+      "firstMoveS": 37.6,
+      "wordsBeforeMove": 36,
+      "longestPromptSentences": 2,
+      "moments": [
+        "wall-ahead:safety.wall",
+        "height:height.tone",
+        "target:target.hum",
+        "way-through:safety.free",
+        "gate-height:height.target",
+        "gate-passed:target.note",
+        "speed:speed.tick",
+        "brake:speed.brake"
+      ],
+      "setS": 230.2,
+      "lessonS": {
+        "ears-headphones": 37.6,
+        "walls-hall": 27.8,
+        "corridor": 70,
+        "tunnel-gaps": 48.1,
+        "rings-first": 22.4,
+        "rings-course": 24.3
+      }
+    }
+  ]
+}

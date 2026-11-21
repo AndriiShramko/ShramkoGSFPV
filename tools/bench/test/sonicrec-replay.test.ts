@@ -494,11 +494,19 @@ describe('v0.13 (lane v13-host C4, W9): the player feeds the engine the lines th
         expect(r.calls.say).toHaveLength(lines.length + 1);
         const core = new Replayer({ setup: r.setup, frames: pkg.frames, events: pkg.events });
         const worked: string[] = [];
-        for (let s = core.step(); s !== null; s = core.step()) for (const a of s.actions) if (a.kind === 'say') worked.push(a.line.key);
+        let cueActions = 0;
+        for (let s = core.step(); s !== null; s = core.step())
+            for (const a of s.actions) {
+                if (a.kind === 'say') worked.push(a.line.key);
+                else if (a.kind === 'cue') cueActions++;
+            }
         expect(worked.length).toBeGreaterThan(0);
         expect(r.calls.say.some((s) => worked.includes(s.key))).toBe(false);
-        // the cues are still the ones this build works out from the frames
-        expect(r.calls.cue.length).toBeGreaterThan(0);
+        // the cues are still the ones this build works out from the frames: an independent run of the replay core. Lane
+        // tutor-moment (train 4): this build's room and first ring play no sound before their flight (their sounds are
+        // taught in flight, by moments a recording without `known` does not run), so for these two that is none; the
+        // fresh recording above (cueActions > 0) holds the derivation itself
+        expect(r.calls.cue.length).toBe(cueActions);
     });
 
     it('a seek passes the lines before it and says the ones after it; a replay from its start says them again, and the line about the older version once in all', async () => {
