@@ -5,7 +5,8 @@ Design: C:/dev/.gsfpv-lanes/designs/t7-scene-open.md (Repair, smallest change). 
 ## Status
 
 - [x] S1 the bump (f0e84dce): playcanvas 2.23.2 -> 2.24.2 (packages/render-pc/package.json, apps/fly/package.json), @playcanvas/splat-transform 3.6.4 -> 3.12.0 (apps/fly/package.json), lock with one engine (`pnpm why playcanvas`), typecheck and the gates without a browser, repairs of what the new engine breaks, the "unsupported SOG version" error mapped to the plain unsupported-format line if it is a few lines.
-- [ ] S2 the proof on the whole app (hot-sog3-scans.mjs a-e).
+- [x] S2 the proof on the whole app (hot-sog3-scans.mjs a-e): a 7/7, b pass but B15 (fails the same on the old build), c pass, d pass (a39abad1 bakes; 98f74d54 stops cleanly, as slow on the old library), e pass. No repair of code was needed.
+- [x] S3 the hand-over: live check scans-open (e8768aac) with its live negative control (fails for the five v3 ids), origin/main merged (66448801, docs only: no rebuild), the sections below, U:/Temp/gsfpv-train4/hot-sog3.json.
 
 - S2 a) DONE (run 5, 2026-11-20 22:40 CEST). The probe of run 4 failed every id, v2 too: it opened the page without  and stayed on the first-visit warning (repair a0, the URL of walls-published-probe.mjs). New build (dist/, sha c17d5ddd, port 7000): 7/7 PASS (U:/Temp/gsfpv-train4/hot-sog3/scans-new.json): f924b0f5 999606 splats drawn, 78 % of pixels lit, 41 s; 593f8c06 623310, 100 %, 21 s; a39abad1 996301, 99 %, 33 s; 28ad27ed 993627, 79 %, 38 s; 98f74d54 206179, 100 %, 10 s; 143e76b0 300000, 15 %, 10 s; 70b50d42 152391, 100 %, 11 s; no console error, no CSP report. Pictures U:/Temp/gsfpv-train4/shots/hot-sog3-<id>.png. Negative control: a SECOND BUILD of origin/main a59bd3db (old/, port 7001; origin/main d72fe5f8 differs only in docs/wip/train4-lead.md and one more note), MAXS=120: every v3 id FAILS as the design says (f924b0f5, 593f8c06: status ready, 0 splats drawn = black scene; a39abad1, 28ad27ed, 98f74d54: status loading forever), the v2 ids 143e76b0 and 70b50d42 PASS (scans-old.json; pictures hot-sog3-old-<id>.png).
 Where run 5 stopped (2026-11-20 ~23:30 CEST, limit-reserve hook at 97 %, reset 2026-11-21 03:30 CEST; this note is UNCOMMITTED, commit it first). Committed: e8768aac live check scans-open in deploy/live-checks.sh (S3 item 1 written; its negative control is still to be read).
@@ -14,10 +15,9 @@ Where run 5 stopped (2026-11-20 ~23:30 CEST, limit-reserve hook at 97 %, reset 2
 - d) NOT DONE: walls-store-probe.mjs --start url on 98f74d54 stopped after 29.8 s with the bake still running ("Step 3 of 3 ... still working", d-bake.json). The probe's wait for 'in-use' is short (read walls-store-probe.mjs lines 62-90 for its limit); rerun with a longer wait or read hook.walls until state in-use/error. Also check: apps/fly/src/bake.ts:11 BAKE_TOOL is still the string 'splat-transform@3.6.4' while the library is 3.12.0; find whether it feeds a store key or the published walls version before changing it (if it does, leave it and note it for n-scan).
 - e) PASS (run 6 read it): loadq-probe.mjs on 70b50d42, GOV=0, SECS=60, three runs per build, samples 10 s or more after reveal (44 each). Median frame time new 2.6 / 2.6 / 2.5 ms, old 2.6 / 2.5 / 2.5 ms; p90 17.6-17.7 ms on both. No rise over 5 %. The new engine draws more splats in the same view (median 336 650-399 016 against 296 077) at the same frame time. No errors.
 - Live negative control of scans-open DONE (run 6 read it): on https://gsfpv.flyreelstudio.eu it FAILS as it must: f924b0f5, 593f8c06 "status ready, splats drawn 0"; a39abad1, 28ad27ed, 98f74d54 "status loading" for 120 s; 143e76b0 and 70b50d42 PASS (U:/Temp/gsfpv-train4/hot-sog3/live-neg/scans-open.json).
-- b) B15 rerun: FAIL again the same way (b15-rerun.log). Next: B15 on the old build (port 7001).
-- d) run 6, diagnostic bake-diag.mjs (temp only, logs the bake hook): 98f74d54 reaches Step 3 (voxelise) and stops after the step limit of 180 s (BakeTimeoutError "build step stopped", the plain line "The walls did not come out this time"): a clean end, no hang. The v3 read is sound: splat-transform 3.12 in Node decodes 98f74d54 to 206 179 rows, core 135 x 49 x 112 m (6e9 cells at 5 cm; 143e76b0 has 1.6e7). The owner's scan a39abad1 (v3) BAKES TO THE END on the new build: 995 801 Gaussians, 18 030 687 solid voxels, read 1.2 s, voxelise 2.2 s, walls in use (d2-a39.json). A/B of the voxeliser in Node on the same PLY (RTX 4090): 3.6.4 and 3.12.0 write a BYTE-IDENTICAL voxel.bin (48.6 MB), voxelise 19.8 s and 18.6 s. So BAKE_TOOL (apps/fly/src/bake.ts:11, part of the walls store key in wallcache.ts:67) stays 'splat-transform@3.6.4': the output is the same, a new key would only throw away the walls pilots keep. A full-data A/B (voxel-ab.sh, ab/98full-*.log) runs to see where the 180 s go.
+- b) DONE. B15 rerun on the new build: FAIL again the same way (b15-rerun.log). B15 on the OLD build (origin/main, port 7001, first line "accept-fly target: http://localhost:7001"): FAIL the same way (flip at tick 25625, crash at the same speed 8.565648919042033 as the new build's flight; evidence kept outside the repo in U:/Temp/gsfpv-train4/hot-sog3/b15-old-evidence/, as it is not this build). So B15's failure is not the bump: its LSB control at tick 10000 assumes the flight starts earlier than it does on this machine today (For the lead). evidence/2026-11-20/ holds the new build's b) run (B6 B7 B9-B14 B16 pass).
+- d) run 6, diagnostic bake-diag.mjs (temp only, logs the bake hook): 98f74d54 reaches Step 3 (voxelise) and stops after the step limit of 180 s (BakeTimeoutError "build step stopped", the plain line "The walls did not come out this time"): a clean end, no hang. The v3 read is sound: splat-transform 3.12 in Node decodes 98f74d54 to 206 179 rows, core 135 x 49 x 112 m (6e9 cells at 5 cm; 143e76b0 has 1.6e7). The owner's scan a39abad1 (v3) BAKES TO THE END on the new build: 995 801 Gaussians, 18 030 687 solid voxels, read 1.2 s, voxelise 2.2 s, walls in use (d2-a39.json). A/B of the voxeliser in Node on the same PLY (RTX 4090): 3.6.4 and 3.12.0 write a BYTE-IDENTICAL voxel.bin (48.6 MB), voxelise 19.8 s and 18.6 s. So BAKE_TOOL (apps/fly/src/bake.ts:11, part of the walls store key in wallcache.ts:67) stays 'splat-transform@3.6.4': the output is the same, a new key would only throw away the walls pilots keep. Full-data A/B (voxel-ab.sh, all 206 K rows with the floaters out to 125 m, no crop): BOTH libraries run past 900 s and are stopped (3.6.4 exit 124, 3.12.0 exit 124). So 98f74d54 is slow to voxelise because of its extent, with either library: not a regression of the bump (before it, the scan did not even open). d) DONE: the bake of a v3 scan runs to its end (a39abad1 walls in use; 98f74d54 ends cleanly at the step limit). Left to n-scan: walls of very large v3 scans.
 - Next (older note): b-e by U:/Temp/gsfpv-train4/hot-sog3/run-bcde.sh [b|c|d|e] (logs b-fly.log, c-walls.*, d-bake.*, e-ft/ and e-<port>-<i>.log). Servers: serve-csp port 7000 (new) and 7001 (old), pids in serve7000.pid / serve7001.pid.
-- [ ] S3 the hand-over (live check scans-open, merge origin/main, this file, U:/Temp/gsfpv-train4/hot-sog3.json).
 
 Where run 1 stopped (2026-11-20, stopped by the limit-reserve hook at 86 % of the 5-hour window, before its reset at 16:30 UTC):
 - UNCOMMITTED in the tree: the three version lines are already edited in apps/fly/package.json and packages/render-pc/package.json (check with `git diff`). pnpm-lock.yaml is NOT updated yet.
@@ -34,25 +34,46 @@ Where run 2 stopped (2026-11-20, stopped again by the limit-reserve hook at 99 %
 
 ## Deploy order
 
-Not written yet (S3).
+1. The web release only: `node scripts/build-release.mjs` on this head, publish dist/ as every web release.
+2. No API file (apps/api unchanged), no rooms, no nginx: the new engine needs no new line of the content security
+   policy. Every S2 check ran under the enforced policy of deploy/nginx.conf (tools/bench/scripts/serve-csp.mjs) with
+   no CSP report, the walls bake of the v3 scan a39abad1 included (splat-transform's webp.wasm as before).
+3. After the release: the live checks below.
 
 ## Live checks
 
-Not written yet (S3).
+- `LIVE_ONLY=scans-open bash deploy/live-checks.sh <out>`: the new check (deploy/live-checks.sh, "run scans-open").
+  It opens f924b0f5, 593f8c06 (streamed v3), a39abad1 (the owner's), 28ad27ed, 98f74d54 (single v3), 143e76b0, 70b50d42 (v2)
+  and passes when each is ready, drawn (splats drawn over zero, over 5 % of the picture lit), with no console error and no CSP report.
+  Negative control on the live site on 2026-11-21 (old engine 2.23.2): FAIL for all five v3 ids (a39abad1 "status loading" for 120 s),
+  PASS for the two v2 ids. After the release it must pass 7/7.
+- `walls-published-probe` (Wroclaw 70b50d42 and two more: published walls, the tunnel self-test) and `pause-rise-lublin`
+  (Lublin 2f1ddf5f streams, pauses, rises): our own scenes still load and fly.
 
 ## What the owner should try
 
-Not written yet (S3).
+1. Open https://gsfpv.flyreelstudio.eu/en/fly/?scene=a39abad1: the scan appears (about 30 s on a first visit) and you fly it.
+2. Press the walls button (or open it with ?bake=1): the walls build in a few seconds and crashes are on.
+3. Open Lublin from the catalogue and fly a minute: it looks and flies as before.
 
 ## Not verified
 
-Everything so far: the bump is not installed.
+- Real devices: phones, tablets, a weak laptop and Safari were not tried; every check ran headless Chrome on the RTX 4090 desktop.
+- The other 60 of the 65 v3 scans of the design's list: only the seven ids above were opened.
+- The walls of 98f74d54: the bake reads it and stops cleanly at the step limit of 180 s ("The walls did not come out this time");
+  it is a large outdoor core (135 x 49 x 112 m) and the OLD library is just as slow on its data (see Status d). Not a regression: before the
+  bump the scan did not open at all. For lane n-scan.
+- The plain line for a future SOG version (v4): the engine 2.24.2 refuses it with an error (no endless loader), shown with
+  the generic error line; a dedicated line needs a new locale key and is left to n-scan (Status, run 2 decision).
 
 ## For the lead
 
 - Run 1 used the submodule init in this copy (read-only use of packages/sonic-fpv, no edit).
+- B15 (accept-fly): see Status b. Its LSB control assumes the flight starts before tick 10000; on this machine it started later.
 
 ## Cost notes
+
+- S2/S3 run 6: about 35 replies. Most went to d): the probe of the store does not show the bake's error, so a diagnostic page probe, a Node reader and a CLI A/B were needed; the two 900 s runs of the full-data A/B were waiting time. Cheaper: walls-store-probe.mjs could record w.lastBake (the error) in its JSON; the CLI A/B (same PLY through both library versions) answers "is the new library different" in one minute and should come first.
 
 - S1 run 3: about 20 replies, most of them the pnpm hang (pnpm 11 string fetch-timeout bug). Cheaper: use the typed flag --fetch-timeout=N from the start.
 - S1 run 1: 8 replies, ended by the limit-reserve hook; the reading of the three docs was the cost. Cheaper: the next run reads only this file and the Repair part of the design.
