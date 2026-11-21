@@ -10,10 +10,14 @@ the sound lessons, not the scene.
       readFlightLink, courseOfFlight); shareLink, ctx.sonicShare (through mode-keys.ts soundPlace) write through flightLink; the sound
       link carries `course=`; `sonic=fly` reads as the free flight in that scene. NEG OK twice on the base (all changed files; and only
       sonic-link.ts + start-model.ts, the row "flight by sound with gates"). Commit 26dc3f8e.
-- [ ] S2 the landing: a fresh profile on a link with a scene (with or without sonic) gets one screen with one main button that starts
-      that flight (one click for sound and pointer lock); lessons a small second link. An unsaved hand-built course: Share offers
-      "Save and share" (the editor's Save) or the scene alone with one line. Unit tests (start-model order for a scene link with
-      experienced=false) + NEG.
+- [x] S2 the landing: a link with a scene and `sonic=` lands, for every pilot (a fresh profile included), on the start screen whose
+      start section has ONE main button "Fly this scan by sound" (`sonic-start-scan`, its line names the link's course when there is
+      one) and a small link "New to flying by sound? Open the lessons" (`sonic-start-lessons`, to the lessons section); Quick start,
+      Continue and Full course are not in a scene link's start section any more. start-model scanStartOrder() is ['scan','lessons']
+      for everyone (experiencedPilot and the "I already fly by sound" button are gone); parseSonicParam carries the link's `course`.
+      An unsaved hand-built course: the Share panel shares the scene alone and says so in one line (`share-note`, share.unsaved, four
+      languages). Tests: share-links-landing.test.ts (6), sonic-start-screen.test.ts "link with a scene" (2). NEG OK on the base
+      (start-model, start-screen, start.ts) and on S1 (start-model, flight-link). Commit: see git log (n-share S2).
 - [ ] S3 the acceptance by mouse: tools/bench/scripts/n-share-accept.mjs (local build and live site, read only), at most three
       pictures, gates once (typecheck,vitest,architecture,i18n,b18,leaks), "What the owner should try", delete dist.
 
@@ -27,6 +31,10 @@ Findings of S1 (the code wins over the plan where they differ):
 - The race room invite (rooms.ts roomLink) names scene and room; the room carries its course on the server (RoomInfo.course, adopted
   on join), so the invite does not drop it: rooms.ts is not changed.
 - A served course read from an address without `.v<n>` reads as version 0 (the newest is flown, as servedOfLink's null version).
+- S2: a normal flight's link (no `sonic=`) on a fresh profile goes through the first-visit question "Before you fly" (its first
+  answer is the primary button) and then loads that scene and course: that question is the motion notice, kept; S3 measures it.
+- S2: "Save and share" is not built: the editor's Save lives in app/builtin/course.ts (lane n-save) with no hook a Share can call;
+  the Share takes the decision's other branch (the scene alone, said in one line). See For the lead.
 - FlightPlace has optional fields beyond the contract (render, shared, sound): what a normal flight's and a sound flight's address
   already carried; the contract's fields are unchanged.
 
@@ -38,6 +46,9 @@ Findings of S1 (the code wins over the plan where they differ):
 
 1. Every place that offers a link gives an address that a fresh profile reads as the same scene, course and way of flying:
    `npx vitest run tools/bench/test/share-links-table.test.ts` (14 passed; NEG OK on the base).
+2. A link with a scene lands on that scene for a browser that never opened the site: one main button flies it (with the link's
+   course), the lessons are a small second link; a course never saved is not sent and the Share says so in one line:
+   `npx vitest run tools/bench/test/share-links-landing.test.ts tools/bench/test/sonic-start-screen.test.ts` (6 + 40 passed; NEG OK).
 
 ## Not verified
 
@@ -45,7 +56,12 @@ Findings of S1 (the code wins over the plan where they differ):
 
 ## For the lead
 
-- Files changed outside the owned list: apps/fly/src/share/panel.ts (ShareRequest gets `course`, passed to shareLink: two lines).
+- Files changed outside the owned list: apps/fly/src/share/panel.ts (ShareRequest gets `course`, passed to shareLink; S2: the
+  one-line note `share-note` for a course never saved, ShareState.note); apps/fly/src/sonic/sonic.css (two lines: the small lessons
+  link, 44 px high); tools/bench/test/sonic-start-screen.test.ts and sonic-scan-free.test.ts (their scan-link order tests held the
+  old lessons-first order the owner rejected; rewritten to the new one).
+- "Save and share" needs a hook from the course feature (lane n-save): e.g. `CourseHook.saveForShare?: () => Promise<boolean>`;
+  with it the Share panel's note can carry the button. store.ts fliesBySound stays (in-place.ts still uses it).
 - Later, optional: the server's /s/<id> page could carry `course=` (apps/api/server.py fly_link), so a course flight keeps its picture
   card; until then a flight with a course shares its flight address.
 
@@ -53,3 +69,5 @@ Findings of S1 (the code wins over the plan where they differ):
 
 - S1: most replies went to finding where each Share and the course live (course.ts, rooms.ts, the server's fly_link); a map of
   "who writes which link" in docs/agent-map.md would save that. neg_control.py needs the test command as ONE quoted string on Windows.
+- S2: about 30 calls; the most went to a test template written through `node -e` (the shell ate its backticks) and to finding the
+  served course id format; write test edits with the Write/Edit tools, never inside a shell string.

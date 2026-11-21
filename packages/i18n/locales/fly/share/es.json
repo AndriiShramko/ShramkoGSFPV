@@ -17,6 +17,7 @@
   "share.button": "Compartir",
   "share.title.video": "Comparte tu vuelo",
   "share.ready.page": "Tu enlace está listo: abre esta escena. Elige dónde publicarlo:",
+  "share.unsaved": "Este recorrido nunca se guardó, así que el enlace abre solo la escena. Para compartir el recorrido, guárdalo en el editor de recorridos y vuelve a compartir.",
   "share.instagram.button": "Instagram",
   "share.instagram.note": "Instagram no tiene enlace para compartir: su botón guarda la imagen o el vídeo y te copia el texto.",
   "share.instagram.done": "Guardado y texto copiado: abre Instagram, publica el archivo y pega el texto.",

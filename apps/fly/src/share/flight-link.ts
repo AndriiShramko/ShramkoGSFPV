@@ -50,6 +50,19 @@ const NO_LESSON: ReadonlySet<string> = new Set([SOUND_FREE, 'scan', 'scan-free',
 /** A generated course's link token: `g<n>.` and the rest as the course feature wrote it. */
 const GENERATED = /^g[0-9]\.[0-9a-z.]{1,60}$/;
 
+/** A `course=` value an address may carry: a generated course's link or a saved course's `<id>[.v<n>]`. */
+export function isCourseToken(v: string): boolean {
+    return GENERATED.test(v) || COURSE_TOKEN.test(v);
+}
+
+/**
+ * What the Share of a place says besides "the link is ready": a course built by hand and never saved cannot travel, so the link
+ * opens the scene alone and the pilot is told so in one line, with the way on (save it, share again). Null when nothing is lost.
+ */
+export function shareNoteKey(c: LinkCourse): 'share.unsaved' | null {
+    return c !== null && c.kind === 'unsaved' ? 'share.unsaved' : null;
+}
+
 /** The `course=` value of a course that travels, or null (none, or never saved). */
 export function courseToken(c: LinkCourse): string | null {
     if (c === null || c.kind === 'unsaved') return null;

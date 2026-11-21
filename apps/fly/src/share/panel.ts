@@ -19,6 +19,7 @@ import { SHARE_W, SHARE_H } from './picture';
 import { copyText } from './clipboard';
 import { dataUrlBytes, inFlight, instagramCaption, kindOf, shareApiBody, shareLink, targetHref, wordsKey } from './links';
 import type { ShareDrawing, ShareEntry } from './links';
+import { shareNoteKey } from './flight-link';
 import type { LinkCourse } from './flight-link';
 import { sharedQuery } from '@gsfpv/scenes';
 import type { SharedSettings } from '@gsfpv/scenes';
@@ -62,7 +63,7 @@ export interface ShareHost {
 }
 
 /** What a test or the acceptance reads of the panel shown last (window.__gsfpv.share); `files`: the video's parts offered. */
-export interface ShareState { entry: ShareEntry; kind: string; url: string | null; text: string; picture: boolean; video: 'none' | 'loading' | 'ready' | 'gone'; files: string[]; canShareFiles: boolean; /** the scene settings the link carries, as its query text (v0.9; '' for none) */ shared: string }
+export interface ShareState { entry: ShareEntry; kind: string; url: string | null; text: string; picture: boolean; video: 'none' | 'loading' | 'ready' | 'gone'; files: string[]; canShareFiles: boolean; /** the scene settings the link carries, as its query text (v0.9; '' for none) */ shared: string; /** lane n-share: the line said besides the link (flight-link.ts shareNoteKey: a course never saved stays behind), or null */ note: string | null }
 let lastState: ShareState | null = null;
 /** The last share panel's state (null: none opened in this page). */
 export function shareState(): ShareState | null {
@@ -100,7 +101,7 @@ export function openSharePanel(host: ShareHost, req: ShareRequest): { close(): v
     const text = t(wordsKey(kind), { scene: sceneName, speed: (req.speed ?? 0).toFixed(1) });
     const credit = creditText(req.scene);
     const nav = navigator as ShareNav;
-    const state: ShareState = { entry: req.entry, kind, url: null, text, picture: false, video: req.video ? 'loading' : 'none', files: [], canShareFiles: false, shared: sharedQuery(req.shared ?? {}) };
+    const state: ShareState = { entry: req.entry, kind, url: null, text, picture: false, video: req.video ? 'loading' : 'none', files: [], canShareFiles: false, shared: sharedQuery(req.shared ?? {}), note: null };
     lastState = state;
 
     let closed = false;
@@ -235,6 +236,12 @@ export function openSharePanel(host: ShareHost, req: ShareRequest): { close(): v
         if (closed) return;
         const url = shareLink({ entry: req.entry, sceneId: req.scene.id, inCatalogue: req.scene.inCatalogue, at, pictureUrl, drawing, shared, course: req.course });
         status.textContent = failed ? t('share.failed') : pictureUrl ? t('share.ready') : t('share.ready.page');
+        // lane n-share: a course never saved cannot travel; the link is the scene's alone and the pilot is told so, with the way on
+        const noteKey = shareNoteKey(req.course ?? null);
+        if (noteKey) {
+            state.note = t(noteKey);
+            status.after(h('p', { class: 'share-status', role: 'note', 'data-testid': 'share-note' }, state.note));
+        }
         show(url);
     })();
     return { close };

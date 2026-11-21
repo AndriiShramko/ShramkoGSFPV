@@ -158,31 +158,30 @@ describe('C1 (M41-1): the page about the mode stays linked from the start screen
 
 // ------------------------------------------------------------------ train 2: a scan link
 
-describe('train 2: the start screen of a scan link (?sonic=scan&scene=&sz=) orders its buttons by the pilot', () => {
-    const scanReq = () => modelMod.parseSonicParam('scan', new URLSearchParams('sonic=scan&scene=887f27aa&sz=2'));
+describe('lane n-share: the start screen of a link with a scene (?sonic=fly|scan&scene=&sz=) has ONE main button, that scene', () => {
+    const scanReq = (extra = '') => modelMod.parseSonicParam('fly', new URLSearchParams(`sonic=fly&scene=887f27aa&sz=2${extra}`));
     const order = (): string[] => {
         const parent = byTestId(doc, 'sonic-start-quick')!.parentElement!;
         return parent.children.map((c) => c.getAttribute('data-testid') ?? '').filter((x) => x.startsWith('sonic-start-'));
     };
+    const startSection = (): FakeElement => doc.querySelector('#sonic-sec-start')!;
+    const primaries = (): string[] => startSection().querySelectorAll('.btn.primary').map((c) => c.getAttribute('data-testid') ?? '');
 
-    it('an experienced pilot: "Fly this scan by sound" first and primary, then the lessons; a first-timer: the lessons first, then "I already fly by sound", whose press saves the flag', () => {
-        const exp = open({ request: scanReq(), experienced: () => true });
-        expect(order()).toEqual(['sonic-start-scan', 'sonic-start-quick', 'sonic-start-full']);
-        expect(byTestId(doc, 'sonic-start-scan')!.className).toContain('primary');
-        expect(byTestId(doc, 'sonic-start-quick')!.className).not.toContain('primary');
+    it('a browser that never opened the site: "Fly this scan by sound" is the one main button, the lessons a small link; its press flies the scene', () => {
+        const fresh = open({ request: scanReq() });
+        expect(primaries()).toEqual(['sonic-start-scan']);
+        expect(byTestId(doc, 'sonic-start-quick')).toBeNull();
+        expect(byTestId(doc, 'sonic-start-lessons')!.tagName.toLowerCase()).toBe('a');
         byTestId(doc, 'sonic-start-scan')!.click();
-        expect(exp.started).toEqual(['scan-free']);
-        exp.s.dispose();
+        expect(fresh.started).toEqual(['scan-free']);
+        fresh.s.dispose();
+    });
 
-        let flies = 0;
-        const first = open({ request: scanReq(), experienced: () => false, onFlies: () => void flies++ });
-        expect(order()).toEqual(['sonic-start-quick', 'sonic-start-full', 'sonic-start-scan-flier']);
-        expect(byTestId(doc, 'sonic-start-quick')!.className).toContain('primary');
-        expect(byTestId(doc, 'sonic-start-scan-flier')!.className).not.toContain('primary');
-        byTestId(doc, 'sonic-start-scan-flier')!.click();
-        expect(flies).toBe(1);
-        expect(first.started).toEqual(['scan-free']);
-        first.s.dispose();
+    it('a pilot with progress gets the same screen; a link with a course says its gates come along', () => {
+        const back = open({ request: scanReq('&course=g2.abc12'), progress: { 'rings-first': P('rings-first', { attempts: 2 }) } });
+        expect(primaries()).toEqual(['sonic-start-scan']);
+        expect(byTestId(doc, 'sonic-start-scan')!.textContent).toContain('With the course of the link');
+        back.s.dispose();
     });
 
     it('control: the plain start screen (?sonic=start) has no scan button', () => {

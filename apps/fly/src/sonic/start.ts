@@ -21,9 +21,9 @@ import { lessonFlightWorld } from './lesson-world';
 import type { LessonWorld } from './lesson-world';
 import { clearScanPrefs, forceScanPrefs } from './scan-lesson';
 import { StartScreen } from './start-screen';
-import { experiencedPilot, freeLessonOf, launchFailureLine, parseSonicParam } from './start-model';
+import { freeLessonOf, launchFailureLine, parseSonicParam } from './start-model';
 import type { SonicRequest } from './start-model';
-import { allProgress, currentLesson, fliesBySound, resetProgress, setCurrentLesson, setFliesBySound } from './store';
+import { allProgress, currentLesson, resetProgress, setCurrentLesson } from './store';
 import { enableZoom } from './zoom';
 import { t } from '../i18n';
 import { attachHead } from './head/page';
@@ -88,9 +88,6 @@ export function startSonic(d: SonicStartDeps): StartHandle {
         current: () => currentLesson(d.prefs),
         // Reset my progress (v0.13, M41-2): the lessons' progress and the current lesson go, the sound settings stay
         resetProgress: () => resetProgress(d.prefs),
-        // a scan link (train 2): the scan first for a pilot who has begun a lesson or once said he flies by sound
-        experienced: () => experiencedPilot(allProgress(d.prefs), fliesBySound(d.prefs)),
-        onFlies: () => setFliesBySound(d.prefs),
         onStart: (id) => {
             // inside the press: the context and the speech unlock; the rest follows once the engine is up
             const started = setup.audio.start();

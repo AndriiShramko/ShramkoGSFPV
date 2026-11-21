@@ -8,6 +8,7 @@
 // when the lesson is on it, else on the full one), so the screen and the lesson say the same number.
 import { SCAN_FREE_ID, SHIPPED_LESSON_IDS, getLesson, isShippedLesson, lessonPaths, scanFreeLesson } from '@shramko/sonic-fpv';
 import { SHARED_LIMITS } from '@gsfpv/scenes';
+import { isCourseToken } from '../share/flight-link';
 import type { LessonDef, LessonProgress, ModuleId, SpeechLine } from '@shramko/sonic-fpv';
 
 /** Where the pilot stands in a lesson: passed, in progress, left without passing (v0.13), or new. */
@@ -119,7 +120,7 @@ export function launchFailureLine(scan: boolean): SpeechLine {
 export type SonicRequest =
     | { readonly kind: 'start' }
     | { readonly kind: 'lesson'; readonly id: string }
-    | { readonly kind: 'scan'; readonly sceneId: string; readonly size: number }
+    | { readonly kind: 'scan'; readonly sceneId: string; readonly size: number; readonly course?: string }
     | { readonly kind: 'unknown'; readonly raw: string };
 
 /** A scene id as the catalogue and the links write it (letters, digits, dash, underscore), bounded. */
@@ -139,18 +140,14 @@ export function parseSonicParam(raw: string | null, query?: { get(name: string):
         const szRaw = (query?.get('sz') ?? '').trim();
         const size = /^\d+(\.\d+)?$/.test(szRaw) ? Number(szRaw) : szRaw === '' ? 1 : NaN;
         const [lo, hi] = SHARED_LIMITS.size;
-        if (SCENE_ID.test(sceneId) && Number.isFinite(size) && size >= lo && size <= hi) return { kind: 'scan', sceneId, size: Number(size.toFixed(3)) };
+        if (SCENE_ID.test(sceneId) && Number.isFinite(size) && size >= lo && size <= hi) {
+            // lane n-share: the course the link names (course=, share/flight-link.ts) rides along; the course feature flies it
+            const course = (query?.get('course') ?? '').trim();
+            return { kind: 'scan', sceneId, size: Number(size.toFixed(3)), ...(isCourseToken(course) ? { course } : {}) };
+        }
         return { kind: 'unknown', raw: v.slice(0, 64) };
     }
     return isShippedLesson(v) ? { kind: 'lesson', id: v } : { kind: 'unknown', raw: v.slice(0, 64) };
-}
-
-/**
- * Who the start screen of a scan link puts the scan first for (train 2): a pilot who has begun any lesson (saved progress) or once
- * said "I already fly by sound" (store.ts fliesBySound). Anyone else is a first-timer: the lessons first.
- */
-export function experiencedPilot(progress: Readonly<Record<string, unknown>>, saidFlies: boolean): boolean {
-    return saidFlies || Object.keys(progress).length > 0;
 }
 
 /**
@@ -162,7 +159,11 @@ export function freeLessonOf(request: SonicRequest, id: string): LessonDef | nul
     return scanFreeLesson(request.sceneId, [request.size, 0, 0, 0]);
 }
 
-/** The start screen's actions in order for a scan link: 'scan' (fly this scan by sound) and 'lessons' (Continue and the course). */
-export function scanStartOrder(experienced: boolean): readonly ('scan' | 'lessons')[] {
-    return experienced ? ['scan', 'lessons'] : ['lessons', 'scan'];
+/**
+ * What a link with a scene lands on (lane n-share, the owner's wish 2 of 2026-11-20; brief Decision 2): for every pilot, a browser
+ * that never opened the site included, the one main button flies that scene by sound ('scan'), and the lessons are a small second
+ * link ('lessons'), never the destination. Until train 4 a first-timer got the lessons first and the scene last.
+ */
+export function scanStartOrder(): readonly ['scan', 'lessons'] {
+    return ['scan', 'lessons'];
 }
