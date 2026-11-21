@@ -65,7 +65,7 @@ const SNAP = `(() => {
     return { status: h.status ?? null, open: !!e.open, said: String(e.said || '').slice(0, 220),
         topLine: tb ? String((tb.querySelector('.ce-tb-line') || {}).textContent || '').slice(0, 260) : null,
         saved: c.saved ?? null, problem: c.problem ?? null, hud: String((document.querySelector(".hud-flash, .flash, [data-testid=hud-flash]") || {}).textContent || "").slice(0, 200), size: h.scale ? h.scale.size() : null,
-        egates: v && v.course ? v.course.gates.length : null, scr: v ? v.gates : null, shapes: v && v.course ? v.course.gates.slice(0, 3).map((g) => g.shape) : null,
+        egates: v && v.course ? v.course.gates.length : null, ids: v && v.course ? v.course.gates.map((g) => g.id).join(',') : null, scr: v ? v.gates : null, shapes: v && v.course ? v.course.gates.slice(0, 3).map((g) => g.shape) : null,
         tr: v && v.course ? v.course.transform : null, save: s && s.save ? { status: s.save.problem ? s.save.problem.status : null, key: s.save.key } : null,
         lock: document.pointerLockElement ? document.pointerLockElement.tagName : null };
 })()`;
@@ -203,7 +203,15 @@ try {
         const b = await clickSel(`.ce-menu [data-item="${item}"]`, 800);
         const asked = await boxOf('.life-ask [data-ask="yes"]');
         if (asked) await click(asked.x, asked.y, 800);
-        return { item: !!b, asked: asked?.text ?? null };
+        // int4 car 3: Generate opens gen4b's Generate dialog (level, spread); its Build by mouse, then the editor opens again
+        // on the new course (other gate ids)
+        const ids = (await snap()).ids;
+        const dialog = item === 'generate' ? await page.waitForSelector('[data-testid=gen-dialog]', { timeout: 4000 }).then(() => true, () => false) : false;
+        if (dialog) {
+            await clickSel('[data-testid=gen-dialog] [data-action="gen-build"]', 800);
+            await until(snap, (x) => (x.open && x.ids !== null && x.ids !== ids) || (x.problem ?? null) !== null, 300000, 1000);
+        }
+        return { item: !!b, asked: asked?.text ?? null, dialog };
     }
     /**
      * three gates by clicks into the middle of the view with Add gate on (pressed again when a click turned it off); between
