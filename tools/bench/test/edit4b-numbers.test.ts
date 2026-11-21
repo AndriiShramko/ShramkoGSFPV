@@ -125,7 +125,7 @@ describe('edit4b B2: every sentence that names a gate points at it', () => {
     it('the pointed fixes come only from firstWrong, whose one caller points at the gate and no longer turns the camera', () => {
         const hub = read('apps/fly/src/app/builtin/course.ts');
         expect(hub.match(/firstWrong\(/g)).toHaveLength(1);
-        const body = hub.slice(hub.indexOf('const showWrong'), hub.indexOf('const refusedSave'));
+        const body = hub.slice(hub.indexOf('const showWrong'), hub.indexOf('const fixWalls'));
         expect(body).toContain("call('pointAt', w.index, 'problem')");
         expect(body).not.toMatch(/\baim\(\)/);
         expect(hub).toContain('flashGate: (index, on) => stage.flashEdit(index, on)');

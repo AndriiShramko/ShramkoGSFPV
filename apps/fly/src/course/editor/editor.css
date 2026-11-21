@@ -156,19 +156,22 @@
 .ce-topbar .ce-tb[aria-pressed='true'] { background: #2a3a12; }
 .ce-topbar .ce-tb-line {
     color: #c9d1db;
-    font-size: 0.85rem;
-    padding: 0 4px;
-    /* train 3 I2 (D6): never two lines; at most 420 px with an ellipsis, the full text in its title (top-bar.ts).
+    /* lane n-save (t7-plan Decision 6: Save's answer was 12.75 px and cut with '...'): 16 px, it wraps to at most three
+       lines and is never cut; a longer sentence scrolls inside the three lines. The full text stays in its title (top-bar.ts).
        lane editfix E4.2: a fixed basis, not the text's width: a new line no longer moves the centred buttons (a touch tap's
        click is hit-tested after pointerup cleared the held line, and the second Exit tap landed on this line). The width
        too: Chrome sizes the placed bar by its items' max-content, which a basis alone does not set (measured: 340 px) */
+    font-size: 16px;
+    line-height: 1.25;
+    padding: 0 4px;
     flex: 0 1 420px;
     width: 420px;
     min-width: 0;
     max-width: 420px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    max-height: 3.75em;
+    overflow-y: auto;
 }
 .ce-topbar .ce-tb-line.refused { color: #ffb347; }
 /* lane editfix E2: while the course is flown in the mode, Exit stays on the bar and takes a click (no dead end) */

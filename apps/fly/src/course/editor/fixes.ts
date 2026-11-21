@@ -9,8 +9,8 @@ import type { Vec3 } from '@shramko/sonic-fpv';
 export type { FixWalls, GatePose } from '@gsfpv/tracks';
 
 export type FixKind = 'face-line' | 'nudge' | 'lift';
-/** the pilot's answer to the offer: make them (and save when all are made), point at the first, or not now */
-export type FixAnswer = 'yes' | 'show' | 'close';
+/** lane n-save: the Save dialog's answers (panel.ts askSave): Fix all, Save as it is, Show me, the cross */
+export type FixAnswer = 'fix' | 'as-is' | 'show' | 'close';
 /** one gate changed by one correction */
 export interface FixedGate {
     readonly index: number;

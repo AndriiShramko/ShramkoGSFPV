@@ -133,7 +133,7 @@ export class TopBar {
         }
     };
 
-    /** D6: one line, at most 420 px with an ellipsis (editor.css); the full text in its title */
+    /** lane n-save: 16 px, at most three lines of 420 px, never cut (editor.css); the full text in its title too */
     private setLine(text: string): void {
         this.line.textContent = text;
         this.line.title = text;

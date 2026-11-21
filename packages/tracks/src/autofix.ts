@@ -310,8 +310,9 @@ function repairGate(c: Course, i: number, w: FixWalls, level: CourseLevel, maxM:
     return fallback ? { pose: fallback.pose, kinds } : null;
 }
 
-/** what is left wrong with the whole course: every gate's warnings, and a blocked start */
-function leftoversOf(c: Course, w: FixWalls): SaveWarning[] {
+/** what is wrong with the whole course where it stands (the Save dialog lists it; after fixAll, its leftovers): every
+ *  gate's warnings and a blocked start, in SAVE_WARNING_KINDS order. Pure. */
+export function courseWarnings(c: Course, w: FixWalls): SaveWarning[] {
     const out: SaveWarning[] = [];
     const start = c.start ? toFlown(c.start.pos, w.transform) : null;
     if (start && gridDistance(w.col, start) <= NEAR_GRID_M && sphereOverlaps(w.col, start[0], start[1], start[2], w.margin)) out.push({ kind: 'blocked-start', gates: [] });
@@ -353,5 +354,5 @@ export function fixAll(course: Course, walls: FixWalls, level: CourseLevel, opts
         });
         now = withPose(now, i, r.pose.pos, r.pose.quat);
     }
-    return { course: now, moves, leftovers: leftoversOf(now, walls) };
+    return { course: now, moves, leftovers: courseWarnings(now, walls) };
 }

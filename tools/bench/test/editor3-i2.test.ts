@@ -1,5 +1,5 @@
 // Lane editor3, train 3 stage I2-clean (docs/wip/editor3.md): the top bar's line keeps a refusal until the pilot's next
-// action (D6, fake timers), it is one line with an ellipsis, and the flight's parts are hidden in the edit view (D5, D7).
+// action (D6, fake timers), it wraps to three lines and is never cut (lane n-save), and the flight's parts are hidden in the edit view (D5, D7).
 // The browser proof is tools/bench/src/editor3-clean.ts.
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -55,15 +55,15 @@ describe('editor3 I2 the top bar line (D6)', () => {
         expect(seen.at(-1)).toEqual(['Gate 2 is in a wall', true]);
     });
 
-    it('the bar clears a refusal on the next key or press and keeps the line to one line', () => {
+    it('the bar clears a refusal on the next key or press; the line wraps and is never cut (lane n-save, Decision 6)', () => {
         expect(TOP).toMatch(/addEventListener\('keydown', this\.onAct, true\)/);
         // lane editfix E2: the press clears it when let go (pointerup), so the buttons do not move under it
         expect(TOP).toMatch(/addEventListener\('pointerup', this\.onAct, true\)/);
         expect(TOP).toMatch(/this\.line\.title = text/);
         expect(TOP).not.toMatch(/6000/);
         const rule = /\.ce-topbar \.ce-tb-line \{([^}]*)\}/.exec(CSS)?.[1] ?? '';
-        expect(rule).toMatch(/white-space: nowrap/);
-        expect(rule).toMatch(/text-overflow: ellipsis/);
+        expect(rule).toMatch(/white-space: normal/);
+        expect(rule).not.toMatch(/text-overflow: ellipsis/);
         expect(rule).toMatch(/max-width: 420px/);
     });
 });
