@@ -78,7 +78,7 @@ async function rig(gates: number) {
     bus.provide('frameAll', spy.frameAll);
     const seam = {
         on: bus.on.bind(bus), emit: bus.emit.bind(bus), provide: bus.provide.bind(bus), call: bus.call.bind(bus),
-        state: () => state, trackNow: () => track(gates), startNew: spy.startNew, replace: spy.replace, generate: spy.generate, say: spy.say,
+        state: () => state, flown: () => [2, 0, 0, 0], trackNow: () => track(gates), startNew: spy.startNew, replace: spy.replace, generate: spy.generate, say: spy.say,
         menu: (id: string, items: { id: string; run: () => void }[]) => { menus[id] = [...(menus[id] ?? []), ...items]; },
         hook: (_p: string, d: Record<string, unknown>) => Object.assign(spy.hook, d)
     };
@@ -131,7 +131,7 @@ describe('edit4b B1: the Course menu asks before it drops the gates', () => {
         r.offPart();
     });
 
-    it('New empty course asks when there are gates, then starts a course with no gate on the same scene and start', async () => {
+    it('New empty course asks when there are gates, then starts a course with no gate on the same scene, at the scene spawn and the scale flown now (int4 car 3)', async () => {
         const r = await rig(6);
         r.ask.mockResolvedValueOnce(true);
         r.item('new').run();
@@ -141,7 +141,8 @@ describe('edit4b B1: the Course menu asks before it drops the gates', () => {
         const f = r.spy.startNew.mock.calls[0]![0] as TrackFile;
         expect(f.gates).toEqual([]);
         expect(f.scene.id).toBe('s1');
-        expect(f.start).toEqual(track(1).start);
+        expect(f.start).toBeNull();
+        expect(f.transform).toEqual([2, 0, 0, 0]);
         expect(f.generator).toBeNull();
         expect(r.course().gates).toHaveLength(0);
         r.offPart();

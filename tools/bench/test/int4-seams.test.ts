@@ -125,3 +125,25 @@ describe('int4 car 3: gen4b start line x ux4a message rules (t7-base open seam: 
         expect(course).toMatch(/tell\(\{ text: hook\.startLine, kind: 'done', key: COURSE_LINE, minMs: START_LINE_MS \}\)/);
     });
 });
+
+describe('int4 car 3: edit4b New empty course x gap-gen start x gap-save flown sizes', () => {
+    it('the empty course takes the scale flown now and the scene spawn, not the old course\'s start and scale', async () => {
+        const { emptyCourse } = await import('../../../apps/fly/src/course/editor/parts/life-texts');
+        const like = {
+            format: 'shramko.track/1', id: '70b50d42-1', version: 3, parent: null, title: 'asked', scene: { kind: 'scan', id: '70b50d42', version: 1 },
+            transform: [1, 0, 0, 0], gates: [{ id: 'g1' }], laps: 3, start: { pos: [40, 2, -9], yaw: 1.2 },
+            author: { kind: 'generator', name: 'gen' }, generator: { name: 'g2', version: '1', seed: 7, params: {} }, created: '2026-11-21T00:00:00Z'
+        } as unknown as Parameters<typeof emptyCourse>[0];
+        const e = emptyCourse(like, 'New course', [15.35, 1, 2, 3]);
+        expect(e.transform).toEqual([15.35, 1, 2, 3]);
+        expect(e.start).toBeNull();
+        expect(e.gates).toEqual([]);
+        expect(e.laps).toBe(1);
+        expect(e.generator).toBeNull();
+        expect(e.scene).toEqual(like.scene);
+    });
+    it('life.ts hands the seam\'s flown() to it', () => {
+        const life = readFileSync(join(SRC, 'course/editor/parts/life.ts'), 'utf8');
+        expect(life).toMatch(/emptyCourse\(seam\.trackNow\(\), t\(LIFE_LINES\.newTitle\), seam\.flown\(\)\)/);
+    });
+});

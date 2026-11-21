@@ -54,7 +54,7 @@ export function install(seam: EditorSeam): () => void {
     };
     const runs: Record<LifeMenuId, () => void> = {
         new: () => void afterLoss(seam, question('new'), () => {
-            seam.startNew(emptyCourse(seam.trackNow(), t(LIFE_LINES.newTitle)));
+            seam.startNew(emptyCourse(seam.trackNow(), t(LIFE_LINES.newTitle), seam.flown()));
             did('new');
         }),
         clear: () => {
