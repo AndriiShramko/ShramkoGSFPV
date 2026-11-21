@@ -106,6 +106,7 @@ sound where the owner, who turned sound on in place over a laid course, had 36 (
   steps (read only).
 - Later, optional: the server's /s/<id> page could carry `course=` (apps/api/server.py fly_link), so a course flight keeps its picture
   card; until then a flight with a course shares its flight address.
+- Review: the sound Share's spoken line for a course never saved is a new key sonic.link.unsaved (fly/sonic locale, four languages).
 
 ## Cost notes
 
@@ -117,9 +118,20 @@ sound where the owner, who turned sound on in place over a laid course, had 36 (
 - S3 run 2: about 30 calls; the most went to the gates' two failures (the one-query-reader audit and the headless-launch scan):
   running main-audit.test.ts and chrome.test.ts beside the lane's own tests before the gates would have caught both.
 
+- Review: about 40 calls; the most went to a probe step of my own (the friend shares again) that the harness could not drive (the sound page has no pause menu on Escape, the consent bar lies over the pause menu); a probe helper "open Share in any mode" would make such steps cheap.
+
 ## What the owner should try
 
 1. Fly a scene with gates, key Escape, "Fly by Sound here", key Escape, "Share scene": the address now ends in `sonic=fly&scene=...&course=...`.
 2. Open it in a private window: one green button "Fly this scan by sound"; one click flies that scene by sound with its gates.
 3. The lessons are the small link under that button, never the first screen.
 4. A course laid in a normal flight shows fewer gates by sound (single upright gates); say which you want (For the lead).
+
+## Review
+
+Verdict: SHIP (independent check, 2026-11-21). One proven finding repaired: the Share in a flight by sound over a course never
+saved dropped the course silently; it now says so in one line (sonic.link.unsaved; tools/bench/test/share-links-sound-note.test.ts,
+NEG OK on the lane head). The acceptance probe on a release of the repair: six steps PASS. Doubts that do not hold the lane: the
+table row NEG on the base fails by a missing export, not an assertion (the live run is the real control); 24 versus 36 gates by
+sound (course4, For the lead); the consent bar lies over the pause menu on a fresh profile (site-wide). The probe gets an optional
+step RESHARE=1 (the friend shares again), off by default.

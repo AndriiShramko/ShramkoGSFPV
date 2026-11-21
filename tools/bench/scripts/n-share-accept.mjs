@@ -17,7 +17,7 @@
 // other than GET is aborted by the probe (listed in the JSON), nothing is saved, sent or created; the course is generated in the tab.
 // Usage: node tools/bench/scripts/n-share-accept.mjs <base, e.g. http://localhost:6921> <out.json> [tag]
 // env: SCENE (default 887f27aa, Tunis), SEED (default 1), COURSE_MS (default 240000), ROWS (default sound,normal),
-//      SHOT_ROWS (rows whose landing is pictured, default sound,normal), TEMP (default U:/Temp/gsfpv-train4/n-share).
+//      SHOT_ROWS (rows whose landing is pictured, default sound,normal), RESHARE (1: the friend shares again), TEMP (default U:/Temp/gsfpv-train4/n-share).
 import { createRequire } from 'node:module';
 import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
@@ -38,6 +38,8 @@ const ROWS = (process.env.ROWS ?? 'sound,normal').split(',');
 const SHOT_ROWS = new Set((process.env.SHOT_ROWS ?? 'sound,normal').split(',').filter(Boolean));
 const TEMP = process.env.TEMP_DIR ?? 'U:/Temp/gsfpv-train4/n-share';
 const SHOTS = 'U:/Temp/gsfpv-train4/shots';
+// RESHARE=1 (the review step): the friend shares again from where he landed; off by default (the live check keeps its three steps)
+const RESHARE = process.env.RESHARE === '1';
 const VIEW = { viewport: { width: 1536, height: 730 }, deviceScaleFactor: 1.25 };
 const T0 = Date.now();
 const log = (...a) => console.error(`[${((Date.now() - T0) / 1000).toFixed(0).padStart(4)}s]`, ...a);
@@ -215,6 +217,13 @@ async function friend(row, url, sharer) {
         v = await until(page, (x) => (x.gates ?? 0) > 0 && x.gates === sharer.gates, COURSE_MS, 500);
         const same = !!v && v.scene === SCENE && v.gates === sharer.gates && v.courseParam === COURSE && (sound ? v.sonic?.lesson === 'scan-free' && v.sonic.scene === SCENE && v.sonic.builtin === false : v.sonic === null || v.sonic.lesson === null);
         step(`${row}.fliesSame`, same, { clicks, sharer, friend: v });
+        // the review step: the friend shares again from where he landed (Escape, pause.share): the course must survive the second hop
+        // (the sound page rewrites its own address when a lesson starts, sonic/lessons.ts url())
+        if (!RESHARE) return;
+        const again = await shareFromPause(page, ctx, `${row}.friend`);
+        await page.screenshot({ path: `${SHOTS}/n-share-${tag}-${row}-reshare.png` }).catch(() => undefined);
+        const q2 = again ? new URL(again).searchParams : new URLSearchParams();
+        step(`${row}.friendReshares`, !!again && q2.get("scene") === SCENE && q2.get("course") === COURSE && (sound ? q2.get("sonic") !== null : q2.get("sonic") === null), { url: again });
     } finally {
         await ctx.close();
     }
@@ -287,7 +296,7 @@ try {
     await browser.close();
 }
 
-const NAMES = ROWS.flatMap((r) => [`${r}.shareCarries`, `${r}.landsOnScene`, `${r}.fliesSame`]);
+const NAMES = ROWS.flatMap((r) => [`${r}.shareCarries`, `${r}.landsOnScene`, `${r}.fliesSame`, ...(RESHARE ? [`${r}.friendReshares`] : [])]);
 for (const n of NAMES) if (!(n in steps)) steps[n] = 'FAIL';
 const verdict = { probe: 'n-share-accept', base, tag, browser: pick.kind, viewport: '1536x730@1.25', scene: SCENE, course: COURSE, steps, pass: NAMES.every((n) => steps[n] === 'PASS'), facts, blocked, errors };
 mkdirSync(dirname(outFile), { recursive: true });
