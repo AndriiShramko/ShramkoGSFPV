@@ -498,6 +498,26 @@ hot-sog3, merged from origin/main 852821e5, is already live: released on its own
 5. nginx: no (deploy/nginx.conf unchanged since car 2).
 6. Walls: no new walls (the S3 build used the nine release walls).
 
+Car 5 (what changed since car 3's head 72d4babfbadf92075849a8e8d8234096dc8eeb8a: `git diff 72d4babf HEAD -- apps/api
+apps/rooms deploy packages/sonic-fpv` gives deploy/live-checks.sh and the gitlink of packages/sonic-fpv only; no held lane,
+no held gap lane, no re-baked walls)
+
+1. The sound package FIRST: its main must hold 9ac7876dee42b8a874e51e6d46eb7cf8d70c3a48 before the page. The package's
+   main is 719aaf54 today (car 3's pin); 9ac7876d is a fast-forward of it, 11 commits of lane tutor-moment (the moment
+   contract and machine: a new sound in the first set stops the flight, is named, played alone, then the task is said;
+   RunnerOptions.known and guide; the 'moment' and 'audible' actions; the first set's lessons reworded in four languages;
+   the moment events in the session codec and the replay). It is on no remote: it lives in
+   C:/dev/gsfpv-t8-tutor-moment/packages/sonic-fpv, branch tutor-moment (and in this work copy's submodule); push from
+   there. The page uses the package's moment API (RunnerOptions.known, the 'moment' and 'audible' actions), so the
+   package goes first.
+2. The API files: none (apps/api unchanged since car 3's head).
+3. The page: one release of this head (apps/fly with n-share's link order and one-button landing, tutor-say's start
+   screen and say path, tutor-air's moments, card and G tour; the fly/sonic locales; packages/prefs doc.ts and keymap.ts;
+   the site; the generated catalogue), built with packages/sonic-fpv at 9ac7876d.
+4. Rooms: no (apps/rooms and apps/api/rooms unchanged).
+5. nginx: no (deploy/nginx.conf unchanged since car 3's head).
+6. Walls: no new walls (the S2 build used the nine release walls); deploy/release-walls.sh need not run.
+
 ## Live checks
 
 Car 1. After the release and the nginx reload: `LIVE_ONLY=<names> bash deploy/live-checks.sh <outdir>` with the names
@@ -690,6 +710,46 @@ saving at that size and the sound lesson). No person, phone, controller or headp
    On your right, Ceiling, Floor), then "Fly to each wall and stop close to it without touching it", "Go." at about 2
    minutes. Leave and come back: Quick start is still first, "Continue: A small room" second.
 
+Car 5 (n-share, tutor-say, tutor-moment, tutor-air: the tutorial is the first flight). No person, screen reader, phone,
+controller or real ears took part in any check.
+
+1. Open Fly by Sound with headphones on: https://gsfpv.flyreelstudio.eu/en/fly/?sonic=start (a new private window shows
+   it as a new pilot does). Press the Down arrow once: the voice reads only the title and the main button ("Fly by Sound.
+   Start flying ..."), then where the focus went ("All lessons"). No list of keys, no "Item 2 of 2".
+2. Click Start flying. The headphone check asks left and right only: press 1, then 2. About half a minute after the click
+   you are in the air in a small room ("... Go."). The box at the left shows one line, the step's task, no "Step 2 of 3".
+3. Fly forward with key W. Near the wall the game stops by itself: the drone hangs still, every other sound goes quiet,
+   the voice says "Wall: a wooden knock from a wall near you, faster as you get closer.", the knock plays alone, then
+   one sentence on what to do. The screen shows the yellow word "Wall" and that sentence in large letters. The keys are
+   named once (Z hears it again, N goes on, Shift+K "I know this"), not at every step. Key N: the flight goes on. Each
+   new sound of the first lessons is introduced the same way the first time it appears.
+4. Key K at any time says the keys, because you asked.
+5. Press key G in any flight by sound ("What is this sound?"): the flight stops, "Sound 1 of 2: Wall." with the knock
+   alone, then the next sound, "Back to the flight.", and you fly on.
+6. The Guide setting: on the sound start screen, Settings, Guide: Full, Short (the default) or New sounds only. Choose New
+   sounds only and reload: it is remembered. With the narrator off (Shift+V) no moment stops the flight.
+7. Share by sound (n-share): open a scene with gates (/en/fly/?scene=887f27aa&course=g1.1), click into it, Escape, "Fly
+   by Sound here", Escape, Share. Open the copied address in another browser: one green button "Fly this scan by sound";
+   one click flies that scene with that course by sound. Known difference: the friend hears 24 gates in Tunis g1.1 where
+   the sharer, who turned sound on over a laid course, had 36 (n-share's For the lead: which is right is your call).
+8. Held lanes: none; car 5 carried every lane of its order.
+
+Car 5, for the lead.
+- The site's sound page (apps/site, another session) still describes "Quick start", "Full course" and the listening part
+  as car 3 left them. After this car: the first button is "Start flying" (the lessons are "All lessons", then "Continue");
+  the start screen reads only the title and Start flying; in the first lessons the game stops at each new sound
+  ("moments": named, played alone, then the task; Z again, N on, Shift+K I know this); key G is "What is this sound?"
+  (the sounds you hear now, one by one; the glossary stays in the lesson menu); a new setting Guide (Full, Short, New
+  sounds only); the line of keys is said once, K says it when asked; the progress box shows one line, no counters.
+- Three questions for the owner to send with the release link https://gsfpv.flyreelstudio.eu/en/fly/?sonic=start once
+  car 5 is live (t8-plan Part D):
+  1. To Dawid: "After 'Start flying', was anything read out that you did not need? Which words?"
+  2. To Dawid and the Lodz testers: "When the game stopped and played a new sound, could you find that sound again in
+     flight? Which one not?"
+  3. To the testers: "Was any sentence too long or said twice? Where?"
+- Open calls taken as t8-plan recommended (Part D): the narrator off is the guide off; moments only in the first set (the
+  other lessons keep their intros); G is the tour, the glossary stays in the lesson menu; Guide defaults to Short.
+
 ## Not verified
 
 Car 1
@@ -746,6 +806,23 @@ Car 3
   the planner's own stats (nothing outside the scan, nothing under its ground); whether the owner wants street gates
   kept at eye height in an asked course is for gap-gen's owner.
 - course-path-wroclaw fails on the live site today with the old generator (one gate of 37 at 2.2 m): not car 3's.
+
+Car 5
+- No person, no screen reader and no real ears took part: the spoken lines were spied in the page (speechSynthesis), the
+  words counted, the sounds judged by the engine's plan, not heard. The testers and the author of the feedback (the three
+  questions under What the owner should try) are the real check.
+- The 60 s to the first movement and the 7 minutes of the first set hold on measured Windows voices (en: moving at about
+  31 s, 51-58 words); a slower voice or Russian may be longer. Only English was walked in a page; es, pl, ru only by the
+  package's words check (VL-4) and the locale gates.
+- The probes ran with ?render=off but one drawn run (the moment card at 1536x730 and 844x390); no phone, no touch.
+- n-share: the friend's sound flight lays 24 gates where the in-place sharer had 36 (Tunis g1.1); the Share panel still
+  uploads a picture a course link does not use; "Save and share" needs a hook from the course feature. Not changed.
+- Not repaired, for their owners: the headphone trial still says "Sound 2 of 2." (the package's line; the screen no longer
+  shows it); the flight region takes the focus only after a pause ends (tutor-say's For the lead: focusFlight when a
+  lesson opens); sonic-v13-page.ts, sonic-start-keyboard.ts and sonic-review-keys.ts
+  (lane probes, none in deploy/live-checks.sh) still name the old buttons (sonic-start-full, "Full course").
+- The three new live checks' positive side ran on the release build of 9bebe9b1 (S2); against the live site with car 5's
+  code they run after the release (live_only).
 
 ## Cost notes
 
