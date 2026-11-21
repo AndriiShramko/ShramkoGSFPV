@@ -132,3 +132,21 @@ Chrome accessibility tree, not with a real screen reader.
   the keys line "named once" in the step check; reading one ears-headphones step's spoken lines in S2's evidence first would have
   caught "Sound 2 of 2." before the build.
 - S3: most replies went to moving the old start-screen tests (counts and item numbers shift with one more row); a one-off replace script per test file (U:/Temp) did it in one run; check a replace that renumbers in sequence (n: 14 -> 15 then 15 -> 16 hit the same line).
+- Review: most turns went to the negative control (neg_control.py needs the test command as ONE quoted string on Windows, else
+  npx is not found) and to a scratch test whose console output vitest hid (write to a file instead); a neg_control note on both
+  would save three turns.
+
+## Review
+
+Verdict: SHIP (independent check of ffc19a3a; full text U:/Temp/gsfpv-train4/reviews/tutor-say.md). No code repaired.
+- Tests: sonic-said-between-steps, sonic-start-screen, sonic-say-length, sonic-said-hold, course-progress, prefs sonic-guide
+  78/78. NEG OK: lessons.ts at the base (4 of 4 fail); start-screen.ts + spoken-list.ts at n-share (the S3 tests fail).
+- Acceptance on a build of ffc19a3a: tutor-say-accept.mjs 7/7 PASS (evidence accept-review-local.json).
+- The reviewer's own step tools/bench/scripts/tutor-say-review.mjs ("my screen reader speaks" on, five step changes): the keys
+  line in the captions once and never after, #ui aria-live off at every change, no voice: PASS (review-sr-local.json); the live
+  site: the keys line at all five changes, #ui polite: FAIL (review-sr-live.json).
+- Release condition: the Guide row (guide.ts guideLevel) is read only by the start screen; it gets its effect from lane
+  tutor-air. Do not deploy tutor-say without tutor-air, or the row is a control that does nothing.
+- Still open for the lead (listed above): the page probes that name sonic-start-full, the panel counters or "Item n of N".
+- Changed outside the owned files: tools/bench/test/sonic-hints.test.ts, sonic-lesson-keys.test.ts, sonic-review-v13.test.ts
+  (moved to the new rule), evidence/2026-11-21/b-repo-b18.json (gate output).

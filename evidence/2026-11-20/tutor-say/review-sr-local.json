@@ -1,0 +1,66 @@
+{
+ "probe": "tutor-say-review",
+ "base": "http://localhost:7022",
+ "pass": true,
+ "srOn": true,
+ "started": true,
+ "changes": [
+  {
+   "from": "ears-headphones",
+   "to": "ears-headphones",
+   "panel": "Headphones on, L on your left ear.",
+   "captions": [
+    "Sound 2 of 2.",
+    "Next, key N. Back, key B. Repeat, key Z. Menu, key Escape. Main menu, key X."
+   ],
+   "keyLines": 1,
+   "uiLive": "off"
+  },
+  {
+   "from": "ears-headphones",
+   "to": "walls-hall",
+   "panel": "Wall",
+   "captions": [
+    "A small room",
+    "Wall"
+   ],
+   "keyLines": 0,
+   "uiLive": "off"
+  },
+  {
+   "from": "walls-hall",
+   "to": "walls-hall",
+   "panel": "Wall",
+   "captions": [
+    "Go."
+   ],
+   "keyLines": 0,
+   "uiLive": "off"
+  },
+  {
+   "from": "walls-hall",
+   "to": "corridor",
+   "panel": "Height tone",
+   "captions": [
+    "The long corridor",
+    "Height tone"
+   ],
+   "keyLines": 0,
+   "uiLive": "off"
+  },
+  {
+   "from": "corridor",
+   "to": "corridor",
+   "panel": "Height tone",
+   "captions": [
+    "Go."
+   ],
+   "keyLines": 0,
+   "uiLive": "off"
+  }
+ ],
+ "voiceSaidInLesson": [],
+ "keyLinesTotal": 1,
+ "afterFirst": 0,
+ "errors": []
+}

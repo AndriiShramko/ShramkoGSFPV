@@ -1,0 +1,70 @@
+{
+ "probe": "tutor-say-review",
+ "base": "https://gsfpv.flyreelstudio.eu",
+ "pass": false,
+ "srOn": true,
+ "started": true,
+ "changes": [
+  {
+   "from": "ears-headphones",
+   "to": "ears-headphones",
+   "panel": "Headphone check\nLesson 1 of 7\nStep 3 of 3",
+   "captions": [
+    "Sound 2 of 2.",
+    "Next, key N. Back, key B. Repeat, key Z. Menu, key Escape. Main menu, key X."
+   ],
+   "keyLines": 1,
+   "uiLive": "polite"
+  },
+  {
+   "from": "ears-headphones",
+   "to": "walls-hall",
+   "panel": "A small room\nLesson 2 of 7\nStep 1 of 2\nCounted 0 of 3",
+   "captions": [
+    "A small room",
+    "Next, key N. Back, key B. Repeat, key Z. Menu, key Escape. Main menu, key X.",
+    "Wall"
+   ],
+   "keyLines": 1,
+   "uiLive": "polite"
+  },
+  {
+   "from": "walls-hall",
+   "to": "walls-hall",
+   "panel": "A small room\nLesson 2 of 7\nStep 2 of 2\nAttempt 1\nCounted 0 of 3",
+   "captions": [
+    "Go.",
+    "Next, key N. Back, key B. Repeat, key Z. Menu, key Escape. Main menu, key X."
+   ],
+   "keyLines": 1,
+   "uiLive": "polite"
+  },
+  {
+   "from": "walls-hall",
+   "to": "corridor",
+   "panel": "The long corridor\nLesson 3 of 7\nStep 1 of 2\nCounted 0 of 1",
+   "captions": [
+    "The long corridor",
+    "Next, key N. Back, key B. Repeat, key Z. Menu, key Escape. Main menu, key X.",
+    "Height tone"
+   ],
+   "keyLines": 1,
+   "uiLive": "polite"
+  },
+  {
+   "from": "corridor",
+   "to": "corridor",
+   "panel": "The long corridor\nLesson 3 of 7\nStep 2 of 2\nAttempt 1\nCounted 0 of 1",
+   "captions": [
+    "Go.",
+    "Next, key N. Back, key B. Repeat, key Z. Menu, key Escape. Main menu, key X."
+   ],
+   "keyLines": 1,
+   "uiLive": "polite"
+  }
+ ],
+ "voiceSaidInLesson": [],
+ "keyLinesTotal": 5,
+ "afterFirst": 4,
+ "errors": []
+}
