@@ -65,7 +65,7 @@ splat-transform 3.12.0, probe tools/bench/scripts/hot-sog3-scans.mjs, live check
     locales and scan-open-error.test.ts back to a27cafc7). n-scan-accept.mjs keeps the judgement of a heavy file: drawn, its
     card must show "about N min left" with a visible Cancel; still downloading at MAXS with the bytes growing every 20 s is
     'slow-said' (PASS), never "endless".
-  - [x] gates once (see Claims 5).
+  - [x] gates once (see Claims 5); dist deleted.
 
 ## Diagnosis (S1)
 
@@ -113,7 +113,7 @@ Read from C:/dev/.gsfpv-lanes/designs/t7-scene-open.md (confirmed by a second ag
    gone, huge and newer FAIL, control PASS (S3). a39abad1 itself opens on live: hot-sog3 is already deployed there.
 4. The repairs have unit tests that fail on the base 03624451: scan-sog-version.test.ts (S1), scan-kinds.test.ts and
    scan-ply-size.test.ts (S2), scan-open-error.test.ts (S3); each NEG OK (neg_control.py, recorded in Status).
-5. Gates once on the final tree: `gates.py --only typecheck,vitest,architecture,i18n,b18,leaks`. Last result: GATES_RESULT.
+5. Gates once on the final tree: `gates.py --only typecheck,vitest,architecture,i18n,b18,leaks`. Last result: all six PASS on 67dc9e1e (typecheck 48 s, vitest 140 s, architecture, i18n, b18, leaks).
 
 ## Not verified
 
