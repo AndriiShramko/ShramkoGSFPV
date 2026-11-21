@@ -199,6 +199,22 @@ t7-base 03624451 of job base7: gap-gen (gen4a, gen4b), gap-save, gap-sound and t
       20261121-141042, int4/gates-car3s3b.log). Then origin/main d7d60663 (STATE.md and the lead note, docs only) merged:
       the gates are enough. int4-car3.json's sha is the commit that writes this line.
 
+Car 5 (job int4-car5, work copy C:/dev/gsfpv-v13-int, branch train4 on car 3's head 72d4babfbadf92075849a8e8d8234096dc8eeb8a
+(the `sha` of int4-car3.json); the lead's order of 2026-11-21: the tutorial lanes before car 4. Lanes: n-share, tutor-say,
+tutor-moment, tutor-air. The seams, the full check, Deploy order, Live checks and the hand-over cover what changed since
+car 3's head.)
+
+- [x] S1 the merges: origin/main b9bbc779 (fix-lod probe and lead notes; fast-forward); 9a14451c n-share, 75dd20ca
+      tutor-say, 41ff795f tutor-moment, a7ac26e6 tutor-air (all four reviews 'Verdict: SHIP' when S1 started; nothing
+      held). The package pin moves 719aaf54 -> 9ac7876dee42b8a874e51e6d46eb7cf8d70c3a48 (tutor-moment's package head,
+      fetched from C:/dev/gsfpv-t8-tutor-moment/packages/sonic-fpv; 719aaf54 is its ancestor, so no join branch; not yet
+      on the package's main). Every lane head is an ancestor of HEAD; pnpm install --frozen-lockfile rc 0, gen-catalog
+      everything up to date, pnpm -r typecheck rc 0 on a7ac26e6.
+- [ ] S2 the seams (start-screen/start-model, lessons.ts, sonic locales, keymap G and Shift+K, doc.ts guide, the #ui
+      live region in a lesson), the one full check: gates, a6-reference, the package's tests, one release build,
+      tutor-say-accept, tutor-air-accept, n-share-accept, first-set.test.ts, accept-fly B6-B16, pictures
+- [ ] S3 the hand-over (fetch and merge origin/main first; int4-car5.json)
+
 ## Progress
 
 Car 1 (one line a lane, in the merge order)
@@ -234,6 +250,14 @@ Car 2 (job int4, on top of car 1's head 2716e78e and the release merge aa18f1e4 
 Car 3 (job int4-car3, on car 2's head 267923c3; one line)
 
 - t7-base (gap-gen with gen4a and gen4b, gap-save, gap-sound; base_of 030d11d1): merged 6ef4e3b8 (reviews gap-gen, gap-save, gap-sound SHIP), no conflict; the package pin moves 53a56759 -> 719aaf54 (fetched from base7's copy, not yet on the package's main); gen-catalog no change; pnpm -r typecheck rc 0
+
+Car 5 (job int4-car5, on car 3's head 72d4babf and origin/main b9bbc779; one line a lane, in the merge order)
+
+- n-share: merged 9a14451c (review SHIP); one conflict, evidence/2026-11-21/b-repo-b18.json (add/add, a gate's output): n-share's file taken whole, S2's gates write it again; pnpm -r typecheck rc 0
+- tutor-say: merged 75dd20ca (review SHIP; carries n-share), no conflict
+- tutor-moment: merged 41ff795f (review SHIP), no conflict; the gitlink takes its package head 9ac7876d (719aaf54 is an ancestor), the package checked out there
+- tutor-air: merged a7ac26e6 (review SHIP; carries tutor-say and tutor-moment, pin 9ac7876d), no conflict; gen-catalog up to date, pnpm -r typecheck rc 0
+- held: none
 
 ## Seams
 
@@ -704,3 +728,4 @@ Car 3
   line in live-checks.sh that repeated its probe's judge (cpband), so the probe's repair did not reach it. Cheaper: a
   live check should take its probe's exit code as its verdict (one judge, not two), and a lane that changes a rule
   (gap-gen's heights, menu4's levels, edit4a's framing) should grep deploy/live-checks.sh and tools/bench for the old rule.
+- Car 5 S1 (12 calls): four clean merges; the one slip was merging tutor-moment before fetching its package head (the gitlink was right, the checkout lagged until git submodule update). Cheaper: fetch the package head before the merge that moves the pin, as the header says.
