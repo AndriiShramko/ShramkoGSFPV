@@ -11,7 +11,7 @@ import type { AudioDeps, PageEngine } from '../../../apps/fly/src/sonic/audio';
 import type { CaptionSink } from '../../../apps/fly/src/sonic/entry';
 import { mkStore } from '../../../packages/prefs/test/helpers';
 import * as lookPrefs from '../../../apps/fly/src/sonic/look-prefs';
-import { FakeDocument } from './sonic-fake-dom';
+import { FakeDocument, FakeEvent } from './sonic-fake-dom';
 import { headRig } from './sonic-head-fakes';
 import type { HeadRig } from './sonic-head-fakes';
 
@@ -186,7 +186,7 @@ describe('lane n-share: the start screen of a link with a scene (?sonic=fly|scan
 
     it('control: the plain start screen (?sonic=start) has no scan button', () => {
         const { s } = open();
-        expect(order()).toEqual(['sonic-start-quick', 'sonic-start-full']);
+        expect(order()).toEqual(['sonic-start-quick', 'sonic-start-all']);
         s.dispose();
     });
 });
@@ -194,25 +194,28 @@ describe('lane n-share: the start screen of a link with a scene (?sonic=fly|scan
 // ------------------------------------------------------------------ C2
 
 describe('C2 (M41-2, W7): the course from the beginning, Continue, the 28 lessons with their states, Reset with a confirm', () => {
-    it('lane sound6 S2 (a, b): before any lesson: no Continue; "Quick start" first and primary, "Full course" second; no path radios; each press saves its path and opens its first lesson', () => {
+    it('lane tutor-say S3 (was sound6 S2 (a, b)): before any lesson: no Continue; "Start flying" first and primary, "All lessons" second; no path radios; All lessons saves the full path and takes the focus to the lessons; Start flying saves the fast one and opens its first lesson', () => {
         const { s, started, setup, store } = open();
         expect(byTestId(doc, 'sonic-start-continue')).toBeNull();
         const q = byTestId(doc, 'sonic-start-quick')!;
-        const f = byTestId(doc, 'sonic-start-full')!;
-        expect(q.parentElement!.querySelectorAll('button').map((b) => b.getAttribute('data-testid'))).toEqual(['sonic-start-quick', 'sonic-start-full']);
-        expect(q.textContent).toBe(`Quick start${EN.say('menu.path.fast-what')}`);
-        expect(f.textContent).toBe(`Full course${EN.say('menu.path.full-what')}`);
+        const f = byTestId(doc, 'sonic-start-all')!;
+        expect(q.parentElement!.querySelectorAll('button').map((b) => b.getAttribute('data-testid'))).toEqual(['sonic-start-quick', 'sonic-start-all']);
+        expect(q.textContent).toBe(`Start flying${EN.say('menu.path.fast-what')}`);
+        expect(f.textContent).toBe('All lessons');
         expect(q.className).toContain('primary');
         expect(f.className).not.toContain('primary');
         expect(doc.querySelectorAll('input').filter((x) => (x.getAttribute('data-testid') ?? '').startsWith('sonic-path-'))).toHaveLength(0);
         expect(byTestId(doc, 'sonic-start-beginning')).toBeNull();
         f.click();
-        expect(started).toEqual([lessonPaths().full[0]]);
+        expect(started).toEqual([]);
         expect(setup.prefs.path).toBe('full');
         expect(store.collection('sonic').prefs).toMatchObject({ path: 'full' });
+        expect(doc.activeElement).toBe(doc.querySelector('#sonic-h-lessons'));
+        // the lessons are counted on the full course now
+        expect(doc.querySelectorAll('[data-testid="sonic-lesson"]').map((r) => r.getAttribute('data-lesson'))).toEqual(lessonPaths().full);
         byTestId(doc, 'sonic-start-quick')!.click();
-        expect(started).toEqual([lessonPaths().full[0], lessonPaths().fast[0]]);
-        expect(started[1]).toBe('ears-headphones');
+        expect(started).toEqual([lessonPaths().fast[0]]);
+        expect(started[0]).toBe('ears-headphones');
         expect(setup.prefs.path).toBe('fast');
         expect(store.collection('sonic').prefs).toMatchObject({ path: 'fast' });
         s.dispose();
@@ -222,7 +225,7 @@ describe('C2 (M41-2, W7): the course from the beginning, Continue, the 28 lesson
         const progress = { 'walls-hall': P('walls-hall', { passed: true, attempts: 5, successes: 3 }), 'hover-height': P('hover-height', { attempts: 2, skipped: true }), 'rings-first': P('rings-first', { attempts: 2, successes: 1 }) };
         const { s, started, store } = open({ progress, current: 'rings-first' });
         const buttons = byTestId(doc, 'sonic-start-continue')!.parentElement!.querySelectorAll('button').map((b) => b.getAttribute('data-testid'));
-        expect(buttons).toEqual(['sonic-start-quick', 'sonic-start-continue', 'sonic-start-full']);
+        expect(buttons).toEqual(['sonic-start-quick', 'sonic-start-all', 'sonic-start-continue']);
         s.show();
         expect(focusedId(doc)).toBe('sonic-start-quick');
         const c = byTestId(doc, 'sonic-start-continue')!;
@@ -231,7 +234,6 @@ describe('C2 (M41-2, W7): the course from the beginning, Continue, the 28 lesson
         expect(c.className).not.toContain('primary');
         const before = JSON.stringify(storeMod.allProgress(store));
         expect(byTestId(doc, 'sonic-start-quick')!.className).toContain('primary');
-        expect(byTestId(doc, 'sonic-start-full')!.textContent).toContain('Your progress is kept.');
         const b = byTestId(doc, 'sonic-start-quick')!;
         expect(b.textContent).toContain('Your progress is kept.');
         b.click();
@@ -338,12 +340,12 @@ function shown(o: Parameters<typeof open>[0] = {}): Screen {
 /** The stops of a fresh screen with no progress and the volume part closed, in the page's order. */
 const STOPS = [
     ...['#sonic-sec-start', '#sonic-sec-headphones', '#sonic-sec-lessons', '#sonic-sec-settings'],
-    'sonic-start-quick', 'sonic-start-full',
+    'sonic-start-quick', 'sonic-start-all',
     'sonic-hp-left', 'sonic-hp-right',
     ...lessonPaths().full.map((id) => `lesson:${id}`), 'sonic-reset',
     // v13-int step 3: sound from above and below after the target height note; the sound panel and the attitude display after the frame;
     // lane sonic-beacon: the target hum showing the way after sound from above and below
-    'sonic-theme', 'sonic-calm', 'sonic-polarity', 'sonic-rate', 'sonic-captions', 'sonic-sr', 'sonic-narrator', 'sonic-motor', 'sonic-motor-level', 'sonic-height-target', 'sonic-height-direction', 'sonic-beacon', 'sonic-frame', 'sonic-look-soundPanel', 'sonic-look-attitude', 'sonic-key-hints', 'sonic-head', 'summary',
+    'sonic-theme', 'sonic-calm', 'sonic-polarity', 'sonic-rate', 'sonic-captions', 'sonic-sr', 'sonic-narrator', 'sonic-guide', 'sonic-motor', 'sonic-motor-level', 'sonic-height-target', 'sonic-height-direction', 'sonic-beacon', 'sonic-frame', 'sonic-look-soundPanel', 'sonic-look-attitude', 'sonic-key-hints', 'sonic-head', 'summary',
     'sonic-about', 'sonic-leave'
 ];
 /** The focused control as STOPS names it. */
@@ -367,7 +369,9 @@ describe('C3 (M41-4, W13): the start screen and the mode\'s settings as a spoken
         const first = doc.key('ArrowDown');
         expect(first.defaultPrevented).toBe(true);
         expect(setup.audio.ac).not.toBeNull();
-        expect(engine.said.map((x) => [x.line.key, x.interrupt])).toEqual([['sonic.say.listHelp', true], ['sonic.say.text', false]]);
+        // lane tutor-say S3: the opening line (the title and the main button), not how the list works (that is key K's)
+        expect(engine.said.map((x) => [x.line.key, x.interrupt])).toEqual([['sonic.say.text', true], ['sonic.say.text', false]]);
+        expect(heard(engine)[0]).toBe(`Fly by Sound. Start flying. ${EN.say('menu.path.fast-what').replace(/\.$/, '')}`);
         expect(lastHeard(engine).text).toBe('Fly by Sound sections. Start. Item 1 of 4.');
         const visited = [stopName(doc)];
         for (let i = 1; i < STOPS.length; i++) {
@@ -380,8 +384,9 @@ describe('C3 (M41-4, W13): the start screen and the mode\'s settings as a spoken
         expect(engine.said.slice(2).every((x) => x.interrupt)).toBe(true);
         const lines = heard(engine).slice(1);
         const at = (name: string): string => lines[STOPS.indexOf(name)]!;
-        expect(at('sonic-start-quick')).toBe(`Start. Quick start. ${EN.say('menu.path.fast-what').replace(/\.$/, '')}. Item 1 of 2.`);
-        expect(at('sonic-start-full')).toBe(`Full course. ${EN.say('menu.path.full-what').replace(/\.$/, '')}. Item 2 of 2.`);
+        // lane tutor-say S3: the Start buttons say no "Item n of N"
+        expect(at('sonic-start-quick')).toBe(`Start. Start flying. ${EN.say('menu.path.fast-what').replace(/\.$/, '')}`);
+        expect(at('sonic-start-all')).toBe('All lessons');
         expect(at('sonic-hp-left')).toBe('Check your headphones. Play a sound on the left. Item 1 of 2.');
         // a lesson says its own place and state, not an item number
         // a new pilot is on the fast path (lane sound6 S2): its lessons are counted on it
@@ -389,10 +394,10 @@ describe('C3 (M41-4, W13): the start screen and the mode\'s settings as a spoken
         expect(at('lesson:rings-first')).toBe(`${titleOf('rings-first')}. ${placeOf('rings-first', 'fast')}, not started, Fast path`);
         // the settings' stops: the screen's own count, 11 before v13-int's three switches (step 3), 15 before lane sonic-beacon's switch, 16 before lane quiet's
         const settings = STOPS.slice(STOPS.indexOf('sonic-theme'), STOPS.indexOf('summary') + 1).length;
-        expect(settings).toBe(18); // 17 before lane head4's head tracking row, 16 before lane quiet's narrator switch
+        expect(settings).toBe(19); // lane tutor-say S3: the Guide row; // 17 before lane head4's head tracking row, 16 before lane quiet's narrator switch
         expect(at('sonic-theme')).toBe(`Settings. Sound theme: Soft. Item 1 of ${settings}.`);
-        expect(at('sonic-motor-level')).toBe(`Motor volume: 0 dB. Item 9 of ${settings}.`);
-        expect(at('sonic-height-target')).toBe(`Target height note: on. Item 10 of ${settings}.`);
+        expect(at('sonic-motor-level')).toBe(`Motor volume: 0 dB. Item 10 of ${settings}.`);
+        expect(at('sonic-height-target')).toBe(`Target height note: on. Item 11 of ${settings}.`);
         expect(at('sonic-about')).toBe('About Fly by Sound and its source code. Item 1 of 2.');
         // round: Down from the last is the first; Up from the first the last; Home and End
         doc.key('ArrowDown');
@@ -526,7 +531,7 @@ describe('C3 (M41-4, W13): the start screen and the mode\'s settings as a spoken
         const esc = doc.key('Escape');
         expect(esc.defaultPrevented).toBe(true);
         expect(focusedId(doc)).toBe('sonic-start-quick');
-        expect(lastHeard(engine).text).toBe(`Start. Quick start. ${EN.say('menu.path.fast-what')} Your progress is kept. Item 1 of 3.`);
+        expect(lastHeard(engine).text).toBe(`Start. Start flying. ${EN.say('menu.path.fast-what')} Your progress is kept`);
         const again = doc.key('Escape');
         expect(again.defaultPrevented).toBe(false);
         expect(focusedId(doc)).toBe('sonic-start-quick');
@@ -550,7 +555,7 @@ describe('C3 (M41-4, W13): the start screen and the mode\'s settings as a spoken
         expect(engine.said.slice(n - 2).map((x) => x.interrupt)).toEqual([true, false]);
         byTestId(doc, 'sonic-reset-yes')!.focus();
         byTestId(doc, 'sonic-reset-yes')!.click();
-        expect(heard(engine).slice(-2)).toEqual(['Your progress is reset. Every lesson is new again.', `Start. Quick start. ${EN.say('menu.path.fast-what').replace(/\.$/, '')}. Item 1 of 2.`]);
+        expect(heard(engine).slice(-2)).toEqual(['Your progress is reset. Every lesson is new again.', `Start. Start flying. ${EN.say('menu.path.fast-what').replace(/\.$/, '')}`]);
         s.dispose();
     });
 
@@ -576,7 +581,7 @@ describe('C3 (M41-4, W13): the start screen and the mode\'s settings as a spoken
         over.s.show('settings');
         expect(page.map((x) => x.line.params?.text ?? x.line.key)).toEqual(['Settings']);
         doc.key('ArrowDown');
-        expect(page.at(-1)?.line.params?.text).toBe('Sound theme: Soft. Item 1 of 18.');
+        expect(page.at(-1)?.line.params?.text).toBe('Sound theme: Soft. Item 1 of 19.');
         expect(over.engine.said).toEqual([]);
         over.s.dispose();
     });
@@ -632,11 +637,11 @@ describe('v13-int step 3: sound from above and below, the sound panel and the at
     const DIRECTION_WHAT = EN.say('menu.setting.height-direction-what').replace(/\.$/, '');
     const BEACON_WHAT = EN.say('menu.setting.beacon-what').replace(/\.$/, '');
     const SWITCHES = [
-        { id: 'sonic-height-direction', name: EN.say('menu.setting.height-direction'), n: 11, tail: `. ${DIRECTION_WHAT}` },
+        { id: 'sonic-height-direction', name: EN.say('menu.setting.height-direction'), n: 12, tail: `. ${DIRECTION_WHAT}` },
         // lane sonic-beacon: the package's words for the target hum showing the way, its description after the value
-        { id: 'sonic-beacon', name: EN.say('menu.setting.beacon'), n: 12, tail: `. ${BEACON_WHAT}` },
-        { id: 'sonic-look-soundPanel', name: 'Sound panel: see every sound', n: 14, tail: '' },
-        { id: 'sonic-look-attitude', name: 'Horizon and height display', n: 15, tail: '' }
+        { id: 'sonic-beacon', name: EN.say('menu.setting.beacon'), n: 13, tail: `. ${BEACON_WHAT}` },
+        { id: 'sonic-look-soundPanel', name: 'Sound panel: see every sound', n: 15, tail: '' },
+        { id: 'sonic-look-attitude', name: 'Horizon and height display', n: 16, tail: '' }
     ] as const;
     /** what each switch keeps: the package's setting in the saved sound document, the panels in the collection beside it */
     const saved = (store: ReturnType<typeof mkStore>, id: string): unknown => {
@@ -652,7 +657,7 @@ describe('v13-int step 3: sound from above and below, the sound panel and the at
         for (const sw of SWITCHES) {
             byTestId(doc, 'sonic-about')!.focus();
             byTestId(doc, sw.id)!.focus();
-            expect(lastHeard(engine), sw.id).toEqual({ text: `Settings. ${sw.name}: on${sw.tail}. Item ${sw.n} of 18.`, interrupt: true });
+            expect(lastHeard(engine), sw.id).toEqual({ text: `Settings. ${sw.name}: on${sw.tail}. Item ${sw.n} of 19.`, interrupt: true });
             expect(byTestId(doc, sw.id)!.checked, sw.id).toBe(true);
         }
         // and within the section, the next stop after the long description cuts it (a line that interrupts)
@@ -698,9 +703,9 @@ describe('v13-int step 3: sound from above and below, the sound panel and the at
         expect(byTestId(doc, 'sonic-look-attitude')!.checked).toBe(true);
         doc.key('ArrowDown');
         byTestId(doc, 'sonic-height-direction')!.focus();
-        expect(lastHeard(again.engine).text).toBe(`Settings. Sound from above and below: off. ${DIRECTION_WHAT}. Item 11 of 18.`);
+        expect(lastHeard(again.engine).text).toBe(`Settings. Sound from above and below: off. ${DIRECTION_WHAT}. Item 12 of 19.`);
         byTestId(doc, 'sonic-beacon')!.focus();
-        expect(lastHeard(again.engine).text).toBe(`Target hum shows the way: off. ${BEACON_WHAT}. Item 12 of 18.`);
+        expect(lastHeard(again.engine).text).toBe(`Target hum shows the way: off. ${BEACON_WHAT}. Item 13 of 19.`);
         again.s.dispose();
     });
 
@@ -792,7 +797,7 @@ describe('lane head4: "Turn my head to listen" in the settings', () => {
         doc.key('ArrowDown');
         byTestId(doc, 'sonic-about')!.focus();
         byTestId(doc, 'sonic-head')!.focus();
-        expect(lastHeard(engine)).toEqual({ text: `Settings. Turn my head to listen: off. ${EN_HEAD_WHAT.replace(/\.$/, '')}. Item 17 of 18.`, interrupt: true });
+        expect(lastHeard(engine)).toEqual({ text: `Settings. Turn my head to listen: off. ${EN_HEAD_WHAT.replace(/\.$/, '')}. Item 18 of 19.`, interrupt: true });
         expect(byTestId(doc, 'sonic-head')!.checked).toBe(false);
         lastRig.camera.refuse = 'NotAllowedError';
         doc.key('Enter');
@@ -894,7 +899,7 @@ describe('lane gap-sound: Quick start first and focused for every pilot, no soun
         const progress = { 'corridor': P('corridor', { attempts: 2, successes: 1 }) };
         const back = shown({ progress, current: 'corridor', short: true });
         const group = byTestId(doc, 'sonic-start-quick')!.parentElement!;
-        expect(group.querySelectorAll('button').map((b) => b.getAttribute('data-testid'))).toEqual(['sonic-start-quick', 'sonic-start-continue', 'sonic-start-full']);
+        expect(group.querySelectorAll('button').map((b) => b.getAttribute('data-testid'))).toEqual(['sonic-start-quick', 'sonic-start-all', 'sonic-start-continue']);
         expect(focusedId(doc)).toBe('sonic-start-quick');
         expect(byTestId(doc, 'sonic-start-quick')!.className).toContain('primary');
         expect(byTestId(doc, 'sonic-start-continue')!.textContent).toContain(`Continue: ${titleOf('corridor')}`);
@@ -919,22 +924,22 @@ describe('lane gap-sound: Quick start first and focused for every pilot, no soun
         }
     });
 
-    it('the settings show the rows of level first and "Show all settings (12 more)"; its press shows all 18 and puts the focus on the first new row; a shared link with a sound setting shows all', () => {
+    it('the settings show the rows of level first and "Show all settings (12 more)"; its press shows all 19 and puts the focus on the first new row; a shared link with a sound setting shows all', () => {
         const { s, engine } = shown({ short: true });
-        expect(settingIds()).toEqual(['sonic-rate', 'sonic-captions', 'sonic-sr', 'sonic-narrator', 'sonic-key-hints', 'sonic-head', 'sonic-settings-all']);
+        expect(settingIds()).toEqual(['sonic-rate', 'sonic-captions', 'sonic-sr', 'sonic-narrator', 'sonic-guide', 'sonic-key-hints', 'sonic-head', 'sonic-settings-all']);
         const all = byTestId(doc, 'sonic-settings-all')!;
         expect(all.tagName).toBe('BUTTON');
         expect(all.textContent).toBe('Show all settings (12 more)');
         // a stop of the spoken list like any other
         doc.key('ArrowDown');
         all.focus();
-        expect(lastHeard(engine).text).toBe('Settings. Show all settings (12 more). Item 7 of 7.');
+        expect(lastHeard(engine).text).toBe('Settings. Show all settings (12 more). Item 8 of 8.');
         all.click();
         expect(byTestId(doc, 'sonic-settings-all')).toBeNull();
-        expect(settingIds()).toHaveLength(17);
+        expect(settingIds()).toHaveLength(18);
         expect(doc.querySelector('#sonic-sec-settings')!.querySelector('summary')).not.toBeNull();
         expect(focusedId(doc)).toBe('sonic-theme');
-        expect(lastHeard(engine).text).toBe('Sound theme: Soft. Item 1 of 18.');
+        expect(lastHeard(engine).text).toBe('Sound theme: Soft. Item 1 of 19.');
         // it stays open for this page (a redraw after a change keeps it)
         byTestId(doc, 'sonic-calm')!.click();
         s.render();
@@ -942,5 +947,85 @@ describe('lane gap-sound: Quick start first and focused for every pilot, no soun
         s.dispose();
         expect(Object.entries(screenMod.SONIC_SETTING_LEVELS).every(([, v]) => v === 'first')).toBe(true);
         expect(screenMod.sonicSettingLevel('sonic-theme')).toBe('expert');
+    });
+});
+
+// ------------------------------------------------------------------ train 4, lane tutor-say S3 (decisions 7 and 8)
+
+describe('tutor-say S3: the start screen says its title and the main button once; the rest only when focused or asked; a setting redraws its own row', () => {
+    const OPEN = `Fly by Sound. Start flying. ${EN.say('menu.path.fast-what').replace(/\.$/, '')}`;
+
+    it('the first key of a fresh page: the title and Start flying, then the stop the key went to (All lessons); no list of keys, no "Item n of N"', () => {
+        const { s, engine } = shown();
+        expect(focusedId(doc)).toBe('sonic-start-quick');
+        expect(engine.said).toEqual([]);
+        doc.key('ArrowDown');
+        expect(focusedId(doc)).toBe('sonic-start-all');
+        expect(heard(engine)).toEqual([OPEN, 'All lessons']);
+        expect(engine.said.map((x) => x.interrupt)).toEqual([true, false]);
+        expect(heard(engine).some((x) => /Item \d+ of|sonic\.say\.listHelp/.test(x))).toBe(false);
+        s.dispose();
+    });
+
+    it('shown again with the sound on: one line, the title and the main button; the focus on it', () => {
+        const { s, engine } = shown();
+        doc.key('ArrowDown');
+        const n = engine.said.length;
+        s.hide();
+        s.show();
+        expect(focusedId(doc)).toBe('sonic-start-quick');
+        expect(heard(engine).slice(n)).toEqual([OPEN]);
+        s.dispose();
+    });
+
+    it('key K says how the list works (only when asked); not in a select, where a letter picks an option', () => {
+        const { s, engine } = shown();
+        doc.key('ArrowDown');
+        const n = engine.said.length;
+        const k = doc.key('k', { code: 'KeyK' });
+        expect(k.defaultPrevented).toBe(true);
+        expect(engine.said.slice(n).map((x) => x.line.key)).toEqual(['sonic.say.listHelp']);
+        byTestId(doc, 'sonic-guide')!.focus();
+        const m = engine.said.length;
+        expect(doc.key('k', { code: 'KeyK' }).defaultPrevented).toBe(false);
+        expect(engine.said.slice(m)).toEqual([]);
+        s.dispose();
+    });
+
+    it('Guide: Full / Short / New sounds only, at the first level, Short at first; a change is said, saved, kept after a reload, and draws nothing but its row (the Start buttons stay, the focus stays)', () => {
+        const { s, engine, store } = shown({ short: true });
+        doc.key('ArrowDown');
+        const quick = byTestId(doc, 'sonic-start-quick')!;
+        const guide = byTestId(doc, 'sonic-guide')!;
+        expect(guide.querySelectorAll('option').map((o) => o.textContent)).toEqual(['Full', 'Short', 'New sounds only']);
+        expect(guide.value).toBe('short');
+        guide.focus();
+        expect(lastHeard(engine).text).toBe('Settings. Guide: Short. Item 5 of 8.');
+        doc.key('ArrowRight');
+        expect(lastHeard(engine).text).toBe('Guide: New sounds only');
+        expect(store.collection('sonic').guide).toBe('new');
+        expect(byTestId(doc, 'sonic-start-quick')).toBe(quick);
+        expect(doc.activeElement).toBe(byTestId(doc, 'sonic-guide'));
+        s.dispose();
+        const again = shown({ store, short: true });
+        expect(byTestId(doc, 'sonic-guide')!.value).toBe('new');
+        again.s.dispose();
+    });
+
+    it('a refused change draws its own row again from what is set: the other rows and the Start buttons are the same nodes, the focus stays on the control', () => {
+        const { s } = shown();
+        const quick = byTestId(doc, 'sonic-start-quick')!;
+        const calm = byTestId(doc, 'sonic-calm')!;
+        const rate = byTestId(doc, 'sonic-rate')!;
+        rate.focus();
+        rate.value = '99';
+        rate.dispatchEvent(new FakeEvent('input'));
+        const fresh = byTestId(doc, 'sonic-rate')!;
+        expect(fresh).not.toBe(rate);
+        expect(fresh.value).toBe('1');
+        expect(doc.activeElement).toBe(fresh);
+        expect(byTestId(doc, 'sonic-start-quick')).toBe(quick);
+        expect(byTestId(doc, 'sonic-calm')).toBe(calm);
+        s.dispose();
     });
 });

@@ -6,7 +6,16 @@
 // speaking, the region is not live, so a screen reader does not say every line twice.
 import { h } from '../ui/dom';
 import { t } from '../i18n';
+import { messages } from '../ui/messages';
+import { relayHeldNews } from './live-quiet';
+import type { PageNews } from './live-quiet';
 import './sonic.css';
+
+/** ui/messages.ts `messages` as PageNews. */
+export const pageNews: PageNews = {
+    watch: (fn) => messages.watch(fn),
+    shown: () => messages.log.visible(performance.now()).lines
+};
 
 /**
  * How many lines show at once, and how long a line stays, ms. Lane quiet3 (the lead's M2): "at most two lines" is two rows of text on
@@ -63,6 +72,7 @@ export class Captions {
         this.root = h('div', { class: 'sonic-captions', 'data-testid': 'sonic-captions', role: 'log', 'aria-label': t('sonic.captions.label'), 'aria-live': 'off', 'aria-atomic': 'false' });
         parent.append(this.root);
         this.apply();
+        relayHeldNews(this, pageNews);
     }
 
     /** Shown to the eye and/or read by a screen reader. Both off: nothing on the page at all. */

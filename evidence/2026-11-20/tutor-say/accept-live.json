@@ -1,0 +1,234 @@
+{
+ "probe": "tutor-say-accept",
+ "base": "https://gsfpv.flyreelstudio.eu",
+ "browser": "system-chrome",
+ "view": "1536x730@1.25",
+ "pass": false,
+ "steps": {
+  "open": {
+   "pass": false,
+   "spoken": [
+    "Fly by Sound. The up and down arrows move, left and right change a setting, Enter chooses, Escape goes back.",
+    "Start. Full course. Every lesson, step by step. Item 2 of 2."
+   ],
+   "focus": "button[sonic-start-full]"
+  },
+  "tab": {
+   "pass": false,
+   "spoken": [
+    "Full course. Every lesson, step by step. Item 2 of 2."
+   ],
+   "focus": "button[sonic-start-full]"
+  },
+  "start": {
+   "pass": true,
+   "clicked": true,
+   "lesson": "ears-headphones",
+   "pointerLock": false
+  },
+  "steps": {
+   "pass": false,
+   "lesson": "walls-hall",
+   "changes": [
+    {
+     "to": "Headphone check\nLesson 1 of 7\nStep 3 of 3",
+     "pass": false,
+     "bad": [],
+     "firstKeys": true,
+     "packagePlace": [
+      "Sound 2 of 2."
+     ],
+     "liveButtons": 0,
+     "focus": [
+      "body",
+      "body"
+     ],
+     "screen": {
+      "line": "",
+      "panel": "Headphone checkLesson 1 of 7Step 3 of 3"
+     },
+     "spoken": [
+      "Sound 2 of 2.",
+      "Next, key N. Back, key B. Repeat, key Z. Menu, key Escape. Main menu, key X."
+     ],
+     "announced": [
+      "div#ui: DISARMED",
+      "div#ui: · ANGLE",
+      "div#ui: 12.6 V 12.0 s",
+      "div#ui: THR 0% 0.0 m/s ALT 0.0 m",
+      "div#ui: DISARMED",
+      "div#ui: · ANGLE",
+      "div#ui: 12.6 V 12.1 s",
+      "div#ui: THR 0% 0.0 m/s ALT 0.0 m",
+      "div#ui: DISARMED",
+      "div#ui: · ANGLE",
+      "div#ui: 12.6 V 12.2 s",
+      "div#ui: THR 0% 0.0 m/s ALT 0.0 m",
+      "div#ui: DISARMED",
+      "div#ui: · ANGLE",
+      "div#ui: 12.6 V 12.3 s",
+      "div#ui: THR 0% 0.0 m/s ALT 0.0 m",
+      "div#ui: on",
+      "div#ui: 55 %",
+      "div#ui: DISARMED",
+      "div#ui: · ANGLE",
+      "div#ui: 12.6 V 12.4 s",
+      "div#ui: THR 0% 0.0 m/s ALT 0.0 m",
+      "div#ui: DISARMED",
+      "div#ui: · ANGLE",
+      "div#ui: 12.6 V 12.6 s",
+      "div#ui: THR 0% 0.0 m/s ALT 0.0 m",
+      "div#ui: DISARMED",
+      "div#ui: · ANGLE",
+      "div#ui: 12.6 V 12.7 s",
+      "div#ui: THR 0% 0.0 m/s ALT 0.0 m"
+     ],
+     "axAdded": []
+    },
+    {
+     "to": "A small room\nLesson 2 of 7\nStep 1 of 2\nCounted 0 of 3",
+     "pass": false,
+     "bad": [
+      "Next, key N. Back, key B. Repeat, key Z. Menu, key Escape. Main menu, key X."
+     ],
+     "firstKeys": false,
+     "packagePlace": [],
+     "liveButtons": 11,
+     "focus": [
+      "body",
+      "div[sonic-flight]"
+     ],
+     "screen": {
+      "line": "",
+      "panel": "A small roomLesson 2 of 7Step 1 of 2Counted 0 of 3"
+     },
+     "spoken": [
+      "A small room",
+      "Next, key N. Back, key B. Repeat, key Z. Menu, key Escape. Main menu, key X.",
+      "Wall"
+     ],
+     "announced": [
+      "div#ui: ● REC",
+      "div#ui: F9",
+      "div#ui: Auto",
+      "div#ui: Choose a folder ▾",
+      "div#ui: Allow saving to",
+      "div#ui: Scene by its author — see the original on SuperSplat",
+      "div#ui: ·",
+      "div#ui: Report this scene",
+      "div#ui: Walls 10 cm ▾Walls and voxels▾×Walls (collisions)onCVoxel gridVOffOver the scanVoxels onlyStyleSolid cubesWireframeHeight coloursFloaters in redOpacity55 %V: off → over the scan → voxels only · C: wal",
+      "div#ui: Walls 10 cm ▾",
+      "div#ui: In use: 10 cm walls, from SuperSplat.",
+      "div#ui: ● REC",
+      "div#ui: F9",
+      "div#ui: Auto",
+      "div#ui: Choose a folder ▾",
+      "div#ui: Allow saving to",
+      "div#ui: ● REC",
+      "div#ui: F9",
+      "div#ui: Auto",
+      "div#ui: Choose a folder ▾",
+      "div#ui: Allow saving to",
+      "div#ui: on",
+      "div#ui: 55 %",
+      "div#ui: DISARMED",
+      "div#ui: · ACRO",
+      "div#ui: 12.6 V 0.0 s",
+      "div#ui: THR 0% 0.0 m/s ALT 0.0 m",
+      "div#ui: DISARMED",
+      "div#ui: · ANGLE",
+      "div#ui: 12.6 V 0.1 s"
+     ],
+     "axAdded": []
+    },
+    {
+     "to": "A small room\nLesson 2 of 7\nStep 2 of 2\nAttempt 1\nCounted 0 of 3",
+     "pass": false,
+     "bad": [
+      "Next, key N. Back, key B. Repeat, key Z. Menu, key Escape. Main menu, key X."
+     ],
+     "firstKeys": false,
+     "packagePlace": [],
+     "liveButtons": 0,
+     "focus": [
+      "div[sonic-flight]",
+      "div[sonic-flight]"
+     ],
+     "screen": {
+      "line": "",
+      "panel": "A small roomLesson 2 of 7Step 2 of 2Attempt 1Counted 0 of 3"
+     },
+     "spoken": [
+      "Go.",
+      "Next, key N. Back, key B. Repeat, key Z. Menu, key Escape. Main menu, key X."
+     ],
+     "announced": [
+      "div#ui: DISARMED",
+      "div#ui: · ANGLE",
+      "div#ui: 12.6 V 8.0 s",
+      "div#ui: THR 0% 0.0 m/s ALT 0.0 m",
+      "div#ui: on",
+      "div#ui: 55 %",
+      "div#ui: DISARMED",
+      "div#ui: · ANGLE",
+      "div#ui: 12.6 V 8.1 s",
+      "div#ui: THR 0% 0.0 m/s ALT 0.0 m",
+      "div#ui: DISARMED",
+      "div#ui: · ANGLE",
+      "div#ui: 12.6 V 8.2 s",
+      "div#ui: THR 0% 0.0 m/s ALT 0.0 m",
+      "div#ui: DISARMED",
+      "div#ui: · ANGLE",
+      "div#ui: 12.6 V 8.3 s",
+      "div#ui: THR 0% 0.0 m/s ALT 0.0 m",
+      "div#ui: DISARMED",
+      "div#ui: · ANGLE",
+      "div#ui: 12.6 V 8.4 s",
+      "div#ui: THR 0% 0.0 m/s ALT 0.0 m",
+      "div#ui: on",
+      "div#ui: 55 %",
+      "div#ui: DISARMED",
+      "div#ui: · ANGLE",
+      "div#ui: 12.6 V 8.5 s",
+      "div#ui: THR 0% 0.0 m/s ALT 0.0 m",
+      "div#ui: DISARMED",
+      "div#ui: · ANGLE"
+     ],
+     "axAdded": []
+    }
+   ]
+  },
+  "once": {
+   "pass": false,
+   "keyLines": [
+    "Next, key N. Back, key B. Repeat, key Z. Menu, key Escape. Main menu, key X.",
+    "Next, key N. Back, key B. Repeat, key Z. Menu, key Escape. Main menu, key X.",
+    "Next, key N. Back, key B. Repeat, key Z. Menu, key Escape. Main menu, key X."
+   ],
+   "buttons": [],
+   "spokenCount": 11
+  },
+  "askK": {
+   "pass": true,
+   "spoken": [
+    "Here are the keys.",
+    "Press Escape for the lesson menu.",
+    "Press N to go to the next step.",
+    "Press Shift and key G for a course of gates in this scene. A new course replaces the old one.",
+    "Press B to go back one step.",
+    "Press Z to hear the task of this step again, with its sounds.",
+    "Press X to leave the lesson for the main menu. The lesson is saved.",
+    "Press Shift and key V to switch the narrator off or on. Off, you fly by sound alone."
+   ]
+  },
+  "guide": {
+   "pass": false,
+   "clicked": false,
+   "value": null,
+   "startButtonsKept": true,
+   "focus": "button[sonic-start-quick]",
+   "afterReload": null
+  }
+ },
+ "errors": []
+}

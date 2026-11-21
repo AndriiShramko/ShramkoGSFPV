@@ -1,0 +1,124 @@
+{
+ "probe": "tutor-say-ax",
+ "base": "http://localhost:7021",
+ "browser": "system-chrome",
+ "lesson": "walls-hall",
+ "pass": true,
+ "runs": [
+  {
+   "pilot": "voice",
+   "clicked": true,
+   "lesson": "walls-hall",
+   "changes": [
+    {
+     "from": "Wall",
+     "to": "Go.",
+     "pass": true,
+     "bad": [],
+     "liveButtons": 0,
+     "focus": [
+      "body",
+      "body"
+     ],
+     "spoken": [
+      "Go."
+     ],
+     "announced": [],
+     "axAdded": []
+    },
+    {
+     "from": "Go.",
+     "to": "Height tone",
+     "pass": true,
+     "bad": [],
+     "liveButtons": 0,
+     "focus": [
+      "body",
+      "div[sonic-flight]"
+     ],
+     "spoken": [
+      "The long corridor",
+      "Height tone"
+     ],
+     "announced": [],
+     "axAdded": []
+    },
+    {
+     "from": "Height tone",
+     "to": "Go.",
+     "pass": true,
+     "bad": [],
+     "liveButtons": 0,
+     "focus": [
+      "div[sonic-flight]",
+      "div[sonic-flight]"
+     ],
+     "spoken": [
+      "Go."
+     ],
+     "announced": [],
+     "axAdded": []
+    }
+   ],
+   "errors": []
+  },
+  {
+   "pilot": "sr",
+   "clicked": true,
+   "lesson": "walls-hall",
+   "changes": [
+    {
+     "from": "Wall",
+     "to": "Go.",
+     "pass": true,
+     "bad": [],
+     "liveButtons": 0,
+     "focus": [
+      "body",
+      "body"
+     ],
+     "spoken": [],
+     "announced": [
+      "div[sonic-captions]{log}: Go."
+     ],
+     "axAdded": []
+    },
+    {
+     "from": "Go.",
+     "to": "Height tone",
+     "pass": true,
+     "bad": [],
+     "liveButtons": 0,
+     "focus": [
+      "body",
+      "div[sonic-flight]"
+     ],
+     "spoken": [],
+     "announced": [
+      "div[sonic-captions]{log}: The long corridor",
+      "div[sonic-captions]{log}: Height tone"
+     ],
+     "axAdded": []
+    },
+    {
+     "from": "Height tone",
+     "to": "Go.",
+     "pass": true,
+     "bad": [],
+     "liveButtons": 0,
+     "focus": [
+      "div[sonic-flight]",
+      "div[sonic-flight]"
+     ],
+     "spoken": [],
+     "announced": [
+      "div[sonic-captions]{log}: Go."
+     ],
+     "axAdded": []
+    }
+   ],
+   "errors": []
+  }
+ ],
+ "errors": []
+}

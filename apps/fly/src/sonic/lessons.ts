@@ -44,6 +44,9 @@ import { savedProgress, saveProgress, setCurrentLesson } from './store';
 import type { SonicHost } from './store';
 import { DEFAULT_LESSON_START_KEYS } from './key-names';
 import type { LessonStartKeys, RunnerKeys } from './key-names';
+import { SaidOnce } from './said-once';
+import type { SaidId } from './said-once';
+import { stepInstructions } from './progress-panel';
 
 /** After a pass the next lesson opens when the speech queue has been empty this long, ms. */
 export const NEXT_AFTER_MS = 1500;
@@ -198,16 +201,17 @@ export class LessonHost {
      */
     private movedFrom: LessonSession | null = null;
     /**
-     * The line of keys (v0.13 B6, M41-3; lane sonic-hints, the owner's complaint of 2026-11-10): said right after the first line of
-     * every step (a lesson's first line is its title), never again inside that step: "Next, key N. Back, key B. Repeat, key Z.
-     * Menu, key Escape. Main menu, key X." with the pilot's names of those keys. `hintStep` is the step it was last said for (null: a lesson just opened). The
-     * pilot's "Key hints: off" (SonicState.keyHints false) leaves it out.
+     * The line of keys (v0.13 B6, M41-3): "Next, key N. Back, key B. Repeat, key Z. Menu, key Escape. Main menu, key X." with the
+     * pilot's names of those keys. Train 4, lane tutor-say (the first outside feedback, 2026-11-20: "the menu buttons must not be
+     * read out at every step"; decision 1 "say only what is new"): said ONCE A SESSION, after the first line of the first step where
+     * keys matter (keysDue), recorded in `said`; after that only K says the keys. `hintStep` is the step whose first line was said
+     * last (null: a lesson just opened). The pilot's "Key hints: off" (SonicState.keyHints false) leaves it out.
      */
     private hintStep: string | null = null;
+    /** What the narrator has named in this visit (said-once.ts): one record for every lesson the host opens. */
+    readonly said = new SaidOnce();
     /** A listening lesson (no world) has played its first sound or scene since it opened (keysDue). */
     private soundHeard = false;
-    /** A listening lesson has said its one line of keys since it opened (keysDue). */
-    private keysSaid = false;
     /**
      * The runner whose counts the pilot reset (v13-int step 5: "Reset my progress" answered Yes on the start screen shown over this
      * lesson). The screen cleared the saved progress, but this runner still holds the lesson's old counts: nothing of it is saved again
@@ -504,7 +508,6 @@ export class LessonHost {
             this.cutSpeech = o.keepSpeech !== true && this.p.mode.bridge.speechQueue > 0;
             this.hintStep = null;
             this.soundHeard = false;
-            this.keysSaid = false;
             // the bridge's clock starts at 0 for this lesson: the engine first forgets what it heard on the last one's clock (v13-int step
             // 1, v13-host's need 2: its scene sampler keeps an active sector 0.3 s on when the clock goes back, so the first frames of this
             // lesson voiced the last one's sectors with these walls, which the replay, a new planner per lesson, does not derive). Before
@@ -717,16 +720,19 @@ export class LessonHost {
                 void mode.bridge.say(a.line, a.interrupt || this.cutSpeech, { lesson: true });
                 // only the first line cuts: the lines after it queue behind it, as the runner meant them to
                 this.cutSpeech = false;
-                // the first line of a step (a lesson's first line is its title): the step's keys follow it, once a step
+                // the first line of a step (a lesson's first line is its title): the keys follow it the first time they matter in
+                // this visit, never again (keysDue)
                 const v = run.view();
                 const step = `${v.step}/${v.steps}`;
+                // the instruction for the eye (progress-panel.ts): a step's first line that is not the title or a start call
+                stepInstructions.heard(run, v.step, a.line, v.title.key);
                 if (step !== this.hintStep) {
                     // Q5: the lesson's first line (its title) with the narrator off: the narrator is on for this lesson, said once
                     const first = this.hintStep === null;
                     this.hintStep = step;
                     if (first && this.lesson?.id !== SCAN_FREE_ID && this.p.narratorOff?.() === true) void mode.bridge.say({ key: 'sonic.say.lessonNarrator' }, false, { lesson: true });
                     if (this.keysDue()) {
-                        this.keysSaid = true;
+                        this.said.mark(this.keysId());
                         void mode.bridge.say(this.keysLine(), false, { lesson: true });
                     }
                 }
@@ -753,16 +759,22 @@ export class LessonHost {
         }
     }
 
+    /** The SaidOnce id of the line of keys keysLine() says now: the free flight's line names no "Next", so it is a line of its own. */
+    private keysId(): SaidId {
+        return this.lesson?.id === SCAN_FREE_ID ? 'keys.free' : 'keys.lesson';
+    }
+
     /**
-     * Whether the step that begins now says the line of keys (lane sound6, the owner's words of 2026-11-19: "the sound at once, short
-     * explanations"). A flying lesson: every step, as before. A listening lesson (no world: module 0): once a lesson, at the first
-     * step after its first sound or scene: the runner waits for the host's speech before a sound, so the 9.9 s line said with
-     * the title kept the first wall knock 16.5 s away (S5 walk), and said with every step it stood before every sound.
+     * Whether the step that begins now says the line of keys: once a visit (lane tutor-say, decision 1), at the first step where keys
+     * matter. A flying lesson: its first step. A listening lesson (no world: module 0): the first step after its first sound or
+     * scene (lane sound6, the owner's words of 2026-11-19: "the sound at once, short explanations"): the runner waits for the host's
+     * speech before a sound, so the 9.9 s line said with the title kept the first wall knock 16.5 s away (S5 walk).
      */
     private keysDue(): boolean {
         if (this.p.keyHints?.() === false) return false;
+        if (this.said.named(this.keysId())) return false;
         if (this.lesson?.world.kind !== 'none') return true;
-        return this.soundHeard && !this.keysSaid;
+        return this.soundHeard;
     }
 
     /** An event of the mode: progress is saved at every attempt, block and pass; an answer (or a skip) closes the question. */
