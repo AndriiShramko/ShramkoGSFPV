@@ -305,37 +305,23 @@ try {
     await clickSel('.ce-menu [data-item="new"]', 800);
     for (let i = 0; i < 2; i++) { const y = await boxOf('.life-ask [data-ask="yes"]'); if (!y) break; await click(y.x, y.y, 800); }
     await until(snap, (s) => (s.egates?.length ?? -1) === 0, 10000, 300);
-    // gate A on a point; gate C by a click just beyond the selected A's gizmo (125 px off its centre, past the arrows' tips:
-    // the gizmo takes a press nearer; A alone has no leg, so the scan's point there stands), then C pulled onto A by its
-    // arrows in the picture's plane; gate B elsewhere, pulled into the floor by its gizmo below
+    // gate A by a click on a point, gate B by a click elsewhere (the gizmo goes to B), then gate C by a click on the very
+    // pixel of A: Add gate places on a click even over a gate (view-mouse.ts: the armed click goes to onPlace), so the same
+    // ray gives the same spot. When C still lands apart (the camera moved), it is pulled onto A by its arrows.
     const added = [await addAt(W * 0.5, H * 0.5)];
     let s0 = await snap();
     const aPos = s0.egates?.[0] ?? null;
-    const aScr = s0.gates?.[0] ?? [W * 0.5, H * 0.5];
-    const offs = [[88, 88], [-88, 88], [88, -88], [-88, -88]];
-    let cOff = null;
-    for (const [dx, dy] of offs) {
-        const c = await addAt(aScr[0] + dx, aScr[1] + dy);
-        if (c === null) continue;
-        s0 = await snap();
-        cOff = { at: [dx, dy], apart: Math.round(dist3(s0.egates?.[c], aPos) * 1000) / 1000 };
-        added.push(c);
-        break;
-    }
-    // Add gate let go (a short drag in Add mode would place a gate), then C pulled; what the picture's depth hides is pulled
-    // after an orbit (the middle button dragged sideways turns the view round the selected gate)
+    added.push(await addAt(W * 0.25, H * 0.68));
+    s0 = await snap();
+    const aNow = s0.egates ? s0.egates.findIndex((p) => dist3(p, aPos) < 1e-6) : -1;
+    const aScr = (aNow >= 0 ? s0.gates?.[aNow] : null) ?? [W * 0.5, H * 0.5];
+    const c = await addAt(aScr[0], aScr[1]);
+    added.push(c);
+    s0 = await snap();
+    const cOff = { at: aScr.map(Math.round), apart: c !== null ? Math.round(dist3(s0.egates?.[c], aPos) * 1000) / 1000 : null };
     const addOff = async () => { if (await page.evaluate(() => document.querySelector('.ce-topbar [data-top="add"]')?.getAttribute('aria-pressed') === 'true')) await clickSel('.ce-topbar [data-top="add"]', 400); };
     await addOff();
-    let pull = aPos && added[1] != null ? await pullOnto(added[1], aPos, 0.25) : { ok: false };
-    if (aPos && added[1] != null && !pull.ok && (await snap()).selected === added[1]) {
-        await page.mouse.move(W * 0.5, H * 0.3);
-        await page.mouse.down({ button: 'middle' });
-        await page.mouse.move(W * 0.5 + 260, H * 0.3, { steps: 16 });
-        await page.mouse.up({ button: 'middle' });
-        await sleep(700);
-        pull = { first: pull, ...(await pullOnto(added[1], aPos, 0.25)) };
-    }
-    added.push(await addAt(W * 0.25, H * 0.68));
+    const pull = aPos && c !== null && cOff.apart >= 0.25 && s0.selected === c ? await pullOnto(c, aPos, 0.25) : { ok: cOff.apart !== null && cOff.apart < 0.25, skipped: true };
     // gate B selected by a click on it (its place on the page), then pulled down (a drag that misses the arrow circles the view)
     let s = await snap();
     const bAt = s.egates ? s.egates.findIndex((p, i) => s.egates.every((q, j) => j === i || dist3(p, q) > 0.5)) : -1;
