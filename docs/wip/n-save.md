@@ -24,7 +24,7 @@ Temp: U:/Temp/gsfpv-train4/n-save. Evidence: evidence/2026-11-20/n-save/.
   applyFixes are gone (one flow). The message line: 16 px, line-height 1.25, max 3.75em, wraps, no ellipsis. Tests
   tools/bench/test/save-dialog.test.ts (8) NEG OK on the base. edit4b step 10 presses `save-show-me` by id; the edit-mouse
   probe never presses Save mine (its top-bar Save only opens the name field), so it does not meet the dialog. Commit d74ab9f9.
-- [ ] S4 the acceptance by mouse: tools/bench/scripts/n-save-accept.mjs on the local build + local API, and against the live site
+- [x] S4 the acceptance by mouse: tools/bench/scripts/n-save-accept.mjs on the local build + local API, and against the live site
   (must FAIL "Save as it is", read only); gates typecheck,vitest,architecture,i18n,b18,leaks; "What the owner should try".
   Done so far (commit 7cbf4e3b + the next): the probe exists; dist/ is rebuilt at 8bee6439 (the reopen fix) with the walls
   copied in (no rebuild needed while only the probe changes). Scan: 70b50d42 (39e63ce9 is too small: every gate in a wall). Run 4 (U:/Temp/gsfpv-train4/n-save/accept4.json, local, port 6902/6903): open, dialog
@@ -46,12 +46,12 @@ Temp: U:/Temp/gsfpv-train4/n-save. Evidence: evidence/2026-11-20/n-save/.
   Pictures looked at once: n-save-dialog.png shows the dialog in the editor's window (Warnings: 4, three kind lines, Fix all
   automatically / Save as it is / Show me, the cross); n-save-ghosts.png shows gates 1 and 2 moved with their old places
   dashed and the line "Gates moved to free places: 2 (gates 1, 2) ... Left as it is: A wall on the way to the gate" + Undo.
-  LEFT, exactly:
-  1. [x] The top bar over the HUD row: the cause is the bar's place, not the message rule (written under For the lead).
-  2. Gates once: `gates.py --only typecheck,vitest,architecture,i18n,b18,leaks` (stage files first; no apps/api change).
-  3. Claims 7 (the mouse acceptance, command `node tools/bench/scripts/n-save-accept.mjs dist 70b50d42 <out>`, PASS) and 8
-     (the live control FAILS dialog + asIs.saved); Not verified: same spot by mouse; "What the owner does"; Cost notes; delete
-     dist/ (kill no server: the probe kills its own).
+  Finished in run 4: the top bar over the HUD row is the bar's place, not the message rule (For the lead); the gates'
+  first run failed architecture (autofix.ts used Math.sin/cos/acos/atan2/hypot, forbidden in tracks) and, in this shell
+  only, vitest and leaks (no `python` on PATH): autofix now turns and measures by arithmetic and Math.sqrt (commit
+  10cbebb4; autofix, save-fix-one, edit4s-fixes, save-dialog 27 passed); the second run on that tree, with Python and
+  Node 22 on PATH: typecheck, vitest (5700+ passed), architecture, i18n, b18, leaks all PASS (B18 evidence in
+  evidence/2026-11-20/n-save/b-repo-b18.json). Claims 7, 8 written; dist/ deleted.
 
 Code against the design: the Save path of apps/fly/src/app/builtin/course.ts now sits at pointAtWrong :1023, refusedSave :1037,
 applyFixes :1065, saveMine :1833, saveAdmin :~1885 (the design named :893-1754); the names are the same.
@@ -94,6 +94,8 @@ applyFixes :1065, saveMine :1833, saveAdmin :~1885 (the design named :893-1754);
 
 ## Not verified
 
+- The mouse acceptance (claims 7, 8) ran on the build of 8bee6439, before autofix's arithmetic turn (10cbebb4); the
+  arithmetic gives the same turn to 1e-6 (the unit tests above pass unchanged), but the browser run was not repeated.
 - 'Two gates on one spot' by mouse: Add gate keeps 2 m from the gate under the click, so the mouse acceptance builds a gate
   in a wall only; two on one spot is held by the unit tests (claims 1, 3, 5).
 
@@ -144,3 +146,15 @@ applyFixes :1065, saveMine :1833, saveAdmin :~1885 (the design named :893-1754);
   save ten replies.
 - S4 (run 2): most replies went to the gizmo pull (the arrows' press bands, the editor refusing a drag into a wall, the depth axis hidden) and to finding why a saved course did not reopen; a shared probe helper 'move the selected gate to X by its arrows' would save ten replies.
 - S4 (run 3): most replies went to two probe-harness causes (the local proxy dropping X-Track-Token, Add gate keeping 2 m between gates); logging each refused POST's body and the element under each press from the start would have saved five replies.
+- S4 (run 4): most replies went to the gates' environment (this shell has Node 20 and no `python` on PATH; vitest's API
+  tests and leaks need Python 3.11, vitest needs Node 22) and to the tracks rule forbidding trig in autofix.ts; running
+  `scripts/check-architecture.mjs` after S2 and a PATH line in train4-common.md would have saved six replies.
+
+## What the owner should try
+
+1. Open the editor on a scan, add three gates and pull one into a wall; press Save mine: one dialog shows "Warnings: N" with
+   one line per kind and three buttons.
+2. Press "Save as it is": the course is stored with the gate in the wall; reload the page and open it from Courses: it is there.
+3. Save again and press "Fix all automatically": the moved gates show their old places dashed for 5 s, the line says how
+   many moved; press Undo there and every gate goes back.
+4. Press "Show me": the first warned gate is selected for moving by hand.
