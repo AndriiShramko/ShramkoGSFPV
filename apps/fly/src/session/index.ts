@@ -26,7 +26,6 @@ import { wallsState } from '../flightwalls';
 import type { WallsState } from '../flightwalls';
 import { SessionLoader, firstWalls, wallsPlaces } from './loader';
 import { deviceSplatLimit, openCheck } from './open-error';
-import type { OpenNotice } from './open-error';
 import { LoadCancelled, abortable } from '../app/scene-load';
 import type { WallsFrom } from './loader';
 import type { LoadProgress } from './loader';
@@ -94,8 +93,6 @@ export interface SessionOptions {
     drawScan?: boolean;
     /** loading state every 100 ms until the first view is on screen */
     onProgress?: (p: LoadProgress) => void;
-    /** lane n-scan: said before the scan loads when it opens but slowly (one heavy file: open-error.ts heavyNotice) */
-    onNotice?: (n: OpenNotice) => void;
     /** the loading card's Fly now: shows the first view at once once something of it is drawn (reveal.ts) */
     flyNow?: FlyNow;
     /**
@@ -389,8 +386,7 @@ export class FlightSession {
         // (also with ?render=off): one plain line, never an endless loader (open-error.ts)
         if (!built) {
             const room = { maxTextureSize: this.renderer.app?.graphicsDevice?.maxTextureSize ?? 0, memoryGB: (globalThis.navigator as { deviceMemory?: number } | undefined)?.deviceMemory };
-            const notice = await abortable(openCheck(this.scene, (u, init) => fetch(u, { ...init, ...(signal ? { signal } : {}) }), deviceSplatLimit(room)), signal);
-            if (notice) o.onNotice?.(notice);
+            await abortable(openCheck(this.scene, (u) => fetch(u, signal ? { signal } : {}), deviceSplatLimit(room)), signal);
         }
         const splatLoad = this.drawScan ? this.loadContent() : Promise.resolve(null);
         // the walls download beside the scan, not before it: one slow host no longer holds up the other

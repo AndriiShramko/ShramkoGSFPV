@@ -88,7 +88,6 @@
   "scene.open.gone": "Tego skanu nie ma już na SuperSplat (usunięty lub prywatny). Wybierz inny skan.",
   "scene.open.unknown-format": "Ten skan używa formatu SuperSplat, którego symulator jeszcze nie czyta. Wybierz inny skan; ten otworzy się po aktualizacji.",
   "scene.open.network": "Serwery SuperSplat nie odpowiedziały. Sprawdź połączenie i spróbuj ponownie za minutę.",
-  "scene.open.heavy": "Ten skan to jeden duży plik (około {mb} MB): pobieranie trwa kilka minut. Poczekaj tutaj albo naciśnij Anuluj (klawisz Esc) i wybierz lżejszy skan.",
   "drone.title": "Twój dron",
   "drone.default": "domyślny",
   "drone.twr": "Ciąg / masa",

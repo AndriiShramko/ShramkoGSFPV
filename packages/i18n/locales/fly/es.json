@@ -88,7 +88,6 @@
   "scene.open.gone": "Este escaneo ya no está en SuperSplat (borrado o hecho privado). Elige otro escaneo.",
   "scene.open.unknown-format": "Este escaneo usa un formato de SuperSplat que el simulador aún no sabe leer. Elige otro escaneo; este se abrirá tras una actualización.",
   "scene.open.network": "Los servidores de SuperSplat no respondieron. Revisa tu conexión e inténtalo de nuevo en un minuto.",
-  "scene.open.heavy": "Este escaneo es un solo archivo grande (unos {mb} MB): tarda unos minutos en descargarse. Espera aquí o pulsa Cancelar (tecla Esc) y elige un escaneo más ligero.",
   "drone.title": "Tu dron",
   "drone.default": "por defecto",
   "drone.twr": "Empuje / peso",

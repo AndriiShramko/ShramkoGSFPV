@@ -39,16 +39,17 @@ const expectOf = (kind) =>
     kind === 'gsaf' ? { flies: false, lines: ['scenes.unsupported'] }
     : kind === 'sog-v2-heavy' ? { flies: true, lines: ['scene.open.too-large'] }
     : { flies: true, lines: [] };
-/** a single file over HEAVY_BYTES (open-error.ts) says before its download why it takes minutes: scene.open.heavy */
+/** a heavy single file (no lighter level) downloads for minutes: its loading card must say why (its size in MB and the
+ * time left, ui/loading.ts .load-nums) with Cancel (key Esc, [data-action="load-cancel"]) while it does */
 const HEAVY_KINDS = new Set(['sog-v2-heavy', 'compressed-ply-large']);
-const HEAVY_RE = new RegExp(EN['scene.open.heavy'].replace(/[.*+?^$()|[\]\\]/g, '\\$&').replace('\\{mb\\}', '\\d+').replace('{mb}', '\\d+'));
+const LEFT_RE = new RegExp(EN['loading.leftMin'].replace(/[.*+?^$()|[\]\\]/g, '\\$&').replace('{m}', '\\d+'));
 mkdirSync(SHOTS, { recursive: true });
 
 const STATE = `(() => {
     const h = window.__gsfpv || {}; const s = h.session; const r = s && s.renderer; const a = r && r.app;
     const e = document.querySelector('.scene-error');
     return { status: h.status || null, errorCode: h.errorCode || null, error: h.error ? String(h.error).slice(0, 200) : null,
-        line: e ? e.textContent : null, notes: [...document.querySelectorAll('.msg-stack')].map((m) => m.textContent).join(' | '), drawn: a ? a.stats.frame.gsplats : null,
+        line: e ? e.textContent : null, nums: (document.querySelector('.load-nums') || {}).textContent || null, cancel: !!(document.querySelector('[data-action="load-cancel"]') || {}).getClientRects?.().length, drawn: a ? a.stats.frame.gsplats : null,
         stage: h.loading ? h.loading.stage : null, loaded: h.loading ? h.loading.loaded : null, total: h.loading ? h.loading.total : null,
         tick: s && s.sim ? s.sim.tick : null, paused: s ? !!s.paused : null, locked: !!document.pointerLockElement };
 })()`;
@@ -108,7 +109,7 @@ try {
                 await page.waitForTimeout(1000);
                 last = await page.evaluate(STATE).catch(() => null);
                 if (!last) continue;
-                if (!r.notice && last.notes && HEAVY_RE.test(last.notes)) r.notice = { s: Math.round((Date.now() - t0) / 1000), text: last.notes.match(HEAVY_RE)[0] };
+                if (!r.said && last.nums && LEFT_RE.test(last.nums) && last.cancel) r.said = { s: Math.round((Date.now() - t0) / 1000), card: last.nums };
                 const s = Math.round((Date.now() - t0) / 1000);
                 if (s % 20 === 0) (r.samples ||= []).push({ s, status: last.status, stage: last.stage, loaded: last.loaded, total: last.total, drawn: last.drawn });
                 if (last.status === 'error' && last.line) break;
@@ -145,8 +146,9 @@ try {
                     if (id === 'a39abad1' || lit.lit < MINLIT) { r.picture.shot = join(SHOTS, `n-scan-${id}.png`); writeFileSync(r.picture.shot, png); }
                     if (lit.lit < MINLIT) r.why = `picture empty: ${(lit.lit * 100).toFixed(1)} % of pixels differ from the clear colour`;
                 }
-            } else if (HEAVY_KINDS.has(kind) && r.notice && slowButMoving(r.samples)) {
-                // a heavy single file still downloading at MAXS: it said why first, and every 20 s more of it arrived
+            } else if (HEAVY_KINDS.has(kind) && r.said && slowButMoving(r.samples)) {
+                // a heavy single file still downloading at MAXS: its card says its size and the minutes left with
+                // Cancel, and every 20 s more of it arrived: a slow download, not an endless loader
                 r.outcome = 'slow-said';
             } else {
                 r.why = `no flight and no line in ${MAXS} s (status ${last && last.status}, ${last && last.errorCode}, splats drawn ${last && last.drawn}): an endless loader or an empty screen`;
@@ -154,8 +156,8 @@ try {
         } catch (e) {
             r.why = `probe: ${String(e.message || e).slice(0, 200)}`;
         }
-        // a heavy single file must say why before its long download, whatever the outcome
-        if (!r.why && HEAVY_KINDS.has(kind) && !r.notice) r.why = `no line "${EN['scene.open.heavy']}" before the download`;
+        // drawn: a heavy single file's card must say why it takes minutes (render off loads no splat file: nothing to say)
+        if (!r.why && DRAWN && HEAVY_KINDS.has(kind) && !r.said) r.why = 'the loading card never showed the size, "about N min left" and Cancel';
         r.csp = await page.evaluate('window.__csp || []').catch(() => []);
         if (!r.why && r.errors.length) r.why = `page error: ${r.errors[0]}`;
         if (!r.why && r.csp.length) r.why = `CSP: ${r.csp[0]}`;

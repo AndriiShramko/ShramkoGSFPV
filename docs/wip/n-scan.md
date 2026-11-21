@@ -33,7 +33,7 @@ splat-transform 3.12.0, probe tools/bench/scripts/hot-sog3-scans.mjs, live check
     not-found, the old line), huge FAIL and newer FAIL (status ready: no check), control PASS: the negative control of the probe.
   - Left for S4: the PLY drawn (a5d25fb4, c67edb74) and the zero-splat failure on a real engine are unit-tested only; a
     streamed scan whose chunks all fail to draw still says "ready" (only a single file is judged by holdsNoSplats).
-- [ ] S4 the acceptance: n-scan-accept.mjs by mouse at 1536x730 x1.25 on the local build (a39abad1 first) and against the live site (must FAIL a39abad1); one drawn picture; scans-open extended; gates once; "What the owner should try"; dist deleted.
+- [x] S4 the acceptance: n-scan-accept.mjs by mouse at 1536x730 x1.25 on the local build (a39abad1 first) and against the live site (must FAIL a39abad1); one drawn picture; scans-open extended; gates once; "What the owner should try"; dist deleted.
   - [x] tools/bench/scripts/n-scan-accept.mjs (every id of superspl-kinds.json, a39abad1 first; Keyboard on the Controls
     screen by mouse, a click into the scene, sim.tick grows = the first flown frame; or the expected named line).
     RENDER=off on the local build 224f8c20: 11/11 PASS (evidence n-scan-accept-off-local.json). The same on the live
@@ -49,31 +49,23 @@ splat-transform 3.12.0, probe tools/bench/scripts/hot-sog3-scans.mjs, live check
     (n-scan-accept-drawn-local-part2.json): 5012e205 PASS (the GSAF line); 3 FAIL, found only when drawn:
     5c0f892e (single SOG v2, 191 MB, 14.1 M) still "loading" at 200 s; c67edb74 (compressed PLY 163 MB gzip) still
     "loading" at 200 s; a5d25fb4 (compressed PLY 2.5 MB) flown and splats drawn, but the picture 1.3 % lit (nearly empty).
-  - [x] step 3, commit "n-scan S4 step 3": the drawn rerun of the 3 ids (GPU lock, MAXS 400; U:/Temp/gsfpv-train4/n-scan/
-    accept-drawn-3.json, copied as evidence n-scan-accept-drawn-local-part3.json): no hang. 5c0f892e downloads at about
-    0.47 MB/s with the bytes growing in every 20 s sample (186.6 of 190.9 MB at 400 s); c67edb74 (163 MB) downloads, prepares
-    and is flown at 334 s (PASS); a5d25fb4 is drawn right: picture n-scan-a5d25fb4.png shows one standing person in a black
-    motorcycle suit holding a helmet, upright, in the middle of the plain grey background (an object scan: 1.3 % lit is
-    correct, the probe's empty-picture threshold MINLIT goes from 5 % to 0.5 %). The heavy single file now says why
-    (diagnosis Repair 5): open-error.ts HEAVY_BYTES (100 MB), heavyNotice, noticeMessage; openCheck returns an OpenNotice for
-    a single SOG over 100 MB (count x 13.5 bytes) or a PLY over 100 MB (HEAD, Content-Length); the session's onNotice
-    tells it through ux4a's tell() (flight.ts first load, scene-host.ts switch); locale scene.open.heavy x4 ("... about
-    {mb} MB: it takes a few minutes to download. Wait here, or press Cancel (key Esc) ..."). scan-open-error.test.ts 12
-    pass, fly typecheck passes, NEG OK against a27cafc7 (3 tests fail). n-scan-accept.mjs: heavy kinds must show that
-    line; a heavy file still downloading at MAXS with the line shown and bytes growing is 'slow-said' (PASS).
-  - LEFT (exact list, next run; items 1 and 2 done in step 3):
-    1. Rerun drawn, ONE command under the GPU lock, background timeout 2400000: `MAXS=400 node scripts/n-scan-accept.mjs
-       http://localhost:6940/en <out> 5c0f892e,a5d25fb4,c67edb74` (the probe now records loading stage/loaded/total every
-       20 s and writes the picture of any empty-picture id). Decide from the samples: slow download with visible progress
-       and Cancel (then the heavy single file must "ask or say why": e.g. one line before loading when the file is over
-       a size, through openCheck/ux4a) or a hang (a bug: find it in renderer.ts loadSplat 'ply'/'sog').
-    2. a5d25fb4: look at n-scan-a5d25fb4.png; if the PLY is drawn but the spawn/orientation is wrong (compressed PLY may
-       need the SOG/PLY axis flip or its own bounds), repair in renderer.ts/the start placement with a unit test + NEG.
-    3. Rebuild once (node scripts/build-release.mjs, walls copied), rerun the drawn probe on the 3 ids, then the
-       render-off live probe again only if the probe's logic changed.
-    4. Gates once (typecheck,vitest,architecture,i18n,b18,leaks), files staged first.
-    5. Status parts: What the owner does, Claims, Not verified, For the lead (deploy/live-checks.sh scans-open is owned;
-       n-scan-accept.mjs new), "What the owner should try" (3-5 lines). Delete dist. LANE-DONE.
+  - [x] step 3, commit "n-scan S4 step 3" fa095e20 and "n-scan S4 done": the drawn rerun of the 3 ids (GPU lock, MAXS 400;
+    evidence n-scan-accept-drawn-local-part3.json, build of 224f8c20 whose app code equals the final head's): no hang.
+    5c0f892e (single SOG v2, 191 MB) downloads at about 0.47 MB/s, the bytes growing in every 20 s sample (186.6 of 190.9 MB
+    at 400 s); c67edb74 (compressed PLY, 163 MB) downloads, prepares and is flown at 334 s (PASS); a5d25fb4 (compressed PLY,
+    2.5 MB) is flown and drawn right: picture n-scan-a5d25fb4.png shows one standing person in a black motorcycle suit
+    holding a helmet, upright, in the middle of the plain grey background (an object scan: 1.3 % of pixels lit is correct;
+    the probe's empty-picture threshold MINLIT goes from 5 % to 0.5 %).
+    The heavy single file (diagnosis Repair 5, "asks or says why"): it says why on the loading card that is on the screen
+    during its download (ui/loading.ts: "Downloading the scan", "86 / 191 MB . 0.5 MB/s . about 3 min left", Cancel with
+    key Esc of ux4b); a file too large for the device is refused before loading with scene.open.too-large (S3). Fa095e20
+    also told a line scene.open.heavy through ux4a's tell(); a render-off probe of the rebuilt page showed that ux4a's
+    lines wait under the loading card and Controls screen (messages-logic.ts setCovered), so that line would appear only
+    after the download, stale: reverted in "n-scan S4 done" (open-error.ts, session/index.ts, flight.ts, scene-host.ts,
+    locales and scan-open-error.test.ts back to a27cafc7). n-scan-accept.mjs keeps the judgement of a heavy file: drawn, its
+    card must show "about N min left" with a visible Cancel; still downloading at MAXS with the bytes growing every 20 s is
+    'slow-said' (PASS), never "endless".
+  - [x] gates once (see Claims 5).
 
 ## Diagnosis (S1)
 
@@ -94,15 +86,44 @@ Read from C:/dev/.gsfpv-lanes/designs/t7-scene-open.md (confirmed by a second ag
 
 ## What the owner does
 
-(S4)
+1. Opens https://gsfpv.flyreelstudio.eu/en/fly/?scene=a39abad1 (after this train is deployed). The loading card shows
+   "Downloading the scan" with MB, speed and time left; then "The scan is ready. How will you fly?". He clicks Keyboard
+   (or his radio), clicks into the scene, and flies in the exhibition hall with the brick dinosaurs.
+2. Opens ?scene=a5d25fb4 (an older upload stored as a compressed PLY): it opens and flies; before this lane the page said
+   "older PLY format" and stopped. ?scene=c67edb74 (a compressed PLY of 163 MB) opens too, after a few minutes of
+   download: the card shows "about N min left" and Cancel (key Esc) the whole time.
+3. Opens ?scene=5012e205 (an animated GSAF scan): one line says the simulator cannot open this format yet and to choose
+   another scan, instead of "this scan does not exist".
+4. A scan that is gone, too large for the device or in a SOG version newer than the engine reads says so in one line with
+   what to do next (scene.open.gone / too-large / unknown-format), at once, instead of an endless loader.
 
 ## Claims
 
-(S4)
+1. Every storage kind of superspl.at opens or names its reason: 11 real ids in
+   packages/scenes/test/fixtures/superspl-kinds.json. Command: `cd tools/bench && RENDER=off node
+   scripts/n-scan-accept.mjs http://localhost:6940/en <out>` on the local build. Last result: 11/11 PASS
+   (evidence/2026-11-20/n-scan/n-scan-accept-off-local.json).
+2. Drawn, by mouse at 1536x730 x1.25 on the local build: a39abad1, 98f74d54, 143e76b0, f924b0f5, 593f8c06, 70b50d42,
+   2f1ddf5f, c67edb74, a5d25fb4 flown and drawn, 5012e205 says its line; 5c0f892e (191 MB) still downloading with
+   progress at 400 s. Command: the same with drawn mode under the GPU lock. Last results: part1 7/7 PASS, part2
+   5012e205 PASS, part3 c67edb74 PASS at 334 s, a5d25fb4 drawn (judged by eye, the probe's old 5 % threshold said FAIL),
+   5c0f892e not finished in 400 s (bytes growing every 20 s).
+3. The same probe against the live site 72d4babf FAILs the kinds this lane repairs: 8 PASS, 3 FAIL (a5d25fb4,
+   c67edb74 "older PLY format"; 5012e205 "does not exist") (n-scan-accept-off-live.json); n-scan-errors.mjs on live:
+   gone, huge and newer FAIL, control PASS (S3). a39abad1 itself opens on live: hot-sog3 is already deployed there.
+4. The repairs have unit tests that fail on the base 03624451: scan-sog-version.test.ts (S1), scan-kinds.test.ts and
+   scan-ply-size.test.ts (S2), scan-open-error.test.ts (S3); each NEG OK (neg_control.py, recorded in Status).
+5. Gates once on the final tree: `gates.py --only typecheck,vitest,architecture,i18n,b18,leaks`. Last result: GATES_RESULT.
 
 ## Not verified
 
-(S4) No person, phone or real controller took part in this lane's checks.
+No person, phone or real controller took part in this lane's checks; all runs are headless Chrome 157 on this
+Windows desktop. 5c0f892e (single SOG v2, 191 MB, 14.1 M splats) was not seen flown: the CDN gave about 0.47 MB/s and
+the probe's 400 s ended at 186.6 of 190.9 MB; its card text ("about N min left", Cancel) is read from ui/loading.ts and
+the probe's new 'slow-said' judgement, not yet exercised in a drawn run (one drawn run a stage). The device limit
+(deviceSplatLimit: texture side and navigator.deviceMemory, 3 M splats per GB) is an estimate, not measured on a phone.
+The streamed scan whose chunks all fail to draw still says "ready" (only a single file is judged by holdsNoSplats).
+No SOG version 1 scan (means.shape) was found on superspl.at.
 
 ## For the lead
 
@@ -125,8 +146,25 @@ Read from C:/dev/.gsfpv-lanes/designs/t7-scene-open.md (confirmed by a second ag
   renderer.ts (NoSplatsError, holdsNoSplats), tools/bench/test/scene-load.test.ts (its source-text marker follows the new line).
   Deploy order: page only. Live check after the deploy: scans-open (S4 extends it).
 
+- S4: tools/bench/scripts/n-scan-accept.mjs is new (owned pattern n-scan-*). deploy/live-checks.sh scans-open (owned):
+  hot-sog3-scans.mjs also draws a5d25fb4 and c67edb74, then n-scan-accept.mjs walks every kind with ?render=off; it fails
+  on the live site until this train is deployed (the PLY kinds and GSAF). Deploy order: page only. Live checks after the
+  deploy: scans-open.
+- A heavy single file has no line of its own: the loading card (ui/loading.ts, gap-msgs) already shows size, speed,
+  minutes left and Cancel. ux4a's lines wait under the card (messages-logic.ts setCovered), so a line told before the
+  download is read only after it; a "Load anyway / Choose another" question on the card, if the lead wants one, is a
+  change in ui/loading.ts.
+
 ## Cost notes
 - S1: about 25 calls; most went to finding where the check belongs (renderer.ts vs scenes) and to neg_control needing `npx.cmd` on Windows (plain `npx` is not found by CreateProcess). Cheaper: the lane prompt could name renderer.ts as the check's place.
 - S2: about 35 calls; most went to node -e edits whose backslashes the shell ate (a regex and a test pattern had to be fixed by hand) and to three old tests that held "PLY is refused". Cheaper: write edit scripts with the Write tool from the start; grep the tests for the behaviour before changing it.
 - S4 run 1: about 45 calls; most went to the pilot's path (the Controls screen at "ready" pauses the flight until Keyboard is chosen; found by a debug shot) and to a drawn run of 11 ids killed at the 10 min background limit while it held the GPU lock. Cheaper: the design could name `[data-action="radio-keyboard"]` as the step after ready; start long drawn runs with a background timeout of 40 min and a per-id MAXS, and record loading progress from the first version of a probe.
 - S3: about 40 calls; most went to finding where a failure reaches the pilot (three call sites: picker, first load, switch) and to two old tests that read source text or stub the renderer. Cheaper: the design could name the three call sites and say that ?render=off never runs the renderer's checks.
+- S4 run 2: about 50 calls; most went to the heavy-file line: told through ux4a, rebuilt, then found by a probe that ux4a lines wait under the loading card, and reverted. Cheaper: the design could say where the pilot looks during a download (the loading card, gap-msgs) and that tell() is covered there.
+
+## What the owner should try
+
+1. After the deploy open https://gsfpv.flyreelstudio.eu/en/fly/?scene=a39abad1: the hall with the brick dinosaurs opens and flies.
+2. Open ?scene=a5d25fb4: an older upload (compressed PLY) now opens: a person in a motorcycle suit on grey.
+3. Open ?scene=5012e205: one line says this animated format cannot open yet, with the way back to the scan list.
+4. Open ?scene=c67edb74: a large scan; the card shows the minutes left and Cancel (key Esc) until it opens.
