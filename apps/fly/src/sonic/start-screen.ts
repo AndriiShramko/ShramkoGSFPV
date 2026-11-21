@@ -5,10 +5,11 @@
 // sliders with labels: nothing is a div with a click handler, so Tab, Enter, Space and the arrow keys do what a screen
 // reader user expects. Every lesson is a button, whatever the path (the ladder is a recommendation, not a gate).
 //
-//   Start      Quick start (first and focused for every pilot, a returning one too: lane gap-sound, the owner's line 531),
-//              Continue: <the lesson the pilot is on>, Full course, and, when ?sonic=<lesson> asked for one, Start: <that
-//              lesson> before them; each opens a lesson through `onStart` inside the press, which is the user activation the
-//              AudioContext and the speech need.
+//   Start      Start flying (the fast path; first and focused for every pilot, a returning one too), All lessons (the full
+//              course: the focus goes to the lessons), Continue: <the lesson the pilot is on> (lane tutor-say S3, decision 8),
+//              and, when ?sonic=<lesson> asked for one, Start: <that lesson> before them; a lesson opens through `onStart` inside
+//              the press, which is the user activation the AudioContext and the speech need. At open the voice says the title
+//              and the main button once (openLine); the rest when the focus comes to it; how the list works on key K.
 //   Headphones a sound on the left, on the right (no 'behind': the owner, line 531): made by the engine (its first press makes the AudioContext),
 //              with the package's notes (wired, no surround effects) and the loudness note beside it.
 //   Lessons    every shipped lesson (28 since v0.13) by module with its place ("Lesson N of 28", as the lesson's own view counts
@@ -42,6 +43,8 @@ import { buildModel, firstOf, lessonPlace, scanStartOrder } from './start-model'
 import type { LessonPlace, LessonRow, LessonState, SonicRequest, StartModel } from './start-model';
 import { KEY_HINTS_CHOICES, keyHintsChoice, setKeyHints } from './key-hints';
 import type { KeyHintsChoice } from './key-hints';
+import { GUIDE_LEVELS, guideLevel, setGuide } from './guide';
+import type { GuideLevel } from './guide';
 import { LOOK_PANELS, LOOK_PANEL_LABELS, panelOn, setPanel } from './look-prefs';
 import type { LookPanel } from './look-prefs';
 import './sonic.css';
@@ -63,6 +66,8 @@ export const SONIC_SETTING_LEVELS: Readonly<Record<string, MenuLevel>> = {
     'sonic-captions': 'first',
     'sonic-sr': 'first',
     'sonic-narrator': 'first',
+    // lane tutor-say S3 (decision 7): "Guide: Full / Short / New sounds only" beside the narrator, which off is the guide off
+    'sonic-guide': 'first',
     'sonic-key-hints': 'first',
     'sonic-head': 'first'
 };
@@ -76,6 +81,18 @@ export function sonicSettingLevel(id: string): MenuLevel {
 interface SettingRow {
     readonly id: string;
     readonly draw: () => HTMLElement;
+}
+
+/** A drawn row of the Settings section: its element and its stops (a row is drawn again on its own: StartScreen.redrawRow). */
+interface DrawnRow {
+    readonly el: HTMLElement;
+    readonly stops: readonly SpokenItem[];
+}
+
+/** The parts of the shared link's note in the Start section (updated in place when a setting it names becomes the pilot's own). */
+interface VisitParts {
+    readonly note: HTMLElement;
+    readonly choice: HTMLElement;
 }
 
 const NEUTRAL: FlightSample = { t: 0, tick: 0, pos: [0, 1.5, 0], vel: [0, 0, 0], quat: [1, 0, 0, 0], rate: [0, 0, 0], yawDeg: 0, pitchDeg: 0, rollDeg: 0, sticks: [0, 0, 0, 0], armed: false, touched: false, paused: false };
@@ -140,6 +157,13 @@ export class StartScreen {
     private quiet = false;
     /** "Show all settings" was pressed on this page: every row of the Settings section is drawn (lane gap-sound) */
     private allSettings = false;
+    /** the Settings section's rows: how each is drawn, and as drawn now (lane tutor-say S3: a change redraws its own row only) */
+    private rowDefs = new Map<string, SettingRow>();
+    private rows = new Map<string, DrawnRow>();
+    /** the row whose control is being applied now (a refused change draws that row again from what is really set) */
+    private applying: string | null = null;
+    /** the shared link's note as drawn now, or null */
+    private visitParts: VisitParts | null = null;
     private onKeyDown = (e: KeyboardEvent): void => {
         if (this.root.hidden) return;
         const target = e.target as Node | null;
@@ -152,7 +176,7 @@ export class StartScreen {
             if (!e.repeat) this.back();
             return;
         }
-        if (this.list.key(e) === 'taken') {
+        if (this.list.key(e) === 'taken' || this.helpKey(e)) {
             e.preventDefault();
             e.stopPropagation();
             return;
@@ -208,12 +232,33 @@ export class StartScreen {
         return this.woke || this.d.setup.audio.ac !== null;
     }
 
-    /** The first key of a fresh page starts the sound (it is a user activation) and the voice says how the list works. */
+    /**
+     * The first key of a fresh page starts the sound (it is a user activation) and the voice says the screen's opening line: its title
+     * and the main button (lane tutor-say S3, decision 8: no list of keys, no "Item n of N"; how the list works only on key K).
+     */
     private wake(): boolean {
         if (this.awake()) return false;
         this.woke = true;
         void this.d.setup.audio.start();
-        this.voice({ key: 'sonic.say.listHelp' }, true);
+        this.voice({ key: TEXT_LINE, params: { text: this.openLine() } }, true);
+        return true;
+    }
+
+    /** The opening line: the title, then the main button (the first Start stop: Start flying, or what a link asked for). */
+    openLine(): string {
+        const main = this.stops.get('start')?.[0];
+        return main ? `${t('sonic.start.name')}. ${main.words()}` : t('sonic.start.name');
+    }
+
+    /**
+     * Key K with the mode's voice: how the list works, said only when asked (decision 1). Not in a select, where a letter picks an
+     * option. Whether the screen took the key.
+     */
+    private helpKey(e: KeyboardEvent): boolean {
+        if (!this.d.setup.prefs.selfVoice || e.code !== 'KeyK' || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey || e.repeat) return false;
+        if ((document.activeElement as HTMLElement | null)?.tagName === 'SELECT') return false;
+        const woke = this.wake();
+        this.voice({ key: 'sonic.say.listHelp' }, !woke);
         return true;
     }
 
@@ -258,7 +303,8 @@ export class StartScreen {
 
     /** `el` is a stop of the spoken list, in the section being drawn. */
     private stop(el: HTMLElement, words: () => string, o: Partial<Pick<SpokenItem, 'placed' | 'shown' | 'change' | 'choose'>> = {}): void {
-        const item: SpokenItem = { el, section: this.building, words, placed: o.placed ?? true, ...(o.shown ? { shown: o.shown } : {}), ...(o.change ? { change: o.change } : {}), ...(o.choose ? { choose: o.choose } : {}) };
+        // the Start section's few buttons say no "Item n of N" (lane tutor-say S3, decision 7: no counter unless asked)
+        const item: SpokenItem = { el, section: this.building, words, placed: o.placed ?? this.building !== 'start', ...(o.shown ? { shown: o.shown } : {}), ...(o.change ? { change: o.change } : {}), ...(o.choose ? { choose: o.choose } : {}) };
         if (this.building === 'lessons' && this.inReset) this.resetStops.push(item);
         else this.stops.get(this.building)?.push(item);
     }
@@ -362,6 +408,7 @@ export class StartScreen {
         const req = this.d.request;
         const buttons: HTMLElement[] = [];
         const visit = this.visitNote(this.d.setup.visit);
+        this.visitParts = visit;
         // the primary Start carries the link's note as its description: a pilot who tabs straight to it hears what sound it starts with
         const lessonButton = (id: string, label: string, sub: string | null, primary: boolean, testid: string): HTMLElement => {
             const b = h('button', { type: 'button', class: `btn${primary ? ' primary' : ''}`, 'data-testid': testid, 'data-lesson': id, ...(primary && visit ? { 'aria-describedby': VISIT_TEXT_ID } : {}), onclick: () => this.start(id) }, label, sub ? h('span', { class: 'sonic-sub' }, sub) : null);
@@ -399,22 +446,24 @@ export class StartScreen {
         // lane sound6 S2 (the owner: the quick lesson is the default, the long course for those who need it): Quick start, then Full
         // course; each sets the path and opens its first lesson; the saved progress is kept (Reset is a choice of its own, in the lessons).
         // Lane gap-sound (line 531, 'the quick lesson by default'): Quick start comes first for a returning pilot too, Continue second
-        const pathButton = (path: 'fast' | 'full', primary: boolean): HTMLElement => {
-            const id = firstOf(path);
-            const label = t(path === 'fast' ? 'sonic.start.quick' : 'sonic.start.full');
-            const sub = `${this.key(path === 'fast' ? 'menu.path.fast-what' : 'menu.path.full-what')}${m.continueId ? ` ${t('sonic.start.courseKeeps')}` : ''}`;
-            const b = h('button', { type: 'button', class: `btn${primary ? ' primary' : ''}`, 'data-testid': path === 'fast' ? 'sonic-start-quick' : 'sonic-start-full', 'data-lesson': id, ...(primary && visit ? { 'aria-describedby': VISIT_TEXT_ID } : {}), onclick: () => this.startPath(path) }, label, h('span', { class: 'sonic-sub' }, sub));
-            this.stop(b, () => `${label}. ${sub.replace(/\.$/, '')}`);
-            return b;
-        };
-        buttons.push(pathButton('fast', !primaryTaken));
-        // Continue: <the lesson>, with its place and where the pilot stands in it (M41-2): what it resumes, second
+        // Lane tutor-say S3 (decision 8): "Start flying" (the fast path, the main button), "All lessons" second (the full course: every
+        // lesson in the list, the focus taken there), Continue third when there is one
+        const fastId = firstOf('fast');
+        const label = t('sonic.start.quick');
+        const sub = `${this.key('menu.path.fast-what')}${m.continueId ? ` ${t('sonic.start.courseKeeps')}` : ''}`;
+        const primary = !primaryTaken;
+        const quick = h('button', { type: 'button', class: `btn${primary ? ' primary' : ''}`, 'data-testid': 'sonic-start-quick', 'data-lesson': fastId, ...(primary && visit ? { 'aria-describedby': VISIT_TEXT_ID } : {}), onclick: () => this.startPath('fast') }, label, h('span', { class: 'sonic-sub' }, sub));
+        this.stop(quick, () => `${label}. ${sub.replace(/\.$/, '')}`);
+        buttons.push(quick);
+        const all = h('button', { type: 'button', class: 'btn', 'data-testid': 'sonic-start-all', onclick: () => this.allLessons() }, t('sonic.start.all'));
+        this.stop(all, () => t('sonic.start.all'));
+        buttons.push(all);
+        // Continue: <the lesson>, with its place and where the pilot stands in it (M41-2): what it resumes
         if (m.continueId) {
             const row = rowOf(m.continueId);
             const sub = [this.placeText(lessonPlace(m.continueId, prefs.path)), row ? this.stateWord(row.state) : null].filter((x): x is string => x !== null).join(', ');
             buttons.push(lessonButton(m.continueId, t('sonic.start.continue', { title: titleOf(m.continueId) }), sub, false, 'sonic-start-continue'));
         }
-        buttons.push(pathButton('full', false));
         const back = this.d.onClose ? h('button', { type: 'button', class: 'btn', 'data-testid': 'sonic-back', onclick: () => this.d.onClose?.() }, t('sonic.close')) : null;
         if (back) this.stop(back, () => t('sonic.close'));
         const choice = visit?.choice ?? null;
@@ -589,9 +638,9 @@ export class StartScreen {
         const select = (id: string, text: string, value: string, options: [string, string][], on: (v: string, said: string) => void): HTMLElement => {
             const el = h('select', { id, 'data-testid': id }, ...options.map(([v, name]) => h('option', { value: v, ...(v === value ? { selected: true } : {}) }, name)));
             const now = (): string => options.find(([v]) => v === el.value)?.[1] ?? '';
-            const apply = (): void => on(el.value, `${text}: ${now()}`);
+            const apply = (): void => this.applyRow(id, () => on(el.value, `${text}: ${now()}`));
             el.addEventListener('change', apply);
-            const at = (): number => Math.max(0, options.findIndex(([v]) => v === el.value));
+            const at =(): number => Math.max(0, options.findIndex(([v]) => v === el.value));
             this.stop(el, () => `${text}: ${now()}`, {
                 change: (dir) => {
                     const j = at() + dir;
@@ -611,7 +660,7 @@ export class StartScreen {
         };
         const check = (id: string, text: string, checked: boolean, on: (v: boolean, said: string) => void, hint?: string): HTMLElement => {
             const el = h('input', { type: 'checkbox', id, 'data-testid': id, ...(checked ? { checked: true } : {}), ...(hint ? { 'aria-describedby': `${id}-hint` } : {}) });
-            const apply = (): void => on(el.checked, `${text}: ${onOff(el.checked)}`);
+            const apply = (): void => this.applyRow(id, () => on(el.checked, `${text}: ${onOff(el.checked)}`));
             el.addEventListener('change', apply);
             const flip = (): void => {
                 el.checked = !el.checked;
@@ -630,7 +679,7 @@ export class StartScreen {
             sync();
             const apply = (): void => {
                 sync();
-                on(Number(el.value), `${text}: ${el.value}${unit}`);
+                this.applyRow(id, () => on(Number(el.value), `${text}: ${el.value}${unit}`));
             };
             el.addEventListener('input', apply);
             this.stop(el, () => `${text}: ${el.value}${unit}`, {
@@ -659,6 +708,11 @@ export class StartScreen {
             // train 3 (the owner's message 54): the narrator, on unless the pilot turns it off; off is "sounds only" in a flight (no line
             // spoken, none sent to a screen reader, nothing waits); the lessons of the lesson list keep their words
             { id: 'sonic-narrator', draw: () => check('sonic-narrator', t('sonic.settings.narrator'), prefs.narrator !== false, (v, said) => this.change({ narrator: v }, said), t('sonic.settings.narratorWhat')) },
+            // lane tutor-say S3 (decision 7): how much the narrator says in a lesson (guide.ts; absent: short)
+            { id: 'sonic-guide', draw: () => select('sonic-guide', t('sonic.guide.label'), guideLevel(this.d.setup.host), GUIDE_LEVELS.map((g) => [g, t(`sonic.guide.${g}`)]), (v, said) => {
+                setGuide(this.d.setup.host, v as GuideLevel);
+                this.sayValue(said);
+            }) },
             { id: 'sonic-motor', draw: () => check('sonic-motor', this.key('menu.setting.motor'), prefs.motorSound, (v, said) => this.change({ motorSound: v, motorChoice: true }, said)) },
             // v0.13 (W13): the motor's own level in the mode (after the engine's leveller), 3 dB a step, and the target height's note
             { id: 'sonic-motor-level', draw: () => range('sonic-motor-level', this.key('menu.setting.motor-level'), prefs.motorGainDb ?? 0, PREFS_LIMITS.motorGainDb.min, PREFS_LIMITS.motorGainDb.max, 3, ' dB', (v, said) => this.change({ motorGainDb: v }, said)) },
@@ -680,7 +734,7 @@ export class StartScreen {
             }) },
             // lane head4: "Turn my head to listen", off unless turned on; the switch speaks first, then the browser asks for the camera,
             // and the result is said (head/switch.ts); a refusal draws the row off again. Shown where the page made the switch (head/page.ts)
-            ...(this.d.setup.head ? [((head): SettingRow => ({ id: 'sonic-head', draw: () => check('sonic-head', t('sonichead.setting'), head.on, (v) => void head.set(v).then((on) => on === v || this.render()), t('sonichead.settingWhat')) }))(this.d.setup.head)] : []),
+            ...(this.d.setup.head ? [((head): SettingRow => ({ id: 'sonic-head', draw: () => check('sonic-head', t('sonichead.setting'), head.on, (v) => void head.set(v).then((on) => on === v || this.redrawRow('sonic-head')), t('sonichead.settingWhat')) }))(this.d.setup.head)] : []),
             { id: 'sonic-layers', draw: () => {
                 // the volume and pitch of each sound sit in a part that opens: its sliders are stops only while it is open
                 const details = h('details', { class: 'sonic-details' });
@@ -702,7 +756,15 @@ export class StartScreen {
         if (Object.keys(this.d.setup.visit).length > 0) this.allSettings = true;
         const all = this.allSettings;
         const shown = rows.filter((r) => all || levelShows('first', sonicSettingLevel(r.id)));
-        const fields = shown.map((r) => r.draw());
+        this.rowDefs = new Map(rows.map((r) => [r.id, r]));
+        this.rows.clear();
+        const fields = shown.map((r) => {
+            const list = this.stops.get('settings') ?? [];
+            const n = list.length;
+            const el = r.draw();
+            this.rows.set(r.id, { el, stops: list.slice(n) });
+            return el;
+        });
         const more = rows.length - shown.length;
         if (more > 0) {
             const text = t('sonic.settings.showAll', { n: more });
@@ -741,13 +803,113 @@ export class StartScreen {
         const r = this.d.setup.update(patch);
         if (!r.ok) {
             this.say(r.reasons.join('. '));
-            this.render();
+            // lane tutor-say S3: the refused row only, drawn from what is really set (the Start buttons stay, the focus stays)
+            this.redrawRow(this.applying);
             return;
         }
         if (said !== undefined) this.sayValue(said);
         // the path decides which lesson the Start buttons open: the buttons follow it, the focus stays where it is; a setting a shared
-        // link set is the pilot's own once he changes it, so the note of the link loses it
-        if (patch.path !== undefined || Object.keys(patch).some((k) => visit.includes(k))) this.refreshStart();
+        // link set is the pilot's own once he changes it, so the note of the link loses it (in place: the buttons are not drawn again)
+        if (patch.path !== undefined) this.redrawSection('start');
+        else if (Object.keys(patch).some((k) => visit.includes(k))) this.refreshVisit();
+    }
+
+    /** `apply` of the control of row `id` (a slider of the volume part names its own id: the row that holds it is found). */
+    private applyRow(id: string, apply: () => void): void {
+        const at = this.rowDefs.has(id) ? id : ([...this.rows].find(([, r]) => r.el.contains(document.getElementById(id)))?.[0] ?? null);
+        this.applying = at;
+        try {
+            apply();
+        } finally {
+            this.applying = null;
+        }
+    }
+
+    /**
+     * Row `id` of the Settings section drawn again on its own from what is set now (lane tutor-say S3, decision 8): its element and its
+     * stops replaced, nothing else; the focus put back on its control without a word (it was said). Unknown: the section.
+     */
+    private redrawRow(id: string | null): void {
+        const def = id === null ? undefined : this.rowDefs.get(id);
+        const old = id === null ? undefined : this.rows.get(id);
+        if (id === null || def === undefined || old === undefined) {
+            this.redrawSection('settings');
+            return;
+        }
+        const focused = document.activeElement?.id;
+        const list = this.stops.get('settings') ?? [];
+        const building = this.building;
+        const mine: SpokenItem[] = [];
+        this.building = 'settings';
+        this.stops.set('settings', mine);
+        let el: HTMLElement;
+        try {
+            el = def.draw();
+        } finally {
+            this.stops.set('settings', list);
+            this.building = building;
+        }
+        const at = old.stops.length > 0 ? list.indexOf(old.stops[0] as SpokenItem) : -1;
+        if (at >= 0) list.splice(at, old.stops.length, ...mine);
+        this.rows.set(id, { el, stops: mine });
+        old.el.replaceWith(el);
+        this.syncList();
+        this.refocus(focused);
+    }
+
+    /** The focus back on the control with id `focused` (now a new one), without a word: it was said already. */
+    private refocus(focused: string | undefined): void {
+        this.quiet = true;
+        try {
+            if (focused) document.getElementById(focused)?.focus();
+        } finally {
+            this.quiet = false;
+        }
+    }
+
+    /**
+     * The shared link's note follows the settings it still names (a setting the pilot changed is his own): the note and its two buttons
+     * replaced in place, or taken away with the main button's reference to them; the Start buttons are not drawn again.
+     */
+    private refreshVisit(): void {
+        const old = this.visitParts;
+        if (old === null) return;
+        const fresh = this.visitNote(this.d.setup.visit);
+        const building = this.building;
+        this.building = 'start';
+        this.stops.set('start', (this.stops.get('start') ?? []).filter((s) => !old.choice.contains(s.el)));
+        try {
+            if (fresh) for (const c of fresh.choice.querySelectorAll<HTMLElement>('button')) this.stop(c, () => c.textContent ?? '');
+        } finally {
+            this.building = building;
+        }
+        if (fresh) {
+            old.note.replaceWith(fresh.note);
+            old.choice.replaceWith(fresh.choice);
+        } else {
+            old.note.remove();
+            old.choice.remove();
+            for (const b of this.sections.get('start')?.querySelectorAll<HTMLElement>(`[aria-describedby="${VISIT_TEXT_ID}"]`) ?? []) b.removeAttribute('aria-describedby');
+        }
+        this.visitParts = fresh;
+        this.syncList();
+    }
+
+    /**
+     * "All lessons" (lane tutor-say S3, decision 8; what "Full course" was): the pilot's path is the full one (the lessons are counted on
+     * it), and the focus goes to the lessons' heading, which the voice says; a lesson there opens with one press.
+     */
+    private allLessons(): void {
+        if (this.d.setup.prefs.path !== 'full') {
+            const r = this.d.setup.update({ path: 'full' });
+            if (!r.ok) {
+                this.say(r.reasons.join('. '));
+                return;
+            }
+            this.redrawSection('lessons');
+            this.redrawSection('start');
+        }
+        this.sections.get('lessons')?.querySelector<HTMLElement>('h2')?.focus();
     }
 
     /** A panel of the look turned on or off (saved in the collection 'sonic'; the page's panels follow the change at once), and said. */
@@ -756,28 +918,22 @@ export class StartScreen {
         this.sayValue(said);
     }
 
-    private refreshStart(): void {
+    /** One section drawn again from the current progress and settings (the others stay); the focus put back without a word. */
+    private redrawSection(id: (typeof SECTIONS)[number]): void {
         const focused = document.activeElement?.id;
         this.model = buildModel(this.d.progress(), this.d.current(), this.d.setup.prefs.path);
-        const old = this.sections.get('start');
-        if (old) {
-            const fresh = this.startSection();
-            old.replaceWith(fresh);
-            this.syncList();
-            // the focus back on the control it was on (now a new one): said already, not again
-            this.quiet = true;
-            try {
-                if (focused) document.getElementById(focused)?.focus();
-            } finally {
-                this.quiet = false;
-            }
-        }
+        const old = this.sections.get(id);
+        if (!old) return;
+        const fresh = id === 'start' ? this.startSection() : id === 'headphones' ? this.headphonesSection() : id === 'lessons' ? this.lessonsSection() : this.settingsSection();
+        old.replaceWith(fresh);
+        this.syncList();
+        this.refocus(focused);
     }
 
     /** "Show all settings": every row from now on (this page); the focus goes to `first`, the first row that was not shown (said there). */
     private showAllSettings(first: string | null): void {
         this.allSettings = true;
-        this.render();
+        this.redrawSection('settings');
         (first ? this.root.querySelector<HTMLElement>(`#${first}`) ?? this.root.querySelector<HTMLElement>('.sonic-details summary') : null)?.focus();
     }
 
@@ -861,8 +1017,27 @@ export class StartScreen {
         this.render();
         // lane gap-sound (line 531, 'when the lesson starts at once'): without a section the focus is on the first Start button (Quick
         // start, unless a link asked for a lesson or a scan), so one Enter starts; the h1 only when there is no Start button
-        const at = section ? this.sections.get(section)?.querySelector<HTMLElement>('h2') : this.stops.get('start')?.[0]?.el;
+        const main = section ? undefined : this.stops.get('start')?.[0]?.el;
+        if (main) {
+            // lane tutor-say S3 (decision 8): the voice says the title and the main button once, as one line (no section name, no
+            // "Item n of N", no list of keys); the other buttons when the focus comes to them
+            this.refocusOn(main);
+            this.list.openedAt(main);
+            if (this.d.setup.prefs.selfVoice && this.awake()) this.voice({ key: TEXT_LINE, params: { text: this.openLine() } }, true);
+            return;
+        }
+        const at = section ? this.sections.get(section)?.querySelector<HTMLElement>('h2') : null;
         (at ?? this.root.querySelector<HTMLElement>('#sonic-h1'))?.focus();
+    }
+
+    /** The focus put on `el` without a word (the caller says what it means). */
+    private refocusOn(el: HTMLElement): void {
+        this.quiet = true;
+        try {
+            el.focus();
+        } finally {
+            this.quiet = false;
+        }
     }
 
     /**

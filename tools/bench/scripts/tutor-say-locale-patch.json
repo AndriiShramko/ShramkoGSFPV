@@ -1,0 +1,124 @@
+{
+  "delete": [
+    "sonic.progress.step",
+    "sonic.progress.attempt",
+    "sonic.progress.counted",
+    "sonic.start.full"
+  ],
+  "set": {
+    "sonic.start.quick": {
+      "en": "Start flying",
+      "es": "Empezar a volar",
+      "pl": "Zacznij latać",
+      "ru": "Начать полёт"
+    },
+    "sonic.start.all": {
+      "en": "All lessons",
+      "es": "Todas las lecciones",
+      "pl": "Wszystkie lekcje",
+      "ru": "Все уроки"
+    },
+    "sonic.guide.label": {
+      "en": "Guide",
+      "es": "Guía",
+      "pl": "Przewodnik",
+      "ru": "Подсказки"
+    },
+    "sonic.guide.full": {
+      "en": "Full",
+      "es": "Completa",
+      "pl": "Pełny",
+      "ru": "Полные"
+    },
+    "sonic.guide.short": {
+      "en": "Short",
+      "es": "Breve",
+      "pl": "Krótki",
+      "ru": "Короткие"
+    },
+    "sonic.guide.new": {
+      "en": "New sounds only",
+      "es": "Solo sonidos nuevos",
+      "pl": "Tylko nowe dźwięki",
+      "ru": "Только новые звуки"
+    },
+    "sonic.say.listHelp": {
+      "en": "Move with the arrows. Choose with key Enter, go back with key Escape.",
+      "es": "Muévete con las flechas. Elige con la tecla Enter, vuelve con la tecla Escape.",
+      "pl": "Poruszaj się strzałkami. Wybieraj klawiszem Enter, wracaj klawiszem Escape.",
+      "ru": "Переходи стрелками. Выбирай клавишей Enter, возвращайся клавишей Escape."
+    },
+    "sonic.say.menuOpen": {
+      "en": "Lesson menu: arrows move, key Enter chooses, key Escape goes back. The same actions have keys without the menu: each item says its key.",
+      "es": "Menú de la lección: las flechas te mueven, la tecla Enter elige, la tecla Escape vuelve. Sin el menú, las mismas acciones tienen teclas: cada opción dice la suya.",
+      "pl": "Menu lekcji: strzałki przesuwają, klawisz Enter wybiera, klawisz Escape wraca. Bez menu te same działania mają klawisze: każda pozycja podaje swój.",
+      "ru": "Меню урока: стрелки переходят, клавиша Enter выбирает, клавиша Escape возвращает. Без меню те же действия делают клавиши: каждый пункт называет свою."
+    },
+    "sonic.say.replayOlder": {
+      "en": "Recorded with lesson version {recorded}; this build has version {here}. You hear the lines as the pilot heard them.",
+      "es": "Grabado con la versión {recorded} de la lección; esta tiene la {here}. Oyes las frases como las oyó el piloto.",
+      "pl": "Nagrane z wersją lekcji {recorded}; ta wersja to {here}. Słyszysz zdania tak, jak słyszał je pilot.",
+      "ru": "Записано с версией урока {recorded}; здесь версия {here}. Ты слышишь фразы так, как их слышал пилот."
+    },
+    "sonic.say.scanLoading": {
+      "en": "Loading the scan; it can take a minute. The lesson starts by itself.",
+      "es": "Cargando el escaneo; puede tardar un minuto. La lección empieza sola.",
+      "pl": "Wczytuję skan; to może potrwać minutę. Lekcja zacznie się sama.",
+      "ru": "Загружаю скан; это может занять минуту. Урок начнётся сам."
+    },
+    "sonic.start.intro": {
+      "en": "Learn to fly a drone by ear: everything is sound, no screen needed. A helper can set up your radio, keyboard or gamepad.",
+      "es": "Aprende a volar un dron de oído: todo es sonido, no hace falta pantalla. Alguien puede ayudarte a preparar tu emisora, teclado o mando.",
+      "pl": "Naucz się latać dronem na słuch: wszystko jest dźwiękiem, ekran nie jest potrzebny. Pomocnik może ustawić twoją aparaturę, klawiaturę lub pad.",
+      "ru": "Учись летать на дроне на слух: всё звучит, экран не нужен. Помощник может настроить твой пульт, клавиатуру или геймпад."
+    },
+    "sonic.say.wallsBuilding": {
+      "en": "Building the walls of this scan now. Fly on by your height; walls come in a minute or two.",
+      "es": "Construyendo ahora las paredes de este escaneo. Sigue volando por tu altura; las paredes llegan en uno o dos minutos.",
+      "pl": "Buduję teraz ściany tego skanu. Leć dalej według wysokości; ściany pojawią się za minutę lub dwie.",
+      "ru": "Строю стены этого скана. Лети дальше по высоте; стены появятся через минуту-две."
+    },
+    "sonic.say.wallsFailed": {
+      "en": "The walls did not come this time. Fly on by your height, or open this scan again.",
+      "es": "Las paredes no llegaron esta vez. Sigue volando por tu altura o abre este escaneo otra vez.",
+      "pl": "Tym razem ściany się nie pojawiły. Leć dalej według wysokości albo otwórz ten skan jeszcze raz.",
+      "ru": "В этот раз стены не появились. Лети дальше по высоте или открой этот скан ещё раз."
+    },
+    "sonic.say.scanNoWalls": {
+      "en": "This scan has no walls yet: you hear only your height. Build walls from the simulator's pause menu, then come back by Fly by Sound.",
+      "es": "Este escaneo aún no tiene paredes: solo oyes tu altura. Construye las paredes desde el menú de pausa del simulador y vuelve con Fly by Sound.",
+      "pl": "Ten skan nie ma jeszcze ścian: słyszysz tylko wysokość. Zbuduj ściany w menu pauzy symulatora i wróć przez Lot na słuch.",
+      "ru": "У этого скана ещё нет стен: ты слышишь только высоту. Построй стены в меню паузы симулятора и вернись через полёт по звуку."
+    },
+    "sonic.say.courseReady": {
+      "en": "Course ready, gates: {n}, laps: {laps}; the hum leads to the first gate. {key} gives another course.",
+      "es": "Circuito listo, puertas: {n}, vueltas: {laps}; el zumbido te lleva a la primera puerta. {key} da otro circuito.",
+      "pl": "Tor gotowy, bramki: {n}, okrążenia: {laps}; buczenie prowadzi do pierwszej bramki. {key} daje inny tor.",
+      "ru": "Трасса готова, ворот: {n}, кругов: {laps}; гул ведёт к первым воротам. {key} даёт другую трассу."
+    },
+    "sonic.start.scanWhat": {
+      "en": "Free flight over this scan at size x{size}, with its walls and your height. No rings, no clock.",
+      "es": "Vuelo libre sobre este escaneo a tamaño x{size}, con sus paredes y tu altura. Sin anillos, sin reloj.",
+      "pl": "Swobodny lot nad tym skanem w rozmiarze x{size}, ze ścianami i wysokością. Bez obręczy, bez zegara.",
+      "ru": "Свободный полёт над этим сканом в размере x{size}, со стенами и высотой. Без колец, без часов."
+    },
+    "sonic.say.narratorTip": {
+      "en": "You finished a course by sound. Press {key} to switch the narrator off and fly by sound alone.",
+      "es": "Has terminado un recorrido con el sonido. Pulsa {key} para desactivar el narrador y volar solo con el sonido.",
+      "pl": "Ukończyłeś tor na słuch. Naciśnij {key}, aby wyłączyć narratora i lecieć tylko na słuch.",
+      "ru": "Ты прошёл трассу по звуку. Нажми {key}, чтобы выключить диктора и лететь только по звуку."
+    },
+    "sonic.say.inPlaceIntro": {
+      "en": "You hear nearby walls and your height; {keys} says keys, {menu} opens lessons. {off} turns this off, {course} makes a course of gates.",
+      "es": "Oyes las paredes cercanas y tu altura; {keys} dice las teclas, {menu} abre las lecciones. {off} apaga Fly by Sound, {course} crea un recorrido de puertas.",
+      "pl": "Słyszysz bliskie ściany i swoją wysokość; {keys} mówi klawisze, {menu} otwiera lekcje. {off} wyłącza lot na słuch, {course} tworzy trasę z bramkami.",
+      "ru": "Ты слышишь близкие стены и свою высоту; {keys} называет клавиши, {menu} открывает уроки. {off} выключает полёт по звуку, {course} строит трассу из ворот."
+    },
+    "sonic.say.inPlaceIntroCourse": {
+      "en": "You hear nearby walls and your height; the hum leads to the next gate. {off} turns this off, {keys} says the keys, {menu} opens the lessons.",
+      "es": "Oyes las paredes cercanas y tu altura; el zumbido te lleva a la siguiente puerta. {off} apaga Fly by Sound, {keys} dice las teclas, {menu} abre las lecciones.",
+      "pl": "Słyszysz bliskie ściany i swoją wysokość; buczenie prowadzi do następnej bramki. {off} wyłącza lot na słuch, {keys} mówi klawisze, {menu} otwiera lekcje.",
+      "ru": "Ты слышишь близкие стены и свою высоту; гул ведёт к следующим воротам. {off} выключает полёт по звуку, {keys} называет клавиши, {menu} открывает уроки."
+    }
+  }
+}

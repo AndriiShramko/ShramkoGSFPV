@@ -40,8 +40,25 @@ Part B 1, Part C 2, 6, 7; brief t8-tutor-brief.md decisions 1, 7, 8, 9 outside m
         div[sonic-flight] (feature.ts R5: the flight's role=application region takes a focus nobody holds when the flight goes on).
         That build's panel showed "Go." in a flying step; the next commit keeps the task said before it (START_CALLS fly.go,
         fly.go-on are not instructions; StepInstructions.heard, test (d) in sonic-said-hold 6/6, NEG OK). S4's build checks the line.
-- [ ] S3 the start screen and short speech (title + main button at open; row redraw; Start flying / All lessons / Continue;
-      Guide row; sonic-say-length.test.ts)
+- [x] S3 the start screen and short speech (one commit, see git log "S3")
+  - start-screen.ts: the Start buttons are Start flying (sonic-start-quick, the fast path, primary, focused), All lessons
+    (sonic-start-all: saves the full path, the lessons counted on it, the focus to the lessons heading; what Full course was),
+    Continue third; at open (show() with the sound on, or the first key of a fresh page) the voice says ONE line, openLine() = the
+    title and the main button; no listHelp at the first key (key K says it, not in a select), no "Item n of N" in the Start section
+    (SpokenList.openedAt keeps the list there without the section name); a setting change redraws only its row (redrawRow: a refused
+    change, the head switch's refusal), a visit setting updates the link's note in place (refreshVisit), Show all redraws the settings
+    section only; the Start buttons are never drawn again by a setting. Guide row (sonic-guide, level first, after the narrator).
+  - locales (four, the same keys; applied by tools/bench/scripts/tutor-say-locale-apply.mjs from tutor-say-locale-patch.json): new
+    sonic.start.all, sonic.guide.label/full/short/new; sonic.start.quick = Start flying; removed sonic.start.full and the panel's
+    counters sonic.progress.step/attempt/counted (unused since S2); cut to two short sentences: listHelp, menuOpen, replayOlder,
+    scanLoading, start.intro, wallsBuilding, wallsFailed, scanNoWalls, courseReady, start.scanWhat, narratorTip, inPlaceIntro(Course).
+    Kept long on purpose (in the test, with reasons): lessonKeys and lessonKeysFree (one sentence a key by lane sonic-hints' key-name
+    rule; said once a visit, then on K), the four gpu lines (the owner's wording of 2026-11-14 for a helper, sonic-gpuhint.test.ts).
+  - tests: tools/bench/test/sonic-say-length.test.ts 6/6 (with its own negative control of the checker); sonic-start-screen.test.ts
+    39/39 (5 new "tutor-say S3", the old ones moved to the new buttons, the Guide row and no Start counter); NEG OK on the base
+    (start-screen.ts, spoken-list.ts and the four locales swapped: 10 of 10 fail). Also green: sonic-gpuhint, -in-place, -scan-course,
+    -quiet-n6, -walls-free, -review, -garden, -hints, -lesson-keys, -int-lazy, -start, -review-v13, -said-*, course-progress,
+    sonic-lessons, share-links-sound-note, sonic-optin, sonic-panels. Fly typecheck rc 0, architecture ok.
 - [ ] S4 the acceptance by mouse (tutor-say-accept.mjs local and live; two pictures; gates once; What the owner should try)
 
 ## What the owner does
@@ -62,7 +79,17 @@ Chrome accessibility tree, not with a real screen reader.
 - tools/bench/src/sonic-v13-page.ts (not mine): its progress panel check (about :490-500) expects the old rows (lesson place, "Step 2 of 2", "Attempt 1", "Counted 1 of 3"); under decision 9 the panel shows one line, the step's instruction (hook text = that line). Update the check to: one line, equal to the hook's panel text, no "n of m". The locale keys sonic.progress.step/attempt/counted are then unused (sonic.progress.lesson stays: start-screen.ts).
 - apps/fly/src/sonic/feature.ts (tutor-air): the flight region (data-testid sonic-flight, role application) takes the focus only after a pause ends; at a lesson's first start the focus stays on body. Calling focusFlight() when a lesson opens would make the focus the same from the first step (the AX probe saw body -> sonic-flight at the first lesson change).
 
+- Page probes that are not mine still name the old Start buttons and lines (lane tutor-say S3): tools/bench/src/sonic-quick-walk.ts
+  (sonic-start-full at :220, :273), tools/bench/src/sonic-int-review.ts R10 (:985, :998 expect sonic-start-full), tools/bench/src/
+  sonic-v13-page.ts (:291 "Quick start" and "Full course"; :341 "the first key says how the list works": now the first key says the
+  title and the main button, the list's help is key K; :409 Escape's line has no "Item n of N" now; sonic.progress.step/attempt/
+  counted are deleted), tools/bench/src/sonic-start-keyboard.ts (:356 reads the full button's sub), tools/bench/scripts/
+  gap-sound-accept.mjs (:234 expects Continue second: it is third now, after All lessons). Move them to: sonic-start-quick,
+  sonic-start-all, sonic-start-continue.
+- tools/bench/test/sonic-hints.test.ts was not touched in S3; sonic.say.menuOpen keeps its second sentence word for word.
+
 ## Cost notes
 - S1: the most replies went to reading the rig and the old probe to write the test and the AX probe; a shared "lesson page probe" helper (open a lesson, press N, read the hook) would make it cheaper.
 - S2 run 1: the most replies went to finding where #ui's quiet rule and HUD news live (feature.ts, ui/messages.ts, hud.ts) after the plan placed them in live-quiet.ts; the design is now written in Status (b)-(d), so the next run builds without re-reading them.
 - S2 run 2: most replies went to test edits through node -e (shell escaping of backticks failed twice; use the Edit tool for any text with quotes or backticks) and to the first probe run showing "Go." as the instruction; reading the runner's say lines for a flying step before choosing the panel rule would have saved a build.
+- S3: most replies went to moving the old start-screen tests (counts and item numbers shift with one more row); a one-off replace script per test file (U:/Temp) did it in one run; check a replace that renumbers in sequence (n: 14 -> 15 then 15 -> 16 hit the same line).
