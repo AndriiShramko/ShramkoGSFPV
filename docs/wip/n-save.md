@@ -26,19 +26,23 @@ Temp: U:/Temp/gsfpv-train4/n-save. Evidence: evidence/2026-11-20/n-save/.
   probe never presses Save mine (its top-bar Save only opens the name field), so it does not meet the dialog. Commit d74ab9f9.
 - [ ] S4 the acceptance by mouse: tools/bench/scripts/n-save-accept.mjs on the local build + local API, and against the live site
   (must FAIL "Save as it is", read only); gates typecheck,vitest,architecture,i18n,b18,leaks; "What the owner should try".
-  Done so far (commit 7cbf4e3b + the next): the probe exists; dist/ is built at 373cd684 with the walls copied in (no rebuild
-  needed while only the probe changes). Run 4 (U:/Temp/gsfpv-train4/n-save/accept4.json, local, port 6902/6903): open, dialog
+  Done so far (commit 7cbf4e3b + the next): the probe exists; dist/ is rebuilt at 8bee6439 (the reopen fix) with the walls
+  copied in (no rebuild needed while only the probe changes). Scan: 70b50d42 (39e63ce9 is too small: every gate in a wall). Run 4 (U:/Temp/gsfpv-train4/n-save/accept4.json, local, port 6902/6903): open, dialog
   (Warnings: 8, ids in order), asIs.saved (201, the API holds the places), showMe, fixAll (2 moved, 201, stored), fixAll.undo PASS.
   Run 7 found a dead end: a course saved as it is did not open again (course.ts 'checked': a stored course that fails the
   walls proof was never shown). Now a course the pilot names (a row's Open, a link) is shown with the line
   course.edit.saveOpenedWarned; test tools/bench/test/save-reopen.test.ts (2) NEG OK on 03624451. The probe presses the
   gizmo's arrows at their drawn tips (__gsfpvEditMeasure parts) and orbits with the middle button for the depth.
   LEFT, exactly:
-  1. build: "two gates on one spot" by mouse. A click on gate A's place cannot do it (course-line.ts legOnRay puts the new gate
-     ON_LEG_END_M 2 m along the leg; with A alone its gizmo takes the click). pullOnto drags the third gate onto A with the gizmo
-     arrows, but with ?render=off most drags miss the arrow and circle the view (accept4: 3 of 24 drags moved). Try: hover
-     the arrow and wait for the hook's hover before mouse.down, or take the arrow's tip from the gizmo itself; else note it.
-  2. asIs.reload / reload: openRow now presses Open twice when the first press only asks (unsaved draft); rerun to confirm.
+  1. build: "two gates on one spot" by mouse. Now: A at the centre, C by a click 125 px diagonal off A's gizmo (A alone has
+     no leg; accept7: C landed 2.5 m from A, the wall's depth differs), then pullOnto by the arrows' tips: drags now move
+     (0.8 m per 40 px) but the gap stays 2.39 m: the x drags go back and forth and z is hidden (it points at the eye; the
+     middle-button orbit did not bring it out). Likely cause to check first: editor.ts:476 refuses a step that makes a NEW
+     wall problem (a drag through the wall is put back), so log `s.said` after each drag. If the pair cannot be built by
+     mouse in a few tries, judge `build` on the pair < 1 m ('too-close') or note it in Not verified and go on.
+  2. asIs.reload / reload: rerun on the new dist (the reopen fix: accept7 showed Open pressed on BUTTON.ce-open twice and
+     nothing loaded, the cause fixed in 8bee6439). Probe: `node tools/bench/scripts/n-save-accept.mjs dist 70b50d42
+     U:/Temp/gsfpv-train4/n-save/accept8.json` (about 5 min).
   3. the live negative control: `node tools/bench/scripts/n-save-accept.mjs https://gsfpv.flyreelstudio.eu/en 70b50d42 <out>`
      (POSTs aborted, stops at the dialog; must FAIL asIs.saved).
   4. look once at U:/Temp/gsfpv-train4/shots/n-save-dialog.png and n-save-ghosts.png; evidence JSON under
@@ -70,6 +74,10 @@ applyFixes :1065, saveMine :1833, saveAdmin :~1885 (the design named :893-1754);
    one line with its way out; the words exist in en, es, pl, ru; the editor's message line is at least 16 px, wraps to three
    lines and has no ellipsis. Proof: `npx vitest run tools/bench/test/save-dialog.test.ts` (8 passed); NEG OK on 03624451.
 
+6. A course saved as it is with warnings opens again from Courses (or a link): shown with its warnings and a line that Save
+   fixes them; the newest course tried for the flight on its own still skips one that fails the walls. Proof:
+   `npx vitest run tools/bench/test/save-reopen.test.ts` (2 passed); NEG OK on 03624451.
+
 ## Not verified
 
 - No person, phone or real controller took part in any check of this lane.
@@ -92,6 +100,9 @@ applyFixes :1065, saveMine :1833, saveAdmin :~1885 (the design named :893-1754);
   automatically, which also saves: the same outcome) and tools/bench/scripts/edit4s-probe.mjs reads the old offer
   (`.ce-fix-offer`, fixHook offered/answer 'yes'); its offer step needs `save-fix-all` and the new fixHook
   `{ kinds, answer, moved, left, undone }`.
+- S4: apps/fly/src/app/builtin/course.ts, the worker's 'checked' answer (outside the named Save functions): a named course
+  (a row's Open, a link) that fails the walls proof is shown with course.edit.saveOpenedWarned instead of refused; without
+  it Save as it is was a dead end (the course never opened again). Lane n-level and anyone touching loadServer: keep it.
 - Deploy order: page only (no API file changed so far).
 
 ## Cost notes
@@ -105,3 +116,4 @@ applyFixes :1065, saveMine :1833, saveAdmin :~1885 (the design named :893-1754);
 - S4 (run 1): most replies went to building a bad course by mouse (the add rules: legOnRay, the gizmo over the selected gate,
   flaky gizmo drags with render=off); a probe helper "drag the selected gate's arrow by N m" shared by the editor probes would
   save ten replies.
+- S4 (run 2): most replies went to the gizmo pull (the arrows' press bands, the editor refusing a drag into a wall, the depth axis hidden) and to finding why a saved course did not reopen; a shared probe helper 'move the selected gate to X by its arrows' would save ten replies.
