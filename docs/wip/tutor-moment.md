@@ -21,7 +21,7 @@ Package branch: tutor-moment in packages/sonic-fpv of this copy (on no remote).
   Left for S3/S4 from S2: guide 'new' silences only the moment lines so far; the lesson's own lines (intro, fly.go,
   attempts, pass) under 'new' are S4's ("only the sound names are said"): one gate in Runner.sayLines plus the direct
   'say' pushes; the locale keys `moment.done`, `moment.<id>.do|hint`, `cue.<id>.what` come in S3.
-- [ ] S3 the first set: the moments of the table in the fast lessons; their intro cue lines go; headphones.good once;
+- [x] S3 the first set: the moments of the table in the fast lessons; their intro cue lines go; headphones.good once;
   cue.<id>.what and cue.<id>.do for all 28 sounds in four languages; test/named-sounds.test.ts; lesson versions bumped;
   host count tests updated.
   DONE so far (package branch tutor-moment, commits 0a205e6 and 4ebeba934d05c9c2e0e616fb9975abfbf8c6d2e5; the host
@@ -46,12 +46,11 @@ Package branch: tutor-moment in packages/sonic-fpv of this copy (on no remote).
   host that does not teach (no moment, nothing gated, as before), so the simulator as it is keeps working on the new
   pin; the runner writes `known` and `guide` into its lesson open event and the replay reads them. Package: typecheck
   0, full run 1447 passed, 1 failed (words, then fixed: 111 of 111 in the five text files after the rerun).
-  Host count tests: 88 of 89 pass. LEFT (one item):
-  1. tools/bench/test/sonic-lesson-keys.test.ts "B5 ... resumed while a line is still being said" (line ~542, opens
-     rings-first): rings-first's task is one line now and "Go." follows it at once, so `engine.speaking` is true where
-     the test expects false; rings-heights and hover-height did not fit (no speech.end within 20 s). Find a lesson whose
-     task is a line followed by a sound step, or wait in the test for the end after "Go."; then the four host tests
-     once, commit, LANE-STAGE-DONE S3.
+  S3 part 3 (host): sonic-lesson-keys B5 "resumed while a line is still being said" keeps rings-first and now asserts
+  that every line begun before the end of speech was said through by it, and the voice speaks again only with a line
+  begun at that end (rings-first's "Go." follows its one task line at once). The four host count tests: 89 of 89
+  (sonic-start, sonic-lesson-keys, sonic-lessons, sonic-int-replay; B7, a file scan, timed out at 5 s once under the
+  load of the four files together and passed alone: 3 of 3).
 - [ ] S4 the scripted pilot: test/first-set.test.ts in en, es, pl, ru (moving within 60 s, under 60 words before it, no
   prompt over two sentences, one new sound a moment, the set within 420 s, guide 'new' says only names); NEG on 719aaf5;
   host gates once; done marker; "What the owner should try".
@@ -127,6 +126,7 @@ Nothing yet: S1 is the contract only; no pilot hears a change.
   save three runs. Editing through a Python one-liner wrote CRLF on Windows: use the Edit tool.
 - S3 (part 1): the moments in shared lessons broke 65 older tests that fly those lessons; a test helper default (`known`)
   took 25 of them. Cheaper: decide in the plan that flight tests run with every sound known, before adding moments.
+- S3 (part 3): two runs of the four host files (one B5 fix, one load timeout in B7); cheaper: give file-scan tests a longer timeout.
 - S3 (part 2): the run overran (about 90 calls): the words check needs the listen venv (U:/venvs/shramko-listen) and a
   copy of the Whisper model in the lane's cache, and host tests that fly a changed lesson's task timing. Cheaper: name
   the listen environment and the "absent = as before" default for new runner options in the common prompt.

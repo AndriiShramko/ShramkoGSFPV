@@ -549,7 +549,13 @@ describe('B5 (W8): the runner pauses and resumes where the session\'s pause and 
         expect(ends(r)).toHaveLength(ends0);
         await r.run(20000, null, () => ends(r).length > ends0);
         expect(ends(r)).toHaveLength(ends0 + 1);
-        expect(r.engine.speaking).toBe(false);
+        // every line begun before the end of speech was said through by it (lane tutor-moment: rings-first's task is one line
+        // now and the lesson's "Go." follows its end at once, so the voice may be speaking again: only a line begun at the end)
+        const end = ends(r).at(-1)!;
+        const before = r.engine.said.filter((s) => s.at < end.t && s.quiet !== true).length;
+        expect(before).toBeGreaterThan(0);
+        expect(r.engine.ends.filter((e) => e.at <= end.t)).toHaveLength(before);
+        expect(r.engine.said.filter((s) => s.at >= end.t).length > 0 || !r.engine.speaking).toBe(true);
     }, 120000);
 
     it('a lesson opened while the flight is paused waits from its start: the pause written after its open, the runner paused, nothing goes on until the resume', async () => {
