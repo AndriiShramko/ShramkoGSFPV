@@ -1,0 +1,71 @@
+{
+  "base": "http://localhost:6940/en",
+  "at": "2026-11-21T15:26:57.586Z",
+  "id": "a39abad1",
+  "cases": {
+    "gone": {
+      "pass": true,
+      "why": null,
+      "expect": {
+        "errorCode": "gone",
+        "line": "This scan is no longer on SuperSplat (deleted or made private). Pick another scan."
+      },
+      "stubbed": 68,
+      "last": {
+        "status": "error",
+        "errorCode": "gone",
+        "error": "scene a39abad1 not found",
+        "line": "This scan is no longer on SuperSplat (deleted or made private). Pick another scan."
+      },
+      "seconds": 1
+    },
+    "huge": {
+      "pass": true,
+      "why": null,
+      "expect": {
+        "errorCode": "too-large",
+        "line": "This scan is too large for this device. Pick a lighter scan, or open this one on a computer."
+      },
+      "stubbed": 2,
+      "last": {
+        "status": "error",
+        "errorCode": "too-large",
+        "error": "scene a39abad1: 400000000 splats, this device holds 96000000",
+        "line": "This scan is too large for this device. Pick a lighter scan, or open this one on a computer."
+      },
+      "seconds": 1
+    },
+    "newer": {
+      "pass": true,
+      "why": null,
+      "expect": {
+        "errorCode": "unknown-format",
+        "line": "This scan uses a SuperSplat format the simulator cannot read yet. Pick another scan; this one will open after an update."
+      },
+      "stubbed": 2,
+      "last": {
+        "status": "error",
+        "errorCode": "unknown-format",
+        "error": "scene a39abad1: meta.json is SOG version 4",
+        "line": "This scan uses a SuperSplat format the simulator cannot read yet. Pick another scan; this one will open after an update."
+      },
+      "seconds": 1
+    },
+    "control": {
+      "pass": true,
+      "why": null,
+      "expect": {
+        "status": "ready"
+      },
+      "stubbed": 0,
+      "last": {
+        "status": "ready",
+        "errorCode": null,
+        "error": null,
+        "line": null
+      },
+      "seconds": 2
+    }
+  },
+  "pass": true
+}

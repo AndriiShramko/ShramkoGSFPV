@@ -20,14 +20,19 @@ splat-transform 3.12.0, probe tools/bench/scripts/hot-sog3-scans.mjs, live check
   (scene-default needs python on PATH); typecheck scenes, render-pc, fly pass. NEG OK on 03624451 (10 tests fail there: both PLY
   kinds, GSAF, gsaf network, formats, the PLY size). No SOG version 1 id (means.shape) was found: the diagnosis names none.
   S3 needs: the PLY drawn (no unit test drives the engine's PLY parser; S4's acceptance opens a5d25fb4 and c67edb74).
-- [ ] S3 the device and the plain line: lighter LOD level or one plain line (too-large / gone / unknown-format / network) through ux4a's lines and ux4b's Cancel; zero splats drawn is an error; n-scan-errors.mjs (stubbed 404, stubbed huge scan, render off) + unit tests + NEG.
+- [x] S3 the device and the plain line (DONE, commits "n-scan S3 step 1" 224f8c20 and "n-scan S3 done"): lighter LOD level or one plain line (too-large / gone / unknown-format / network) through ux4a's lines and ux4b's Cancel; zero splats drawn is an error; n-scan-errors.mjs (stubbed 404, stubbed huge scan, render off) + unit tests + NEG.
   - [x] step 1, commit "n-scan S3 step 1": apps/fly/src/session/open-error.ts (OpenErrorKind, OpenError, openErrorOf, failureCode,
     failureText, openMessage, deviceSplatLimit, openCheck); render-pc lod.ts NoSplatsError + holdsNoSplats, renderer.ts rejects a
     single file of zero splats; session/index.ts runs openCheck before the scan loads (also ?render=off); the picker (ui/scenes.ts
     showError), the first load (flight.ts) and a switch (scene-host.ts: tell() of ux4a) use the reasons; locale scene.open.* x4.
     tools/bench/test/scan-open-error.test.ts 10 pass; NEG OK on 03624451; vitest --changed HEAD: 451 files pass after the two
     fixes (scene-load.test.ts text marker, wind-session's stub renderer has no graphicsDevice); typecheck render-pc, fly pass.
-  - [ ] step 2: n-scan-errors.mjs (stubbed 404, stubbed huge meta.json, ?render=off) on a local build; its JSON under evidence.
+  - [x] step 2: tools/bench/scripts/n-scan-errors.mjs (a39abad1, ?render=off, the CDN answers stubbed in the page: gone = every
+    file 404, huge = meta.json count 400 M, newer = SOG version 4, control = nothing stubbed). Local build of 224f8c20 on port
+    6940: 4/4 PASS (evidence/2026-11-20/n-scan/n-scan-errors.json). The same probe on the live site: gone FAIL (errorCode
+    not-found, the old line), huge FAIL and newer FAIL (status ready: no check), control PASS: the negative control of the probe.
+  - Left for S4: the PLY drawn (a5d25fb4, c67edb74) and the zero-splat failure on a real engine are unit-tested only; a
+    streamed scan whose chunks all fail to draw still says "ready" (only a single file is judged by holdsNoSplats).
 - [ ] S4 the acceptance: n-scan-accept.mjs by mouse at 1536x730 x1.25 on the local build (a39abad1 first) and against the live site (must FAIL a39abad1); one drawn picture; scans-open extended; gates once; "What the owner should try"; dist deleted.
 
 ## Diagnosis (S1)
@@ -73,6 +78,14 @@ Read from C:/dev/.gsfpv-lanes/designs/t7-scene-open.md (confirmed by a second ag
   superspl.test.ts:451, content.test.ts:17; new tools/bench/test/scan-ply-size.test.ts (bake.ts is tested from tools/bench);
   locale texts: fly `scenes.unsupported` (now GSAF, not PLY) and new fly/superspl `superspl.badge.unsupported`, all four languages.
 
+- S3, files outside the owned list: apps/fly/src/session/index.ts (one block before the scan loads: openCheck with the device's
+  limit), apps/fly/src/ui/scenes.ts showError (one line: failureText), apps/fly/src/app/flight.ts and app/scene-host.ts (the
+  failure code is failureCode(e); scene-host tells the reason through ux4a's tell(), 2 lines; SceneError import dropped),
+  packages/render-pc/package.json (export "./lod" so apps/fly reads the pure checks without the engine), render-pc lod.ts and
+  renderer.ts (NoSplatsError, holdsNoSplats), tools/bench/test/scene-load.test.ts (its source-text marker follows the new line).
+  Deploy order: page only. Live check after the deploy: scans-open (S4 extends it).
+
 ## Cost notes
 - S1: about 25 calls; most went to finding where the check belongs (renderer.ts vs scenes) and to neg_control needing `npx.cmd` on Windows (plain `npx` is not found by CreateProcess). Cheaper: the lane prompt could name renderer.ts as the check's place.
 - S2: about 35 calls; most went to node -e edits whose backslashes the shell ate (a regex and a test pattern had to be fixed by hand) and to three old tests that held "PLY is refused". Cheaper: write edit scripts with the Write tool from the start; grep the tests for the behaviour before changing it.
+- S3: about 40 calls; most went to finding where a failure reaches the pilot (three call sites: picker, first load, switch) and to two old tests that read source text or stub the renderer. Cheaper: the design could name the three call sites and say that ?render=off never runs the renderer's checks.
