@@ -125,9 +125,14 @@ const TOPDOWN = () => {
     // int4 car 3: a course built by gen4b's Generate dialog is an asked course (course.request): gap-gen's planner
     // (packages/tracks/src/plan.ts zoneAt, 'street') stands its centre from EYE_LO to EYE_HI + half a gate over the
     // ground, half = (SQUARE_SIDE_M / 2 + SQUARE_BAR_M) x opening / RING_DIAMETER_M = 0.85 x opening / 1.2
+    // and its zone loosens by tiers (zoneAt: LOOSEST_TIER drops the kind rule), so a gate may stand over a lower tile or
+    // a hole the ray finds no wall in (the second run on 8eac608d: 4.8 m and null). The hard rule for an asked course is
+    // the planner's own must-be-zero stats (outside, underGround: request.ts PlanStats); the band is printed only.
     const asked = !!h.course.request;
     const half = poses.map((p) => { const o = p.shape?.diameter ?? p.shape?.side; return asked && typeof o === 'number' ? +((0.85 * o) / 1.2).toFixed(2) : 0; });
-    return { url: cv.toDataURL('image/png'), W, H, step, heights, flat, asked, half, eye: heights.filter((v) => v !== null && v >= EYE_LO && v <= EYE_HI).length, spanM: +span.toFixed(1), yRange: [Math.min(...ys), Math.max(...ys)] };
+    const st = h.course.plan && h.course.plan.ok ? h.course.plan.stats : null;
+    const plan = asked ? (st ? { kind: st.kind, gates: st.gates, outside: st.outside, underGround: st.underGround } : { missing: true }) : null;
+    return { url: cv.toDataURL('image/png'), W, H, step, heights, flat, asked, half, plan, eye: heights.filter((v) => v !== null && v >= EYE_LO && v <= EYE_HI).length, spanM: +span.toFixed(1), yRange: [Math.min(...ys), Math.max(...ys)] };
 };
 
 const rot = (q, v) => { // q = [w, x, y, z]
@@ -315,6 +320,9 @@ for (const r of out) console.log(JSON.stringify({ id: r.id, courseAtS: r.courseA
 const FLAT_RISE = 2.5;
 // an asked course (gen4b's dialog): its own band is EYE_LO .. EYE_HI + half a gate (TOPDOWN's half, plan.ts zoneAt)
 const offBand = (hs, fl, hf) => (hs ?? []).filter((v, k) => v === null || v < EYE_LO - EYE_TOL_M || v > EYE_HI + (fl?.[k] ? FLAT_RISE : 0) + (hf?.[k] ?? 0) + EYE_TOL_M).length;
-const badN = out.filter((r) => r.fail || !r.top || offBand(r.top.heights, r.top.flat, r.top.half) > 0).length;
+// an asked course: the planner's own rule (no gate outside the scanned territory or under its ground), the band printed
+const planBad = (p) => !p || p.missing || p.outside !== 0 || p.underGround !== 0;
+const badN = out.filter((r) => r.fail || !r.top || (r.top.asked ? planBad(r.top.plan) : offBand(r.top.heights, r.top.flat, r.top.half) > 0)).length;
+for (const r of out) if (r.top?.asked) console.log(`${r.id} asked course, the planner's stats ${JSON.stringify(r.top.plan)} (outside and underGround must be 0)`);
 console.log(`eye band ${EYE_LO}-${EYE_HI} m (+-${EYE_TOL_M}; flat squares +${FLAT_RISE} m; an asked course + half a gate): ${out.map((r) => `${r.id} first course ${r.top ? r.top.heights.length - offBand(r.top.heights, r.top.flat, r.top.half) : 0} of ${r.top?.heights.length ?? 0} (flat ${(r.top?.flat ?? []).filter(Boolean).length}${r.top?.asked ? `, asked, half up to ${Math.max(0, ...(r.top.half ?? []))} m` : ''})`).join(', ')}; runs failing ${badN}`);
 process.exit(badN ? 1 : 0);

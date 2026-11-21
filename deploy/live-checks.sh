@@ -118,7 +118,11 @@ for (const r of [].concat(rows)) {
   const h = all.filter((v) => v !== null);
   const off = all.filter((v, k) => v !== null && (v < 1.1 || v > (flat[k] ? 4.6 : 2.1))).length;
   console.log(r.id, "first course gates", h.length, "flat squares", flat.filter(Boolean).length, "band", h.length ? [Math.min(...h).toFixed(2), Math.max(...h).toFixed(2)] : null, "out of 1.2-2.0 (+-0.1; a flat square up to 4.5)", off);
-  ok = ok && h.length > 0 && off === 0;
+  // int4 car 3: after gen4b Shift+G builds through the Generate dialog an asked course (top.asked); gap-gen planner
+  // loosens its zone by tiers, so the band above is printed only and the planner own must-be-zero stats decide
+  const p = r.top && r.top.asked ? r.top.plan : undefined;
+  if (p !== undefined) console.log(r.id, "asked course, planner stats", JSON.stringify(p), "(outside and underGround must be 0)");
+  ok = ok && h.length > 0 && (p !== undefined ? !!p && !p.missing && p.outside === 0 && p.underGround === 0 : off === 0);
 }
 process.exit(ok ? 0 : 1);' "$OUT/course-path-$1.json" && [ $rc -eq 0 ]
 }
