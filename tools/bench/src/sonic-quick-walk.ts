@@ -273,13 +273,17 @@ async function chromeWalk(browser: Browser, origin: string): Promise<void> {
     const listed = walls.every((k) => spoken.includes(k));
     // int4 car 5: a page that teaches by moments (tutor-moment, walls-hall v5; the lead's decision 3 of 2026-11-20: no ceiling or
     // floor in the first set) lists no wall sounds before the room's flight: its flight stops and introduces them (a 'moment')
+    // (its first moment, wall-ahead, comes when a wall is within 3 m ahead: the walk flies forward with key W held, up to 25 s)
     let moments: string[] = [];
-    for (let i = 0; !listed && s?.lesson === 'walls-hall' && i < 60 && moments.length === 0; i++) {
+    const fly = !listed && s?.lesson === 'walls-hall';
+    if (fly) await page.keyboard.down('KeyW');
+    for (let i = 0; fly && i < 100 && moments.length === 0; i++) {
         const ev = (await hook(page))?.events ?? [];
         const ro = ev.findIndex((e) => e.kind === 'lesson' && e.what === 'open' && e.lessonId === 'walls-hall');
         moments = ro < 0 ? [] : ev.slice(ro).filter((e) => e.kind === 'moment' && typeof e.id === 'string').map((e) => e.id as string);
         if (moments.length === 0) await sleep(250);
     }
+    if (fly) await page.keyboard.up('KeyW');
     step(who, 6, 'the small room names its walls (before its flight, or in a moment of it) and nothing says front or behind', (listed || moments.length > 0) && banned.length === 0, { by: listed ? 'list' : 'moments', said: walls.filter((k) => spoken.includes(k)), moments, dirs, banned });
     step(who, 7, 'walls-hall opens after it', s?.lesson === 'walls-hall', { lesson: s?.lesson ?? null, phase: s?.phase ?? null, seconds: Math.round((Date.now() - t0) / 1000) });
     await openStart(page, origin);

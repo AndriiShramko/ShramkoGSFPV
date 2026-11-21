@@ -224,14 +224,17 @@ try {
     // int4 car 5: a page that teaches by moments (tutor-moment, the package's walls-hall v5; the lead's decision 3 of 2026-11-20:
     // ceiling and floor are not in the first set's moments) lists no wall sounds before the room's flight: the room stops and
     // introduces its sounds in the air. Then the room is right when its flight brings a moment (tutor-air-accept walks one through)
+    // (its first moment, wall-ahead, comes when a wall is within 3 m ahead: the probe flies forward with key W held, up to 25 s)
     let roomMoments = [];
     if (!listed && ga.flyAt !== null) {
-        for (let i = 0; i < 150 && roomMoments.length === 0; i++) {
+        await page.keyboard.down('KeyW');
+        for (let i = 0; i < 250 && roomMoments.length === 0; i++) {
             const ev = (await hook(page).catch(() => null))?.events ?? [];
             const ro = ev.findIndex((e) => e.kind === 'lesson' && e.what === 'open' && e.lessonId === 'walls-hall');
             roomMoments = ro < 0 ? [] : ev.slice(ro).filter((e) => e.kind === 'moment' && e.id).map((e) => e.id);
             if (roomMoments.length === 0) await sleep(100);
         }
+        await page.keyboard.up('KeyW');
     }
     step('wallsInRoom', ga.flyAt !== null && (listed || roomMoments.length > 0), { by: listed ? 'list' : 'moments', roomKeys: roomKeys.slice(0, 12), roomMoments });
     const fb = spokenKeys.filter((k) => FRONT_BACK_KEYS.test(k ?? ''));
