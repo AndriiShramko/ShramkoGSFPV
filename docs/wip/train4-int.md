@@ -119,7 +119,13 @@ t7-base 03624451 of job base7: gap-gen (gen4a, gen4b), gap-save, gap-sound and t
       packages/sonic-fpv from C:/dev/gsfpv-t7-base/packages/sonic-fpv branch t7-base (it descends from car 2's pin
       53a56759); `git merge --no-ff 03624451` = 6ef4e3b8, no conflict, the gitlink is 719aaf54; the lock did not change;
       gen-catalog everything up to date (no change); pnpm -r typecheck rc 0.
-- [ ] S2 the seams (base7's open seams against car 2) and the one full check
+- [ ] S2 the seams (base7's open seams against car 2) and the one full check.
+      2026-11-21 run: seams repaired with tests (see Seams, Car 3): 47d3c657 (the editor's Generate: no second unsaved
+      line in gen4b's dialog), d73cd1b9 (probes press the dialog's Build after Shift+G; edit4b-probe step 13), d100b6fc
+      (PilotMessage.minMs: the start line stays START_LINE_MS). Release build of d100b6fc with the nine walls, then
+      U:/Temp/gsfpv-train4/int4/probes-car3.sh (server :6180; gap-gen-accept, gen4-accept, gap-sound-accept,
+      gap-save-accept, the car 1/2 probes, accept-fly B6-B16; logs-car3/summary.txt, ALLDONE at the end; evidence
+      2026-11-19/int4-car3). Left: read the summary, repair what fails, the gates once on the final tree, a6-reference.
 - [ ] S3 the hand-over (Car 3 parts, U:/Temp/gsfpv-train4/int4-car3.json)
 
 ## Progress
