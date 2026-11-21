@@ -46,6 +46,7 @@ import { DEFAULT_LESSON_START_KEYS } from './key-names';
 import type { LessonStartKeys, RunnerKeys } from './key-names';
 import { SaidOnce } from './said-once';
 import type { SaidId } from './said-once';
+import { stepInstructions } from './progress-panel';
 
 /** After a pass the next lesson opens when the speech queue has been empty this long, ms. */
 export const NEXT_AFTER_MS = 1500;
@@ -723,6 +724,8 @@ export class LessonHost {
                 // this visit, never again (keysDue)
                 const v = run.view();
                 const step = `${v.step}/${v.steps}`;
+                // the step's instruction for the eye (progress-panel.ts): its first line that is not the lesson's title
+                if (stepInstructions.get(run, v.step) === null && a.line.key !== v.title.key) stepInstructions.set(run, v.step, a.line);
                 if (step !== this.hintStep) {
                     // Q5: the lesson's first line (its title) with the narrator off: the narrator is on for this lesson, said once
                     const first = this.hintStep === null;

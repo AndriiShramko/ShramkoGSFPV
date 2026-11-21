@@ -238,13 +238,14 @@ describe('review F5: the progress panel shows nothing of the live lesson while a
                 redraws.delete(cb);
             };
         }, () => progressNow(r.mode, r.host.runner, (title) => tr.text(title)));
-        expect(panel.text.split('\n')[0]).toBe(tr.text(getLesson('rings-first').title));
+        expect(panel.text).toBe(progressNow(r.mode, r.host.runner, (l) => tr.text(l))!.line);
         runtime.playback(true);
         expect(r.mode.inPlayback).toBe(true);
         expect(panel.text).toBe('');
         expect(progressNow(r.mode, r.host.runner, (t) => tr.text(t))).toBeNull();
         runtime.playback(false);
-        expect(panel.text.split('\n')[0]).toBe(tr.text(getLesson('rings-first').title));
+        expect(panel.text).toBe(progressNow(r.mode, r.host.runner, (l) => tr.text(l))!.line);
+        expect(panel.text).not.toBe('');
         off();
     }, 300000);
 

@@ -1,39 +1,50 @@
-// The lesson's progress, large, for the eye (v0.13, lane v13-host B4; M41-7, W6): a low-vision pilot or a helper sees where the
-// pilot is without asking. It draws the sound package's `runner.view()`, the same numbers I says (`runner.statusLine()`): the
-// lesson's title, "Lesson 6 of 28", "Step 2 of 2", and in a flying lesson "Attempt 2" (once one began) and "Counted 0 of 3".
-// It is drawn again whenever the mode writes an event (every attempt's start, pass and failure is one), and only when its text
-// changed.
+// The lesson's instruction, large, for the eye (v0.13, lane v13-host B4; M41-7, W6; lane tutor-say, decision 9 of the outside
+// pilot's feedback): ONE line, the step's instruction as the narrator said it ("Fly up to the ring" in the pilot's language), and no
+// counters: "Lesson 6 of 28", "Step 2 of 2", "Attempt 2" and "Counted 0 of 3" are what I says (`runner.statusLine()`), not what the
+// screen shows. Before the step's instruction is said, the lesson's title. Drawn again at every event the mode writes, and only when
+// its text changed (the same line is never put in the page twice).
 //
 // Where: at the left edge, halfway down (on a narrow page low on the left), clear of the view's centre where the target is,
 // of the captions under the top bar and of the telemetry in the corners; outside #ui, the flight's aria-live region, so a
-// screen reader does not read every change (I says it, and every attempt says its count). Large, bold, white on an opaque
-// black box with a white edge and a black outline: readable over a dark scene and a light one; dark on light where the page
-// asks for a light scheme, and the system's colours in forced-colours mode (sonic.css).
-import type { LessonSession, LessonView } from '@shramko/sonic-fpv';
-
-/** One row of the panel: its text (sonic.progress.*) and the numbers in it. */
-export interface ProgressRow {
-    readonly key: string;
-    readonly params: Readonly<Record<string, number>>;
-}
+// screen reader does not read it again (the captions carry the narrator's line). Large, bold, white on an opaque black box with a
+// white edge and a black outline: readable over a dark scene and a light one; dark on light where the page asks for a light
+// scheme, and the system's colours in forced-colours mode (sonic.css).
+//
+// The follower also holds #ui quiet while a lesson runs (live-quiet.ts LessonHold).
+import type { LessonSession, LessonView, SpeechLine } from '@shramko/sonic-fpv';
+import { lessonHold } from './live-quiet';
+import type { LessonHold } from './live-quiet';
 
 /**
- * The rows for a view: the lesson on the pilot's path and the step, always; in a flying lesson the attempt once one began and the
- * count toward the pass. A lesson without a world (module 0) has no attempts to count: its lesson and step only, as I says it.
+ * The instruction of the step each runner is on: the first line the host said in the step that is not the lesson's title
+ * (lessons.ts `act` case 'say' writes it). Keyed by the runner, so a lesson closed or opened again starts empty.
  */
-export function progressRows(v: LessonView): ProgressRow[] {
-    const rows: ProgressRow[] = [
-        { key: 'sonic.progress.lesson', params: { n: v.lessonIndex, total: v.lessonCount } },
-        { key: 'sonic.progress.step', params: { n: v.step, total: v.steps } }
-    ];
-    if (v.goals > 0) {
-        if (v.attempt > 0) rows.push({ key: 'sonic.progress.attempt', params: { n: v.attempt } });
-        rows.push({ key: 'sonic.progress.counted', params: { n: v.counted, total: v.required } });
+export class StepInstructions {
+    private book = new WeakMap<object, { readonly step: number; readonly line: SpeechLine }>();
+    private watchers = new Set<() => void>();
+
+    set(runner: object, step: number, line: SpeechLine): void {
+        this.book.set(runner, { step, line });
+        for (const fn of [...this.watchers]) fn();
     }
-    return rows;
+
+    /** Called after every new instruction (the panel draws it at once, not at the next event). */
+    watch(fn: () => void): () => void {
+        this.watchers.add(fn);
+        return () => this.watchers.delete(fn);
+    }
+
+    /** The instruction of `step` (null: none said in that step yet). */
+    get(runner: object, step: number): SpeechLine | null {
+        const e = this.book.get(runner);
+        return e && e.step === step ? e.line : null;
+    }
 }
 
-/** What the panel needs of the page: where it goes and the words (t() of the page's language). */
+/** The page's one book of instructions (like ui/messages.ts `messages`). */
+export const stepInstructions = new StepInstructions();
+
+/** What the page needs of the panel: where it goes and the words (t() of the page's language). */
 export interface ProgressPanelDeps {
     readonly parent: HTMLElement;
     text(key: string, params?: Readonly<Record<string, number | string>>): string;
@@ -42,44 +53,34 @@ export interface ProgressPanelDeps {
 /** The panel itself: hidden while no lesson runs. */
 export class ProgressPanel {
     readonly root: HTMLElement;
-    private readonly d: ProgressPanelDeps;
+    private readonly line: HTMLElement;
     private shown = '';
 
     constructor(d: ProgressPanelDeps) {
-        this.d = d;
         const doc = d.parent.ownerDocument;
         this.root = doc.createElement('section');
         this.root.className = 'sonic-progress';
         this.root.dataset.testid = 'sonic-progress';
         this.root.setAttribute('aria-label', d.text('sonic.progress.label'));
+        this.line = doc.createElement('p');
+        this.line.className = 'sonic-progress-title';
+        this.line.dataset.testid = 'sonic-instruction';
+        this.root.append(this.line);
         this.root.hidden = true;
         d.parent.append(this.root);
     }
 
-    /** Draws the view (null: no lesson, the panel hides); `title`: the lesson's title in the pilot's language. */
-    update(view: LessonView | null, title: string): void {
-        if (view === null) {
+    /** Shows the line (null: no lesson, the panel hides). The node stays; only a changed text is written. */
+    update(line: string | null): void {
+        if (line === null) {
             this.shown = '';
             this.root.hidden = true;
-            this.root.replaceChildren();
             return;
         }
-        const lines = [title, ...progressRows(view).map((r) => this.d.text(r.key, r.params))];
-        const key = lines.join('\n');
-        if (key === this.shown && !this.root.hidden) return;
-        this.shown = key;
-        const doc = this.root.ownerDocument;
-        const [head, ...rest] = lines;
-        const titleEl = doc.createElement('p');
-        titleEl.className = 'sonic-progress-title';
-        titleEl.textContent = head ?? '';
-        const rows = rest.map((text) => {
-            const p = doc.createElement('p');
-            p.className = 'sonic-progress-row';
-            p.textContent = text;
-            return p;
-        });
-        this.root.replaceChildren(titleEl, ...rows);
+        if (line !== this.shown) {
+            this.shown = line;
+            this.line.textContent = line;
+        }
         this.root.hidden = false;
     }
 
@@ -93,29 +94,50 @@ export class ProgressPanel {
     }
 }
 
+/** The lesson running now as the panel shows it: its view, the line on the screen, and whether #ui is held quiet. */
+export interface LessonShown {
+    readonly view: LessonView;
+    readonly line: string;
+    /** the flight goes on (not paused): LessonHold */
+    readonly held: boolean;
+}
+
 /** The lesson running now as the panel draws it, or null while none runs. */
-export type ProgressNow = () => { readonly view: LessonView; readonly title: string } | null;
+export type ProgressNow = () => LessonShown | null;
 
 /**
- * What the panel draws of the page's lesson: its runner's view and title while the mode runs it, nothing while no lesson runs and while
- * a replay plays (review F5: the replay draws its own recorded lesson in the view, and the live lesson's "Lesson 6 of 28, Counted 0 of 3"
- * over it named the wrong flight; the attitude display hides in a replay the same way, look-panels.ts).
+ * What the panel draws of the page's lesson: the step's instruction (StepInstructions; the title until it is said) while the mode
+ * runs it, nothing while no lesson runs and while a replay plays (review F5: the replay draws its own recorded lesson in the view,
+ * and the live lesson's line over it named the wrong flight; the attitude display hides in a replay the same way, look-panels.ts).
+ * `text`: a line of the sound package in the pilot's language.
  */
-export function progressNow(mode: { readonly active: boolean; readonly inPlayback: boolean }, runner: Pick<LessonSession, 'view'> | null, title: (line: LessonView['title']) => string): { readonly view: LessonView; readonly title: string } | null {
+export function progressNow(
+    mode: { readonly active: boolean; readonly inPlayback: boolean; readonly bridge?: { readonly paused: boolean } },
+    runner: Pick<LessonSession, 'view'> | null,
+    text: (line: SpeechLine) => string
+): LessonShown | null {
     if (!mode.active || mode.inPlayback || runner === null) return null;
     const view = runner.view();
-    return { view, title: title(view.title) };
+    return { view, line: text(stepInstructions.get(runner, view.step) ?? view.title), held: mode.bridge?.paused !== true };
 }
 
 /**
- * Keeps the panel drawn from the lesson running now: at once, then at every event the mode writes (`on`: the page's 'sonicEvent'; an
- * attempt's start, pass and failure, a step, a lesson opened or left each write one). Returns what stops it.
+ * Keeps the panel drawn from the lesson running now, and the lesson hold set: at once, then at every event the mode writes (`on`:
+ * the page's 'sonicEvent'; an attempt's start, pass and failure, a step, a lesson opened or left, a pause and a resume each write
+ * one), and at every instruction said (StepInstructions.watch). Returns what stops it (the hold let go).
  */
-export function followProgress(panel: ProgressPanel, on: (cb: () => void) => () => void, now: ProgressNow): () => void {
+export function followProgress(panel: ProgressPanel, on: (cb: () => void) => () => void, now: ProgressNow, hold: LessonHold = lessonHold, book: StepInstructions = stepInstructions): () => void {
     const draw = (): void => {
         const n = now();
-        panel.update(n ? n.view : null, n ? n.title : '');
+        panel.update(n ? n.line : null);
+        hold.set(n !== null && n.held);
     };
     draw();
-    return on(draw);
+    const off = on(draw);
+    const offBook = book.watch(draw);
+    return () => {
+        off();
+        offBook();
+        hold.set(false);
+    };
 }

@@ -26,22 +26,13 @@ Part B 1, Part C 2, 6, 7; brief t8-tutor-brief.md decisions 1, 7, 8, 9 outside m
   - [x] (a) 340e8bca the line of keys once a visit (lessons.ts keysDue/keysId + LessonHost.said: SaidOnce, ids 'keys.lesson' and
         'keys.free'): sonic-said-between-steps 4/4 and sonic-hints (H1 rewritten to the new rule; it asserted keys at every
         step) pass; NEG OK on the base (lessons.ts swapped). Fly typecheck rc 0.
-  - [ ] (b) #ui quiet while a lesson runs. The code differs from the plan: the quiet predicate lives in feature.ts:308
-        (quietLive, not mine) and live-quiet.ts only receives it. Plan for my side without feature.ts: a named hold in
-        live-quiet.ts (class LessonHold + module instance, like ui/messages.ts `messages`), quietLiveRegion quiets when
-        quiet() || hold.held; the hold's predicate is registered by followProgress (progress-panel.ts, called by feature.ts
-        :427 with progressNow(mode, ...)): held = a lesson shown && !mode.bridge.paused (progressNow's mode arg widened to
-        `bridge?: { paused }`, the real arg is the mode). Test with the LiveElement fakes of sonic-quiet2.test.ts + NEG.
-  - [ ] (c) HUD news while held reaches the captions (plan Part D risk 4): mode notes and in-place flashes go through
-        ui/messages.ts tell() into .msg-stack (role status, inside #ui); relay in captions.ts: messages.watch +
-        messages.log.visible(performance.now()), each new (id, at) while the hold is held -> captions.add(text [+ fix]).
-        Test: tell() during a held lesson -> one caption line; not held -> none (no double announcement).
-  - [ ] (d) progress-panel.ts one large line, the current instruction, no counters, not rebuilt when unchanged. LessonView
-        has no instruction text: the host's say path (lessons.ts act 'say') knows the step's first non-title line; it needs
-        its translated text (engine.onSpeech gives (line, text) in feature.ts; the panel's text() is the page t(), which
-        does not know package keys). Pick one channel and name it; simplest: a LessonNow record next to the hold
-        (instruction text + watch) written from the say path via bridge.say's resolved text or the captions add.
-        Update tests naming sonic.progress rows (sonic-progress*.test.ts, sonic-review-v13.test.ts F5).
+  - [x] (b)-(d) one commit (see git log "S2 (b)-(d)"): live-quiet.ts LessonHold (module lessonHold; quietLiveRegion quiets on
+        rule() || hold.held, so feature.ts is unchanged), held by progress-panel.ts followProgress = a lesson shown and the flight
+        not paused; relayHeldNews (live-quiet.ts, wired in the Captions constructor from ui/messages.ts) adds each new HUD line told
+        while held to the captions when a screen reader reads them; the panel is ONE line (StepInstructions: the step's first line
+        that is not the title, written by lessons.ts act say; the title before it), no counter, the node kept, text written only
+        when changed. Test tools/bench/test/sonic-said-hold.test.ts 5/5, NEG OK on the base; sonic-lesson-keys and
+        sonic-review-v13 panel tests moved to the new rule (they asserted the counters); fly typecheck rc 0.
   - [ ] (e) the AX probe on my build (tutor-say-ax.mjs, build once) -> evidence ax-repaired.json; commit.
 - [ ] S3 the start screen and short speech (title + main button at open; row redraw; Start flying / All lessons / Continue;
       Guide row; sonic-say-length.test.ts)
@@ -62,7 +53,7 @@ Chrome accessibility tree, not with a real screen reader.
 
 ## For the lead
 
-(none yet)
+- tools/bench/src/sonic-v13-page.ts (not mine): its progress panel check (about :490-500) expects the old rows (lesson place, "Step 2 of 2", "Attempt 1", "Counted 1 of 3"); under decision 9 the panel shows one line, the step's instruction (hook text = that line). Update the check to: one line, equal to the hook's panel text, no "n of m". The locale keys sonic.progress.step/attempt/counted are then unused (sonic.progress.lesson stays: start-screen.ts).
 
 ## Cost notes
 - S1: the most replies went to reading the rig and the old probe to write the test and the AX probe; a shared "lesson page probe" helper (open a lesson, press N, read the hook) would make it cheaper.
