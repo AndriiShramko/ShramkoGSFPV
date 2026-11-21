@@ -1,0 +1,73 @@
+{
+  "about": "How superspl.at stores a scan, one real public id per kind, with the CDN's answers and the headers of its files as recorded read-only on 2026-11-20 (C:/dev/.gsfpv-lanes/designs/t7-scene-open.md, census of 190 scenes; meta.json trimmed to what the simulator reads: version, generator, count, means and each stream's files; the codebooks are left out). 'cdn' is the HTTP status of each file in the scan's folder <id>/v<version>/. No test reads the network.",
+  "recorded": "2026-11-20",
+  "kinds": [
+    {
+      "id": "a39abad1",
+      "kind": "sog-v3",
+      "note": "the owner's scan of 2026-11-20: one SOG file (meta.json + 7 webp), 16.5 MB, 1.0 M splats",
+      "version": 1,
+      "cdn": { "settings.json": 200, "lod-meta.json": 403, "meta.json": 200, "scene.compressed.ply": 403 },
+      "meta": {
+        "version": 3,
+        "asset": { "generator": "splat-transform v3.11.2" },
+        "count": 996301,
+        "means": { "mins": [-3.6552832289145596, -2.5514438914610937, -3.49656582060035], "maxs": [3.1291908385716614, 2.1775233618034138, 3.2651496304418], "files": ["means_l.webp", "means_u.webp"] },
+        "scales": { "files": ["scales.webp"] },
+        "quats": { "files": ["quats.webp"] },
+        "sh0": { "files": ["sh0.webp"] },
+        "shN": { "files": ["shN_centroids.webp", "shN_labels.webp"] }
+      }
+    },
+    {
+      "id": "98f74d54",
+      "kind": "sog-v3",
+      "note": "small SOG v3 with 'comments', 2.8 MB, 0.2 M splats",
+      "version": 1,
+      "cdn": { "settings.json": 200, "lod-meta.json": 403, "meta.json": 200, "scene.compressed.ply": 403 },
+      "meta": {
+        "version": 3,
+        "asset": { "generator": "splat-transform v3.12.0" },
+        "count": 206179,
+        "means": { "mins": [-4.721082440706483, -4.83571965630365, -4.864931084355921], "maxs": [4.276034693275125, 4.747970309978666, 4.73038787762519], "files": ["means_l.webp", "means_u.webp"] },
+        "scales": { "files": ["scales.webp"] },
+        "quats": { "files": ["quats.webp"] },
+        "sh0": { "files": ["sh0.webp"] },
+        "shN": { "files": ["shN_centroids.webp", "shN_labels.webp"] },
+        "comments": ["(three lines, not read)", "", ""]
+      }
+    },
+    {
+      "id": "143e76b0",
+      "kind": "sog-v2",
+      "note": "SOG v2, new upload of 2026-11-19, 3.8 MB, 0.3 M splats",
+      "version": 1,
+      "cdn": { "settings.json": 200, "lod-meta.json": 403, "meta.json": 200, "scene.compressed.ply": 403 },
+      "meta": {
+        "version": 2,
+        "asset": { "generator": "splat-transform v3.4.2" },
+        "count": 300000,
+        "means": { "mins": [-1.0150754761949976, -1.0373565152995803, 0.9407543898997945], "maxs": [0.99896257627937, 0.9161116634894635, 1.3383418604958204], "files": ["means_l.webp", "means_u.webp"] },
+        "scales": { "files": ["scales.webp"] },
+        "quats": { "files": ["quats.webp"] },
+        "sh0": { "files": ["sh0.webp"] }
+      }
+    },
+    {
+      "id": "f924b0f5",
+      "kind": "streamed-sog-v3",
+      "note": "streamed SOG: lod-meta.json (its own format version 1) over chunk meta.json files of SOG version 3; 1 level, 2 chunks, 18.9 MB",
+      "version": 1,
+      "cdn": { "settings.json": 200, "lod-meta.json": 200, "meta.json": 403, "scene.compressed.ply": 403 },
+      "lodMeta": {
+        "version": 1,
+        "asset": { "generator": "splat-transform v3.11.2", "chunkGaussians": 524288, "chunkExtent": 16, "chunkMinGaussians": 8192 },
+        "count": 999606,
+        "counts": [999606],
+        "lodLevels": 1,
+        "filenames": ["0_0/meta.json", "0_1/meta.json"]
+      },
+      "chunkMeta": { "version": 3, "asset": { "generator": "splat-transform v3.11.2" } }
+    }
+  ]
+}

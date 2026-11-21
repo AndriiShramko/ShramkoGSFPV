@@ -27,7 +27,7 @@ import { DEFAULT_STOCHASTIC_IMPL, applyStochastic, holdOnUnload } from './accum-
 import { SplatLoadCancelled, SplatLoadGuard } from './splat-load-guard';
 import type { DrawPlan, StochasticImpl } from './accum-policy';
 import type { GpuInfo } from './device-class';
-import { BrokenFileError, lodMetaProblem, lodMode } from './lod';
+import { BrokenFileError, ENGINE_SOG_VERSIONS, lodChunkVersionProblem, lodMetaProblem, lodMode, sogVersionProblem, UnsupportedFormatError } from './lod';
 import type { LodState } from './lod';
 import { ENGINE_RULE, ViewLod, lodRule, viewLodParamsOf } from './view-lod';
 import { StreamKeeper } from './stream-keeper';
@@ -510,11 +510,17 @@ export class SplatRenderer {
                 // one is a BrokenFileError here, before an engine asset exists, instead of the engine's own
                 // English error (lod.ts lodMetaProblem; its own request then comes from the HTTP cache: the
                 // CDN sends Last-Modified and no Cache-Control)
-                const problem = lodMetaProblem(await readJson());
+                const lodMeta = await readJson();
+                const problem = lodMetaProblem(lodMeta);
                 if (problem) throw new BrokenFileError(`${filename} is not an octree the engine can open: ${problem}`);
+                // its chunks are SOG files: a version the engine does not read is said now, not as a black scene (lod.ts)
+                const chunkVersion = await lodChunkVersionProblem(new URL(url, location.href).toString(), lodMeta, async (u) => (await fetch(u)).json());
+                if (chunkVersion) throw new UnsupportedFormatError(chunkVersion, `${filename}: its chunks are ${chunkVersion}; the engine reads SOG ${ENGINE_SOG_VERSIONS.join(', ')}`);
                 return undefined;
             }
             const data = (await readJson()) as { count?: number; means?: { shape?: number[] } };
+            const version = sogVersionProblem(data);
+            if (version) throw new UnsupportedFormatError(version, `${filename} is ${version}; the engine reads SOG ${ENGINE_SOG_VERSIONS.join(', ')}`);
             // a single SOG: all of it is the first view
             c.expected.set(c.base, data.count ?? data.means?.shape?.[0] ?? 0);
             c.listed = true;
