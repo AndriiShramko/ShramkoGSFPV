@@ -22,6 +22,7 @@ import { PauseMenu } from '../menu';
 import { openSharePanel, shareState } from '../../share/panel';
 import type { ShareRequest, ShareState } from '../../share/panel';
 import { flightDrawing } from '../../share/links';
+import { courseOfFlight } from '../../share/flight-link';
 import type { ShareEntry } from '../../share/links';
 import { sharedOf } from '../../share/shared';
 import { sharePicture } from '../../share/picture';
@@ -29,6 +30,7 @@ import { shareIcon } from '../../share/icon';
 import { creditText } from '../../scene-facts';
 import { sceneCredit } from './scene';
 import type { Feature, FlightContext } from '../context';
+import { liveSearch } from '../env';
 
 /** a flight this long (armed, seconds) earns the summary panel's "Nice flight" row */
 const NICE_S = 30;
@@ -49,6 +51,8 @@ export function flightShareRequest(ctx: FlightContext, entry: ShareEntry, extra:
         drawing: flightDrawing(ctx.scene),
         // what he flies this scene with that the scene does not (v0.9): Scene size, walls, cleanup, wind, ceiling, drone
         shared: sharedOf(ctx.prefs, ctx.scene.id, { meta: ctx.scene.meta, hasWalls: !!ctx.session.baseCollision }),
+        // lane n-share: the course flown goes along (a saved one by id and version, a generated one by its link)
+        course: courseOfFlight(ctx.hook.course, liveSearch()),
         ...extra,
         picture: () => sharePicture(ctx.renderer, ctx.canvas, {
             hook: t('share.hook'),

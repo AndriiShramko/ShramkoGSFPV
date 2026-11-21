@@ -17,6 +17,7 @@
   "share.button": "Share",
   "share.title.video": "Share your flight",
   "share.ready.page": "Your link is ready: it opens this scene. Pick where to post it:",
+  "share.unsaved": "This course was never saved, so the link opens the scene alone. To share the course, save it in the course editor and share again.",
   "share.instagram.button": "Instagram",
   "share.instagram.note": "Instagram has no share link: its button saves the picture or the video and copies the caption for you.",
   "share.instagram.done": "Saved, and the caption is copied: open Instagram, post the file and paste the caption.",

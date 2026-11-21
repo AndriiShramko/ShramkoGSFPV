@@ -103,10 +103,6 @@ export interface StartScreenDeps {
     readonly onReset?: () => void;
     /** the voice over a flight (bind); absent: the engine's own say */
     readonly say?: ScreenVoice;
-    /** a scan link (train 2): the pilot is not a first-timer (start-model experiencedPilot), so the scan comes first */
-    readonly experienced?: () => boolean;
-    /** a scan link: the first-timer's "I already fly by sound: fly this scan" was pressed (store.ts setFliesBySound) */
-    readonly onFlies?: () => void;
 }
 
 /** Sections of the page the navigation jumps to. */
@@ -375,24 +371,26 @@ export class StartScreen {
         const titleOf = (id: string): string => this.S(this.model.modules.flatMap((x) => x.lessons).find((l) => l.id === id)?.title ?? { key: `lesson.${id}.title` });
         const rowOf = (id: string): LessonRow | undefined => this.model.modules.flatMap((x) => x.lessons).find((l) => l.id === id);
         let primaryTaken = false;
-        // a scan link (train 2, ?sonic=scan&scene=&sz=): a pilot who is no first-timer gets "Fly this scan by sound" first and the
-        // lessons after it; a first-timer gets the lessons first and, after them, "I already fly by sound: fly this scan", which
-        // also marks him so the next scan link puts the scan first
+        // a link with a scene (?sonic=fly|scan&scene=&sz=[&course=]; lane n-share, the owner's wish 2): for every pilot, a browser that
+        // never opened the site included, ONE main button flies that scene (and the link's course) by sound, and the lessons are a small
+        // second link to their section below (start-model scanStartOrder), never the destination
         const scanReq = req.kind === 'scan' ? req : null;
-        const order = scanReq ? scanStartOrder(this.d.experienced?.() ?? false) : null;
-        const scanButton = (first: boolean): HTMLElement => {
-            const label = t(first ? 'sonic.start.scan' : 'sonic.start.scanFlier');
-            const sub = t('sonic.start.scanWhat', { scene: scanReq?.sceneId ?? '', size: String(scanReq?.size ?? 1) });
-            const b = h('button', { type: 'button', class: `btn${first ? ' primary' : ''}`, 'data-testid': first ? 'sonic-start-scan' : 'sonic-start-scan-flier', 'data-lesson': SCAN_FREE_ID, onclick: () => {
-                if (!first) this.d.onFlies?.();
-                this.start(SCAN_FREE_ID);
-            } }, label, h('span', { class: 'sonic-sub' }, sub));
+        if (scanReq) {
+            const [main] = scanStartOrder();
+            const label = t('sonic.start.scan');
+            const sub = scanReq.course !== undefined ? t('sonic.link.course') : t('sonic.start.scanWhat', { scene: scanReq.sceneId, size: String(scanReq.size) });
+            const b = h('button', { type: 'button', class: 'btn primary', 'data-testid': 'sonic-start-scan', 'data-main': main, 'data-lesson': SCAN_FREE_ID, ...(visit ? { 'aria-describedby': VISIT_TEXT_ID } : {}), onclick: () => this.start(SCAN_FREE_ID) }, label, h('span', { class: 'sonic-sub' }, sub));
             this.stop(b, () => `${label}. ${sub.replace(/\.$/, '')}`);
-            return b;
-        };
-        if (order?.[0] === 'scan') {
-            buttons.push(scanButton(true));
-            primaryTaken = true;
+            const lessons = h('a', { href: '#sonic-sec-lessons', class: 'sonic-second', 'data-testid': 'sonic-start-lessons', onclick: (e: Event) => {
+                e.preventDefault();
+                this.sections.get('lessons')?.querySelector<HTMLElement>('h2')?.focus();
+            } }, t('sonic.link.lessons'));
+            const back = this.d.onClose ? h('button', { type: 'button', class: 'btn', 'data-testid': 'sonic-back', onclick: () => this.d.onClose?.() }, t('sonic.close')) : null;
+            if (back) this.stop(back, () => t('sonic.close'));
+            this.stop(lessons, () => t('sonic.link.lessons'));
+            const choice = visit?.choice ?? null;
+            if (choice) for (const c of choice.querySelectorAll<HTMLElement>('button')) this.stop(c, () => c.textContent ?? '');
+            return this.section('start', t('sonic.start.heading'), problem, visit?.note ?? null, h('div', { class: 'sonic-actions', role: 'group', 'aria-label': t('sonic.start.heading') }, b, back), h('p', { class: 'sonic-second-row' }, lessons), choice);
         }
         if (req.kind === 'lesson') {
             buttons.push(lessonButton(req.id, t('sonic.start.lesson', { title: titleOf(req.id) }), this.placeText(lessonPlace(req.id, prefs.path)), true, 'sonic-start-asked'));
@@ -417,7 +415,6 @@ export class StartScreen {
             buttons.push(lessonButton(m.continueId, t('sonic.start.continue', { title: titleOf(m.continueId) }), sub, false, 'sonic-start-continue'));
         }
         buttons.push(pathButton('full', false));
-        if (order?.[0] === 'lessons') buttons.push(scanButton(false));
         const back = this.d.onClose ? h('button', { type: 'button', class: 'btn', 'data-testid': 'sonic-back', onclick: () => this.d.onClose?.() }, t('sonic.close')) : null;
         if (back) this.stop(back, () => t('sonic.close'));
         const choice = visit?.choice ?? null;
