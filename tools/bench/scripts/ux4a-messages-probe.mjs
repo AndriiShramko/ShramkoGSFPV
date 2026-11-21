@@ -169,6 +169,9 @@ async function runSize({ w, h, dsf }) {
             await page.locator('.top-actions [data-action=pause]').click({ timeout: 5000 });
         }
         await page.locator('[data-action="pause.course"]').click({ timeout: 5000 });
+        // int4 car 3: the item opens gen4b's Generate dialog (level, spread); its Build by mouse makes the course
+        const dialog = await page.waitForSelector('[data-testid=gen-dialog]', { timeout: 4000 }).then(() => true, () => false);
+        if (dialog) await page.locator('[data-testid=gen-dialog] [data-action="gen-build"]').click({ timeout: 5000 });
         await centre();
     };
 
