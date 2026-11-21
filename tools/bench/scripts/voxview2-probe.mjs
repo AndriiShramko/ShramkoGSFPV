@@ -8,6 +8,7 @@ import { createRequire } from 'node:module';
 import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { pickBrowser } from '../src/chrome.mjs';
+import { buildFromDialog, shiftG } from './gen-build.mjs';
 
 const require = createRequire(import.meta.url);
 const { chromium } = require('playwright');
@@ -81,7 +82,7 @@ try {
     } catch { step('no controls screen'); }
     const w = await until(page, () => window.__gsfpv?.voxels?.stats?.()?.voxelCm ?? 0, (v) => v > 0, 500000);
     step(`walls ${w.ok} after ${Math.round((Date.now() - t0) / 1000)} s`);
-    await page.keyboard.press('Shift+KeyG');
+    await shiftG(page);
     const c = await until(page, () => { const k = window.__gsfpv?.course; return k ? { gates: k.gates, on: k.on, problem: k.problem ?? null } : null; }, (v) => (v?.gates ?? 0) > 0 && !!v?.on, 480000);
     step({ course: c.ok, ms: c.ms, v: c.v });
     await page.evaluate(installMiss);

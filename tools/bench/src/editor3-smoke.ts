@@ -78,6 +78,8 @@ async function scene(page: Page, id: string, log: string[]): Promise<Record<stri
     }
     await sleep(2000);
     await page.keyboard.press('Shift+KeyG');
+    // int4 car 3: gen4b's Shift+G opens the Generate dialog first: its Build by mouse (scripts/gen-build.mjs)
+    await page.waitForSelector('[data-testid=gen-dialog]', { timeout: 4000 }).then(() => page.locator('[data-testid=gen-dialog] [data-action="gen-build"]').click(), () => undefined);
     const gen = await until(() => hook(page), (h) => (h?.gates ?? 0) > 0 && !!h?.on, 480000);
     out.course = { ok: gen.ok, ms: gen.ms, gates: gen.v?.gates, problem: gen.v?.problem ?? null };
     log.push(`${id}: course ${gen.ok} ${gen.v?.gates} gates in ${gen.ms} ms`);

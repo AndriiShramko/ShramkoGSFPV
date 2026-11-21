@@ -13,6 +13,7 @@ import { createRequire } from 'node:module';
 import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { pickBrowser } from '../src/chrome.mjs';
+import { buildFromDialog, shiftG } from './gen-build.mjs';
 
 const require = createRequire(import.meta.url);
 const { chromium } = require('playwright');
@@ -42,7 +43,7 @@ try {
         await page.waitForFunction(() => !document.querySelector('.screen.radio'), null, { timeout: 15000 });
     } catch { /* no Controls screen */ }
     await sleep(1500);
-    if (shiftg) await page.keyboard.press('Shift+KeyG');
+    if (shiftg) await shiftG(page);
     // the course (walls-first on a scan without walls: the walls are built first); the walls and the course said every 30 s
     const waitS = Number((args.find((a) => a.startsWith('--wait-s=')) ?? '--wait-s=400').slice(9));
     for (let k = 0; ; k++) {

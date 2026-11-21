@@ -31,6 +31,7 @@ import { createRequire } from 'node:module';
 import { dirname } from 'node:path';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { browserRecord, pickHarnessBrowser } from './visual-browser.mjs';
+import { buildFromDialog, shiftG } from './gen-build.mjs';
 const ROOT = fileURLToPath(new URL('../../../', import.meta.url)).replace(/\\/g, '/').replace(/\/$/, '');
 const require = createRequire(ROOT + '/tools/bench/package.json');
 const { chromium } = require('playwright');
@@ -266,8 +267,8 @@ if (['helper', 'keyB', 'menu', 'pause', 'settings', 'radio', 'drones', 'scenes',
         },
         inside: '#ce-title'
     });
-    await entry('courseKey', { open: () => page.keyboard.press('Shift+KeyG'), noWindow: true });
-    await entry('courseMenu', { open: () => openMenuItem('pause.course'), noWindow: true });
+    await entry('courseKey', { open: () => shiftG(page), noWindow: true }); // gen4b: the Generate dialog's Build closes it
+    await entry('courseMenu', { open: async () => { await openMenuItem('pause.course'); await buildFromDialog(page); }, noWindow: true });
 }
 if (runs('rooms')) {
     // train 1B: rooms are public (no ?rooms=1), key 9 opens the panel; Shift+L and the menu stay as fallbacks

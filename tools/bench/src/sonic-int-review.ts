@@ -1329,6 +1329,8 @@ async function r11(browser: () => Promise<BrowserContext>, served: Served): Prom
         if (courseFirst) {
             const tG = Date.now();
             await page.keyboard.press('Shift+KeyG');
+            // int4 car 3: in the ordinary flight gen4b's Shift+G opens the Generate dialog first: its Build by mouse
+            await page.waitForSelector('[data-testid=gen-dialog]', { timeout: 4000 }).then(() => page.locator('[data-testid=gen-dialog] [data-action="gen-build"]').click(), () => undefined);
             await until('the course by eye', () => page.evaluate(() => (window as unknown as { __gsfpv: { course?: { gates?: number; drawn?: number } } }).__gsfpv.course ?? null), (c) => (c?.gates ?? 0) > 0 && (c?.drawn ?? 0) > 0, 300000, 250);
             const kinds = await page.evaluate(() => {
                 const c = (window as unknown as { __gsfpv: { course: { sound?: { inUse: () => { track: { gates: { shape: { kind: string }; quat: number[] }[] } } | null } } } }).__gsfpv.course;

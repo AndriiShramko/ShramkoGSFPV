@@ -383,6 +383,16 @@ run edit4s-drafts locked edit4sdrafts
 # cue within 12 s, no front or behind in ears-walls, the order of Continue, Quick start and Full course; Chromium, then
 # steps 1 to 4 in Firefox.
 run sound6-quick-walk env SITE="$SITE" npx tsx src/sonic-quick-walk.ts "$OUT/sound6-quick-walk.json"
+# Train 4 integration, car 3 (t7-base: gap-gen with gen4a and gen4b, gap-save, gap-sound). Each probe's header: render
+# off, no GPU lock; read-only on any site (no save button is pressed; a generated course, the Scene size and the sound
+# progress live only in the probe's own browser profile; nothing is saved, sent or created on the site).
+# gen4-accept-probe.mjs: Shift+G opens the Generate dialog (level, spread), Build lays a course of that level.
+run gen4-generate-dialog node scripts/gen4-accept-probe.mjs "$SITE/en" "$OUT/gen4-generate-dialog.json"
+# gap-gen-accept.mjs: asked courses on small and scaled scans (x15 at the skull), a room's course adopted with the
+# asker's level and spread (step 5).
+run gap-gen-asked-course node scripts/gap-gen-accept.mjs "$SITE/en" "$OUT/gap-gen-asked-course.json"
+# gap-sound-accept.mjs: Fly by Sound's start for a new and a returning pilot (Quick start first), the room's four walls.
+run gap-sound-start node scripts/gap-sound-accept.mjs "$SITE" "$OUT/gap-sound-start.json"
 
 if [ "$FAILED" = 0 ]; then echo "LIVE CHECKS: PASS"; exit 0; fi
 echo "LIVE CHECKS: FAIL"

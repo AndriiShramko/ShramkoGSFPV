@@ -9,6 +9,7 @@ import { createRequire } from 'node:module';
 import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { pickBrowser } from '../src/chrome.mjs';
+import { buildFromDialog, shiftG } from './gen-build.mjs';
 
 const require = createRequire(import.meta.url);
 const { chromium } = require('playwright');
@@ -43,7 +44,7 @@ async function open(w, hgt, extra) {
 // voxview2: Shift+G (a course), Shift+B (the edit mode), the panel open: does any control of the edit mode lie over the
 // panel or its cross, and does a visible voxel legend share pixels with the editor's window?
 async function editPass(page, read) {
-    await page.keyboard.press('Shift+KeyG');
+    await shiftG(page);
     const s0 = Date.now();
     while (Date.now() - s0 < 30000 && !(await page.evaluate(() => (window.__gsfpv?.course?.gates?.length ?? window.__gsfpv?.course?.state?.()?.gates ?? 0) > 0 || !!document.querySelector('.course-hud, [class*=course-]')))) await sleep(500);
     await page.keyboard.press('Shift+KeyB');
@@ -114,7 +115,7 @@ async function panel() {
 
 async function depth() {
     const { page } = await open(1280, 800, '');
-    await page.keyboard.press('Shift+KeyG');
+    await shiftG(page);
     step('Shift+G');
     for (let k = 0; ; k++) {
         const st = await page.evaluate(() => { const c = window.__gsfpv?.course; return c ? { source: c.source, problem: c.problem ?? null, gates: c.gates } : null; });
@@ -275,7 +276,7 @@ async function far() {
         if (Date.now() - t0 > 500000) throw new Error('no walls ' + JSON.stringify(w));
         await sleep(2000);
     }
-    await page.keyboard.press('Shift+KeyG');
+    await shiftG(page);
     for (;;) {
         const st = await page.evaluate(() => { const c = window.__gsfpv?.course; return c ? { source: c.source, problem: c.problem ?? null } : null; });
         if (st && (st.source === 'generated' || st.problem)) { step(`course after ${Math.round((Date.now() - t0) / 1000)} s`); break; }

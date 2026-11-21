@@ -14,6 +14,7 @@
 import { createRequire } from 'node:module';
 import { writeFileSync } from 'node:fs';
 import { pickBrowser } from '../src/chrome.mjs';
+import { buildFromDialog, shiftG } from './gen-build.mjs';
 
 const require = createRequire(import.meta.url);
 const { chromium } = require('playwright');
@@ -177,7 +178,7 @@ for (const id of idsArg.split(',')) {
         const cdp = process.env.PROFILE ? await ctx.newCDPSession(page) : null;
         if (cdp) { await cdp.send('Profiler.enable'); await cdp.send('Profiler.setSamplingInterval', { interval: 2000 }); await cdp.send('Profiler.start'); }
         const t0 = Date.now();
-        await page.keyboard.press('Shift+KeyG');
+        await shiftG(page);
         let lastShown = null, lastChange = 0, lastRead = 0;
         r.maxSilentS = 0; r.maxReadGapS = 0;
         for (;;) {
@@ -289,7 +290,7 @@ for (const id of idsArg.split(',')) {
         for (let i = 0; i < Number(process.env.REGEN ?? 3); i++) {
             const seed0 = await ev(() => window.__gsfpv.course.seed);
             const tg = Date.now();
-            await page.keyboard.press('Shift+KeyG');
+            await shiftG(page);
             const c = await until(() => { const c = window.__gsfpv.course; return { seed: c.seed, gates: c.gates, drawn: c.drawn }; }, (v) => v.seed !== seed0 && v.gates > 0 && v.drawn > 0, 180000, 250);
             const ps = await ev(() => window.__gsfpv.course.gatePoses());
             let span = 0; for (const a of ps) for (const b of ps) span = Math.max(span, Math.hypot(a.pos[0] - b.pos[0], a.pos[2] - b.pos[2]));

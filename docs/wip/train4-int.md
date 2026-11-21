@@ -153,6 +153,21 @@ t7-base 03624451 of job base7: gap-gen (gen4a, gen4b), gap-save, gap-sound and t
       U:/Temp/gsfpv-gates-20261121-084002, int4/gates-car3.log). a6-reference alone PASS (int4/a6-car3.log). No server
       left on 6180-6199. S2 done.
 - [ ] S3 the hand-over (Car 3 parts, U:/Temp/gsfpv-train4/int4-car3.json)
+      Run of 2026-11-21 ~10:00 UTC: `git fetch origin`: origin/main 852821e5 (hot-sog3: playcanvas 2.24.2,
+      splat-transform 3.12.0; the lead's release merge) brings CODE: merged 8eac608d (only evidence/2026-11-21/b-fly*
+      conflicted, add/add of two accept-fly runs: ours kept at the path, hot-sog3's run moved whole to
+      evidence/2026-11-21/hot-sog3-s3/); pnpm install --frozen-lockfile, pnpm -r typecheck rc 0. Release build of
+      8eac608d (1950 files) with the nine walls on :6180, then every car 3 probe, hot-sog3-scans and accept-fly B6-B16
+      on it: U:/Temp/gsfpv-train4/int4/probes-car3s3.sh, logs-car3s3/summary.txt (ALLDONE at the end), evidence
+      2026-11-21/int4-car3-s3. Found while writing the live checks: gen4b's Shift+G opens the Generate dialog outside
+      Fly by Sound, and nine live checks pressed Shift+G (or the pause menu's Generate) and waited for a course
+      (course-path-wroclaw, gate-guide-wroclaw, mouse-free-probe, one-course, voxels-alone-wroclaw,
+      voxel-panel-wroclaw, edit-mode-wroclaw, sonic-eye-course-wroclaw): repaired in the probes (the shared
+      tools/bench/scripts/gen-build.mjs: Shift+G, then the dialog's Build; inline in editor3-smoke.ts and
+      sonic-int-review.ts course-first). Three new read-only live checks: gen4-generate-dialog, gap-gen-asked-course,
+      gap-sound-start. Left: read logs-car3s3; run live-checks.sh against :6180 with LIVE_ONLY of the repaired and new
+      names (their positive side) and against the live site for the new three (the negative side); gates once; the
+      hand-over parts and int4-car3.json.
 
 ## Progress
 

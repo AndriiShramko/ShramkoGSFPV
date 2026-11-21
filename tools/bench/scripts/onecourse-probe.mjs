@@ -9,6 +9,7 @@
 import { createRequire } from 'node:module';
 import { writeFileSync } from 'node:fs';
 import { pickBrowser } from '../src/chrome.mjs';
+import { buildFromDialog, shiftG } from './gen-build.mjs';
 
 const require = createRequire(import.meta.url);
 const { chromium } = require('playwright');
@@ -117,7 +118,7 @@ async function step(name, page, fn, ms, ok) {
 try {
     const { ctx, page } = await openPage();
     // 1. Shift+G in the ordinary flight
-    await step('shiftG-flight', page, () => page.keyboard.press('Shift+KeyG'), 300000, (s) => (s.course?.gates ?? 0) > 0 && (s.course?.drawn ?? 0) > 0);
+    await step('shiftG-flight', page, () => shiftG(page), 300000, (s) => (s.course?.gates ?? 0) > 0 && (s.course?.drawn ?? 0) > 0);
     await page.waitForTimeout(3500);
     out.install = await page.evaluate(INSTALL);
     // 2. gates 1 and 2 flown by the scripted pilot (in at +4 on the gate's z, out at -3), then held behind gate 2
