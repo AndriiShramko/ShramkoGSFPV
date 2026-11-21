@@ -59,15 +59,44 @@ Part B 1, Part C 2, 6, 7; brief t8-tutor-brief.md decisions 1, 7, 8, 9 outside m
     (start-screen.ts, spoken-list.ts and the four locales swapped: 10 of 10 fail). Also green: sonic-gpuhint, -in-place, -scan-course,
     -quiet-n6, -walls-free, -review, -garden, -hints, -lesson-keys, -int-lazy, -start, -review-v13, -said-*, course-progress,
     sonic-lessons, share-links-sound-note, sonic-optin, sonic-panels. Fly typecheck rc 0, architecture ok.
-- [ ] S4 the acceptance by mouse (tutor-say-accept.mjs local and live; two pictures; gates once; What the owner should try)
+- [x] S4 the acceptance by mouse (95943f23 the probe; 2d0a1ba1 the panel fix it found; the closing commit has the evidence)
+  - tools/bench/scripts/tutor-say-accept.mjs: fresh profile, 1536 x 730 at scale 1.25, ?render=off, targets by data-testid and key
+    action id. Local build of 2d0a1ba1: open, tab, start, steps, once, askK, guide all PASS (evidence accept-local.json). Live site
+    (read only, a throwaway profile): open, tab, steps, once, guide FAIL; start and askK PASS (they were never broken) (accept-live.json).
+    Live said at the first key "Fly by Sound. The up and down arrows move, ... Escape goes back." then "Start. Full course. ... Item 2
+    of 2."; the keys line 3 times in 3 steps; the panel "A small roomLesson 2 of 7Step 1 of 2Counted 0 of 3"; no Guide row.
+  - The first local run found the panel showing "Sound 2 of 2." (the package's headphone trial line, headphones.trial) as the
+    instruction: progress-panel.ts PLACE_LINES keeps it off the screen (test sonic-said-hold 7/7, NEG OK against 95943f23).
+  - Pictures: tutor-say-start.png: the title, Start flying (large, green, focused) beside All lessons, no counter. tutor-say-
+    instruction.png: one large white box at the left edge, "Wall", the step's own line, no counter.
+  - Pointer lock: the click into the scene does not take it in headless Chrome (pointerLock false in both runs); keys still reach
+    the flight.
 
 ## What the owner does
 
-(S4)
+What the owner should try:
+1. Open the site in a new private window at /en/fly/?sonic=start and press the Down arrow once: the voice says only "Fly by Sound.
+   Start flying..." and then "All lessons" (where the focus went). No list of keys, no "Item 2 of 2".
+2. Press the Up arrow and click Start flying with the mouse; listen through three steps (key N): each step says its own line only;
+   the line of keys ("Next, key N. Back, key B...") is said once, never again. The box at the left shows one line, no "Step 2 of 3".
+3. Press key K: the keys are said, because you asked.
+4. Back on the sound start screen, Settings, Guide: choose New sounds only, reload the page: it still says New sounds only.
 
 ## Claims
 
-(S2-S4)
+1. Between step N and N+1 the voice and the captions say only the step's own lines; the keys line once a visit.
+   `npx vitest run tools/bench/test/sonic-said-between-steps.test.ts`: 4/4 (fails on the base).
+2. #ui is quiet while a lesson runs, the HUD news still reaches the captions, the panel is one line with no counter.
+   `npx vitest run tools/bench/test/sonic-said-hold.test.ts`: 7/7 (NEG OK on the base and on 95943f23).
+3. Between two steps the accessibility tree and the live regions announce only the instruction.
+   `node tools/bench/scripts/tutor-say-ax.mjs http://localhost:7021 <out>`: 6/6 PASS (base 6/6 FAIL; ax-base.json, ax-repaired.json).
+4. The start screen says its title and Start flying once; Start flying, All lessons, Continue; a setting redraws only its row; the
+   Guide row. `npx vitest run tools/bench/test/sonic-start-screen.test.ts`: 39/39 (NEG OK on the base).
+5. No host line of a lesson or the start screen is longer than two short sentences, in four languages.
+   `npx vitest run tools/bench/test/sonic-say-length.test.ts`: 6/6.
+6. The Guide level is stored (absent = short). `npx vitest run packages/prefs/test/sonic-guide.test.ts`: pass (NEG OK on the base).
+7. The pilot's mouse path: `node tools/bench/scripts/tutor-say-accept.mjs http://localhost:7021 <out>`: 7/7 PASS; the same against
+   https://gsfpv.flyreelstudio.eu: open, tab, steps, once, guide FAIL (accept-local.json, accept-live.json).
 
 ## Not verified
 
@@ -86,10 +115,18 @@ Chrome accessibility tree, not with a real screen reader.
   counted are deleted), tools/bench/src/sonic-start-keyboard.ts (:356 reads the full button's sub), tools/bench/scripts/
   gap-sound-accept.mjs (:234 expects Continue second: it is third now, after All lessons). Move them to: sonic-start-quick,
   sonic-start-all, sonic-start-continue.
+- packages/sonic-fpv (lane tutor-moment): the headphone trial still SAYS "Sound 2 of 2." (headphones.trial, runner.ts); decision 7
+  asks for no counter unless asked. The screen no longer shows it (PLACE_LINES); the spoken line is the package's to cut. Also
+  walls-hall's first step says only "Wall" (a sound's name), so the panel shows "Wall" as that step's line.
+- Deploy order: page only (apps/fly, the fly/sonic locales, packages/prefs doc.ts). No API, rooms, nginx or sound package change.
+  Live checks after deploy: tools/bench/scripts/tutor-say-accept.mjs https://gsfpv.flyreelstudio.eu (all PASS expected).
 - tools/bench/test/sonic-hints.test.ts was not touched in S3; sonic.say.menuOpen keeps its second sentence word for word.
 
 ## Cost notes
 - S1: the most replies went to reading the rig and the old probe to write the test and the AX probe; a shared "lesson page probe" helper (open a lesson, press N, read the hook) would make it cheaper.
 - S2 run 1: the most replies went to finding where #ui's quiet rule and HUD news live (feature.ts, ui/messages.ts, hud.ts) after the plan placed them in live-quiet.ts; the design is now written in Status (b)-(d), so the next run builds without re-reading them.
 - S2 run 2: most replies went to test edits through node -e (shell escaping of backticks failed twice; use the Edit tool for any text with quotes or backticks) and to the first probe run showing "Go." as the instruction; reading the runner's say lines for a flying step before choosing the panel rule would have saved a build.
+- S4: most replies went to the probe's first run finding a real panel bug (a rebuild, the second build of the stage) and to scoping
+  the keys line "named once" in the step check; reading one ears-headphones step's spoken lines in S2's evidence first would have
+  caught "Sound 2 of 2." before the build.
 - S3: most replies went to moving the old start-screen tests (counts and item numbers shift with one more row); a one-off replace script per test file (U:/Temp) did it in one run; check a replace that renumbers in sequence (n: 14 -> 15 then 15 -> 16 hit the same line).
