@@ -17,7 +17,7 @@ the sound lessons, not the scene.
       for everyone (experiencedPilot and the "I already fly by sound" button are gone); parseSonicParam carries the link's `course`.
       An unsaved hand-built course: the Share panel shares the scene alone and says so in one line (`share-note`, share.unsaved, four
       languages). Tests: share-links-landing.test.ts (6), sonic-start-screen.test.ts "link with a scene" (2). NEG OK on the base
-      (start-model, start-screen, start.ts) and on S1 (start-model, flight-link). Commit: see git log (n-share S2).
+      (start-model, start-screen, start.ts) and on S1 (start-model, flight-link). Commit 11210118.
 - [ ] S3 the acceptance by mouse: tools/bench/scripts/n-share-accept.mjs (local build and live site, read only), at most three
       pictures, gates once (typecheck,vitest,architecture,i18n,b18,leaks), "What the owner should try", delete dist.
 
