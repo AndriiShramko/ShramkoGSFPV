@@ -1,0 +1,40 @@
+{
+ "probe": "tutor-air-review",
+ "base": "http://localhost:7062",
+ "pass": true,
+ "steps": {
+  "know": {
+   "pass": true,
+   "lesson": "walls-hall",
+   "name": "Wall",
+   "gone": true,
+   "nextCard": "Height tone",
+   "events": [
+    "wall-ahead:freeze",
+    "wall-ahead:known",
+    "wall-ahead:resume",
+    "wall-ahead:done",
+    "height:freeze",
+    "height:resume"
+   ],
+   "known": [
+    "wall-ahead"
+   ],
+   "saved": [
+    "safety.wall"
+   ],
+   "speedAfter": 3.18
+  },
+  "kept": {
+   "pass": true,
+   "savedAtLoad": [
+    "safety.wall"
+   ],
+   "cardsSeen": [
+    "Height tone"
+   ],
+   "maxSpeed": 3.19
+  }
+ },
+ "errors": []
+}

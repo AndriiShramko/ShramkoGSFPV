@@ -186,3 +186,23 @@ Differences from the plan (the code wins):
 - S4: the page found two defects the unit tests could not (the package says before it sends the moment; the host's line of
   keys in the headphone check), so a second build and a second drawn run (the first took its pictures after N) were
   needed; accept-fly needs more than 590 s for B6-B16 on a shared machine: run it in the background from the start.
+- Review: my own page probe took the most turns (two runs failed on probe timing: the next moment opening at once, the prefs
+  write after the event); a probe helper "wait for the saved collection" in tools/bench would make it cheaper.
+
+## Review
+
+Verdict: SHIP (independent check, 2026-11-21, on e285eedc; review file U:/Temp/gsfpv-train4/reviews/tutor-air.md)
+
+- Diff of the 11 own commits read: claims (a)-(g) hold in the code; no own commit touches packages/sonic-fpv or apps/site; pin
+  9ac7876 = tutor-moment's done package.
+- Tests re-run: sonic-moment*, sonic-tour*, keymap.test, app-keys.test 74/74 pass. NEG OK on 03624451: the freeze (bridge.ts alone:
+  2 of 3 fail), G (keymap + mode-keys: G is not the glossary).
+- tutor-air-accept.mjs on a fresh build of e285eedc (render off): 9/9 PASS. Without the probe's N in the headphone check's intro:
+  moving at 34.3 s, 58 words before it (still under 60, a small margin).
+- Own step, tools/bench/scripts/tutor-air-review.mjs: Shift+K in the first moment in the air ends it (event known), safety.wall is
+  saved, the flight goes on; after a reload walls-hall keeps it and the wall moment does not come again: 2/2 PASS
+  (evidence/2026-11-20/tutor-air/review-know.json).
+- Doubts (not proven, not holding): the words before the first movement were counted in English only (58 of 59 allowed);
+  LessonHost.glossary() and its return-to detour have no caller in the page any more (only tests); during a moment #ui is
+  invisible (opacity 0) but still takes clicks and touches under the pointer-events-free card.
+- Repaired: nothing.
