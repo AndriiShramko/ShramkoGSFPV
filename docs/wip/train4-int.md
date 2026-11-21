@@ -131,7 +131,12 @@ t7-base 03624451 of job base7: gap-gen (gen4a, gen4b), gap-save, gap-sound and t
       the probes (no product change): gap-save-accept 76595c87, edit4s s9 7f4a508e, ux4a-messages 359d4c54 (each left
       gen4b's Generate dialog open after the Course menu's or the pause menu's Generate), sound6-walk a8e5bc76 (gap-sound's
       start order and the room's four wall names). Their rerun on the same dist: probes-car3b.sh (summary '--- rerun').
-      Left: accept-fly's result, probes-car3b.sh, the gates once on the final tree, a6-reference.
+      accept-fly B6 B7 B9-B16 all PASS on that build (1537 s). Rerun (probes-car3b.sh): edit4s, sound6-walk PASS;
+      gap-save-accept failed s15.emptySaved / s15small / review.reopenSmall (a seam, repaired 05a28a53, see Seams) and
+      s100.emptySaved (expected: gap-save's Not verified, nothing fits at x100); ux4a-messages steps 2, 3, 5 (the probe
+      out of date for the t7-base join, repaired 3240c9c0). Then the final build of 3240c9c0 and probes-car3c.sh
+      (gap-save-accept, edit4b-course-life, ux4a-messages, gap-gen-accept, accept-fly; summary '--- final build').
+      Left: read probes-car3c's results, the gates once on the final tree, a6-reference.
 - [ ] S3 the hand-over (Car 3 parts, U:/Temp/gsfpv-train4/int4-car3.json)
 
 ## Progress
@@ -288,6 +293,14 @@ against car 1 and car 2 lanes:
   forever (edit4b, edit4a, edit-mouse); they now press the dialog's Build by mouse (d73cd1b9), recorded as genDialog.
 - gap-gen's progress box x ux4a's keyed progress line (base7: the box alone shows the steps; an old problem line stays
   until closed or the ready line replaces it): left as base7 joined it, within the owner's rules (one progress view).
+  ux4a-messages-probe still expected progress lines under course.progress and the old 'course.ready' line: it now reads
+  gen4b's progress box and the start line (3240c9c0).
+- edit4b's New empty course x gap-gen's asked start x gap-save's flown sizes (found by gap-save-accept on the build:
+  s15.emptySaved 'Not saved. The way from the start to gate 1 goes through a wall' after an asked course at x15):
+  emptyCourse spread the course before, so the empty course kept the asked course's start (gap-gen S3 puts it on gate
+  1's approach, far from where the pilot looks) and its scale (gap-save's own 'For the lead' need). Repaired (05a28a53):
+  the empty course takes the scale flown now (seam.flown()) and the scene's own spawn (start null); int4-seams and
+  edit4b-life tests, NEG OK.
 - Not seams of this car, the lanes' own needs for the lead (not changed here): gap-gen's course.ts hook.adopt line for
   race rooms (RACE_ON is false: nothing on the page uses it yet) and 'the drone stands at the course start' at x15;
   gap-save's startNew transform and the editor at x100 when nothing fits; gap-sound's keysDue once a lesson.
