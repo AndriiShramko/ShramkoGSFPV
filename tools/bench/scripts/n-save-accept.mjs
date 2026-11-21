@@ -152,6 +152,24 @@ try {
         const s = await snap();
         return (s.egates?.length ?? 0) > n0 ? s.selected : null;
     }
+    /**
+     * where the move arrow of one axis takes a press: the gizmo's drawn part farthest out along that axis's screen way and
+     * near its line (the cone at the arrow's tip, handle-look.ts moveReach), read from the page's own measure of the drawn
+     * parts. Null when the arrow points at the eye (too short to take a press).
+     */
+    async function arrowTip(s, ax) {
+        const a = s.axes?.[ax];
+        const m = await page.evaluate(() => { try { return window.__gsfpvEditMeasure ? window.__gsfpvEditMeasure() : null; } catch (x) { return null; } });
+        if (!a || !s.stand || !m?.parts) return null;
+        let best = null;
+        for (const p of m.parts) {
+            const cx = p.rect[0] + p.rect[2] / 2 - s.stand[0], cy = p.rect[1] + p.rect[3] / 2 - s.stand[1];
+            const along = cx * a[0] + cy * a[1];
+            const off = Math.abs(cx * a[1] - cy * a[0]);
+            if (off < 10 && along > 50 && (!best || along > best.along)) best = { along, x: s.stand[0] + cx, y: s.stand[1] + cy, name: p.name };
+        }
+        return best;
+    }
     /** the selected gate's vertical gizmo arrow dragged down by the mouse until the editor names it in the scan */
     async function buryByGizmo(i) {
         const tries = [];
@@ -160,8 +178,9 @@ try {
             if (s.problems?.some((p) => p.gate === i && WALL.includes(p.code))) return { ok: true, tries };
             if (s.selected !== i || !s.stand || !s.axes?.y) { tries.push({ n, selected: s.selected, stand: !!s.stand }); break; }
             const a = s.axes.y;
-            const r = [40, 60, 30, 80][n % 4];
-            const x0 = s.stand[0] + a[0] * r, y0 = s.stand[1] + a[1] * r;
+            const tip = await arrowTip(s, 'y');
+            if (!tip) { tries.push({ n, tip: null }); break; }
+            const x0 = tip.x, y0 = tip.y, r = Math.round(tip.along);
             // the arrow points up on the screen; down is against it
             const down = a[1] < 0 ? -1 : 1;
             await page.mouse.move(x0, y0, { steps: 3 });
@@ -192,7 +211,8 @@ try {
             if (Math.hypot(...gap) < near) return { ok: true, tries, apart: Math.hypot(...gap) };
             const ax = ['x', 'z', 'y'][n % 3];
             const a = s.axes[ax];
-            if (!a || Math.hypot(a[0], a[1]) < 0.2) continue;
+            const tip = await arrowTip(s, ax);
+            if (!a || !tip) { tries.push({ n, ax, tip: null }); continue; }
             const L = learnt[ax];
             let px = 40;
             if (L) {
@@ -200,10 +220,9 @@ try {
                 px = Math.max(-220, Math.min(220, along / L.perPx));
                 if (Math.abs(px) < 3) continue;
             }
-            const r = [45, 65, 30, 85][Math.floor(n / 3) % 4];
-            const x0 = s.stand[0] + a[0] * r, y0 = s.stand[1] + a[1] * r;
+            const x0 = tip.x, y0 = tip.y;
             await page.mouse.move(x0, y0, { steps: 3 });
-            await sleep(120);
+            await sleep(150);
             await page.mouse.down();
             await page.mouse.move(Math.max(5, Math.min(W - 5, x0 + a[0] * px)), Math.max(5, Math.min(H - 5, y0 + a[1] * px)), { steps: 12 });
             await page.mouse.up();
