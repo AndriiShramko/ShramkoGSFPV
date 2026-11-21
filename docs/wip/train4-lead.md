@@ -280,3 +280,22 @@ The conductor: a run cut by the window is ready at the reset itself (it was 90 s
 reset gave the slots to fresh lanes: car3 lost its slot at 07:30 and again at 12:30 UTC). car3 (S2 done) waits for the
 next free slot; after it ship-car3 goes by itself.
 Watcher: lead_watch.sh, a background task of the lead's chat, as before.
+
+## State, 2026-11-21 15:10 UTC: car 3 is live; the tutorial car goes before car 4 (READ THIS FIRST)
+
+Live: `main` 72d4babf (built 13:32 UTC), sound package 719aaf5: car 3 (t7-base: gen4a, gen4b, gap-gen, gap-save,
+gap-sound) on top of car 2 and the hot repair. STATE.md has the entry. Live checks 22 of 23; FAIL gap-gen-asked-course
+case 2 (the skull scan: no Generate dialog after 241 s); the lead started a second run (ship-car3/live-r2.log).
+ship-car3 needed three tries: exit 30 (the package commit lived only in the integration copy's clone: ship_handover.py
+now fetches it from there) and exit 12 (the lead ran gates.py in the lead copy and the b18 gate rewrote a tracked
+evidence file: never run gates in C:/dev/gsfpv-v03, or `git checkout -- evidence` after; the lane's copy is the place).
+fix-lod is done and checked (SHIP): no loss on Lublin from the engine or from car 2 (both builds draw alike on the same
+line; the failing runs had 0.55 to 0.7 MB/s); its probe repair is merged into main as 228da655. fix-gizmo13 was merged
+before it (13670b66). Both touch tools/bench and deploy/live-checks.sh only.
+THE ORDER OF THE CARS CHANGED. tutor-say and tutor-moment are done with SHIP, tutor-air runs (S2), n-share is done with
+SHIP; car 4's lanes are in the middle (n-route S4, n-save S4, n-path S3, n-scan S2; n-level and the gap lanes 4-7 not
+started). So car5 now waits only for r-n-share, r-tutor-say, r-tutor-moment, r-tutor-air and ship-car3; it merges
+n-share and the three tutorial lanes on the integration copy after car 3, and ship-car5 follows it. car4 waits for
+ship-car5 too and finds n-share merged. The headers of prompts/t8-car5.md and prompts/t6-car4.md say so (car 4 got a
+point 7: its seams with car 5).
+Queue at 15:10 UTC: running tutor-air (S2), n-route (S4), n-save (S4); ready n-scan, n-path, the gap lanes.
