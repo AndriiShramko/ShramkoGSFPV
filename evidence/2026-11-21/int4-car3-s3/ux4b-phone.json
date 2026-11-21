@@ -1,0 +1,29 @@
+{
+ "base": "http://localhost:6180/en",
+ "from": "70b50d42",
+ "to": "2f1ddf5f",
+ "steps": {
+  "7.cancel-phone": {
+   "ok": true,
+   "box": {
+    "x": 294.9140625,
+    "y": 281.4375,
+    "w": 78,
+    "h": 44,
+    "inView": true,
+    "covered": false,
+    "under": "BUTTON.btn",
+    "text": "Cancel"
+   }
+  },
+  "8.no-errors-after-cancel": {
+   "ok": true,
+   "phone": 0,
+   "desktop": null,
+   "picker": true
+  }
+ },
+ "log": [],
+ "pass": true,
+ "fails": []
+}

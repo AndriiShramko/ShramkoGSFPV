@@ -1,0 +1,385 @@
+{
+  "base": "http://localhost:6180/en",
+  "browser": {
+    "kind": "system-chrome",
+    "version": "157.0.8103.52"
+  },
+  "maxS": 300,
+  "minLit": 0.05,
+  "ids": {
+    "f924b0f5": {
+      "pass": true,
+      "why": null,
+      "errors": [],
+      "console": [],
+      "csp": [],
+      "probes403": 8,
+      "samples": [
+        {
+          "s": 10,
+          "status": "loading",
+          "error": null,
+          "errorCode": null,
+          "stage": "download",
+          "loaded": 6029489,
+          "total": 18831774,
+          "drawn": 0
+        },
+        {
+          "s": 20,
+          "status": "loading",
+          "error": null,
+          "errorCode": null,
+          "stage": "download",
+          "loaded": 12749783,
+          "total": 18831774,
+          "drawn": 624753
+        },
+        {
+          "s": 30,
+          "status": "loading",
+          "error": null,
+          "errorCode": null,
+          "stage": "download",
+          "loaded": 18760106,
+          "total": 18831774,
+          "drawn": 624753
+        }
+      ],
+      "last": {
+        "status": "ready",
+        "error": null,
+        "errorCode": null,
+        "stage": "done",
+        "loaded": 18831774,
+        "total": 18831774,
+        "drawn": 999606
+      },
+      "seconds": 34,
+      "picture": {
+        "shot": "U:\\Temp\\gsfpv-train4\\int4\\logs-car3s3\\int4-car3s3-f924b0f5.png",
+        "clear": [
+          0,
+          0,
+          0
+        ],
+        "w": 1536,
+        "h": 730,
+        "lit": 0.7782659103881279
+      },
+      "drawn": 999606
+    },
+    "593f8c06": {
+      "pass": true,
+      "why": null,
+      "errors": [],
+      "console": [],
+      "csp": [],
+      "probes403": 5,
+      "samples": [
+        {
+          "s": 10,
+          "status": "loading",
+          "error": null,
+          "errorCode": null,
+          "stage": "download",
+          "loaded": 6045699,
+          "total": 8907394.4,
+          "drawn": 0
+        }
+      ],
+      "last": {
+        "status": "ready",
+        "error": null,
+        "errorCode": null,
+        "stage": "done",
+        "loaded": 8645169,
+        "total": 8645169,
+        "drawn": 623310
+      },
+      "seconds": 18,
+      "picture": {
+        "shot": "U:\\Temp\\gsfpv-train4\\int4\\logs-car3s3\\int4-car3s3-593f8c06.png",
+        "clear": [
+          0,
+          0,
+          0
+        ],
+        "w": 1536,
+        "h": 730,
+        "lit": 0.9979130993150684
+      },
+      "drawn": 623310
+    },
+    "a39abad1": {
+      "pass": true,
+      "why": null,
+      "errors": [],
+      "console": [],
+      "csp": [],
+      "probes403": 7,
+      "samples": [
+        {
+          "s": 10,
+          "status": "loading",
+          "error": null,
+          "errorCode": null,
+          "stage": "download",
+          "loaded": 5219078,
+          "total": 17136366,
+          "drawn": null
+        },
+        {
+          "s": 20,
+          "status": "loading",
+          "error": null,
+          "errorCode": null,
+          "stage": "download",
+          "loaded": 10995961,
+          "total": 17136366,
+          "drawn": null
+        },
+        {
+          "s": 30,
+          "status": "loading",
+          "error": null,
+          "errorCode": null,
+          "stage": "download",
+          "loaded": 15657182,
+          "total": 17136366,
+          "drawn": null
+        }
+      ],
+      "last": {
+        "status": "ready",
+        "error": null,
+        "errorCode": null,
+        "stage": "done",
+        "loaded": 17136366,
+        "total": 17136366,
+        "drawn": 996301
+      },
+      "seconds": 37,
+      "picture": {
+        "shot": "U:\\Temp\\gsfpv-train4\\int4\\logs-car3s3\\int4-car3s3-a39abad1.png",
+        "clear": [
+          0,
+          0,
+          0
+        ],
+        "w": 1536,
+        "h": 730,
+        "lit": 0.9916684503424658
+      },
+      "drawn": 996301
+    },
+    "28ad27ed": {
+      "pass": true,
+      "why": null,
+      "errors": [],
+      "console": [],
+      "csp": [],
+      "probes403": 7,
+      "samples": [
+        {
+          "s": 10,
+          "status": "loading",
+          "error": null,
+          "errorCode": null,
+          "stage": "download",
+          "loaded": 4330031,
+          "total": 17143190,
+          "drawn": null
+        },
+        {
+          "s": 20,
+          "status": "loading",
+          "error": null,
+          "errorCode": null,
+          "stage": "download",
+          "loaded": 8470467,
+          "total": 17143190,
+          "drawn": null
+        },
+        {
+          "s": 30,
+          "status": "loading",
+          "error": null,
+          "errorCode": null,
+          "stage": "download",
+          "loaded": 12725528,
+          "total": 17143190,
+          "drawn": null
+        },
+        {
+          "s": 40,
+          "status": "ready",
+          "error": null,
+          "errorCode": null,
+          "stage": "done",
+          "loaded": 17143190,
+          "total": 17143190,
+          "drawn": 993627
+        }
+      ],
+      "last": {
+        "status": "ready",
+        "error": null,
+        "errorCode": null,
+        "stage": "done",
+        "loaded": 17143190,
+        "total": 17143190,
+        "drawn": 993627
+      },
+      "seconds": 42,
+      "picture": {
+        "shot": "U:\\Temp\\gsfpv-train4\\int4\\logs-car3s3\\int4-car3s3-28ad27ed.png",
+        "clear": [
+          0,
+          0,
+          0
+        ],
+        "w": 1536,
+        "h": 730,
+        "lit": 0.7887931649543379
+      },
+      "drawn": 993627
+    },
+    "98f74d54": {
+      "pass": true,
+      "why": null,
+      "errors": [],
+      "console": [],
+      "csp": [],
+      "probes403": 7,
+      "samples": [
+        {
+          "s": 10,
+          "status": "ready",
+          "error": null,
+          "errorCode": null,
+          "stage": "done",
+          "loaded": 2782650,
+          "total": 2782650,
+          "drawn": 206179
+        }
+      ],
+      "last": {
+        "status": "ready",
+        "error": null,
+        "errorCode": null,
+        "stage": "done",
+        "loaded": 2782650,
+        "total": 2782650,
+        "drawn": 206179
+      },
+      "seconds": 11,
+      "picture": {
+        "shot": "U:\\Temp\\gsfpv-train4\\int4\\logs-car3s3\\int4-car3s3-98f74d54.png",
+        "clear": [
+          0,
+          0,
+          0
+        ],
+        "w": 1536,
+        "h": 730,
+        "lit": 0.9985926797945206
+      },
+      "drawn": 206179
+    },
+    "143e76b0": {
+      "pass": true,
+      "why": null,
+      "errors": [],
+      "console": [],
+      "csp": [],
+      "probes403": 7,
+      "samples": [
+        {
+          "s": 10,
+          "status": "ready",
+          "error": null,
+          "errorCode": null,
+          "stage": "done",
+          "loaded": 3775102,
+          "total": 3775102,
+          "drawn": 300000
+        }
+      ],
+      "last": {
+        "status": "ready",
+        "error": null,
+        "errorCode": null,
+        "stage": "done",
+        "loaded": 3775102,
+        "total": 3775102,
+        "drawn": 300000
+      },
+      "seconds": 12,
+      "picture": {
+        "shot": "U:\\Temp\\gsfpv-train4\\int4\\logs-car3s3\\int4-car3s3-143e76b0.png",
+        "clear": [
+          20,
+          23,
+          26
+        ],
+        "w": 1536,
+        "h": 730,
+        "lit": 0.1502158247716895
+      },
+      "drawn": 300000
+    },
+    "70b50d42": {
+      "pass": true,
+      "why": null,
+      "errors": [],
+      "console": [],
+      "csp": [],
+      "probes403": 6,
+      "samples": [
+        {
+          "s": 10,
+          "status": "loading",
+          "error": null,
+          "errorCode": null,
+          "stage": "done",
+          "loaded": 20330030,
+          "total": 20330030,
+          "drawn": 84168
+        }
+      ],
+      "last": {
+        "status": "ready",
+        "error": null,
+        "errorCode": null,
+        "stage": "done",
+        "loaded": 20330030,
+        "total": 20330030,
+        "drawn": 99933
+      },
+      "seconds": 13,
+      "picture": {
+        "shot": "U:\\Temp\\gsfpv-train4\\int4\\logs-car3s3\\int4-car3s3-70b50d42.png",
+        "clear": [
+          0,
+          0,
+          0
+        ],
+        "w": 1536,
+        "h": 730,
+        "lit": 1
+      },
+      "drawn": 136578
+    }
+  },
+  "pass": true,
+  "summary": {
+    "f924b0f5": "PASS",
+    "593f8c06": "PASS",
+    "a39abad1": "PASS",
+    "28ad27ed": "PASS",
+    "98f74d54": "PASS",
+    "143e76b0": "PASS",
+    "70b50d42": "PASS"
+  }
+}

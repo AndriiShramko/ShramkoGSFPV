@@ -1,0 +1,513 @@
+{
+ "address": "http://localhost:6180/en",
+ "scene": "70b50d42",
+ "size": [
+  1536,
+  730
+ ],
+ "dsf": 1.25,
+ "live": false,
+ "date": "2026-11-21T08:10:50.108Z",
+ "steps": {
+  "s1.open": {
+   "verdict": "PASS",
+   "mode": "edit",
+   "gates": 39,
+   "onPage": 39,
+   "under": [
+    "CANVAS.#view",
+    "CANVAS.#view",
+    "CANVAS.#view",
+    "CANVAS.#view"
+   ],
+   "screen": [
+    [
+     1012,
+     400,
+     10.18
+    ],
+    [
+     1155,
+     380,
+     17.05
+    ],
+    [
+     1232,
+     376,
+     23.97
+    ],
+    [
+     1266,
+     364,
+     28.88
+    ],
+    [
+     1265,
+     364,
+     29.63
+    ],
+    [
+     1263,
+     364,
+     30.37
+    ],
+    [
+     1262,
+     364,
+     31.12
+    ],
+    [
+     1300,
+     361,
+     35.69
+    ],
+    [
+     1306,
+     361,
+     36.12
+    ],
+    [
+     1311,
+     361,
+     36.55
+    ],
+    [
+     1311,
+     362,
+     41.27
+    ],
+    [
+     1226,
+     361,
+     50.98
+    ]
+   ],
+   "selected": 0,
+   "stand": [
+    1012,
+    400,
+    10.18
+   ],
+   "lock": "CANVAS"
+  },
+  "s2.add": {
+   "verdict": "PASS",
+   "judged": {
+    "leg": 22,
+    "clickedAt": [
+     1097,
+     360
+    ],
+    "armed": true,
+    "grew": true,
+    "newIndex": 23,
+    "wantIndex": 23,
+    "hitM": 134.42655351504536,
+    "offDeg": 0,
+    "neighbours": [
+     "g23",
+     "g24"
+    ],
+    "wasLeg": [
+     "g23",
+     "g24"
+    ],
+    "between": true,
+    "legDepth": 109.1,
+    "hidden": false
+   },
+   "tries": [
+    {
+     "leg": 1,
+     "clickedAt": [
+      1194,
+      378
+     ],
+     "armed": true,
+     "grew": true,
+     "newIndex": 0,
+     "wantIndex": 2,
+     "hitM": 11.162062082089573,
+     "legDepth": 23.97,
+     "hidden": true
+    },
+    {
+     "leg": 10,
+     "clickedAt": [
+      1269,
+      362
+     ],
+     "armed": true,
+     "grew": true,
+     "newIndex": 0,
+     "wantIndex": 11,
+     "hitM": 9.474056948317443,
+     "legDepth": 50.98,
+     "hidden": true
+    },
+    {
+     "leg": 13,
+     "clickedAt": [
+      1166,
+      347
+     ],
+     "armed": true,
+     "grew": true,
+     "newIndex": 0,
+     "wantIndex": 14,
+     "hitM": 11.89992968487728,
+     "legDepth": 72.77,
+     "hidden": true
+    },
+    {
+     "leg": 22,
+     "clickedAt": [
+      1097,
+      360
+     ],
+     "armed": true,
+     "grew": true,
+     "newIndex": 23,
+     "wantIndex": 23,
+     "hitM": 134.42655351504536,
+     "offDeg": 0,
+     "neighbours": [
+      "g23",
+      "g24"
+     ],
+     "wasLeg": [
+      "g23",
+      "g24"
+     ],
+     "between": true,
+     "legDepth": 109.1,
+     "hidden": false
+    }
+   ]
+  },
+  "s3.piece": {
+   "verdict": "PASS",
+   "choice": "double-vertical",
+   "armed": true,
+   "chose": true,
+   "covered": null,
+   "added": 2,
+   "gaps": [
+    {
+     "up": 2,
+     "side": 0
+    }
+   ],
+   "refused": null,
+   "said": "The new gate is red. The way from gate 1 to gate 2 goes through a wall. Pull the arrows of gate 2 until the straight way between them is clear, or delete it wit"
+  },
+  "s3.undo": {
+   "verdict": "PASS",
+   "pressed": true,
+   "gates": [
+    39,
+    41,
+    39
+   ]
+  },
+  "s4.piece": {
+   "verdict": "PASS",
+   "choice": "triple-horizontal",
+   "armed": true,
+   "chose": true,
+   "covered": null,
+   "added": 3,
+   "gaps": [
+    {
+     "up": 0,
+     "side": 2.2
+    },
+    {
+     "up": 0,
+     "side": 2.2
+    }
+   ],
+   "refused": null,
+   "said": "The new gate is red. The way from gate 2 to gate 3 goes through a wall. Pull the arrows of gate 3 until the straight way between them is clear, or delete it wit"
+  },
+  "s4.undo": {
+   "verdict": "PASS",
+   "pressed": true,
+   "gates": [
+    39,
+    42,
+    39
+   ]
+  },
+  "s5.tag": {
+   "verdict": "PASS",
+   "gate": 37,
+   "axis": "x",
+   "px": 52,
+   "tag": {
+    "codes": [
+     "sharp-turn"
+    ],
+    "lines": [
+     "Too sharp a turn to fly into gate 38"
+    ],
+    "box": [
+     581,
+     138,
+     273,
+     42
+    ],
+    "dragging": true
+   },
+   "why": null
+  },
+  "s6.putBack": {
+   "verdict": "PASS",
+   "asked": true,
+   "ask": "Keep it here?KeepPut back (key Ctrl+Z)",
+   "moved": [
+    89.5,
+    6.5,
+    27.3
+   ],
+   "back": [
+    89.2,
+    6.5,
+    27.3
+   ],
+   "before": [
+    89.2,
+    6.5,
+    27.3
+   ],
+   "barAfter": "off"
+  },
+  "s7.keep": {
+   "verdict": "PASS",
+   "asked": true,
+   "stayed": true,
+   "moved": true,
+   "before": [
+    89.2,
+    6.5,
+    27.3
+   ],
+   "during": [
+    89.5,
+    6.5,
+    27.3
+   ],
+   "after": [
+    89.5,
+    6.5,
+    27.3
+   ],
+   "kept": [
+    "g37"
+   ],
+   "id": "g37",
+   "barAfter": "off",
+   "why": null,
+   "px": 52
+  },
+  "s9.escAsk": {
+   "verdict": "PASS",
+   "asked": true,
+   "escClosed": true,
+   "escStayed": true,
+   "escKept": true,
+   "barAfter": "off",
+   "said": "Kept where you put it. Gate 37 stays orange until the problem is gone.",
+   "why": null
+  },
+  "s10.addAsk": {
+   "verdict": "PASS",
+   "asked": true,
+   "addClosedAsk": true,
+   "addClear": true,
+   "barAfter": "off",
+   "why": null
+  },
+  "s8.small": {
+   "verdict": "PASS",
+   "fits": true,
+   "clear": true,
+   "cross44": true,
+   "closed": true,
+   "list": {
+    "box": [
+     13,
+     167,
+     452,
+     192
+    ],
+    "items": [
+     {
+      "text": "Gate",
+      "box": [
+       18,
+       218,
+       220,
+       44
+      ],
+      "clear": true
+     },
+     {
+      "text": "Double vertical",
+      "box": [
+       240,
+       218,
+       220,
+       44
+      ],
+      "clear": true
+     },
+     {
+      "text": "Triple vertical",
+      "box": [
+       18,
+       264,
+       220,
+       44
+      ],
+      "clear": true
+     },
+     {
+      "text": "Double horizontal",
+      "box": [
+       240,
+       264,
+       220,
+       44
+      ],
+      "clear": true
+     },
+     {
+      "text": "Triple horizontal",
+      "box": [
+       18,
+       310,
+       220,
+       44
+      ],
+      "clear": true
+     },
+     {
+      "text": "×",
+      "box": [
+       416,
+       172,
+       44,
+       44
+      ],
+      "clear": true
+     }
+    ],
+    "cross": [
+     416,
+     172,
+     44,
+     44
+    ],
+    "view": [
+     844,
+     390
+    ]
+   }
+  }
+ },
+ "ready": {
+  "status": "ready",
+  "s": 2
+ },
+ "lockAfterClick": "CANVAS",
+ "course": {
+  "ok": true,
+  "s": 19,
+  "gates": 39
+ },
+ "tags": [
+  {
+   "label": "first",
+   "axis": "x",
+   "px": 52,
+   "tag": {
+    "codes": [
+     "sharp-turn"
+    ],
+    "lines": [
+     "Too sharp a turn to fly into gate 38"
+    ],
+    "box": [
+     581,
+     138,
+     273,
+     42
+    ],
+    "dragging": true
+   }
+  },
+  {
+   "label": "second",
+   "axis": "x",
+   "px": 52,
+   "tag": {
+    "codes": [
+     "sharp-turn"
+    ],
+    "lines": [
+     "Too sharp a turn to fly into gate 38"
+    ],
+    "box": [
+     571,
+     110,
+     273,
+     42
+    ],
+    "dragging": true
+   }
+  },
+  {
+   "label": "third",
+   "axis": "y",
+   "px": 52,
+   "tag": {
+    "codes": [
+     "sharp-turn"
+    ],
+    "lines": [
+     "Too sharp a turn to fly into gate 38"
+    ],
+    "box": [
+     598,
+     168,
+     273,
+     42
+    ],
+    "dragging": true
+   }
+  },
+  {
+   "label": "fourth",
+   "axis": "x",
+   "px": 52,
+   "tag": {
+    "codes": [
+     "sharp-turn"
+    ],
+    "lines": [
+     "Too sharp a turn to fly into gate 38"
+    ],
+    "box": [
+     608,
+     85,
+     273,
+     42
+    ],
+    "dragging": true
+   }
+  }
+ ],
+ "fails": [],
+ "log": []
+}

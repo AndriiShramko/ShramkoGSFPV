@@ -1,0 +1,493 @@
+{
+ "address": "http://localhost:6183/en",
+ "api": "http://127.0.0.1:6184",
+ "apiDir": "C:\\dev\\gsfpv-v13-int\\apps\\api",
+ "dist": "C:\\dev\\gsfpv-v13-int\\dist",
+ "scan": "70b50d42",
+ "size": [
+  1536,
+  730
+ ],
+ "dsf": 1.25,
+ "date": "2026-11-21T08:00:09.431Z",
+ "steps": {
+  "open": {
+   "ok": true,
+   "status": "ready",
+   "ms": 2115,
+   "lock": "CANVAS",
+   "size": 1
+  },
+  "x1.size": {
+   "ok": true,
+   "drone": {
+    "menu": true,
+    "by": "Fly",
+    "closed": true,
+    "stored": true,
+    "seen": null
+   },
+   "size": {
+    "ok": true,
+    "size": 1,
+    "how": "the scan opened at its own size"
+   }
+  },
+  "s5in.generatedSaved": {
+   "ok": true,
+   "editor": true,
+   "menu": {
+    "item": true,
+    "asked": "Generate",
+    "dialog": true
+   },
+   "gates": 13,
+   "shapes": [
+    {
+     "kind": "ring",
+     "diameter": 2.237,
+     "tube": 0.149
+    },
+    {
+     "kind": "ring",
+     "diameter": 2.237,
+     "tube": 0.149
+    },
+    {
+     "kind": "ring",
+     "diameter": 2.237,
+     "tube": 0.149
+    }
+   ],
+   "ms": 5,
+   "save": {
+    "ok": true,
+    "title": "gap-save 5in x1",
+    "typed": {
+     "title": true,
+     "name": true
+    },
+    "fix": null,
+    "posts": [
+     201
+    ],
+    "listed": true,
+    "saved": "70b50d42-b67c1d9a",
+    "line": "Saved as your course: gap-save 5in x1, version 1. It is in Courses on the top bar",
+    "said": "Saved as your course: gap-save 5in x1, version 1. It is in Courses on the top bar",
+    "problem": {
+     "status": null,
+     "key": null
+    },
+    "ms": 4
+   }
+  },
+  "whoop": {
+   "ok": true,
+   "menu": true,
+   "by": "Fly",
+   "closed": true,
+   "stored": true,
+   "seen": null
+  },
+  "x15.size": {
+   "ok": true,
+   "size": 15.348225593566895,
+   "shown": "x15.35",
+   "tries": [
+    {
+     "x": 963,
+     "size": 15.348,
+     "top": "INPUT.sc-slider",
+     "value": "2.32",
+     "after": "3.94"
+    }
+   ]
+  },
+  "s15gen.generatedSaved": {
+   "ok": true,
+   "menu": {
+    "item": true,
+    "asked": "Generate",
+    "dialog": true
+   },
+   "gates": 14,
+   "shapes": [
+    {
+     "kind": "square",
+     "side": 0.042,
+     "bar": 0.003
+    },
+    {
+     "kind": "square",
+     "side": 0.042,
+     "bar": 0.003
+    },
+    {
+     "kind": "square",
+     "side": 0.042,
+     "bar": 0.003
+    }
+   ],
+   "line": "Editor open. Keys W A S D move the view, key E up, key Q down. Drag with the left mouse button on empty space to circle round, with Shift to slide; the wheel goes towards the cursor; hold the right button to look around. Click a gate: the arrows move it, the r",
+   "ms": 3,
+   "save": {
+    "ok": true,
+    "title": "gap-save x15 gen",
+    "typed": {
+     "title": true,
+     "name": true
+    },
+    "fix": null,
+    "posts": [
+     201
+    ],
+    "listed": true,
+    "saved": "70b50d42-d1f6bbf2",
+    "line": "Saved as your course: gap-save x15 gen, version 1. It is in Courses on the top bar",
+    "said": "Saved as your course: gap-save x15 gen, version 1. It is in Courses on the top bar",
+    "problem": {
+     "status": null,
+     "key": null
+    },
+    "ms": 4
+   }
+  },
+  "s15.emptySaved": {
+   "ok": true,
+   "menu": {
+    "item": true,
+    "asked": "Start empty",
+    "dialog": false
+   },
+   "gates": {
+    "gates": 3,
+    "added": [
+     1,
+     1,
+     1,
+     {
+      "walked": [
+       {
+        "ms": 2269,
+        "behind": true
+       },
+       {
+        "ms": 2373,
+        "behind": true
+       }
+      ]
+     }
+    ],
+    "shapes": [
+     {
+      "kind": "square",
+      "side": 0.098,
+      "bar": 0.007
+     },
+     {
+      "kind": "square",
+      "side": 0.098,
+      "bar": 0.007
+     },
+     {
+      "kind": "square",
+      "side": 0.098,
+      "bar": 0.007
+     }
+    ],
+    "line": "Add gate. Gate 3 of 3: square, 1.5 m"
+   },
+   "flownM": null,
+   "save": {
+    "ok": true,
+    "title": "gap-save x15",
+    "typed": {
+     "title": true,
+     "name": true
+    },
+    "fix": null,
+    "posts": [
+     201
+    ],
+    "listed": true,
+    "saved": "70b50d42-d1dd26d1",
+    "line": "Saved as your course: gap-save x15, version 1. It is in Courses on the top bar",
+    "said": "Saved as your course: gap-save x15, version 1. It is in Courses on the top bar",
+    "problem": {
+     "status": null,
+     "key": null
+    },
+    "ms": 6
+   }
+  },
+  "s15small.whoopGatesSaved": {
+   "ok": true,
+   "menu": {
+    "item": true,
+    "asked": "Start empty",
+    "dialog": false
+   },
+   "gates": {
+    "gates": 3,
+    "added": [
+     1,
+     {
+      "shrunk": "Not smaller: 0.5 m is the smallest opening"
+     },
+     1,
+     {
+      "shrunk": "Not smaller: 0.5 m is the smallest opening"
+     },
+     1,
+     {
+      "shrunk": "Not smaller: 0.5 m is the smallest opening"
+     },
+     {
+      "walked": [
+       {
+        "ms": 2341,
+        "behind": true
+       },
+       {
+        "ms": 2247,
+        "behind": true
+       }
+      ]
+     }
+    ],
+    "shapes": [
+     {
+      "kind": "square",
+      "side": 0.039,
+      "bar": 0.007
+     },
+     {
+      "kind": "square",
+      "side": 0.039,
+      "bar": 0.007
+     },
+     {
+      "kind": "square",
+      "side": 0.039,
+      "bar": 0.007
+     }
+    ],
+    "line": "Not smaller: 0.5 m is the smallest opening"
+   },
+   "save": {
+    "ok": true,
+    "title": "gap-save x15 small",
+    "typed": {
+     "title": true,
+     "name": true
+    },
+    "fix": null,
+    "posts": [
+     201
+    ],
+    "listed": true,
+    "saved": "70b50d42-8c4c373a",
+    "line": "Saved as your course: gap-save x15 small, version 1. It is in Courses on the top bar",
+    "said": "Saved as your course: gap-save x15 small, version 1. It is in Courses on the top bar",
+    "problem": {
+     "status": null,
+     "key": null
+    },
+    "ms": 1564
+   }
+  },
+  "review.reopenSmall": {
+   "ok": true,
+   "other": {
+    "title": "gap-save x15",
+    "id": "70b50d42-d1dd26d1",
+    "row": true,
+    "pressed": true,
+    "scale": 15.348225593566895,
+    "open": true,
+    "saved": null,
+    "gates": 3,
+    "shapes": [
+     {
+      "kind": "square",
+      "side": 0.098,
+      "bar": 0.007
+     },
+     {
+      "kind": "square",
+      "side": 0.098,
+      "bar": 0.007
+     },
+     {
+      "kind": "square",
+      "side": 0.098,
+      "bar": 0.007
+     }
+    ],
+    "problem": null,
+    "line": "Editor open. Keys W A S D move the view, key E up, key Q down. Drag with the left mouse button on empty space to circle round, with Shift to slide; the wheel goes towards the cursor; hold the right button to look around. Click a gate: the arrows move it, the r",
+    "said": "Editor open. Keys W A S D move the view, key E up, key Q down. Drag with the left mouse button on empty space to circle round, with Shift to slide; the wheel goes towards the cursor; hold the right button to look around.",
+    "ms": 4
+   },
+   "small": {
+    "title": "gap-save x15 small",
+    "id": "70b50d42-8c4c373a",
+    "row": true,
+    "pressed": true,
+    "scale": 15.348225593566895,
+    "open": true,
+    "saved": null,
+    "gates": 3,
+    "shapes": [
+     {
+      "kind": "square",
+      "side": 0.039,
+      "bar": 0.007
+     },
+     {
+      "kind": "square",
+      "side": 0.039,
+      "bar": 0.007
+     },
+     {
+      "kind": "square",
+      "side": 0.039,
+      "bar": 0.007
+     }
+    ],
+    "problem": null,
+    "line": "Editor open. Keys W A S D move the view, key E up, key Q down. Drag with the left mouse button on empty space to circle round, with Shift to slide; the wheel goes towards the cursor; hold the right button to look around. Click a gate: the arrows move it, the r",
+    "said": "Editor open. Keys W A S D move the view, key E up, key Q down. Drag with the left mouse button on empty space to circle round, with Shift to slide; the wheel goes towards the cursor; hold the right button to look around.",
+    "ms": 835
+   }
+  },
+  "x100.size": {
+   "ok": true,
+   "set": {
+    "ok": true,
+    "size": 99.73306274414062,
+    "shown": "x99.73",
+    "tries": [
+     {
+      "x": 1227,
+      "size": 99.733,
+      "top": "INPUT.sc-slider",
+      "value": "2.32",
+      "after": "6.64"
+     }
+    ]
+   },
+   "reopened": {
+    "status": "ready",
+    "ms": 2063,
+    "lock": "CANVAS",
+    "size": 99.73306274414062
+   }
+  },
+  "s100.emptySaved": {
+   "ok": false,
+   "editor": false,
+   "opening": {
+    "open": false,
+    "ms": 1021,
+    "problem": "no room",
+    "hud": "",
+    "line": null
+   },
+   "menu": {
+    "item": false,
+    "asked": null,
+    "dialog": false
+   },
+   "gates": {
+    "gates": null,
+    "added": [
+     0,
+     0,
+     0,
+     {
+      "walked": [
+       {
+        "ms": 752,
+        "behind": true
+       },
+       {
+        "ms": 739,
+        "behind": true
+       }
+      ]
+     }
+    ],
+    "shapes": null,
+    "line": null
+   },
+   "flownM": null,
+   "save": {
+    "ok": false,
+    "title": "gap-save x100",
+    "typed": {
+     "title": false,
+     "name": false
+    },
+    "fix": null,
+    "posts": [],
+    "listed": false,
+    "saved": null,
+    "line": null,
+    "said": "",
+    "problem": null,
+    "ms": 20052
+   }
+  }
+ },
+ "posts": [
+  {
+   "path": "/api/tracks",
+   "status": 201,
+   "at": 1795248341378
+  },
+  {
+   "path": "/api/tracks",
+   "status": 201,
+   "at": 1795248370298
+  },
+  {
+   "path": "/api/tracks",
+   "status": 201,
+   "at": 1795248386670
+  },
+  {
+   "path": "/api/tracks",
+   "status": 201,
+   "at": 1795248410100
+  }
+ ],
+ "editorOpen": [
+  {
+   "open": true,
+   "ms": 3045,
+   "problem": null,
+   "hud": "",
+   "line": "Editor open. Keys W A S D move the view, key E up, key Q down. Drag with the left mouse button on empty space to circle round, with Shift to slide; the wheel goes towards the cursor; hold the right button to look around. Click a gate: the arrows move it, the r"
+  },
+  {
+   "open": true,
+   "ms": 3,
+   "problem": null,
+   "hud": "",
+   "line": "Editor open. Keys W A S D move the view, key E up, key Q down. Drag with the left mouse button on empty space to circle round, with Shift to slide; the wheel goes towards the cursor; hold the right button to look around. Click a gate: the arrows move it, the r"
+  },
+  {
+   "open": false,
+   "ms": 1021,
+   "problem": "no room",
+   "hud": "",
+   "line": null
+  }
+ ],
+ "fails": [
+  "s100.emptySaved"
+ ],
+ "log": []
+}

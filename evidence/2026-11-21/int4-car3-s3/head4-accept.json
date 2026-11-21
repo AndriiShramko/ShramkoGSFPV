@@ -1,0 +1,297 @@
+{
+ "probe": "head4-accept",
+ "base": "http://localhost:6180",
+ "browser": "system-chrome",
+ "viewport": "1536x730@1.25",
+ "steps": {
+  "rowShown": "PASS",
+  "offLoadsNothing": "PASS",
+  "flyPageMayAsk": "PASS",
+  "explainedFirst": "PASS",
+  "cameraOn": "PASS",
+  "trackerFiles": "PASS",
+  "picturesStayHere": "PASS",
+  "offStopsCamera": "PASS",
+  "centreKey": "PASS",
+  "listenerTurns": "PASS",
+  "otherPageRefuses": "PASS",
+  "refusalSaid": "PASS"
+ },
+ "pass": true,
+ "facts": {
+  "rowShown": {
+   "rowCount": 1,
+   "rowText": "Turn my head to listen"
+  },
+  "offLoadsNothing": {
+   "headFilesBeforeOn": []
+  },
+  "flyPageMayAsk": {
+   "allowsCamera": true,
+   "permissionBefore": "granted"
+  },
+  "explainedFirst": {
+   "askAt": 3100,
+   "cameraAskedAt": 3137
+  },
+  "cameraOn": {
+   "permissionBefore": "granted",
+   "permissionAfter": "granted",
+   "calls": [
+    {
+     "t": 3137,
+     "video": true,
+     "result": "ok",
+     "track": "live"
+    }
+   ],
+   "onAfterMs": 609
+  },
+  "trackerFiles": [
+   {
+    "path": "/fly/assets/tracking-D0rTpPbl.js",
+    "status": 200,
+    "bytes": 4962,
+    "encoding": null
+   },
+   {
+    "path": "/fly/assets/face-tracker-Cem9NLy-.js",
+    "status": 200,
+    "bytes": 1902,
+    "encoding": null
+   },
+   {
+    "path": "/fly/assets/face-worker-CicAaPMh.js",
+    "status": 200,
+    "bytes": 0,
+    "encoding": null
+   },
+   {
+    "path": "/fly/headtrack/vision_wasm_module_internal.js",
+    "status": 200,
+    "bytes": 336676,
+    "encoding": null
+   },
+   {
+    "path": "/fly/headtrack/vision_wasm_module_internal.wasm",
+    "status": 200,
+    "bytes": 14665753,
+    "encoding": null
+   },
+   {
+    "path": "/fly/headtrack/face_landmarker.task",
+    "status": 200,
+    "bytes": 3758611,
+    "encoding": null
+   }
+  ],
+  "picturesStayHere": {
+   "sentWhileCamera": [],
+   "requestsWhileCamera": 0
+  },
+  "offStopsCamera": [
+   {
+    "t": 3137,
+    "video": true,
+    "result": "ok",
+    "track": "ended"
+   }
+  ],
+  "centreKey": {
+   "onAgain": true,
+   "centred": true,
+   "linesAfterKey": [
+    "Centred."
+   ]
+  },
+  "listenerTurns": {
+   "upXRange": 0.431,
+   "samples": [
+    [
+     0.01,
+     1,
+     -0.006,
+     -1
+    ],
+    [
+     0.001,
+     1,
+     -0.002,
+     -1
+    ],
+    [
+     0,
+     1,
+     -0.001,
+     -1
+    ],
+    [
+     0,
+     1,
+     -0.001,
+     -1
+    ],
+    [
+     -0.027,
+     1,
+     0.001,
+     -1
+    ],
+    [
+     -0.109,
+     0.994,
+     0.007,
+     -1
+    ],
+    [
+     -0.178,
+     0.984,
+     0.011,
+     -1
+    ],
+    [
+     -0.258,
+     0.966,
+     0.018,
+     -1
+    ],
+    [
+     -0.305,
+     0.952,
+     0.023,
+     -1
+    ],
+    [
+     -0.305,
+     0.952,
+     0.023,
+     -1
+    ],
+    [
+     -0.274,
+     0.962,
+     0.021,
+     -1
+    ],
+    [
+     -0.052,
+     0.999,
+     0.004,
+     -1
+    ],
+    [
+     0,
+     1,
+     0,
+     -1
+    ],
+    [
+     -0.286,
+     0.958,
+     0.014,
+     -1
+    ],
+    [
+     -0.34,
+     0.94,
+     0.023,
+     -1
+    ],
+    [
+     -0.342,
+     0.939,
+     0.025,
+     -1
+    ],
+    [
+     -0.343,
+     0.939,
+     0.025,
+     -1
+    ],
+    [
+     -0.343,
+     0.939,
+     0.026,
+     -1
+    ],
+    [
+     -0.375,
+     0.927,
+     0.031,
+     -0.999
+    ],
+    [
+     -0.415,
+     0.91,
+     0.036,
+     -0.999
+    ],
+    [
+     -0.42,
+     0.907,
+     0.04,
+     -0.999
+    ],
+    [
+     -0.421,
+     0.906,
+     0.044,
+     -0.999
+    ],
+    [
+     -0.421,
+     0.906,
+     0.052,
+     -0.999
+    ],
+    [
+     -0.421,
+     0.906,
+     0.055,
+     -0.998
+    ],
+    [
+     -0.421,
+     0.906,
+     0.056,
+     -0.998
+    ]
+   ]
+  },
+  "said": [
+   "Head tracking uses your web camera only to know where your head points, so sounds stay in ",
+   "Head tracking on. Face the screen; to centre again later, press key Shift+H.",
+   "Head tracking off. The camera is closed.",
+   "Head tracking uses your web camera only to know where your head points, so sounds stay in ",
+   "Head tracking on. Face the screen; to centre again later, press key Shift+H.",
+   "",
+   "Headphone check",
+   "Headphones on, L on your left ear.",
+   "Sound 1 of 2.",
+   "Centred.",
+   "Head lost. Sounds follow the drone until your face is back."
+  ],
+  "otherPageRefuses": {
+   "allowsCamera": false,
+   "getUserMedia": "NotAllowedError"
+  },
+  "refusalSaid": {
+   "permissionBefore": "prompt",
+   "deniedSaid": true,
+   "rowOnAfter": false,
+   "calls": [
+    {
+     "t": 655,
+     "video": true,
+     "result": "NotAllowedError",
+     "track": null
+    }
+   ]
+  }
+ },
+ "errors": [
+  "Failed to load resource: the server responded with a status of 404 (Not Found) at http://localhost:6180/favicon.ico",
+  "Failed to load resource: the server responded with a status of 404 (Not Found) at http://localhost:6180/favicon.ico"
+ ]
+}

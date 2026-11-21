@@ -1,0 +1,241 @@
+{
+ "what": "ux4a message service acceptance (ux4a-messages-probe.mjs)",
+ "base": "http://localhost:6180/en",
+ "scene": "70b50d42",
+ "browser": null,
+ "sizes": [
+  {
+   "size": "1536x730@1.25",
+   "steps": {
+    "1": {
+     "name": "Generate course: a line appears, its font-size >= 16 px",
+     "pass": true,
+     "text": "Gates: 10. The start gate is 42 m away: follow the arrow. Key Shift+T hides the course",
+     "font": 16
+    },
+    "2": {
+     "name": "the ready line stays >= shownMs(text) - 200 ms",
+     "pass": true,
+     "text": "Gates: 10. The start gate is 42 m away: follow the arrow. Key Shift+T hides the course",
+     "shownMs": 9002,
+     "need": 8820
+    },
+    "3": {
+     "name": "progress in place: the progress box while building, one node under course.progress",
+     "pass": true,
+     "boxSeen": 27,
+     "texts": 1,
+     "nodes": 1,
+     "maxNodesAtOnce": 1,
+     "sample": [
+      "Gates: 10. The start gate is 42 m away: follow the arrow. Key Shift+T hides the course"
+     ]
+    },
+    "4": {
+     "name": "a problem stays 20 s with a 44 px cross and a fix line; Esc, Messages, Send to the author opens the form with its text",
+     "pass": true,
+     "text": "This course did not come out. Shift+G builds another one",
+     "shownMs": 20703,
+     "cross": {
+      "w": 44,
+      "h": 44,
+      "free": true
+     },
+     "fix": "If it comes again, send it to the author: the button below.",
+     "send": true,
+     "underMenu": true,
+     "inList": true,
+     "formHasText": true,
+     "offScreenAfterList": true
+    },
+    "5": {
+     "name": "the top-row Messages button opens the list with 1 and 4; Shift+J toggles it; its cross and Esc close it",
+     "pass": true,
+     "button": true,
+     "opened": true,
+     "items": 2,
+     "hasProblem": true,
+     "hasReady": true,
+     "cross": {
+      "w": 44,
+      "h": 44
+     },
+     "crossCloses": true,
+     "menuAfterList": true,
+     "shiftHOpens": true,
+     "shiftHCloses": true,
+     "lockBeforeEsc": false,
+     "menuAfterEsc": false,
+     "escCloses": true
+    },
+    "6": {
+     "name": "every message: inside the view, over no top-row button or OSD, outside the middle third",
+     "pass": true,
+     "samples": 654,
+     "faults": {}
+    },
+    "7": {
+     "name": "with the pause menu up, key Shift+J (named on its Messages item) opens the list at one press; Esc closes it",
+     "pass": true,
+     "menu": true,
+     "itemKey": true,
+     "opened": true,
+     "escCloses": true
+    },
+    "8": {
+     "name": "edit mode: three keys of the flight give one line saying what to press, no problem, gone by itself",
+     "pass": true,
+     "editMode": true,
+     "lines": 1,
+     "said": "P works in flight, not in the editor: press Esc to leave the editor, then P.",
+     "problems": 0,
+     "after16s": 0
+    }
+   },
+   "errors": [],
+   "status": {
+    "status": "ready",
+    "walls": "none"
+   },
+   "pointerLock": true,
+   "escFrees": 5,
+   "problemText": "This course did not come out. Shift+G builds another one",
+   "readyText": "Gates: 10. The start gate is 42 m away: follow the arrow. Key Shift+T hides the course",
+   "lines": [
+    {
+     "id": 1,
+     "key": "course.progress",
+     "kind": "problem",
+     "ms": 20703,
+     "font": 16,
+     "text": "This course did not come out. Shift+G builds another one"
+    },
+    {
+     "id": 2,
+     "key": "course.progress",
+     "kind": "done",
+     "ms": 9002,
+     "font": 16,
+     "text": "Gates: 10. The start gate is 42 m away: follow the arrow. Key Shift+T hides the course"
+    }
+   ]
+  },
+  {
+   "size": "844x390@1",
+   "steps": {
+    "1": {
+     "name": "Generate course: a line appears, its font-size >= 16 px",
+     "pass": true,
+     "text": "Gates: 9. The start gate is 42 m away: follow the arrow. Key Shift+T hides the course",
+     "font": 16
+    },
+    "2": {
+     "name": "the ready line stays >= shownMs(text) - 200 ms",
+     "pass": true,
+     "text": "Gates: 9. The start gate is 42 m away: follow the arrow. Key Shift+T hides the course",
+     "shownMs": 8878,
+     "need": 8750
+    },
+    "3": {
+     "name": "progress in place: the progress box while building, one node under course.progress",
+     "pass": true,
+     "boxSeen": 24,
+     "texts": 1,
+     "nodes": 1,
+     "maxNodesAtOnce": 1,
+     "sample": [
+      "Gates: 9. The start gate is 42 m away: follow the arrow. Key Shift+T hides the course"
+     ]
+    },
+    "4": {
+     "name": "a problem stays 20 s with a 44 px cross and a fix line; Esc, Messages, Send to the author opens the form with its text",
+     "pass": true,
+     "text": "This course did not come out. Shift+G builds another one",
+     "shownMs": 20499,
+     "cross": {
+      "w": 44,
+      "h": 44,
+      "free": true
+     },
+     "fix": "If it comes again, send it to the author: the button below.",
+     "send": true,
+     "underMenu": true,
+     "inList": true,
+     "formHasText": true,
+     "offScreenAfterList": true
+    },
+    "5": {
+     "name": "the top-row Messages button opens the list with 1 and 4; Shift+J toggles it; its cross and Esc close it",
+     "pass": true,
+     "button": true,
+     "opened": true,
+     "items": 2,
+     "hasProblem": true,
+     "hasReady": true,
+     "cross": {
+      "w": 44,
+      "h": 44
+     },
+     "crossCloses": true,
+     "menuAfterList": true,
+     "shiftHOpens": true,
+     "shiftHCloses": true,
+     "lockBeforeEsc": false,
+     "menuAfterEsc": false,
+     "escCloses": true
+    },
+    "6": {
+     "name": "every message: inside the view, over no top-row button or OSD, outside the middle third",
+     "pass": true,
+     "samples": 642,
+     "faults": {}
+    },
+    "7": {
+     "name": "with the pause menu up, key Shift+J (named on its Messages item) opens the list at one press; Esc closes it",
+     "pass": true,
+     "menu": true,
+     "itemKey": true,
+     "opened": true,
+     "escCloses": true
+    },
+    "8": {
+     "name": "edit mode: three keys of the flight give one line saying what to press, no problem, gone by itself",
+     "pass": true,
+     "editMode": true,
+     "lines": 1,
+     "said": "P works in flight, not in the editor: press Esc to leave the editor, then P.",
+     "problems": 0,
+     "after16s": 0
+    }
+   },
+   "errors": [],
+   "status": {
+    "status": "ready",
+    "walls": "none"
+   },
+   "pointerLock": true,
+   "escFrees": 5,
+   "problemText": "This course did not come out. Shift+G builds another one",
+   "readyText": "Gates: 9. The start gate is 42 m away: follow the arrow. Key Shift+T hides the course",
+   "lines": [
+    {
+     "id": 1,
+     "key": "course.progress",
+     "kind": "problem",
+     "ms": 20499,
+     "font": 16,
+     "text": "This course did not come out. Shift+G builds another one"
+    },
+    {
+     "id": 2,
+     "key": "course.progress",
+     "kind": "done",
+     "ms": 8878,
+     "font": 16,
+     "text": "Gates: 9. The start gate is 42 m away: follow the arrow. Key Shift+T hides the course"
+    }
+   ]
+  }
+ ],
+ "pass": true
+}
