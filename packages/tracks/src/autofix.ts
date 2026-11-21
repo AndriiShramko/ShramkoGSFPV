@@ -74,18 +74,40 @@ export const FIX_FINE_STEP_M = 0.1;
 export const FIX_FINE_M = 2;
 export const FIX_COARSE_STEP_M = 0.25;
 
+// The repair is the same on every machine (scripts/check-architecture.mjs, the tracks rule): only + - * / and Math.sqrt,
+// never Math.sin/cos/acos/atan2/hypot, whose last bits differ between engines.
 const DEG = Math.PI / 180;
 const sub = (a: readonly number[], b: readonly number[]): Vec3 => [a[0]! - b[0]!, a[1]! - b[1]!, a[2]! - b[2]!];
-const len = (a: readonly number[]): number => Math.hypot(a[0]!, a[1]!, a[2]!);
+const len = (a: readonly number[]): number => Math.sqrt(a[0]! * a[0]! + a[1]! * a[1]! + a[2]! * a[2]!);
 const unit = (a: Vec3): Vec3 => {
     const l = len(a) || 1;
     return [a[0] / l, a[1] / l, a[2] / l];
 };
-const angleDeg = (a: Vec3, b: Vec3): number => {
-    if (len(a) < 1e-12 || len(b) < 1e-12) return 0;
-    const u = unit(a), v = unit(b);
-    return Math.acos(Math.max(-1, Math.min(1, u[0] * v[0] + u[1] * v[1] + u[2] * v[2]))) / DEG;
+/** atan of t >= 0 by arithmetic: t > 1 folds to pi/2 - atan(1/t), two halvings bring t under 0.2, then the series */
+const atanPos = (t: number): number => {
+    if (t > 1) return Math.PI / 2 - atanPos(1 / t);
+    let x = t;
+    for (let k = 0; k < 2; k++) x = x / (1 + Math.sqrt(1 + x * x));
+    let term = x, sum = 0;
+    const x2 = x * x;
+    for (let n = 0; n < 12; n++) {
+        sum += term / (2 * n + 1);
+        term *= -x2;
+    }
+    return 4 * sum;
 };
+/** acos of a cosine, degrees, by arithmetic and Math.sqrt (2 atan of the half angle's tangent) */
+const acosDeg = (c: number): number => {
+    const x = Math.max(-1, Math.min(1, c));
+    if (x <= -1) return 180;
+    return (2 * atanPos(Math.sqrt((1 - x) / (1 + x)))) / DEG;
+};
+const cosBetween = (a: Vec3, b: Vec3): number => {
+    if (len(a) < 1e-12 || len(b) < 1e-12) return 1;
+    const u = unit(a), v = unit(b);
+    return u[0] * v[0] + u[1] * v[1] + u[2] * v[2];
+};
+const angleDeg = (a: Vec3, b: Vec3): number => acosDeg(cosBetween(a, b));
 const r3 = (v: number): number => Math.round(v * 1000) / 1000 || 0;
 const r6 = (v: number): number => Math.round(v * 1e6) / 1e6 || 0;
 /** to 1e-6, the sign with w >= 0 (as the editor writes a turn) */
@@ -96,9 +118,19 @@ const roundQuat = (q: Quat): Quat => {
 };
 /** the way a gate is passed (its -Z) */
 const axisOf = (q: Quat): Vec3 => quatRotate(q, [0, 0, -1]);
-/** a turn about the world's vertical by `deg` (positive: to the right seen from above; editor.ts yawQuat) */
-const yawTurn = (deg: number): Quat => [Math.cos((deg * DEG) / 2), 0, -Math.sin((deg * DEG) / 2), 0];
-const yawOf = (v: Vec3): number | null => (Math.hypot(v[0], v[2]) < 1e-9 ? null : Math.atan2(v[0], -v[2]) / DEG);
+/** the way `v` points seen from above as (cos, sin) of its yaw (atan2(x, -z) as editor.ts yawQuat measures it), or null
+ *  when it points straight up or down */
+const yawOf = (v: Vec3): readonly [number, number] | null => {
+    const h = Math.sqrt(v[0] * v[0] + v[2] * v[2]);
+    return h < 1e-9 ? null : [-v[2] / h, v[0] / h];
+};
+/** the turn about the world's vertical from yaw `from` to yaw `to` (positive: to the right seen from above; editor.ts
+ *  yawQuat): the half angle's cos and sin from the whole angle's by Math.sqrt */
+const yawTurn = (from: readonly [number, number], to: readonly [number, number]): Quat => {
+    const c = Math.max(-1, Math.min(1, to[0] * from[0] + to[1] * from[1]));
+    const s = to[1] * from[0] - to[0] * from[1];
+    return [Math.sqrt((1 + c) / 2), 0, -(s < 0 ? -1 : 1) * Math.sqrt((1 - c) / 2), 0];
+};
 const isDive = (q: Quat): boolean => Math.abs(axisOf(q)[1]) > 0.7;
 const openingOf = (g: Course['gates'][number]): number => (g.shape.kind === 'ring' ? g.shape.diameter : g.shape.kind === 'square' || g.shape.kind === 'cube-frame' ? g.shape.side : 0);
 
@@ -109,7 +141,7 @@ const near = (w: FixWalls, p: readonly number[]): boolean => gridDistance(w.col,
 
 /** the level's tolerance for aiming a gate between its legs, degrees (LEVELS axisCosMin: beginner 15, medium and pro 30) */
 export function aimToleranceDeg(level: CourseLevel): number {
-    return Math.acos(LEVELS[level].axisCosMin) / DEG;
+    return acosDeg(LEVELS[level].axisCosMin);
 }
 
 /** What is wrong with one gate where it stands. */
@@ -191,7 +223,7 @@ function waysFrom(col: VoxelCollision, centre: Vec3, upFirst: boolean): Vec3[] {
     if (upFirst) return [UP, ...WAYS.filter((d) => !(d[0] === 0 && d[1] === 1 && d[2] === 0))];
     const ranked = WAYS.map((d, k) => {
         const h = col.queryRay(centre[0], centre[1], centre[2], -d[0], -d[1], -d[2], WAY_REACH_M);
-        return { d, k, wallM: h ? Math.hypot(h.x - centre[0], h.y - centre[1], h.z - centre[2]) : Infinity };
+        return { d, k, wallM: h ? len([h.x - centre[0], h.y - centre[1], h.z - centre[2]]) : Infinity };
     });
     return ranked.sort((a, b) => a.wallM - b.wallM || a.k - b.k).map((x) => x.d);
 }
@@ -245,7 +277,7 @@ function turnAt(c: Course, i: number, pos: Vec3, level: CourseLevel): Quat {
     for (const aim of aims) {
         const want = yawOf(aim);
         if (want === null || now === null) continue;
-        return roundQuat(quatMultiply(yawTurn(want - now), g.quat));
+        return roundQuat(quatMultiply(yawTurn(now, want), g.quat));
     }
     return g.quat;
 }

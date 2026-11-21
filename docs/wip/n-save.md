@@ -58,7 +58,7 @@ applyFixes :1065, saveMine :1833, saveAdmin :~1885 (the design named :893-1754);
 
 ## What the owner does
 
-(Written in S4.)
+(See "What the owner should try" at the end.)
 
 ## Claims
 
@@ -83,7 +83,19 @@ applyFixes :1065, saveMine :1833, saveAdmin :~1885 (the design named :893-1754);
    fixes them; the newest course tried for the flight on its own still skips one that fails the walls. Proof:
    `npx vitest run tools/bench/test/save-reopen.test.ts` (2 passed); NEG OK on 03624451.
 
+7. By mouse on the local build and the local API (1536x730, scale 1.25, pointer lock first, every target by its
+   data-testid): a course with a gate in a wall opens the Save dialog; Save as it is stores it and a reload shows it as it
+   was; Show me selects the first warned gate; Fix all moves 2 gates, stores version 2 and names them in `save-fixed`;
+   `save-undo` gives them back; a reload shows the course saved. Proof: `node tools/bench/scripts/n-save-accept.mjs dist
+   70b50d42 <out>` -> evidence/2026-11-20/n-save/accept-local.json, every step PASS.
+8. The same probe against the live site (the code before this train) FAILS 'dialog' and 'Save as it is' (the old answer
+   "Before saving: gate 1 touches a wall ... Make these small corrections and save?") and stops before any save. Proof:
+   evidence/2026-11-20/n-save/accept-live.json (dialog false, asIs.saved false; no track POST).
+
 ## Not verified
+
+- 'Two gates on one spot' by mouse: Add gate keeps 2 m from the gate under the click, so the mouse acceptance builds a gate
+  in a wall only; two on one spot is held by the unit tests (claims 1, 3, 5).
 
 - No person, phone or real controller took part in any check of this lane.
 - 'name-refused' in saveVerdict uses the same rule as the server (textIssues of server.ts, which tracks.py mirrors); the page
