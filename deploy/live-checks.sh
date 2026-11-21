@@ -405,6 +405,20 @@ run gen4-generate-dialog node scripts/gen4-accept-probe.mjs "$SITE/en" "$OUT/gen
 run gap-gen-asked-course node scripts/gap-gen-accept.mjs "$SITE/en" "$OUT/gap-gen-asked-course.json"
 # gap-sound-accept.mjs: Fly by Sound's start for a new and a returning pilot (Quick start first), the room's four walls.
 run gap-sound-start node scripts/gap-sound-accept.mjs "$SITE" "$OUT/gap-sound-start.json"
+# Train 4 integration, car 5 (n-share, tutor-say, tutor-moment, tutor-air). Each probe's header: render off, no GPU lock,
+# a new throwaway browser profile; read-only on any site (nothing is saved, sent or created on the site; n-share-accept
+# aborts every request to /api/ other than GET and lists it). Each exits non-zero on a failed step.
+# tutor-say-accept.mjs: the sound start screen says the title and its main button once (no list, no "Item n of N"), Tab
+# says only "All lessons", Start flying starts a lesson, a step says only its instruction, K says the keys when asked,
+# the Guide row keeps the buttons and is remembered over a reload.
+run tutor-say-start node scripts/tutor-say-accept.mjs "$SITE" "$OUT/tutor-say-start.json"
+# tutor-air-accept.mjs: the tutorial's first steps by the mouse - Start flying, the headphone check, moving within 60 s
+# and fewer than 60 words, the flight stops for the first sound's moment (one cue, the card's name and line), N goes on,
+# G (What is this sound?) names the sounds one by one, the narrator off runs no moment.
+run tutor-air-first-flight node scripts/tutor-air-accept.mjs "$SITE" "$OUT/tutor-air-first-flight.json"
+# n-share-accept.mjs (sound row): a sound flight's Share address opened in a new profile offers one main button that flies
+# the same scene, course and way of flying.
+run n-share-sound-link env ROWS=sound TEMP_DIR="$OUT/n-share-tmp" node scripts/n-share-accept.mjs "$SITE" "$OUT/n-share-sound-link.json" live
 
 if [ "$FAILED" = 0 ]; then echo "LIVE CHECKS: PASS"; exit 0; fi
 echo "LIVE CHECKS: FAIL"
