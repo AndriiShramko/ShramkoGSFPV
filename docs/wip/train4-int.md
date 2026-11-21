@@ -233,7 +233,14 @@ car 3's head.)
       problem with its fix reach the captions once, not held none; G / Shift+K / Shift+G / K in and outside a sound
       flight) and sonic-start-screen.test.ts 'int4 car 5' (a link's screen says the title and its one main button once,
       never Start flying): 5/5 PASS, NEG OK on car 3's head 72d4babf. No source change was needed.
-- [ ] S3 the hand-over (fetch and merge origin/main first; int4-car5.json)
+- [x] S3 the hand-over: origin/main a59b1bcf merged (57496849; docs and notes only, the gates enough: they ran on the
+      final tree in S2 and nothing but docs/ and deploy/live-checks.sh changed since); a fetch at the end of S3 found
+      nothing new on origin/main. Three new read-only live checks (703ff41e) with their negative control against the live
+      site (live-neg5: all three FAIL) and their positive side on the S2 build; Deploy order, Live checks, What the owner
+      should try (with the site page's changed words and the three questions), Not verified. The package's main is still
+      719aaf54 (9ac7876d a fast-forward of it, to be pushed before the page). U:/Temp/gsfpv-train4/int4-car5.json is
+      written for the commit that writes this line (sha, api [], rooms false, nginx false, package_sha 9ac7876d...,
+      live_only as in Live checks, held []).
 
 ## Progress
 
@@ -625,6 +632,41 @@ edit4a-gizmo is in again: fix-gizmo13 (origin/main 13670b66, merged 5f85f7ad, pr
 repaired check PASSES on car 3's build (logs-car3s3/live-local-gizmo). Left out on purpose: pause-rise-lublin (hot-sog3's,
 lane fix-lod).
 
+Car 5. After the sound package (9ac7876d on the package's main) and the page: `LIVE_ONLY=<names> bash
+deploy/live-checks.sh <outdir>` with the names below (the hand-over's live_only), then the whole file as usual.
+
+New in deploy/live-checks.sh (703ff41e; read-only, render off, no GPU lock, each in a new throwaway browser profile; each
+honours LIVE_ONLY through run(), a failed probe exits non-zero and FAILs its line; the verdict is the probe's exit code):
+- tutor-say-start: tutor-say-accept.mjs, the sound start screen (the title and Start flying said once, no list, no
+  "Item n of N"; Tab says only "All lessons"), a step says only its task, K says the keys when asked, the Guide row is
+  remembered over a reload (in the probe's own profile)
+- tutor-air-first-flight: tutor-air-accept.mjs, the tutorial's first steps by the mouse (Start flying, the headphone
+  check, moving within 60 s and under 60 words, the flight stops for the first sound's moment with one cue and the card,
+  N goes on, G names the sounds one by one, the narrator off runs no moment)
+- n-share-sound-link: n-share-accept.mjs with ROWS=sound, a sound flight's Share address opened in a new profile offers
+  one main button that flies the same scene, course and way of flying (the probe aborts every request to /api/ but GET)
+
+Positive side: the same three probes PASS on the release build of 9bebe9b1 (S2, logs-car5: n-share-accept,
+tutor-say-accept, tutor-air-accept rc 0). Negative side against the live site before the release (release 72d4babf, car
+3's head, sonic 719aaf5; U:/Temp/gsfpv-train4/int4/live-neg5): all three FAIL, each on the steps its lane changes:
+tutor-say-start open, tab, steps, once, guide (the old screen reads the key list and "Full course ... Item 2 of 2", the
+keys line on every step); tutor-air-first-flight move60 (109 s), words60 (143 words), freeze, card, onN, tour (start, ears,
+guideOff pass: the old page has no moments to switch off); n-share-sound-link shareCarries (the old link has no course)
+and landsOnScene (the old screen's Quick start, not one scan button).
+
+Existing names that cover what changed: sonic-in-place-tunis, sonic-course-wroclaw, sonic-course-wroclaw-n, narrator-off
+and sonic-eye-course-wroclaw (the package moves to 9ac7876d, the say path and the start screen), sonic-int-review-r9,
+sound6-quick-walk and gap-sound-start (their probes repaired in S2 for Start flying, All lessons and the room's moments,
+5793738f, 611af500: they would fail against the live site until the release), menu4-first-minute, tails4-start-moved and
+head4-accept (the start screen's rows and buttons), accept-fly (B6-B16: the keymap's G and Shift+K, prefs doc.ts). All
+of them PASS on the release build of 9bebe9b1 (S2, logs-car5/live-local, live-local2, live-local3).
+
+live_only (int4-car5.json, one line): tutor-say-start,tutor-air-first-flight,n-share-sound-link,sonic-in-place-tunis,
+sonic-course-wroclaw,sonic-course-wroclaw-n,narrator-off,sonic-eye-course-wroclaw,sonic-int-review-r9,sound6-quick-walk,
+gap-sound-start,menu4-first-minute,tails4-start-moved,head4-accept,accept-fly
+Left out on purpose: the stale lane harnesses no check runs (sonic-v13-page.ts, sonic-start-keyboard.ts,
+sonic-review-keys.ts, sonic-int-review R10: see Seams).
+
 ## What the owner should try
 
 Car 1, in the order of his messages (tails4: train 2's leftovers; menu4: brief line 373; head4: the head tracking plan;
@@ -859,3 +901,6 @@ Car 5
 - Car 5 S2 (~50 calls): the most turns went to three sound probes out of date after the tutorial lanes (two reruns: the
   room's first moment needs the craft to fly to a wall). Cheaper: a lane that changes the start order or a lesson's intro
   greps deploy/live-checks.sh's probes for the old testids and lines and runs those probes itself (tutor-say listed them).
+- Car 5 S3 (two runs, ~25 calls): the first run ended after the checks and the negative control without writing the Live
+  checks part, so the second re-read the logs to rebuild it. Cheaper: write each status part in the same commit as the
+  run that proves it (the negative control's summary straight into Live checks), not at the end.
