@@ -192,6 +192,10 @@ t7-base 03624451 of job base7: gap-gen (gen4a, gen4b), gap-save, gap-sound and t
       c90020ae: the gates are enough. S3 done: int4-car3.json written with the head of the commit that ticks this box:
       api ["tracks.py"], rooms false, nginx false, package_sha 719aaf5454ddb15677ad4dc090ac6faeab853e77 (the pin moved
       from 53a56759, which is the package's main today), held [], live_only as in Live checks (Car 3).
+      Then `git fetch origin` once more: 13670b66 (fix-gizmo13: tools/bench/scripts/edit4a-probe.mjs, evidence, docs; no
+      app or package source) merged, 5f85f7ad; `git diff 8eac608d HEAD -- apps packages pnpm-lock.yaml` is empty, so the
+      dist of 8eac608d is this head's product; edit4a-gizmo with the repaired probe on it: PASS. The gates once more on
+      the tree handed over follow (int4/gates-car3s3b.log).
 
 ## Progress
 
@@ -518,12 +522,12 @@ The positive side on the release build of 8eac608d and the negative side against
 logs-car3s3 live-local and live-neg3 (the reruns: live-local2, live-local-cp1, live-local-cp2, live-site3).
 
 live_only (int4-car3.json, one line): gen4-generate-dialog,gap-gen-asked-course,gap-sound-start,edit4b-course-life,
-ux4a-messages,edit4s-drafts,edit-mouse-wroclaw,sound6-quick-walk,sonic-in-place-tunis,sonic-course-wroclaw,
+ux4a-messages,edit4s-drafts,edit4a-gizmo,edit-mouse-wroclaw,sound6-quick-walk,sonic-in-place-tunis,sonic-course-wroclaw,
 sonic-course-wroclaw-n,narrator-off,accept-fly,scans-open,course-path-wroclaw,gate-guide-wroclaw,mouse-free-probe,
 one-course,voxels-alone-wroclaw,voxel-panel-wroclaw,edit-mode-wroclaw,sonic-eye-course-wroclaw
-Left out on purpose: edit4a-gizmo (it fails on the live site since car 2 at 13.laptop, before car 3; lane fix-gizmo13
-decides page or probe, the lead's note of 12:50 UTC; edit-mode-wroclaw and edit-mouse-wroclaw cover the editor here),
-pause-rise-lublin (hot-sog3's, lane fix-lod).
+edit4a-gizmo is in again: fix-gizmo13 (origin/main 13670b66, merged 5f85f7ad, probe only) repaired its step 13, and the
+repaired check PASSES on car 3's build (logs-car3s3/live-local-gizmo). Left out on purpose: pause-rise-lublin (hot-sog3's,
+lane fix-lod).
 
 ## What the owner should try
 
