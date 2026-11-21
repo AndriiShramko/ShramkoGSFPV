@@ -415,9 +415,9 @@ describe('two lessons flown through the host and recorded as one package replay 
             expect(differ.filter((x) => x.cause === 'other'), `${s.segment.lessonId}: ${JSON.stringify(causes)}`).toEqual([]);
         }
         // control of W19's causes: a lesson cue a frame short (a play's edge) and a reset cue a frame early are causes of none of them
-        const edge = derived[0]!.map((ids, i) => (i === 1000 ? ids.filter((id) => !id.startsWith('height.')) : i === 1500 ? [...ids, 'safety.reset'] : ids));
+        const edge = derived[0]!.map((ids, i) => (i === 600 ? ids.filter((id) => !id.startsWith('height.')) : i === 900 ? [...ids, 'safety.reset'] : ids)); // frames in rings-first's flight (1216 since lane tutor-moment)
         const planted = kindDifferences(out.segments[0]!.segment.frames, edge, shifts[0]).filter((x) => x.cause === 'other').map((x) => x.index);
-        expect(planted).toEqual([1000, 1500]);
+        expect(planted).toEqual([600, 900]);
         // control: a lesson sound missing from the replay in one frame of fifty is caught by the check above
         const a = out.segments[0]!.segment;
         const missing = derived[0]!.map((ids, i) => (i % 50 === 0 ? ids.filter((id) => !id.startsWith('height.')) : ids));

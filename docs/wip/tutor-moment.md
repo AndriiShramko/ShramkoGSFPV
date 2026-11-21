@@ -36,25 +36,22 @@ Package branch: tutor-moment in packages/sonic-fpv of this copy (on no remote).
   no task); tunnel-gaps v5 intro [goal.1]; rings-first v4 intro [goal.1] moments gate-height (height.target, start) and
   gate-passed (target.note, passed); rings-course v4 intro [goal.1], layer `speed` added, moments speed (speed.tick,
   above 2 m/s) and brake (speed.brake, above 3 m/s); test/helpers/pilot.ts defaults `known: CUE_IDS`.
-  Full package run after that: 40 failed of 434 in the 19 files below (log U:/Temp/gsfpv-train4/tutor-moment/s3-test2.log,
-  list s3-left.txt). LEFT, in order:
-  1. tools/listen-words.ts sampleParams: a sample value for the argument `sound` (words.test.ts, 4 tests);
-     test/locales.test.ts ARGUMENTS: `cue.<id>.what` takes ['sound'] (add it by a loop over CUE_IDS).
-  2. Tests that build a runner directly on a changed lesson and test the flight, not the teaching: pass
-     `known: CUE_IDS` there (runner.test.ts 8, respawn 1, brake-planner 2, gate-aim 1, world-tunnels 1, budget-wired 1,
-     line 2, beacon-listen 1, beacon-target 1, world-scale 1, progress via runner.test.ts); lesson-schedule.test.ts 1
-     (`runner: { known: CUE_IDS }` where it flies a changed lesson).
-  3. Tests whose expectation is the old content, rewritten to the new: quick-path (c) room and (c) later lessons;
-     lessons.test.ts (versions; walls-hall goal line; the speak-the-catalogue test must allow an empty intro);
-     moments-contract "a lesson without moments" (pick a lesson with none, e.g. hover-height); named-sounds: namedBy()
-     counts `lesson.moments` cues, the corridor/tunnel-gaps intro tests become "the corridor teaches target.hum and
-     safety.free by moments", the checkpoint-sound test (target.stage / safety.reset are not introduced any more:
-     glossary only, note it under "differs"); add the S3 named-sounds checks: every cue has what|do in four locales,
-     `what` holds {sound}, the en do|hint lines of a moment never type their sound's own name, every shipped moment id
-     is in MOMENT_IDS.
-  4. replay.test.ts 3 and report.test.ts 2: recordings of changed lessons are now another lesson version (by design:
-     re-record the fixture through test/helpers/record.ts, or point the test at an unchanged lesson).
-  5. Then: the whole package run, typecheck, host count tests (tools/bench/test/sonic-*.test.ts), commit, move the pin.
+  S3 part 2 (package commits 8d6bed3, a4bd37f, f6cb37f, 098923a38789538c1fd9512c38153594b639c5e5; pin moved to 098923a):
+  the content tests hold the moments (quick-path, lessons, named-sounds, world-scale, world-tunnels, respawn, replay,
+  report); named-sounds gained "one name and one definition" (what|do of the 28 sounds in four languages, `what` names
+  its sound only through {sound}, moment ids = MOMENT_IDS, one sound a moment, en moment lines never type a name of
+  two words, a control); the 46 new plain lines measured with the four Windows voices (tts fixtures, lesson-schedule
+  counts: en 476/309, es pl ru 562, longer 283/403/562); the words check VL-4 PASS (648 lines a language, 0 over the
+  bound; two pl lines and one en hint reworded where Whisper misheard them). An absent RunnerOptions.known now means a
+  host that does not teach (no moment, nothing gated, as before), so the simulator as it is keeps working on the new
+  pin; the runner writes `known` and `guide` into its lesson open event and the replay reads them. Package: typecheck
+  0, full run 1447 passed, 1 failed (words, then fixed: 111 of 111 in the five text files after the rerun).
+  Host count tests: 88 of 89 pass. LEFT (one item):
+  1. tools/bench/test/sonic-lesson-keys.test.ts "B5 ... resumed while a line is still being said" (line ~542, opens
+     rings-first): rings-first's task is one line now and "Go." follows it at once, so `engine.speaking` is true where
+     the test expects false; rings-heights and hover-height did not fit (no speech.end within 20 s). Find a lesson whose
+     task is a line followed by a sound step, or wait in the test for the end after "Go."; then the four host tests
+     once, commit, LANE-STAGE-DONE S3.
 - [ ] S4 the scripted pilot: test/first-set.test.ts in en, es, pl, ru (moving within 60 s, under 60 words before it, no
   prompt over two sentences, one new sound a moment, the set within 420 s, guide 'new' says only names); NEG on 719aaf5;
   host gates once; done marker; "What the owner should try".
@@ -81,6 +78,10 @@ Package branch: tutor-moment in packages/sonic-fpv of this copy (on no remote).
   gains the `speed` layer, without which speed.tick and speed.brake never sound on the fast path.
 - S3: floor, ceiling, target.stage and safety.reset are no longer played before a flight; they stay audible and in the
   glossary (key G): the first set has room for eight moments only.
+- S3: `known` absent = every sound known (no moment runs): the plan left it open; the other way the simulator not yet
+  wired by tutor-air would run moments it cannot hold and record cues its replay could not derive (10 host tests).
+- S3: the recorder keeps the sample a moment froze on (test/helpers/record.ts): the held frames after it would hide a
+  speed trigger from the replay. A host's recorder must do the same (For the lead).
 - test/named-sounds.test.ts exists already on the base (the rule "a sound with no words is named in the first lesson of
   its path"); S3 extends it rather than creating it.
 
@@ -109,6 +110,12 @@ Nothing yet: S1 is the contract only; no pilot hears a change.
 - For lane tutor-air (the page): on 'moment' non-null hold the craft and keep stepping frames; on 'audible' call
   engine.setAudible; record the moment keys as `key` events with REPLAY_KEY_ACTIONS.momentAgain|momentOn|momentKnow
   before calling runner.momentKey; persist the cues of 'known' and 'learned' moment events as RunnerOptions.known.
+- For lane tutor-air: pass RunnerOptions.known ([] for a new pilot) to turn the moments on; absent = no moments. Record
+  the flight frame on which a 'moment' action (non-null, after null) arrives, beside the 30 Hz frames, as touches are.
+- S3 changed outside the owned list: package src/session/codec.ts (the open event's known, guide), src/replay/replay.ts,
+  tools/listen-words.ts (sample for {sound}), evidence/listen/VL-4-words.json (rerun), test/fixtures/tts-*.json
+  (measured), and the tests named in Status; host tools/bench/test/sonic-lesson-keys.test.ts (Z and B5 open lessons
+  that still name sounds) and sonic-int-replay.test.ts (control frame indices within the shorter flight).
 - The package head of branch tutor-moment is on no remote; it must reach the package's main before the page ships.
 
 ## Cost notes
@@ -120,3 +127,6 @@ Nothing yet: S1 is the contract only; no pilot hears a change.
   save three runs. Editing through a Python one-liner wrote CRLF on Windows: use the Edit tool.
 - S3 (part 1): the moments in shared lessons broke 65 older tests that fly those lessons; a test helper default (`known`)
   took 25 of them. Cheaper: decide in the plan that flight tests run with every sound known, before adding moments.
+- S3 (part 2): the run overran (about 90 calls): the words check needs the listen venv (U:/venvs/shramko-listen) and a
+  copy of the Whisper model in the lane's cache, and host tests that fly a changed lesson's task timing. Cheaper: name
+  the listen environment and the "absent = as before" default for new runner options in the common prompt.
