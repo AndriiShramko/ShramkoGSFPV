@@ -29,8 +29,10 @@
 // a choice about his device, not about the scene, so a share never carries it (decision D69).
 //
 // Pure: no DOM, no clock, no fetch (tools/bench/test/flight-ux.test.ts). share/panel.ts is the page.
-import { appendShared, flyDeepLink, isEmptyShared, sameRender, sceneRender } from '@gsfpv/scenes';
+import { isEmptyShared, sameRender, sceneRender } from '@gsfpv/scenes';
 import type { SceneRender, SharedSettings } from '@gsfpv/scenes';
+import { courseToken, flightLink } from './flight-link';
+import type { LinkCourse } from './flight-link';
 
 /**
  * Where a share starts. In a flight: `top` (the button on the top bar), `key` (L), `pause` (the pause
@@ -103,15 +105,18 @@ export function scenePageUrl(id: string, inCatalogue: boolean, at: PagePlace, dr
     const asCatalogue = sceneRender(undefined, drawing.catalogue);
     // the static page cannot carry settings: a scene shared with some goes out as its deep link
     if (inCatalogue && isEmptyShared(shared) && sameRender(sceneRender(drawing.render, drawing.catalogue), asCatalogue)) return `${at.origin}/${at.locale}/scenes/${id}/`;
-    return `${at.origin}${appendShared(flyDeepLink(`/${at.locale}/fly/`, id, drawing.render), shared)}`;
+    return flightLink({ sceneId: id, course: null, mode: 'normal', render: drawing.render, shared }, at);
 }
 
 /**
  * The link a share carries: the picture page (/s/<id>) when the share started in a flight and the
  * picture's page could be made (`pictureUrl`), else the scene's page (scenePageUrl, with `drawing`,
- * the shared scene's drawing).
+ * the shared scene's drawing). A flight with a course that travels (lane n-share: a saved course, a generated one) is shared as
+ * its flight address (flight-link.ts flightLink): neither the picture page nor the scene page can carry a course.
  */
-export function shareLink(o: { entry: ShareEntry; sceneId: string; inCatalogue: boolean; at: PagePlace; pictureUrl: string | null; drawing?: ShareDrawing; shared?: SharedSettings }): string {
+export function shareLink(o: { entry: ShareEntry; sceneId: string; inCatalogue: boolean; at: PagePlace; pictureUrl: string | null; drawing?: ShareDrawing; shared?: SharedSettings; course?: LinkCourse }): string {
+    const course = o.course ?? null;
+    if (courseToken(course) !== null) return flightLink({ sceneId: o.sceneId, course, mode: 'normal', render: o.drawing?.render, shared: o.shared }, o.at);
     if (inFlight(o.entry) && o.pictureUrl) return o.pictureUrl;
     return scenePageUrl(o.sceneId, o.inCatalogue, o.at, o.drawing, o.shared);
 }

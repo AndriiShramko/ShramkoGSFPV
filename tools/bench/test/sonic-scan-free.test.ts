@@ -6,7 +6,7 @@ import { describe, expect, it, vi, afterEach } from 'vitest';
 /** The template's id (sonic-fpv library.ts SCAN_FREE_ID). */
 const SCAN_FREE_ID = 'scan-free';
 import { modeScanPage, soundCourseSeed } from '../../../apps/fly/src/app/builtin/sonic-flight';
-import { experiencedPilot, parseSonicParam, scanStartOrder } from '../../../apps/fly/src/sonic/start-model';
+import { parseSonicParam, scanStartOrder } from '../../../apps/fly/src/sonic/start-model';
 import { freeLessonOf } from '../../../apps/fly/src/sonic/start-model';
 import { seedOfLink } from '../../../apps/fly/src/course/link';
 import { buildScanLesson } from '../../../apps/fly/src/sonic/scan-lesson';
@@ -28,12 +28,8 @@ describe('fly THIS scan by sound (train 2)', () => {
         expect(parseSonicParam('scan', queryOf('/en/fly/?sonic=scan')).kind).toBe('unknown');
     });
 
-    it('a first-timer gets the lessons first, then the scan; an experienced pilot (any progress, or he said he flies by sound) gets the scan first', () => {
-        expect(experiencedPilot({}, false)).toBe(false);
-        expect(scanStartOrder(experiencedPilot({}, false))).toEqual(['lessons', 'scan']);
-        expect(experiencedPilot({ 'rings-first': { attempts: 1 } }, false)).toBe(true);
-        expect(scanStartOrder(experiencedPilot({ 'rings-first': { attempts: 1 } }, false))).toEqual(['scan', 'lessons']);
-        expect(scanStartOrder(experiencedPilot({}, true))).toEqual(['scan', 'lessons']);
+    it('lane n-share: every pilot, a first-timer included, gets the scan first and the lessons second', () => {
+        expect(scanStartOrder()).toEqual(['scan', 'lessons']);
     });
 
     it('the free flight is the scan-free template over the link\'s scan at its size, and its world builds without a track', () => {
