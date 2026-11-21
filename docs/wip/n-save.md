@@ -174,3 +174,17 @@ Verdict: HOLD (independent check of 511f9594; the full review is U:/Temp/gsfpv-t
   own.handAfterFix (Fix all, then a moved gate dragged by hand: Undo is gone, key Ctrl+Z twice gives every gate back).
   Evidence: evidence/2026-11-20/n-save/review-accept-local.json.
 - DOUBT: after a hand edit the fixed line and its Undo go without saying key Ctrl+Z; Show me ends on the words "Not saved. ...".
+
+## Repair after the check
+
+Lane fix-n-save: the check's finding 1 (the top bar over the top-row buttons) and doubt 3 (Show me's words). Doubt 2 is
+left as the lead said. The way taken: (c), the first of the lead's list that meets rules 1 to 3.
+
+### Status
+
+- [x] R1.1 the default line one short sentence naming the Keys button (en, es, pl, ru); the line at most two rows, a
+  longer text ends with an ellipsis and a cut line that is no refusal goes whole to the Messages list (top-bar.ts
+  setLine, host.cut; course.ts passes it to tell); doubt 3: course.edit.saveFix "Not saved yet. {fix}" in the four
+  files; tests n-save-top-row (8), save-dialog and editor3-g2 updated; NEG OK on 511f9594 (5 of 8 fail there)
+- [ ] R1.2 build of the head; MEASURE_TOP=1 n-save-accept on it (three views, three lines); the lane's acceptance
+- [ ] R1.3 edit4a-probe unchanged; gates once; Claims and For the lead

@@ -1282,7 +1282,9 @@ export const course: Feature = {
                 add: () => toggleAdd(),
                 // lane edit4b (E5): Fly the course / Back to editing
                 fly: (on) => bus?.call('testFlight', on),
-                menu: (id) => [...(menus.get(id) ?? []), ...COURSE_MENU_HUB.map((m) => ({ id: m.id, labelKey: m.labelKey, run: () => panel?.reveal(m.id) }))]
+                menu: (id) => [...(menus.get(id) ?? []), ...COURSE_MENU_HUB.map((m) => ({ id: m.id, labelKey: m.labelKey, run: () => panel?.reveal(m.id) }))],
+                // fix-n-save: a line the bar cut to two rows is said whole in the Messages list
+                cut: (text) => tell({ text, kind: 'info', from: 'course-editor' })
             });
             // lane edit4b: the editor seam and its parts (course/editor/parts/*.ts)
             bus = new SeamBus();

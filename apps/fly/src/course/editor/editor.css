@@ -170,8 +170,15 @@
     max-width: 420px;
     white-space: normal;
     overflow-wrap: anywhere;
-    max-height: 3.75em;
-    overflow-y: auto;
+    /* fix-n-save (the check's finding 1): three rows reached y 78 at 1536x730 and covered the page's top-row buttons
+       (Motor sound, Full screen, Messages, Share). At most two rows: the bar ends at y 58, above the row's centres (y 60);
+       a longer text ends with an ellipsis and the bar says it whole in the Messages list (top-bar.ts setLine, host.cut) */
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    overflow: hidden;
+    max-height: 2.5em;
 }
 .ce-topbar .ce-tb-line.refused { color: #ffb347; }
 /* lane editfix E2: while the course is flown in the mode, Exit stays on the bar and takes a click (no dead end) */

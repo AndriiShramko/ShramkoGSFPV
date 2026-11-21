@@ -121,16 +121,15 @@ describe('editor3 G2', () => {
 
     // train 4 edit4a A2 (the owner, brief 543 and 545): no tools and no M R T any more, the wheel no longer sets the speed;
     // the opening line names the one gizmo's parts and the Blender-like view (drag on empty space, wheel, F, Home)
-    it('the opening line names the arrows, rings and boxes, the drag on empty space, F and Home, in en, es, pl, ru', () => {
-        const words: Record<string, string[]> = {
-            en: ['arrows', 'rings', 'boxes', 'Shift', 'key F', 'key Home', 'Space', 'Key Esc'],
-            es: ['flechas', 'anillos', 'cubos', 'May\u00fas', 'tecla F', 'tecla Inicio', 'Espacio', 'tecla Esc'],
-            pl: ['strza\u0142ki', 'pier\u015bcienie', 'kostki', 'Shift', 'klawisz F', 'klawisz Home', 'Spacja', 'Klawisz Esc'],
-            ru: ['\u0441\u0442\u0440\u0435\u043b\u043a\u0438', '\u043a\u043e\u043b\u044c\u0446\u0430', '\u043a\u0443\u0431\u0438\u043a\u0438', 'Shift', '\u043a\u043b\u0430\u0432\u0438\u0448\u0430 F', '\u043a\u043b\u0430\u0432\u0438\u0448\u0430 Home', '\u041f\u0440\u043e\u0431\u0435\u043b', '\u041a\u043b\u0430\u0432\u0438\u0448\u0430 Esc']
-        };
-        for (const [lang, want] of Object.entries(words)) {
-            const s = (JSON.parse(read(`packages/i18n/locales/fly/course/${lang}.json`)) as Record<string, string>)['course.edit.opened'] ?? '';
-            for (const w of want) expect(s, lang + ': ' + w).toContain(w);
+    // fix-n-save (the lead's decision on the check's finding 1): the long opening line took three rows of the top bar and
+    // covered the page's top-row buttons; it is one short sentence now that says where the keys are (the bar's Keys
+    // button), it does not list them
+    it('the opening line is one short sentence that names the Keys button, in en, es, pl, ru', () => {
+        for (const lang of ['en', 'es', 'pl', 'ru']) {
+            const j = JSON.parse(read(`packages/i18n/locales/fly/course/${lang}.json`)) as Record<string, string>;
+            const s = j['course.edit.opened'] ?? '';
+            expect(s, lang).toContain(j['course.edit.bar.keys']!);
+            expect(s.length, lang).toBeLessThanOrEqual(46);
             expect(s).not.toContain('M, R, T');
             expect(s).not.toMatch(/\d/);
         }

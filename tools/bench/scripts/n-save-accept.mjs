@@ -17,7 +17,7 @@
 // request to /api/ but GET is aborted and the probe stops at the dialog step: nothing is saved there. ?render=off.
 // Prints one JSON verdict, exit 1 when a step fails.
 import { createRequire } from 'node:module';
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
@@ -307,20 +307,45 @@ try {
     judge('open', o.status === 'ready' && o.open, o);
     if (process.env.MEASURE_TOP === '1') {
         // review: the page's top-row buttons under the editor's top bar (the 16 px message wraps): how much of each is covered,
-        // and whether a press at its centre reaches it
-        const m = await page.evaluate(() => {
-            const bar = document.querySelector('.ce-topbar')?.getBoundingClientRect();
-            if (!bar) return null;
-            const line = document.querySelector('.ce-topbar .ce-tb-line');
-            const out = [...document.querySelectorAll('button, a')].filter((e) => !e.closest('.ce-topbar') && !e.closest('.course-editor')).map((e) => ({ e, r: e.getBoundingClientRect() })).filter(({ r }) => r.width > 0 && r.top < 70 && r.bottom > 20 && r.right > bar.left && r.left < bar.right).map(({ e, r }) => {
-                const cover = Math.max(0, Math.min(bar.bottom, r.bottom) - Math.max(bar.top, r.top));
-                const hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
-                return { name: (e.getAttribute('aria-label') || e.textContent || '').trim().slice(0, 20), top: Math.round(r.top), h: Math.round(r.height), coveredPx: Math.round(cover), centreReaches: !!hit && (hit === e || e.contains(hit)) };
-            });
-            return { bar: [Math.round(bar.left), Math.round(bar.top), Math.round(bar.right), Math.round(bar.bottom)], line: line?.textContent ?? null, lineH: line ? Math.round(line.getBoundingClientRect().height) : null, under: out };
-        });
-        console.log(`MEASURE ${JSON.stringify(m)}`);
-        res.measureTop = m;
+        // and whether a press at its centre reaches it.
+        // fix-n-save (the lead's rule 1): every button of the top row (#ui > .top-actions) at 1536x730 scale 1.25, 1366x768
+        // scale 1 and 844x390 scale 2, with the default line as the editor opened, the longest save line of en and no line
+        const words = (f) => JSON.parse(readFileSync(join(REPO, 'packages', 'i18n', 'locales', 'fly', f, 'en.json'), 'utf8'));
+        const en = { ...words('course'), ...words('course-save') };
+        const saveLines = Object.entries(en).filter(([k]) => /^course\.(edit\.save|edit\.fix\.|fix\.)/.test(k)).map(([k, v]) => (k.startsWith('course.edit.fix.') ? en['course.edit.saveFix'].replace('{fix}', v) : v));
+        const longest = saveLines.reduce((a, b) => (b.length > a.length ? b : a), '');
+        const opened = await page.evaluate(() => (document.querySelector('.ce-topbar .ce-tb-line') || {}).textContent ?? null);
+        const lines = [['default', opened], ['longestSave', longest], ['none', '']];
+        const cdp = await ctx.newCDPSession(page);
+        const views = [[1536, 730, 1.25], [1366, 768, 1], [844, 390, 2]];
+        res.measureTop = [];
+        for (const [vw, vh, dsf] of views) {
+            await cdp.send('Emulation.setDeviceMetricsOverride', { width: vw, height: vh, deviceScaleFactor: dsf, mobile: false });
+            await sleep(800);
+            for (const [name, text] of lines) {
+                const m = await page.evaluate(async (text) => {
+                    const frame = () => new Promise((r) => requestAnimationFrame(() => r(null)));
+                    const line = document.querySelector('.ce-topbar .ce-tb-line');
+                    if (line) line.textContent = text;
+                    await frame(); await frame();
+                    const bar = document.querySelector('.ce-topbar')?.getBoundingClientRect();
+                    if (!bar) return null;
+                    const row = [...document.querySelectorAll('#ui > .top-actions button, #ui > .top-actions a')].map((e) => ({ e, r: e.getBoundingClientRect() })).filter(({ r }) => r.width > 0 && r.height > 0);
+                    const out = row.map(({ e, r }) => {
+                        const cover = r.right > bar.left && r.left < bar.right ? Math.max(0, Math.min(bar.bottom, r.bottom) - Math.max(bar.top, r.top)) : 0;
+                        const hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+                        return { name: (e.getAttribute('aria-label') || e.textContent || '').trim().slice(0, 20), top: Math.round(r.top), h: Math.round(r.height), coveredPx: Math.round(cover), centreReaches: !!hit && (hit === e || e.contains(hit)) };
+                    });
+                    const lr = line ? line.getBoundingClientRect() : null;
+                    return { bar: [Math.round(bar.left), Math.round(bar.top), Math.round(bar.right), Math.round(bar.bottom)], line: text.slice(0, 80), lineH: lr ? Math.round(lr.height) : null, lineCut: line ? line.scrollHeight > line.clientHeight + 1 : null, row: out };
+                }, text ?? '');
+                const ok = !!m && m.row.length >= 4 && m.row.every((b) => b.centreReaches);
+                res.measureTop.push({ view: [vw, vh, dsf], line: name, ok, ...m });
+                console.log(`MEASURE ${vw}x${vh}@${dsf} ${name}: ${ok ? 'PASS' : 'FAIL'} bar ${JSON.stringify(m?.bar)} lineH ${m?.lineH} buttons ${m?.row.length} blocked ${JSON.stringify(m?.row.filter((b) => !b.centreReaches).map((b) => b.name))}`);
+            }
+        }
+        const bad = res.measureTop.filter((x) => !x.ok).map((x) => `${x.view[0]}x${x.view[1]} ${x.line}`);
+        judge('topRow', bad.length === 0, { measured: res.measureTop.length, bad });
         throw new Error('STOP after measure');
     }
     if (!o.open) throw new Error('the editor did not open');
@@ -476,7 +501,8 @@ try {
     }
 } catch (e) {
     res.error = String(e).slice(0, 400);
-    if (!(LIVE && /stopped before any save/.test(res.error))) fails.push('error');
+    // the measure of the top row ends the run on purpose: its verdict is the step topRow
+    if (!(LIVE && /stopped before any save/.test(res.error)) && !/STOP after measure/.test(res.error)) fails.push('error');
 }
 res.fails = fails;
 res.log = log.slice(0, 30);

@@ -161,16 +161,18 @@ describe('n-save S3: the editor message line (Decision 6: 12.75 px and cut with 
     const rule = (/\.ce-topbar \.ce-tb-line \{([^}]*)\}/.exec(css)?.[1] ?? '').replace(/\/\*[\s\S]*?\*\//g, '');
     const prop = (name: string): string | null => new RegExp(`(^|[\\s;])${name}:\\s*([^;]+);`).exec(rule)?.[2]?.trim() ?? null;
 
-    it('is at least 16 px, wraps, holds at most three lines and is never cut with an ellipsis', () => {
+    // fix-n-save (the check's finding 1): three rows covered the page's top-row buttons; at most two, then an ellipsis
+    // (the whole text in the Messages list: n-save-top-row.test.ts)
+    it('is at least 16 px, wraps, holds at most two rows and ends a longer text with an ellipsis', () => {
         const size = prop('font-size')!;
         const px = size.endsWith('rem') ? parseFloat(size) * 16 : parseFloat(size);
         expect(px).toBeGreaterThanOrEqual(16);
         expect(prop('white-space')).toBe('normal');
-        expect(prop('text-overflow')).toBeNull();
-        expect(prop('overflow')).not.toBe('hidden');
+        expect(prop('-webkit-line-clamp')).toBe('2');
+        expect(prop('overflow')).toBe('hidden');
         const lh = parseFloat(prop('line-height')!);
         const maxEm = parseFloat(prop('max-height')!);
-        expect(Math.round(maxEm / lh)).toBe(3);
+        expect(Math.round(maxEm / lh)).toBe(2);
     });
 });
 
