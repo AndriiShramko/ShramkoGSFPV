@@ -1,0 +1,224 @@
+{
+ "what": "fix-lod S1: the pauserise probe (deploy/live-checks.sh, same arguments) on local release builds B and C served by serve-csp, scan files from the public CDN; judge = the pauserise formula",
+ "date": "2026-11-21",
+ "runs": [
+  {
+   "label": "fixlod-B1",
+   "pass": false,
+   "revealS": 12.6,
+   "pausedAt": 25.57,
+   "moveAt": 45.43,
+   "flightLast3Max": 668704,
+   "flight10to25": [
+    234063,
+    668704
+   ],
+   "pauseMax": 937613,
+   "backMs": 0,
+   "drawnAfter": [
+    937613,
+    1063089,
+    1074992
+   ],
+   "falls": false,
+   "files": {
+    "asked": 712,
+    "distinct": 706,
+    "loaded": 699,
+    "failed": 0,
+    "dropped": 0,
+    "stalled": 0,
+    "bytes": 30651756
+   },
+   "loadedAtReveal": 192,
+   "filesPerSec": 10.25,
+   "filesPerSecAfterReveal": 9.12,
+   "MB": 30.52,
+   "pendingEnd": 33,
+   "engineBudgetM": [
+    2.5,
+    10
+   ],
+   "errors": 0,
+   "hold": {
+    "pos": [
+     92.4,
+     153.7,
+     -104
+    ],
+    "yawDeg": -86.6,
+    "pitchDeg": -35
+   },
+   "build": "267923c3 (playcanvas 2.23.2)"
+  },
+  {
+   "label": "fixlod-C1",
+   "pass": false,
+   "revealS": 16.6,
+   "pausedAt": 25.54,
+   "moveAt": 45.53,
+   "flightLast3Max": 466175,
+   "flight10to25": [
+    221429,
+    466175
+   ],
+   "pauseMax": 727463,
+   "backMs": 44.6,
+   "drawnAfter": [
+    727463,
+    742974,
+    790532
+   ],
+   "falls": false,
+   "files": {
+    "asked": 979,
+    "distinct": 979,
+    "loaded": 953,
+    "failed": 0,
+    "dropped": 0,
+    "stalled": 0,
+    "bytes": 26275680
+   },
+   "loadedAtReveal": 192,
+   "filesPerSec": 13.09,
+   "filesPerSecAfterReveal": 13.54,
+   "MB": 25.98,
+   "pendingEnd": 0,
+   "engineBudgetM": [
+    2.5,
+    10
+   ],
+   "errors": 0,
+   "hold": {
+    "pos": [
+     92.4,
+     153.7,
+     -104
+    ],
+    "yawDeg": -86.6,
+    "pitchDeg": -35
+   },
+   "build": "852821e5 (playcanvas 2.24.2)"
+  },
+  {
+   "label": "fixlod-B2",
+   "pass": false,
+   "revealS": 7.5,
+   "pausedAt": 25.52,
+   "moveAt": 45.81,
+   "flightLast3Max": 270203,
+   "flight10to25": [
+    170551,
+    270203
+   ],
+   "pauseMax": 595072,
+   "backMs": 0,
+   "drawnAfter": [
+    595072,
+    609116,
+    773582
+   ],
+   "falls": false,
+   "files": {
+    "asked": 651,
+    "distinct": 627,
+    "loaded": 634,
+    "failed": 0,
+    "dropped": 0,
+    "stalled": 0,
+    "bytes": 23554841
+   },
+   "loadedAtReveal": 197,
+   "filesPerSec": 10,
+   "filesPerSecAfterReveal": 7.82,
+   "MB": 23.55,
+   "pendingEnd": 20,
+   "engineBudgetM": [
+    2.5,
+    10
+   ],
+   "errors": 0,
+   "hold": {
+    "pos": [
+     92.4,
+     153.7,
+     -104
+    ],
+    "yawDeg": -86.6,
+    "pitchDeg": -35
+   },
+   "build": "267923c3 (playcanvas 2.23.2)"
+  },
+  {
+   "label": "fixlod-C2",
+   "pass": false,
+   "revealS": 9.5,
+   "pausedAt": 25.57,
+   "moveAt": 45.98,
+   "flightLast3Max": 505776,
+   "flight10to25": [
+    221429,
+    505776
+   ],
+   "pauseMax": 900710,
+   "backMs": 0,
+   "drawnAfter": [
+    932342,
+    948003,
+    948003
+   ],
+   "falls": false,
+   "files": {
+    "asked": 998,
+    "distinct": 998,
+    "loaded": 979,
+    "failed": 0,
+    "dropped": 0,
+    "stalled": 0,
+    "bytes": 29156277
+   },
+   "loadedAtReveal": 192,
+   "filesPerSec": 15.12,
+   "filesPerSecAfterReveal": 14.25,
+   "MB": 28.87,
+   "pendingEnd": 0,
+   "engineBudgetM": [
+    2.5,
+    10
+   ],
+   "errors": 0,
+   "hold": {
+    "pos": [
+     92.4,
+     153.7,
+     -104
+    ],
+    "yawDeg": -86.6,
+    "pitchDeg": -35
+   },
+   "build": "852821e5 (playcanvas 2.24.2)"
+  }
+ ],
+ "reference7af2aad5": {
+  "source": "U:/Temp/gsfpv-train3/live-7af2aad5/loadq/live-pause-lublin.json (live, 2026-11-16, passing run)",
+  "hold": {
+   "pos": [
+    146.5,
+    202,
+    -97
+   ],
+   "yawDeg": -86.6,
+   "pitchDeg": -35
+  },
+  "revealS": 26,
+  "files": {
+   "asked": 1118,
+   "distinct": 1118,
+   "loaded": 1106,
+   "failed": 0,
+   "dropped": 0,
+   "stalled": 0,
+   "bytes": 132118314
+  }
+ }
+}
