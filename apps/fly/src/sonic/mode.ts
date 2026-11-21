@@ -343,10 +343,17 @@ export class SonicMode {
         return this.lesson ? this.lesson.start : null;
     }
 
-    /** N: the next step of the lesson. */
+    /**
+     * Train 4 (lane tutor-air): a moment holds the flight now (moment-host.ts, set by feature.ts): N and Z are the moment's keys, go on
+     * and hear it again. Absent: never.
+     */
+    inMoment: () => boolean = () => false;
+
+    /** N: the next step of the lesson; in a moment, go on. */
     next(code: string): void {
         if (!this.on) return;
-        this.bridge.next(code);
+        if (this.inMoment()) this.bridge.momentKey(code, 'on');
+        else this.bridge.next(code);
     }
 
     /** B: the step before (from the first, the lesson before). */
@@ -355,10 +362,11 @@ export class SonicMode {
         this.bridge.previous(code);
     }
 
-    /** Z: the step's whole task again. */
+    /** Z: the step's whole task again; in a moment, the new sound again. */
     repeat(code: string): void {
         if (!this.on) return;
-        this.bridge.repeatTask(code);
+        if (this.inMoment()) this.bridge.momentKey(code, 'again');
+        else this.bridge.repeatTask(code);
     }
 
     /** The lesson menu's Next lesson. */

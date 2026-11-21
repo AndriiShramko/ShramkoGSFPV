@@ -127,5 +127,11 @@
   "sonic.say.inPlaceIntroCourse": "Oyes las paredes cercanas y tu altura; el zumbido te lleva a la siguiente puerta. {off} apaga Fly by Sound, {keys} dice las teclas, {menu} abre las lecciones.",
   "sonic.say.gateBehind": "La puerta está detrás de ti.",
   "sonic.settings.showAll": "Mostrar todos los ajustes ({n} más)",
-  "sonic.start.all": "Todas las lecciones"
+  "sonic.start.all": "Todas las lecciones",
+  "sonic.say.momentKeys": "Oír otra vez, tecla {again}, seguir, tecla {on}. Ya conozco este sonido, tecla {know}.",
+  "sonic.say.momentKnowOutside": "La tecla {key} dice al juego que ya conoces un sonido nuevo. Sirve cuando el juego se para para mostrar uno.",
+  "sonic.say.helpKnow": "Pulsa la tecla {key} cuando el juego se pare por un sonido nuevo que ya conoces.",
+  "sonic.say.helpWhatSound": "Pulsa la tecla {key} para saber qué es cada sonido que suena ahora.",
+  "sonic.say.tourName": "Sonido {n} de {of}: {name}.",
+  "sonic.say.tourNone": "Ahora no suena nada. Vuela cerca de una pared o cambia de altura y pulsa otra vez la tecla {key}."
 }

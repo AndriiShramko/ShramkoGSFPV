@@ -66,11 +66,11 @@ const SHIPPED_IN_WAVE2: readonly string[] = [
     'throttle.style'
 ];
 /** Keys shipped for Fly by Sound (v0.12, docs/wip/v12-plan.md sections 1 and 3): bound at step 0, handled by the lanes' features. */
-const SHIPPED_IN_V12: readonly string[] = ['sonic.record', 'sonic.send', 'sonic.status', 'sonic.repeat', 'sonic.glossary'];
+const SHIPPED_IN_V12: readonly string[] = ['sonic.record', 'sonic.send', 'sonic.status', 'sonic.repeat', 'sonic.whatSound'];
 /** Train 3, lane sonic3: Backslash switches Fly by Sound on and off in place, on every page (app/builtin/sonic-flight.ts). */
 const SHIPPED_BY_SONIC3: readonly string[] = ['flyBySound.toggle'];
 /** Lane sonic-hints: X leaves a lesson for the mode's main menu (sonic/feature.ts). Every key of the mode: */
-const MODE_KEYS: readonly string[] = [...SHIPPED_IN_V12, 'sonic.home', 'sonic.narrator', 'sonic.headCentre'];
+const MODE_KEYS: readonly string[] = [...SHIPPED_IN_V12, 'sonic.know', 'sonic.home', 'sonic.narrator', 'sonic.headCentre'];
 
 /** Keys added after the design table, by the agent whose feature handles them. */
 const ADDED_AFTER_DESIGN: Record<string, string[]> = {
@@ -82,12 +82,14 @@ const ADDED_AFTER_DESIGN: Record<string, string[]> = {
     'scene.favourite': ['Shift+F'],
     // lane center-throttle: J flips a radio's or gamepad's left stick between in the centre and from zero
     'throttle.style': ['J'],
-    // v0.12 Fly by Sound: T records, U sends, I says the status, Z repeats the last line, G opens the glossary
+    // v0.12 Fly by Sound: T records, U sends, I says the status, Z repeats the last line, G asks "What is this sound?" (lane tutor-air)
     'sonic.record': ['T'],
     'sonic.send': ['U'],
     'sonic.status': ['I'],
     'sonic.repeat': ['Z'],
-    'sonic.glossary': ['G'],
+    'sonic.whatSound': ['G'],
+    // train 4, lane tutor-air: Shift+K, I know this sound (inside a moment of the first flight)
+    'sonic.know': ['Shift+K'],
     // lane sonic-hints: X, the mode's main menu from a lesson
     'sonic.home': ['X'],
     // train 3, lane quiet2 (N2): Shift+V, the narrator off and on in a flight of the sound mode
@@ -167,7 +169,7 @@ describe('v0.2 keys keep working', () => {
     });
 
     it('Fly by Sound\'s T U I Z G route in flight and while crashed on a page entered through ?sonic=, with no Shift, Ctrl, Alt or Meta; none is a keyboard-flying key', () => {
-        const want: Record<string, string> = { KeyT: 'sonic.record', KeyU: 'sonic.send', KeyI: 'sonic.status', KeyZ: 'sonic.repeat', KeyG: 'sonic.glossary' };
+        const want: Record<string, string> = { KeyT: 'sonic.record', KeyU: 'sonic.send', KeyI: 'sonic.status', KeyZ: 'sonic.repeat', KeyG: 'sonic.whatSound' };
         for (const state of ['flight', 'crash'] as const) {
             for (const [code, action] of Object.entries(want)) {
                 expect(actionFor(press(code), state, { sonic: true }), `${code} ${state}`).toBe(action);
@@ -255,9 +257,9 @@ describe('the sound mode\'s keys exist only in the mode (v12-optin: when \'sonic
         expect(listensIn(b, 'flight')).toBe(true);
         expect(listensIn(b, 'crash')).toBe(true);
         expect(listensIn(bindingOf('crash.keep')!, 'flight')).toBe(false);
-        const planned = KEYMAP.map((x) => (x.action === 'sonic.glossary' ? { ...x, status: 'planned' as const } : x));
+        const planned = KEYMAP.map((x) => (x.action === 'sonic.whatSound' ? { ...x, status: 'planned' as const } : x));
         expect(actionFor(press('KeyG'), 'flight', { sonic: true, map: planned })).toBeNull();
-        expect(pageBindings({ sonic: true, map: planned }).map((x) => x.action)).not.toContain('sonic.glossary');
+        expect(pageBindings({ sonic: true, map: planned }).map((x) => x.action)).not.toContain('sonic.whatSound');
     });
 
     it('a mode key overlaps every other binding: another action on its letter, in any state, is a double binding; control: a crash-only and a flight-only key on one letter do not clash', () => {

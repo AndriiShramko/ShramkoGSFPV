@@ -74,7 +74,7 @@ const MAIN_EN = JSON.parse(readFileSync(join(REPO, 'packages', 'i18n', 'locales'
 const KEYS_EN = JSON.parse(readFileSync(join(REPO, 'packages', 'i18n', 'locales', 'fly', 'sonickeys', 'en.json'), 'utf8')) as Record<string, string>;
 const SOUND_KEYS = ['KeyT', 'KeyU', 'KeyI', 'KeyZ', 'KeyG'];
 const SOUND_CAPS = ['T', 'U', 'I', 'Z', 'G'];
-const SOUND_ACTIONS = ['sonic.record', 'sonic.send', 'sonic.status', 'sonic.repeat', 'sonic.glossary'];
+const SOUND_ACTIONS = ['sonic.record', 'sonic.send', 'sonic.status', 'sonic.repeat', 'sonic.whatSound'];
 /** Texts that are only in the mode's chunks now (the start screen's intro, a key of the mode's, a v12-optin text). */
 const MARKERS = ['Learn to fly a drone by ear', 'Fly by Sound: start or stop recording', 'sonic.link.keep'];
 
@@ -434,7 +434,7 @@ async function sender(ctx: BrowserContext, out: Record<string, unknown>): Promis
     const lines = spokenSince(help, n2).filter((e) => (e.key ?? '').startsWith('help.') || ((e.key ?? '').startsWith('sonic.say.help') && e.key !== 'sonic.say.helpCut'));
     out.keyHelp = lines.map((e) => [e.key, e.text]);
     // since v0.13 (stage B: B3, B6) the lesson's keys first: Escape (the lesson menu), N, B, Z, I, then G, R, T, U, L
-    const order = ['help.intro', 'sonic.say.helpMenu', 'help.next', 'sonic.say.helpPrevious', 'sonic.say.helpRepeat', 'help.status', 'help.glossary', 'help.reset', 'help.record', 'help.send', 'sonic.say.helpShare', 'help.digits'];
+    const order = ['help.intro', 'sonic.say.helpMenu', 'help.next', 'sonic.say.helpPrevious', 'sonic.say.helpRepeat', 'help.status', 'sonic.say.helpWhatSound', 'help.reset', 'help.record', 'help.send', 'sonic.say.helpShare', 'help.digits'];
     const capsSaid = lines.slice(2, -1).map((e) => /\b([A-Z])\b/.exec((e.text ?? '').replace(/^\w+ /, ''))?.[1] ?? '');
     check('B: K says the mode\'s keys in order, each with its key (Esc, then N B Z I G R T U L), then the digits; no "How to fly" card', lines.map((e) => e.key).join(',') === order.join(',') && (lines[1]?.text ?? '').includes('Esc') && capsSaid.join('') === 'NBZIGRTUL' && !(await page.$('[data-testid="how-to-fly"]')), { keys: lines.map((e) => e.key), caps: capsSaid, menu: lines[1]?.text });
     const t0 = Date.now();

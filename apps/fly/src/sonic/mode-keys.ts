@@ -108,6 +108,8 @@ export const KEY_HELP: readonly (readonly [line: string, action: ActionId, aria?
     ['sonic.say.helpCourse', 'course.generate'],
     ['sonic.say.helpPrevious', 'feedback.open'],
     ['sonic.say.helpRepeat', 'sonic.repeat'],
+    // lane tutor-air: Shift+K, "I know this sound" when the game stops for a new one
+    ['sonic.say.helpKnow', 'sonic.know'],
     // lane sonic-hints: X, from the lesson to the main menu
     ['sonic.say.helpHome', 'sonic.home'],
     // lane quiet (message 54): the apostrophe, the narrator off and on
@@ -115,7 +117,8 @@ export const KEY_HELP: readonly (readonly [line: string, action: ActionId, aria?
     // lane head4 (int4, the seam with the mode's key help): Shift+H centres head tracking (with it off, the key says how to turn it on)
     ['sonic.say.helpHead', 'sonic.headCentre'],
     ['help.status', 'sonic.status'],
-    ['help.glossary', 'sonic.glossary'],
+    // lane tutor-air S3: G, "What is this sound?" (sound-tour.ts)
+    ['sonic.say.helpWhatSound', 'sonic.whatSound'],
     ['help.reset', 'respawn.start'],
     ['help.record', 'sonic.record'],
     ['help.send', 'sonic.send'],

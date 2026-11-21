@@ -32,7 +32,7 @@ import { S, attitude } from '@gsfpv/sim-core';
 import type { Sim, SimEvent } from '@gsfpv/sim-core';
 import { REPLAY_KEY_ACTIONS, SPEECH_END_KEY } from '@shramko/sonic-fpv';
 import { quietCue } from './quiet-cues';
-import type { CueEvent, FlightSample, LessonLayers, LessonSession, MaterialClass, Pose, SessionEvent, SonicFrameInput, SonicWorld, SpeechLine, Vec3 } from '@shramko/sonic-fpv';
+import type { ActiveCue, CueEvent, CueId, FlightSample, LessonLayers, LessonSession, MaterialClass, MomentKey, Pose, SessionEvent, SonicFrameInput, SonicWorld, SpeechLine, Vec3 } from '@shramko/sonic-fpv';
 
 /** Contacts closer together than this are one touch: a touch begins after this much quiet, ticks (0.5 s). */
 export const TOUCH_QUIET_TICKS = 500;
@@ -76,6 +76,10 @@ export interface BridgeEngine {
      * 0.3 s with its own walls. Absent on an older engine.
      */
     reset?(): void;
+    /** Train 4 (lane tutor-air): the cues the engine may sound (a moment's gate; the package's SonicEngine.setAudible); null: all. */
+    setAudible?(cues: readonly CueId[] | null): void;
+    /** The cues of the engine's last plan (SonicEngine.activeCues): what "What is this sound?" names (sound-tour.ts). */
+    activeCues?(): readonly ActiveCue[];
 }
 
 /**
@@ -189,6 +193,20 @@ export class SonicBridge {
      * at the next frame. Set once by the lesson host; it survives start() and stop().
      */
     afterRunner: (() => void) | null = null;
+    /**
+     * Train 4 (lane tutor-air, moment-host.ts): the flight's pause holds for a moment alone (the reason 'moment' and no other). Then
+     * the pause is not the mode's: the frames, the lesson runner and the engine go on (the moment names and plays its sound while
+     * the craft holds), nothing is silenced and no 'session' pause is written. Set by the page; null: every pause is the mode's.
+     */
+    momentOnly: (() => boolean) | null = null;
+    /**
+     * Lane tutor-air S3 (sound-tour.ts): the flight is paused for "What is this sound?" alone. The pause is the mode's (the lesson's
+     * clocks stand, a 'session' pause is written), but the engine keeps its layers and is fed the held craft's frame, so each sound
+     * plays alone from its direction under the tour's gate. Set by the page; null: a pause silences, as before.
+     */
+    soundsOnPause: (() => boolean) | null = null;
+    /** the cues the engine may sound (setAudible), or null for all */
+    private audible: readonly CueId[] | null = null;
 
     constructor(out: BridgeOut, clock: () => number = () => performance.now()) {
         this.out = out;
@@ -249,6 +267,34 @@ export class SonicBridge {
         this.cutReading();
         this.session = null;
         this.runner = null;
+        // a gate of a moment does not outlive the mode
+        if (this.audible !== null) this.setAudible(null);
+    }
+
+    /** The cues the engine may sound (RunnerAction 'audible', moment-host.ts); null: every cue, as before. */
+    setAudible(cues: readonly CueId[] | null): void {
+        this.audible = cues === null ? null : [...cues];
+        this.engine?.setAudible?.(this.audible);
+    }
+
+    /** The engine's gate now (setAudible), or null for every cue. */
+    get audibleNow(): readonly CueId[] | null {
+        return this.audible;
+    }
+
+    /** The cues of the engine's last plan (none without an engine that tells). */
+    activeCues(): readonly ActiveCue[] {
+        return this.engine?.activeCues?.() ?? [];
+    }
+
+    /** A pause that silences: not one the page keeps sounding (soundsOnPause). */
+    private mutedBy(paused: boolean): boolean {
+        return paused && this.soundsOnPause?.() !== true;
+    }
+
+    /** The flight waits for the mode: the session paused for anything but a moment alone, or a replay drives the view. */
+    private pausedFor(ses: BridgeSession): boolean {
+        return ses.replaying || (ses.paused && this.momentOnly?.() !== true);
     }
 
     /**
@@ -316,9 +362,9 @@ export class SonicBridge {
         const sim = ses.shownSim;
         if (!sim) return null;
         const t = this.now();
-        const paused = ses.paused || ses.replaying;
+        const paused = this.pausedFor(ses);
         this.pauseState(paused, t);
-        if (paused) this.silence();
+        if (this.mutedBy(paused)) this.silence();
         else this.sound();
         const s = sim.s;
         const a = attitude(s);
@@ -407,9 +453,9 @@ export class SonicBridge {
     syncPause(): void {
         const ses = this.session;
         if (!this.on || this.inPlayback || !ses) return;
-        const paused = ses.paused || ses.replaying;
+        const paused = this.pausedFor(ses);
         this.pauseState(paused, this.now());
-        if (paused) this.silence();
+        if (this.mutedBy(paused)) this.silence();
     }
 
     /** The flight is paused for the mode (the runner waits with it). */
@@ -505,6 +551,15 @@ export class SonicBridge {
     /** Z (v0.13): the step's whole task again, its named sounds three times (while flying the attempt waits for it). */
     repeatTask(code: string): void {
         this.keyCall(code, REPLAY_KEY_ACTIONS.repeat, (run, t) => run.repeat(t));
+    }
+
+    /**
+     * Train 4 (lane tutor-air): a key of a moment (Z hear it again, N go on, Shift+K I know this), recorded with its REPLAY_KEY_ACTIONS
+     * action before the runner's momentKey (the replay acts on it, tutor-moment's For the lead).
+     */
+    momentKey(code: string, key: MomentKey): void {
+        const action = key === 'again' ? REPLAY_KEY_ACTIONS.momentAgain : key === 'on' ? REPLAY_KEY_ACTIONS.momentOn : REPLAY_KEY_ACTIONS.momentKnow;
+        this.keyCall(code, action, (run, t) => run.momentKey(key, t));
     }
 
     /** The lesson menu's Next lesson: at once, this lesson marked skipped unless it was passed. */

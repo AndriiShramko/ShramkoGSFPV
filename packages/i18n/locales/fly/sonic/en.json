@@ -127,5 +127,11 @@
   "sonic.say.inPlaceIntroCourse": "You hear nearby walls and your height; the hum leads to the next gate. {off} turns this off, {keys} says the keys, {menu} opens the lessons.",
   "sonic.say.gateBehind": "The gate is behind you.",
   "sonic.settings.showAll": "Show all settings ({n} more)",
-  "sonic.start.all": "All lessons"
+  "sonic.start.all": "All lessons",
+  "sonic.say.momentKeys": "Hear it again, key {again}, go on, key {on}. I know this sound, key {know}.",
+  "sonic.say.momentKnowOutside": "Key {key} tells the game you know a new sound. It works when the game stops to show one.",
+  "sonic.say.helpKnow": "Press key {key} when the game stops for a new sound you know already.",
+  "sonic.say.helpWhatSound": "Press key {key} to hear what each sound playing now is.",
+  "sonic.say.tourName": "Sound {n} of {of}: {name}.",
+  "sonic.say.tourNone": "No sound plays right now. Fly near a wall or change height, then press key {key} again."
 }

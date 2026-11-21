@@ -40,13 +40,15 @@ import { worldPrims } from './primitives';
 import type { Prim } from './primitives';
 import { isScanCourse, voxelCm, wallsAreCoarse } from './scan-lesson';
 import type { ScanLesson } from './scan-lesson';
-import { savedProgress, saveProgress, setCurrentLesson } from './store';
+import { addKnownSound, knownSounds, savedProgress, saveProgress, setCurrentLesson } from './store';
+import { guideLevel } from './guide';
 import type { SonicHost } from './store';
 import { DEFAULT_LESSON_START_KEYS } from './key-names';
 import type { LessonStartKeys, RunnerKeys } from './key-names';
 import { SaidOnce } from './said-once';
 import type { SaidId } from './said-once';
 import { stepInstructions } from './progress-panel';
+import type { MomentHost } from './moment-host';
 
 /** After a pass the next lesson opens when the speech queue has been empty this long, ms. */
 export const NEXT_AFTER_MS = 1500;
@@ -131,7 +133,22 @@ export interface LessonPage {
      * Absent: on.
      */
     narratorOff?(): boolean;
+    /** Train 4 (lane tutor-air): carries out the runner's 'moment' and 'audible' (moment-host.ts). Absent: neither is carried out. */
+    readonly moments?: MomentHost;
+    /** Train 4 (lane tutor-air): the pilot's names of a moment's keys (hear it again, go on, I know this); absent: Z, N, Shift+K. */
+    momentKeys?(): MomentKeyNames;
 }
+
+/** The spoken names of a moment's three keys (sonic.repeat, scene.next, sonic.know) in the pilot's layout. */
+export interface MomentKeyNames {
+    readonly again: string;
+    readonly on: string;
+    readonly know: string;
+}
+export const DEFAULT_MOMENT_KEYS: MomentKeyNames = Object.freeze({ again: 'Z', on: 'N', know: 'Shift+K' });
+
+/** The SaidOnce ids of a moment's keys ('key.<action id>'): named together once, in the first moment after the craft moved. */
+export const MOMENT_KEY_IDS = ['key.sonic.repeat', 'key.scene.next', 'key.sonic.know'] as const;
 
 /** Where a lesson is opened from and with what: its start and floor (a scan lesson's own), a scan's gates, the way back of G. */
 export interface RunnerPlace {
@@ -148,8 +165,22 @@ export interface RunnerPlace {
  * waited for when no end of speech comes), the names of his keys (the lines say "Press N"), and the lesson G left: the glossary
  * opened from a lesson is a detour whose ways out lead back there, and leaving it forward does not mark it skipped (review R3).
  */
-export function runnerOptions(page: Pick<LessonPage, 'locale' | 'store' | 'path' | 'keyNames' | 'speechRate'>, lessonId: string, place: RunnerPlace, sessionStartMs: number): RunnerOptions {
+/**
+ * Train 4 (lane tutor-air): whether this page teaches by moments: it can freeze the flight (a MomentHost) and the narrator is on (the
+ * narrator off is the guide off). Such a page names the keys once, in the first moment (sonic.say.momentKeys), then on K only (plan
+ * Part C 3): no line of keys at a lesson's start, so nothing but the headphone check comes before the first movement (decision 2).
+ */
+export function teachesByMoments(page: Pick<LessonPage, 'narratorOff' | 'moments'>): boolean {
+    return page.moments !== undefined && page.narratorOff?.() !== true;
+}
+
+export function runnerOptions(page: Pick<LessonPage, 'locale' | 'store' | 'path' | 'keyNames' | 'speechRate' | 'narratorOff' | 'moments'>, lessonId: string, place: RunnerPlace, sessionStartMs: number): RunnerOptions {
+    // train 4 (lane tutor-air): the page teaches by moments (RunnerOptions.known: the sounds the pilot learned already, [] for a new
+    // one) at his guide level; the narrator off is the guide off (the lead's decision, Part D): known absent, no moment runs
+    // only a page that can freeze the flight (a MomentHost) teaches by moments: a host without one runs every lesson as before
+    const teach = teachesByMoments(page);
     return {
+        ...(teach ? { known: knownSounds(page.store), guide: guideLevel(page.store) } : {}),
         locale: page.locale,
         // the free flight over a scan and its courses keep no progress (review SN-6: one best time for every course in every scan)
         progress: lessonId === SCAN_FREE_ID ? null : savedProgress(page.store, lessonId),
@@ -756,7 +787,29 @@ export class LessonHost {
                 if (a.scene) this.soundHeard = true;
                 this.demo = a.scene;
                 break;
+            case 'moment':
+            case 'audible':
+                // train 4 (lane tutor-air): the flight freezes for a moment and goes on; the engine's gate of cues
+                this.p.moments?.act(a);
+                if (a.kind === 'moment' && a.moment?.phase === 'do' && this.momentKeysDue(a.moment.id)) {
+                    // the moment's keys, once a visit (SaidOnce), after its `do` line (handed just before this view): the runner's
+                    // freeze waits for the queue, so they are heard with the craft still held, never over the sound
+                    for (const id of MOMENT_KEY_IDS) this.said.mark(id);
+                    void mode.bridge.say({ key: 'sonic.say.momentKeys', params: { ...(this.p.momentKeys?.() ?? DEFAULT_MOMENT_KEYS) } }, false, { lesson: true });
+                }
+                break;
         }
+    }
+
+    /**
+     * Whether this moment names its keys: the first moment of the visit that is not the lesson's start moment (the words before the
+     * first movement stay under 60, decision 10), unless the pilot's "Key hints" are off or the keys were named already.
+     */
+    private momentKeysDue(id: string): boolean {
+        if (this.p.keyHints?.() === false) return false;
+        if (MOMENT_KEY_IDS.every((k) => this.said.named(k))) return false;
+        const def = this.lesson?.moments?.find((m) => m.id === id);
+        return def !== undefined && def.when.kind !== 'start';
     }
 
     /** The SaidOnce id of the line of keys keysLine() says now: the free flight's line names no "Next", so it is a line of its own. */
@@ -773,6 +826,8 @@ export class LessonHost {
     private keysDue(): boolean {
         if (this.p.keyHints?.() === false) return false;
         if (this.said.named(this.keysId())) return false;
+        // train 4 (lane tutor-air): a page that teaches by moments names the keys in the first moment, then on K only
+        if (this.lesson?.id !== SCAN_FREE_ID && teachesByMoments(this.p)) return false;
         if (this.lesson?.world.kind !== 'none') return true;
         return this.soundHeard;
     }
@@ -782,7 +837,11 @@ export class LessonHost {
         const run = this.runner;
         if (!run) return;
         if (e.kind === 'answer') this.question = null;
-        else if (e.kind === 'lesson' && (e.what === 'attempt-pass' || e.what === 'attempt-fail' || e.what === 'block-pass' || e.what === 'passed')) {
+        else if (e.kind === 'moment' && (e.what === 'learned' || e.what === 'known')) {
+            // train 4 (lane tutor-air): a sound learned in a moment, or "I know this": kept with the progress, its moment skipped next time
+            const cue = this.lesson?.moments?.find((m) => m.id === e.id)?.cue;
+            if (cue !== undefined && run !== this.forgotten) addKnownSound(this.p.store, cue);
+        } else if (e.kind === 'lesson' && (e.what === 'attempt-pass' || e.what === 'attempt-fail' || e.what === 'block-pass' || e.what === 'passed')) {
             // a runner whose counts the pilot reset saves nothing (v13-int step 5)
             if (run !== this.forgotten && this.lesson?.id !== SCAN_FREE_ID) saveProgress(this.p.store, run.progress());
             if (e.what === 'passed') this.passedAt = null;

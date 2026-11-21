@@ -127,5 +127,11 @@
   "sonic.say.inPlaceIntroCourse": "Słyszysz bliskie ściany i swoją wysokość; buczenie prowadzi do następnej bramki. {off} wyłącza lot na słuch, {keys} mówi klawisze, {menu} otwiera lekcje.",
   "sonic.say.gateBehind": "Bramka jest za tobą.",
   "sonic.settings.showAll": "Pokaż wszystkie ustawienia (jeszcze {n})",
-  "sonic.start.all": "Wszystkie lekcje"
+  "sonic.start.all": "Wszystkie lekcje",
+  "sonic.say.momentKeys": "Jeszcze raz, klawisz {again}, dalej, klawisz {on}. Znam ten dźwięk, klawisz {know}.",
+  "sonic.say.momentKnowOutside": "Klawisz {key} mówi grze, że znasz nowy dźwięk. Działa, gdy gra zatrzymuje się, by go pokazać.",
+  "sonic.say.helpKnow": "Naciśnij klawisz {key}, gdy gra zatrzyma się na nowym dźwięku, który już znasz.",
+  "sonic.say.helpWhatSound": "Naciśnij klawisz {key}, aby usłyszeć, czym jest każdy dźwięk, który teraz gra.",
+  "sonic.say.tourName": "Dźwięk {n} z {of}: {name}.",
+  "sonic.say.tourNone": "Teraz nic nie gra. Podleć do ściany albo zmień wysokość i naciśnij znowu klawisz {key}."
 }

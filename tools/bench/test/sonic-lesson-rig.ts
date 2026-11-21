@@ -265,7 +265,7 @@ export class Rig {
      * A page on the first lesson's world (or, with `scan`, on that scan). `store`: the pilot's saved state of an earlier page
      * (progress, best times) instead of an empty one.
      */
-    static async make(first: LessonDef, o: { scan?: RigScan; store?: ReturnType<typeof mkStore>; course?: LessonPage['course'] | SharedCourse; walls?: LessonPage['walls'] } = {}): Promise<Rig> {
+    static async make(first: LessonDef, o: { scan?: RigScan; store?: ReturnType<typeof mkStore>; course?: LessonPage['course'] | SharedCourse; walls?: LessonPage['walls']; moments?: LessonPage['moments'] } = {}): Promise<Rig> {
         const rig = new Rig();
         if (o.course instanceof SharedCourse) rig.shared = o.course;
         if (o.store) rig.store = o.store;
@@ -335,6 +335,8 @@ export class Rig {
             // lane onecourse: the course in the scene (the course feature's, course.ts hook.sound), as feature.ts courseOf gives it
             course: o.course instanceof SharedCourse ? o.course.page() : o.course,
             walls: o.walls,
+            // train 4 (lane tutor-air): a page that can freeze the flight teaches by moments
+            ...(o.moments ? { moments: o.moments } : {}),
             showMenu: () => { rig.menus++; },
             clock: () => rig.clock.t,
             keyNames: () => rig.keyNames,

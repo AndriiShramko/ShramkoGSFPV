@@ -27,7 +27,7 @@ import type {} from './sonic-context';
  * Controls screen) and scene (leaving for the scene picker); hidden and export are for wave 2-4;
  * help: Fly by Sound says its keys (K), and the flight waits until they are said or a key cuts them (v12-optin review R4).
  */
-export type PauseReason = 'menu' | 'panel' | 'hidden' | 'scene' | 'export' | 'controls' | 'help';
+export type PauseReason = 'menu' | 'panel' | 'hidden' | 'scene' | 'export' | 'controls' | 'help' | 'moment' | 'tour';
 
 export interface AppEvents {
     /** every runner event, in order */

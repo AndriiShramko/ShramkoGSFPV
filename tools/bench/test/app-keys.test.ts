@@ -158,7 +158,7 @@ describe('one handler per key press, no key bound twice', () => {
 });
 
 describe('the sound mode\'s keys are on a page entered through ?sonic= only (v12-optin)', () => {
-    const SOUND: [string, ActionId, boolean?][] = [['KeyT', 'sonic.record'], ['KeyU', 'sonic.send'], ['KeyI', 'sonic.status'], ['KeyZ', 'sonic.repeat'], ['KeyG', 'sonic.glossary'], ['KeyX', 'sonic.home'], ['KeyV', 'sonic.narrator', true], ['KeyH', 'sonic.headCentre', true]];
+    const SOUND: [string, ActionId, boolean?][] = [['KeyT', 'sonic.record'], ['KeyU', 'sonic.send'], ['KeyI', 'sonic.status'], ['KeyZ', 'sonic.repeat'], ['KeyG', 'sonic.whatSound'], ['KeyK', 'sonic.know', true], ['KeyX', 'sonic.home'], ['KeyV', 'sonic.narrator', true], ['KeyH', 'sonic.headCentre', true]];
     /** The keymap as v0.12 was released (8ce53fb): the five keys always. */
     const RELEASED = KEYMAP.map((b) => (b.when === 'sonic' ? { ...b, when: 'always' as const } : b));
 
