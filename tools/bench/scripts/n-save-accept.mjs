@@ -109,7 +109,13 @@ try {
     });
     const page = await ctx.newPage();
     page.on('pageerror', (e) => log.push(`pageerror: ${e.message}`.slice(0, 300)));
-    page.on('response', (r) => { const q = r.request(); if (q.method() === 'POST' && new URL(r.url()).pathname.startsWith('/api/tracks')) res.posts.push({ path: new URL(r.url()).pathname, status: r.status(), at: Date.now() }); });
+    page.on('response', async (r) => {
+        const q = r.request();
+        if (q.method() !== 'POST' || !new URL(r.url()).pathname.startsWith('/api/tracks')) return;
+        const e = { path: new URL(r.url()).pathname, status: r.status(), at: Date.now(), token: !!q.headers()['x-track-token'] };
+        res.posts.push(e);
+        if (r.status() !== 201) e.body = (await r.text().catch(() => '')).slice(0, 200);
+    });
     const snap = () => page.evaluate(SNAP);
     const boxOf = (sel) => page.evaluate((s) => { const e = document.querySelector(s); if (!e || !e.getClientRects().length || e.closest('[hidden]')) return null; const b = e.getBoundingClientRect(); return { x: b.left + b.width / 2, y: b.top + b.height / 2, w: b.width, h: b.height, text: (e.textContent || '').trim().slice(0, 300) }; }, sel);
     const inView = (b) => b && b.y > 4 && b.y < H - 4 && b.x > 4 && b.x < W - 4;
@@ -221,6 +227,7 @@ try {
                 if (Math.abs(px) < 3) continue;
             }
             const x0 = tip.x, y0 = tip.y;
+            const hit = await page.evaluate(([x, y]) => { const e = document.elementFromPoint(x, y); return e ? `${e.tagName}.${e.className}`.slice(0, 40) : null; }, [x0, y0]);
             await page.mouse.move(x0, y0, { steps: 3 });
             await sleep(150);
             await page.mouse.down();
@@ -231,7 +238,7 @@ try {
             const d = q ? [q[0] - p[0], q[1] - p[1], q[2] - p[2]] : [0, 0, 0];
             const m = Math.hypot(...d);
             if (m > 1e-3) learnt[ax] = { u: d.map((x) => x / m * Math.sign(px)), perPx: m / Math.abs(px) };
-            tries.push({ n, ax, px: Math.round(px), moved: Math.round(m * 1000) / 1000 });
+            tries.push({ n, ax, px: Math.round(px), moved: Math.round(m * 1000) / 1000, tip: tip.name, along: Math.round(tip.along), hit });
         }
         const p = (await snap()).egates?.[i];
         const apart = p ? dist3(p, target) : -1;
@@ -321,7 +328,17 @@ try {
     const cOff = { at: aScr.map(Math.round), apart: c !== null ? Math.round(dist3(s0.egates?.[c], aPos) * 1000) / 1000 : null };
     const addOff = async () => { if (await page.evaluate(() => document.querySelector('.ce-topbar [data-top="add"]')?.getAttribute('aria-pressed') === 'true')) await clickSel('.ce-topbar [data-top="add"]', 400); };
     await addOff();
-    const pull = aPos && c !== null && cOff.apart >= 0.25 && s0.selected === c ? await pullOnto(c, aPos, 0.25) : { ok: cOff.apart !== null && cOff.apart < 0.25, skipped: true };
+    // the gap lies on the floor (x and z): the view circled to look down on C (the middle button dragged up or down), so both
+    // floor arrows lie in the picture; the way that shortens the up arrow is kept
+    const upLen = async () => { const t = await snap(); return t.selected === c ? (await arrowTip(t, 'y'))?.along ?? 0 : null; };
+    const orbit = async (dy) => { await page.mouse.move(W * 0.5, H * 0.3); await page.mouse.down({ button: 'middle' }); await page.mouse.move(W * 0.5, H * 0.3 + dy, { steps: 12 }); await page.mouse.up({ button: 'middle' }); await sleep(700); };
+    const look = { up0: await upLen() };
+    if (c !== null && cOff.apart >= 0.25 && look.up0) {
+        await orbit(160);
+        look.up1 = await upLen();
+        if (look.up1 !== null && look.up1 > look.up0) { await orbit(-320); look.up2 = await upLen(); }
+    }
+    const pull = aPos && c !== null && cOff.apart >= 0.25 && s0.selected === c ? { look, ...(await pullOnto(c, aPos, 0.25)) } : { ok: cOff.apart !== null && cOff.apart < 0.25, skipped: true };
     // gate B selected by a click on it (its place on the page), then pulled down (a drag that misses the arrow circles the view)
     let s = await snap();
     const bAt = s.egates ? s.egates.findIndex((p, i) => s.egates.every((q, j) => j === i || dist3(p, q) > 0.5)) : -1;
@@ -339,6 +356,7 @@ try {
     const lowNow = s.problems?.find((p) => WALL.includes(p.code) && p.gate !== null && !pair.includes(p.gate))?.gate ?? null;
     const bad = [pair[0], pair[1], lowNow].filter((x) => x !== null);
     judge('build', built?.length === 3 && pairM >= 0 && pairM < 0.3 && bury.ok && lowNow !== null, { gates: built?.length ?? null, added, cOff, pull, pair, pairApart: Math.round(pairM * 1000) / 1000, low: lowNow, bury, problems: s.problems, line: s.topLine });
+    if (process.env.STOP === 'build') throw new Error('STOP after build');
 
     // ---- the dialog and Save as it is
     const d1 = await saveToDialog('n-save as is');
