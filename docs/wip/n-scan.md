@@ -21,6 +21,13 @@ splat-transform 3.12.0, probe tools/bench/scripts/hot-sog3-scans.mjs, live check
   kinds, GSAF, gsaf network, formats, the PLY size). No SOG version 1 id (means.shape) was found: the diagnosis names none.
   S3 needs: the PLY drawn (no unit test drives the engine's PLY parser; S4's acceptance opens a5d25fb4 and c67edb74).
 - [ ] S3 the device and the plain line: lighter LOD level or one plain line (too-large / gone / unknown-format / network) through ux4a's lines and ux4b's Cancel; zero splats drawn is an error; n-scan-errors.mjs (stubbed 404, stubbed huge scan, render off) + unit tests + NEG.
+  - [x] step 1, commit "n-scan S3 step 1": apps/fly/src/session/open-error.ts (OpenErrorKind, OpenError, openErrorOf, failureCode,
+    failureText, openMessage, deviceSplatLimit, openCheck); render-pc lod.ts NoSplatsError + holdsNoSplats, renderer.ts rejects a
+    single file of zero splats; session/index.ts runs openCheck before the scan loads (also ?render=off); the picker (ui/scenes.ts
+    showError), the first load (flight.ts) and a switch (scene-host.ts: tell() of ux4a) use the reasons; locale scene.open.* x4.
+    tools/bench/test/scan-open-error.test.ts 10 pass; NEG OK on 03624451; vitest --changed HEAD: 451 files pass after the two
+    fixes (scene-load.test.ts text marker, wind-session's stub renderer has no graphicsDevice); typecheck render-pc, fly pass.
+  - [ ] step 2: n-scan-errors.mjs (stubbed 404, stubbed huge meta.json, ?render=off) on a local build; its JSON under evidence.
 - [ ] S4 the acceptance: n-scan-accept.mjs by mouse at 1536x730 x1.25 on the local build (a39abad1 first) and against the live site (must FAIL a39abad1); one drawn picture; scans-open extended; gates once; "What the owner should try"; dist deleted.
 
 ## Diagnosis (S1)

@@ -190,7 +190,7 @@ describe('ux4b B-2: a pick during a load replaces it, Cancel stops it', () => {
         expect(hs).toContain("onCancel: () => run.cancel('pilot')");
         expect(hs).toMatch(/await abortable\(next\.visible, run\.signal\)/);
         // the cancelled branch returns before recordFailure and the failure line
-        const cancelled = hs.slice(hs.indexOf('if (isCancelled(e, run.signal))'), hs.indexOf('const code = e instanceof SceneError'));
+        const cancelled = hs.slice(hs.indexOf('if (isCancelled(e, run.signal))'), hs.indexOf('const code = failureCode(e)'));
         expect(cancelled).toContain("state: 'cancelled'");
         expect(cancelled).toContain('next?.dispose()');
         expect(cancelled).not.toContain('recordFailure');

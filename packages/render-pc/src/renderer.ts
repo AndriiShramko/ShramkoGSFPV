@@ -27,7 +27,7 @@ import { DEFAULT_STOCHASTIC_IMPL, applyStochastic, holdOnUnload } from './accum-
 import { SplatLoadCancelled, SplatLoadGuard } from './splat-load-guard';
 import type { DrawPlan, StochasticImpl } from './accum-policy';
 import type { GpuInfo } from './device-class';
-import { BrokenFileError, ENGINE_SOG_VERSIONS, lodChunkVersionProblem, lodMetaProblem, lodMode, sogVersionProblem, UnsupportedFormatError } from './lod';
+import { BrokenFileError, ENGINE_SOG_VERSIONS, holdsNoSplats, lodChunkVersionProblem, lodMetaProblem, lodMode, NoSplatsError, sogVersionProblem, UnsupportedFormatError } from './lod';
 import type { LodState } from './lod';
 import { ENGINE_RULE, ViewLod, lodRule, viewLodParamsOf } from './view-lod';
 import { StreamKeeper } from './stream-keeper';
@@ -556,6 +556,11 @@ export class SplatRenderer {
             };
             asset.on('load', () => {
                 if (dropStale()) return;
+                // zero splats read is a failure, never "ready" over an empty scene
+                if (holdsNoSplats(asset.resource)) {
+                    reject(new NoSplatsError(`${filename}: the engine read it, but it holds no splat`));
+                    return;
+                }
                 const e = new Entity('gsplat', this.app);
                 e.setLocalEulerAngles(0, 0, 180); // SuperSplat scenes are stored upside down
                 e.setLocalPosition(this.sceneT[0], this.sceneT[1], this.sceneT[2]);

@@ -41,6 +41,24 @@ export class UnsupportedFormatError extends Error {
     }
 }
 
+/**
+ * A single scan file the engine read without an error but with no splat in it (a file it misread, an empty export):
+ * nothing would be drawn, so the load fails instead of saying "ready" over an empty scene (lane n-scan).
+ */
+export class NoSplatsError extends Error {
+    constructor(message: string) {
+        super(message);
+        this.name = 'NoSplatsError';
+    }
+}
+
+/** True when a loaded single-file resource holds no splat (an octree streams its levels later: never judged here). */
+export function holdsNoSplats(resource: unknown): boolean {
+    const r = resource as { octree?: unknown; numSplats?: unknown } | null | undefined;
+    if (!r || r.octree) return false;
+    return typeof r.numSplats === 'number' && r.numSplats <= 0;
+}
+
 /** The SOG version of a meta.json (a single SOG or one chunk of a streamed scan): no `version` is version 1. */
 export function sogVersion(meta: unknown): unknown {
     return isObject(meta) && meta.version !== undefined ? meta.version : 1;
