@@ -300,3 +300,22 @@ n-share and the three tutorial lanes on the integration copy after car 3, and sh
 ship-car5 too and finds n-share merged. The headers of prompts/t8-car5.md and prompts/t6-car4.md say so (car 4 got a
 point 7: its seams with car 5).
 Queue at 15:10 UTC: running tutor-air (S2), n-route (S4), n-save (S4); ready n-scan, n-path, the gap lanes.
+
+## State, 2026-11-21 17:20 UTC: the week is at 83 %; what the rest is kept for (READ THIS FIRST)
+
+The weekly limit read 83 % at 17:04 UTC (59 % at 13:30 UTC). The owner's words of today, from another chat, stand in
+the hook: 'spend everything down to zero' (allowed until the reset of 2026-11-26 12:00 UTC). The plan's stop is 97 %.
+One lane run cost about 0.6 to 0.7 points this afternoon (an estimate: 24 points over about 33 runs, other sessions
+included), so the rest of the week holds about twenty runs.
+All three tutorial lanes are done with SHIP; car5 runs since 16:33 UTC (S1 in four minutes, S2 since 16:37).
+The lead's order for the rest of the week:
+1. car5 and ship-car5 (the tutorial car) and a repair after its live checks: no stop of their own (the plan's 97 %).
+2. The lanes of car 4 that are nearly done, with their own stop at 90 %: n-route (S5b is real work: the pro level
+   never lays a route course and one plan hangs; it had used its 8 runs, now max 12), n-save (S4: the mouse
+   acceptance passes locally; max 11), the checks r-n-route, r-n-save, r-n-scan.
+3. car4 with its own stop at 94 % and a wait list cut to ship-car5, r-n-route, r-n-save, r-n-scan (n-path and n-share
+   are checked; its prompt leaves out a lane that is not ready).
+PARKED (state hold) until the week's reset: n-level and the gap lanes 4-7 (gap-editor, gap-msgs, gap-voxels, gap-ui).
+They need about 25 runs and a car of their own, more than the week holds. Give them back with
+`set --name X --state wait` after 2026-11-26 12:00 UTC or on the owner's word.
+The conductor got `set --limit-stop P` (a job's own stop of the week; 0 takes it away).
