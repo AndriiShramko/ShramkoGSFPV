@@ -30,7 +30,7 @@ import { DomLessonMenuView, LESSON_MENU_ITEMS, LessonMenu, pauseKey, runItem } f
 import type { KeySource } from '../../../apps/fly/src/sonic/lesson-menu';
 import { runnerOptions } from '../../../apps/fly/src/sonic/lessons';
 import { keyHelpLines } from '../../../apps/fly/src/sonic/mode-keys';
-import { ProgressPanel, followProgress, progressRows } from '../../../apps/fly/src/sonic/progress-panel';
+import { ProgressPanel, followProgress } from '../../../apps/fly/src/sonic/progress-panel';
 import { saveProgress, savedProgress } from '../../../apps/fly/src/sonic/store';
 import { REPO, mkStore } from '../../../packages/prefs/test/helpers';
 import { FakeDocument } from './sonic-fake-dom';
@@ -371,19 +371,12 @@ function tEn(key: string, params?: Readonly<Record<string, string | number>>): s
     return s;
 }
 
-/** A view with the given fields over a flying lesson's in its first attempt. */
-const viewOf = (o: Partial<LessonView>): LessonView => ({ lessonId: 'rings-first', title: { key: 'lesson.rings-first.title' }, lessonIndex: 20, lessonCount: 28, path: 'full', step: 2, steps: 2, stepKind: 'fly', goal: 1, goals: 1, attempt: 1, counted: 0, required: 3, failsInARow: 0, offered: false, touches: 0, maxTouches: null, phase: 'flying', passed: false, skipped: false, listening: false, paused: false, playing: null, ...o });
 
 describe('B4 (W6, M41-7): I says the runner\'s status line; a large panel draws its view after every attempt', () => {
-    it('the panel\'s rows: the lesson on the path and the step always; in a flying lesson the attempt once one began and the count; module 0 its lesson and step only', () => {
-        expect(progressRows(viewOf({ attempt: 2, counted: 1 })).map((r) => tEn(r.key, r.params))).toEqual(['Lesson 20 of 28', 'Step 2 of 2', 'Attempt 2', 'Counted 1 of 3']);
-        expect(progressRows(viewOf({ step: 1, stepKind: 'task', attempt: 0, phase: 'intro' })).map((r) => tEn(r.key, r.params))).toEqual(['Lesson 20 of 28', 'Step 1 of 2', 'Counted 0 of 3']);
-        expect(progressRows(viewOf({ lessonId: 'ears-glossary', lessonIndex: 2, step: 5, steps: 22, stepKind: 'sound', goal: 0, goals: 0, attempt: 1 })).map((r) => tEn(r.key, r.params))).toEqual(['Lesson 2 of 28', 'Step 5 of 22']);
-        // every row's words exist in the four languages, with the same numbers in them
+    it('the panel\'s words exist in the four languages (lane tutor-say: the panel is one line, the instruction; the numbers are I\'s)', () => {
         for (const l of ['en', 'es', 'pl', 'ru']) {
             const d = JSON.parse(readFileSync(join(REPO, 'packages', 'i18n', 'locales', 'fly', 'sonic', `${l}.json`), 'utf8')) as Record<string, string>;
-            for (const k of ['sonic.progress.label', 'sonic.progress.lesson', 'sonic.progress.step', 'sonic.progress.attempt', 'sonic.progress.counted']) expect(d[k], `${l} ${k}`).toBeTruthy();
-            for (const k of ['sonic.progress.lesson', 'sonic.progress.step', 'sonic.progress.counted']) expect(d[k], `${l} ${k}`).toMatch(/\{n\}.*\{total\}/);
+            for (const k of ['sonic.progress.label', 'sonic.progress.lesson']) expect(d[k], `${l} ${k}`).toBeTruthy();
         }
     });
 
@@ -412,12 +405,12 @@ describe('B4 (W6, M41-7): I says the runner\'s status line; a large panel draws 
         expect(now.params).toEqual(r.host.runner!.statusLine().params);
     }, 300000);
 
-    it('the panel follows the lesson: hidden before one runs; after every attempt\'s start its number, after every counted attempt the count; I\'s numbers', async () => {
+    it('the panel follows the lesson: hidden before one runs, then its one line at every attempt (lane tutor-say: no counter on the screen, I says them)', async () => {
         rig = await Rig.make(getLesson('rings-first'));
         const r = rig;
         const doc = new FakeDocument();
         const panel = new ProgressPanel({ parent: doc.body as unknown as HTMLElement, text: tEn });
-        const stop = followProgress(panel, (cb) => r.events.on('sonicEvent', cb), () => (r.host.runner ? { view: r.host.runner.view(), title: 'Rings' } : null));
+        const stop = followProgress(panel, (cb) => r.events.on('sonicEvent', cb), () => (r.host.runner ? { view: r.host.runner.view(), line: 'Rings', held: true } : null));
         expect(panel.root.hidden).toBe(true);
         expect(panel.text).toBe('');
         expect(await r.host.open('rings-first')).toBe(true);
@@ -433,15 +426,13 @@ describe('B4 (W6, M41-7): I says the runner\'s status line; a large panel draws 
         let starts = 0;
         let counted = 0;
         for (const s of seen) {
-            if (s.what === 'attempt-start') expect(s.text, s.text).toContain(`Attempt ${++starts}`);
-            if (s.what === 'attempt-pass') expect(s.text, s.text).toContain(`Counted ${++counted} of 3`);
+            expect(s.text, s.what).toBe('Rings');
+            if (s.what === 'attempt-start') ++starts;
+            if (s.what === 'attempt-pass') ++counted;
         }
         expect(starts).toBeGreaterThanOrEqual(3);
         expect(counted).toBe(3);
-        expect(panel.text.split('\n')).toEqual(['Rings', `Lesson ${lessonPaths().full.indexOf('rings-first') + 1} of 33`, 'Step 2 of 2', `Attempt ${starts}`, 'Counted 3 of 3']);
-        // the same numbers as I
-        const line = r.host.runner!.statusLine();
-        expect(panel.text).toContain(`Counted ${line.params!.counted} of ${line.params!.required}`);
+        expect(panel.text).toBe('Rings');
         stop();
     }, 300000);
 

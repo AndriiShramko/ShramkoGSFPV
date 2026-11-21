@@ -107,6 +107,17 @@ export class SpokenList {
         return this.items.map((item, i) => ({ item, i })).filter((x) => x.item.shown?.() !== false);
     }
 
+    /**
+     * The screen opened on stop `el` and said it in its own words (lane tutor-say S3: the title and the main button): the list stands
+     * there, in its section, without a word of its own; the next stop of the same section is said without the section's name.
+     */
+    openedAt(el: unknown): void {
+        const i = this.items.findIndex((x) => x.el === el);
+        if (i < 0) return;
+        this.at = i;
+        this.section = (this.items[i] as SpokenItem).section;
+    }
+
     /** The focus came to `el` (by a key, Tab, a click or the page): a stop or a heading is said. */
     focusIn(el: unknown): void {
         const i = this.items.findIndex((x) => x.el === el);

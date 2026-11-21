@@ -13,6 +13,10 @@ import type { LessonDef, SonicPrefs, SpeechLine } from '@shramko/sonic-fpv';
 import { linkSound } from '@gsfpv/scenes/sonic-link';
 import type { SonicLink } from '@gsfpv/scenes/sonic-link';
 import type { ActionId } from '@gsfpv/prefs';
+import type { FlightPlace, LinkCourse } from '../share/flight-link';
+
+/** The free flight's lesson id (the sound package's SCAN_FREE_ID, the template a scan link flies; held equal by share-links-table.test.ts). */
+const FREE_FLIGHT = 'scan-free';
 
 /** The link that opens `lesson` (null: the start screen) with `sound`; a scan lesson's link names its scan at its size. */
 function linkOf(lesson: Pick<LessonDef, 'id' | 'world'> | null, sound: SonicLink['sound']): SonicLink {
@@ -28,6 +32,20 @@ function linkOf(lesson: Pick<LessonDef, 'id' | 'world'> | null, sound: SonicLink
 /** The link that opens `lesson` (null: the start screen) with the pilot's sound settings that are not the defaults (what L copies). */
 export function lessonLink(lesson: Pick<LessonDef, 'id' | 'world'> | null, prefs: SonicPrefs): SonicLink {
     return linkOf(lesson, linkSound(prefs));
+}
+
+/**
+ * Where a flight by sound is, for its Share (lane n-share; share/flight-link.ts flightLink writes it): the scan a scan lesson or the
+ * free flight flies, at its size, with the course flown there; the lesson (none for the free flight: `sonic=fly`), the pilot's sound
+ * settings that are not the defaults. A lesson in a world of its own (no scan) names the lesson alone; null: the start screen.
+ */
+export function soundPlace(lesson: Pick<LessonDef, 'id' | 'world'> | null, prefs: SonicPrefs, course: LinkCourse): FlightPlace {
+    const sound = linkSound(prefs);
+    if (lesson === null) return { sceneId: '', course: null, mode: 'sound', lesson: 'start', sound };
+    if (lesson.world.kind !== 'scan') return { sceneId: '', course: null, mode: 'sound', lesson: lesson.id, sound };
+    const place: FlightPlace = { sceneId: lesson.world.sceneId, size: lesson.world.transform[0], course, mode: 'sound', sound };
+    if (lesson.id !== FREE_FLIGHT) place.lesson = lesson.id;
+    return place;
 }
 
 /**
@@ -62,6 +80,8 @@ export interface ShareDeps {
     /** the link in a focused, selected, read-only field of its own, labelled, outside the captions (sonic/link-panel.ts) */
     field(url: string, copied: boolean): void;
     say(line: SpeechLine): Promise<void>;
+    /** the line said after the link's (lane n-share review: a course never saved stays behind and the pilot is told so), or none */
+    readonly note?: SpeechLine | null;
 }
 
 /**
@@ -73,6 +93,7 @@ export async function shareLesson(d: ShareDeps): Promise<boolean> {
     const copied = await d.copy(d.url);
     if (!copied || d.via === 'button') d.field(d.url, copied);
     await d.say(shareLine(copied, d.lesson, d.copyKeys));
+    if (d.note) await d.say(d.note);
     return copied;
 }
 

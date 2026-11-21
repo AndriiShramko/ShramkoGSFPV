@@ -17,6 +17,7 @@
   "share.button": "Udostępnij",
   "share.title.video": "Udostępnij swój lot",
   "share.ready.page": "Link gotowy: otwiera tę scenę. Wybierz, gdzie go opublikować:",
+  "share.unsaved": "Ta trasa nie została zapisana, więc link otwiera samą scenę. Aby udostępnić trasę, zapisz ją w edytorze tras i udostępnij ponownie.",
   "share.instagram.button": "Instagram",
   "share.instagram.note": "Instagram nie ma linku do udostępniania: jego przycisk zapisuje obrazek lub nagranie i kopiuje opis.",
   "share.instagram.done": "Zapisane, opis skopiowany: otwórz Instagram, wrzuć plik i wklej opis.",

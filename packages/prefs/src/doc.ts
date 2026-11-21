@@ -71,7 +71,17 @@ export interface SonicState {
     fliesBySound?: boolean;
     /** train 3, lane quiet2: the hint to switch the narrator off was said once (after the first course by sound); absent means not */
     narratorTip?: boolean;
+    /**
+     * train 4, lane tutor-say (decision 7, plan Part C 2): how much the guide says. 'full': the lesson lines as written, a
+     * moment with what, sound, do and hint; 'short': a moment with what, sound and do, no hint line; 'new': only a new sound's
+     * name and the sound. Absent means 'short'; kept only when one of the three.
+     */
+    guide?: SonicGuideLevel;
 }
+
+/** The guide's levels (the same union as the sound package's GuideLevel, apps/fly/src/sonic/guide.ts). */
+export type SonicGuideLevel = 'full' | 'short' | 'new';
+export const SONIC_GUIDE_LEVELS: readonly SonicGuideLevel[] = ['full', 'short', 'new'];
 
 export interface Collections { radioProfiles: RadioProfiles; sceneLibrary: SceneLibraryData; stats: StatsTotals; ui: UiState; sonic: SonicState }
 export type CollectionId = 'radioProfiles' | 'sceneLibrary' | 'stats' | 'ui' | 'sonic';
@@ -331,6 +341,8 @@ export function validateCollection<K extends CollectionId>(k: K, v: unknown, dro
             if (o.fliesBySound === true) sonic.fliesBySound = true;
             // train 3, lane quiet2: the narrator hint was said once: kept only when true
             if (o.narratorTip === true) sonic.narratorTip = true;
+            // train 4, lane tutor-say: the guide's level, kept only when one of the three (absent: short)
+            if (typeof o.guide === 'string' && (SONIC_GUIDE_LEVELS as readonly string[]).includes(o.guide)) sonic.guide = o.guide as SonicGuideLevel;
             return sonic as Collections[K];
         }
     }

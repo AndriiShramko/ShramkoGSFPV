@@ -21,13 +21,13 @@
 // key list says so, and the pause menu keeps the feedback form).
 import { bindingOf } from '@gsfpv/prefs';
 import { S, attitude } from '@gsfpv/sim-core';
-import { sonicLinkPath } from '@gsfpv/scenes/sonic-link';
 import { DICTS, SCAN_FREE_ID, createSceneSampler, createTranslator } from '@shramko/sonic-fpv';
 import { estimateSpeechS } from '@shramko/sonic-fpv/audio';
 import type { AnalyticWorldInfo, FlightSample, LessonDef, LessonWorldRef, SessionEvent, SonicWorld, SpeechLine, TrackFile } from '@shramko/sonic-fpv';
 import { FlightSession } from '../session';
 import { copyText } from '../share/clipboard';
-import { KeyHelp, keyHelpLines, lessonLink, shareLesson } from './mode-keys';
+import { KeyHelp, keyHelpLines, shareLesson, soundPlace } from './mode-keys';
+import { courseOfFlight, flightLink, shareNoteKey } from '../share/flight-link';
 import { keyHintsOn } from './key-hints';
 import { KeyNames } from './key-names';
 import { ProgressPanel, followProgress, progressNow } from './progress-panel';
@@ -61,6 +61,7 @@ import type { ScanLesson } from './scan-lesson';
 import { allProgress, narratorTipSaid, setNarratorTipSaid } from './store';
 import { STATUS_ORDER, sayStatus, statusBoard } from '../app/sonic-status';
 import { setLessonView } from '../app/sonic-view';
+import { liveSearch } from '../app/env';
 
 // window.__gsfpv.sonic: what the lesson is doing, for the acceptance runs (tools/bench/src/sonic-*.ts)
 declare module '../app/test-hook' {
@@ -507,7 +508,9 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
     ctx.hook.sonicLink = null;
     ctx.sonicShare = (via) => {
         const lesson = h.lesson;
-        const url = `${location.origin}${sonicLinkPath(lessonLink(lesson, entry.setup.prefs))}`;
+        // lane n-share: the scan, the course flown there and the way of flying (share/flight-link.ts, the one writer of a flight's address)
+        const course = courseOfFlight(ctx.hook.course, liveSearch());
+        const url = flightLink(soundPlace(lesson, entry.setup.prefs, course), { origin: location.origin, locale: '' });
         const keys = copyKeys();
         ctx.hook.sonicLink = { url, copied: null };
         void shareLesson({
@@ -521,7 +524,9 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
                 return copied;
             },
             field: (link, copied) => void openLinkPanel({ parent: ctx.ui, onOpen: () => ctx.pause('panel'), onClose: () => ctx.resume('panel') }, link, copied, { title: t(lesson ? 'sonic.link.title' : 'sonic.link.titleStart'), copyKeys: keys }),
-            say: (line) => sayLine(line, true)
+            say: (line) => sayLine(line, true),
+            // a course never saved cannot travel: the link opens the scan alone and the pilot hears so (never a silent other course)
+            note: shareNoteKey(course) ? { key: 'sonic.link.unsaved' } : null
         }).catch(() => undefined);
     };
     // K (review R4, mode-keys.ts KeyHelp): the mode's keys said one after the other (the first cuts what is being said, as I and Z do)

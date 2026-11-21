@@ -1,0 +1,133 @@
+{
+ "probe": "tutor-say-accept",
+ "base": "http://localhost:7021",
+ "browser": "system-chrome",
+ "view": "1536x730@1.25",
+ "pass": true,
+ "steps": {
+  "open": {
+   "pass": true,
+   "spoken": [
+    "Fly by Sound. Start flying. Quick: headphones, the sounds of a room, then fly",
+    "All lessons"
+   ],
+   "focus": "button[sonic-start-all]"
+  },
+  "tab": {
+   "pass": true,
+   "spoken": [
+    "All lessons"
+   ],
+   "focus": "button[sonic-start-all]"
+  },
+  "start": {
+   "pass": true,
+   "clicked": true,
+   "lesson": "ears-headphones",
+   "pointerLock": false
+  },
+  "steps": {
+   "pass": true,
+   "lesson": "walls-hall",
+   "changes": [
+    {
+     "to": "Headphones on, L on your left ear.",
+     "pass": true,
+     "bad": [],
+     "firstKeys": true,
+     "packagePlace": [
+      "Sound 2 of 2."
+     ],
+     "liveButtons": 0,
+     "focus": [
+      "body",
+      "body"
+     ],
+     "screen": {
+      "line": "Headphones on, L on your left ear.",
+      "panel": "Headphones on, L on your left ear."
+     },
+     "spoken": [
+      "Sound 2 of 2.",
+      "Next, key N. Back, key B. Repeat, key Z. Menu, key Escape. Main menu, key X."
+     ],
+     "announced": [],
+     "axAdded": []
+    },
+    {
+     "to": "Wall",
+     "pass": true,
+     "bad": [],
+     "firstKeys": false,
+     "packagePlace": [],
+     "liveButtons": 0,
+     "focus": [
+      "body",
+      "div[sonic-flight]"
+     ],
+     "screen": {
+      "line": "Wall",
+      "panel": "Wall"
+     },
+     "spoken": [
+      "A small room",
+      "Wall"
+     ],
+     "announced": [],
+     "axAdded": []
+    },
+    {
+     "to": "Wall",
+     "pass": true,
+     "bad": [],
+     "firstKeys": false,
+     "packagePlace": [],
+     "liveButtons": 0,
+     "focus": [
+      "div[sonic-flight]",
+      "div[sonic-flight]"
+     ],
+     "screen": {
+      "line": "Wall",
+      "panel": "Wall"
+     },
+     "spoken": [
+      "Go."
+     ],
+     "announced": [],
+     "axAdded": []
+    }
+   ]
+  },
+  "once": {
+   "pass": true,
+   "keyLines": [
+    "Next, key N. Back, key B. Repeat, key Z. Menu, key Escape. Main menu, key X."
+   ],
+   "buttons": [],
+   "spokenCount": 9
+  },
+  "askK": {
+   "pass": true,
+   "spoken": [
+    "Here are the keys.",
+    "Press Escape for the lesson menu.",
+    "Press N to go to the next step.",
+    "Press Shift and key G for a course of gates in this scene. A new course replaces the old one.",
+    "Press B to go back one step.",
+    "Press Z to hear the task of this step again, with its sounds.",
+    "Press X to leave the lesson for the main menu. The lesson is saved.",
+    "Press Shift and key V to switch the narrator off or on. Off, you fly by sound alone."
+   ]
+  },
+  "guide": {
+   "pass": true,
+   "clicked": true,
+   "value": "new",
+   "startButtonsKept": true,
+   "focus": "select#sonic-guide[sonic-guide]",
+   "afterReload": "new"
+  }
+ },
+ "errors": []
+}
