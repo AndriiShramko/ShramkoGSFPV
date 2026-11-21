@@ -160,7 +160,7 @@ t7-base 03624451 of job base7: gap-gen (gen4a, gen4b), gap-save, gap-sound and t
       8eac608d (1950 files) with the nine walls on :6180, then every car 3 probe, hot-sog3-scans and accept-fly B6-B16
       on it: U:/Temp/gsfpv-train4/int4/probes-car3s3.sh, logs-car3s3/summary.txt (ALLDONE at the end), evidence
       2026-11-21/int4-car3-s3. Found while writing the live checks: gen4b's Shift+G opens the Generate dialog outside
-      Fly by Sound, and nine live checks pressed Shift+G (or the pause menu's Generate) and waited for a course
+      Fly by Sound, and eight live checks pressed Shift+G (or the pause menu's Generate) and waited for a course
       (course-path-wroclaw, gate-guide-wroclaw, mouse-free-probe, one-course, voxels-alone-wroclaw,
       voxel-panel-wroclaw, edit-mode-wroclaw, sonic-eye-course-wroclaw): repaired in the probes (the shared
       tools/bench/scripts/gen-build.mjs: Shift+G, then the dialog's Build; inline in editor3-smoke.ts and
@@ -375,6 +375,25 @@ Car 2 (what changed since car 1's release aa18f1e4: `git diff aa18f1e4 HEAD -- a
    test_nginx_tracks.py).
 6. Walls: no new walls (vox4 changes only how the voxels are drawn; the S2 build used the nine release walls).
 
+Car 3 (what changed since car 2's head 267923c3: `git diff 267923c3 HEAD -- apps/api apps/rooms deploy packages/sonic-fpv`;
+hot-sog3, merged from origin/main 852821e5, is already live: released on its own by the lead)
+
+1. The sound package FIRST: its main must hold 719aaf5454ddb15677ad4dc090ac6faeab853e77 before the page. The package's
+   main is 53a56759 today (car 2's pin); 719aaf54 is a fast-forward of it, 3 commits: gap-save 7f20f89f (the track
+   validator judges a gate's sizes in flown metres by the course's scale), gap-sound 150ebac2 (the quick start for a
+   returning pilot, the room names its four walls) and base7's join. It is on no remote: it lives in
+   C:/dev/gsfpv-t7-base/packages/sonic-fpv branch t7-base (and in this work copy's submodule); push from there.
+2. The API file: tracks.py (gap-save: sizes judged in flown metres, scale 0 < s <= 1000, else 1; a course at scale 1
+   meets the numbers it met before). Upload it and restart the API (gsfpv-api) BEFORE the page: with the old API the
+   server refuses a whoop course saved at Scene size x15. The old page with the new API is unchanged. Tests:
+   apps/api/tests/test_tracks_sizes.py with its fixture (the gates' api-unittest PASS). server.py is unchanged.
+3. The page: one release of this head (apps/fly with gen4a/gen4b's Generate dialog and planner, gap-gen's asked courses
+   and its race-room adopt, gap-save's client validator, gap-sound's start screen; the site; the generated catalogue).
+4. Rooms: no. apps/rooms and apps/api/rooms are unchanged (gap-gen: the course id is opaque to the rooms service; its
+   race code is page code, and RACE_ON is still false).
+5. nginx: no (deploy/nginx.conf unchanged since car 2).
+6. Walls: no new walls (the S3 build used the nine release walls).
+
 ## Live checks
 
 Car 1. After the release and the nginx reload: `LIVE_ONLY=<names> bash deploy/live-checks.sh <outdir>` with the names
@@ -441,6 +460,36 @@ the cache for the second), edit4s's s6, s7, s8 (they store a course on the serve
 
 Negative control before the release, against the live site (car 1's release aa18f1e4): see Status S3 (live-neg2).
 
+Car 3. After the sound package, the API restart (tracks.py) and the page: `LIVE_ONLY=<names> bash deploy/live-checks.sh
+<outdir>` with the names below (the hand-over's live_only), then the whole file as usual.
+
+New in deploy/live-checks.sh (read-only, render off, no GPU lock; each honours LIVE_ONLY through run(), a failed probe
+exits non-zero and FAILs its line; no save button is pressed, a generated course, the Scene size and the sound progress
+live only in the probe's own browser profile):
+- gen4-generate-dialog: gen4-accept-probe.mjs, Shift+G opens the Generate dialog, Build lays a course of that level
+- gap-gen-asked-course: gap-gen-accept.mjs, asked courses on small and scaled scans (x15 at the skull) and a room's
+  course adopted with the asker's level and spread (step 5)
+- gap-sound-start: gap-sound-accept.mjs, Fly by Sound's start for a new and a returning pilot (Quick start first), the
+  room's four walls
+gap-save has no live check: every step of gap-save-accept.mjs stores a course (it refuses an https address).
+
+Repaired in this car (the probes, not the product): gen4b's Shift+G and the pause menu's Generate open the Generate
+dialog outside Fly by Sound (nothing is replaced before its Build), so the probes behind eight existing checks would wait
+for a course that never comes after the release: course-path-wroclaw, gate-guide-wroclaw, mouse-free-probe (courseKey,
+courseMenu), one-course, voxels-alone-wroclaw, voxel-panel-wroclaw, edit-mode-wroclaw (editor3-smoke.ts),
+sonic-eye-course-wroclaw (sonic-int-review.ts with Z5_COURSE_FIRST). Each now presses the dialog's Build after the key
+(tools/bench/scripts/gen-build.mjs; it waits 4 s for the dialog, so on a page without it, the live site today, the
+probe goes on as before). Checks in the sound mode (sonic-*, narrator-off, onecourse's sound step) are unchanged: there
+Shift+G still builds at once.
+
+Existing names that cover what changed: edit4b-course-life (step 13: Course > Generate, the dialog, Build), ux4a-messages
+(gen4b's progress box and start line), edit4s-drafts (s9 presses Build), edit4a-gizmo and edit-mouse-wroclaw (genDialog),
+sound6-quick-walk (gap-sound's start order), sonic-in-place-tunis, sonic-course-wroclaw, sonic-course-wroclaw-n and
+narrator-off (the package moves), accept-fly (B6-B16), scans-open (hot-sog3, merged here).
+
+The positive side on the release build of 8eac608d and the negative side against the live site: Status S3 (Car 3),
+logs-car3s3 live-local and live-neg3.
+
 ## What the owner should try
 
 Car 1, in the order of his messages (tails4: train 2's leftovers; menu4: brief line 373; head4: the head tracking plan;
@@ -500,6 +549,32 @@ controller took part in any check.
    voxels are shaded (tops lighter than sides) and far ones fade into the fog. On Lublin the panel says the walls near the
    drone are thin; "Over the scan" brings the scan back.
 
+Car 3 (t7-base: gap-gen with gen4a and gen4b, gap-save, gap-sound; the owner's lines on the generator at his scene size,
+saving at that size and the sound lesson). No person, phone, controller or headphones took part in any check.
+
+1. Generate a course, the new way (gen4b). In flight press Shift+G (or P, then "Generate a course"): the flight pauses and
+   a window asks Beginner / Medium / Pro and Compact / Whole scene, with each level's numbers. Build (or Enter) makes it;
+   Cancel, the cross or Esc changes nothing. A box under the top row shows "Building the course", the step, a bar and the
+   time left, with Cancel. Then "Gates: N. The start gate is ... m away: follow the arrow" stays about 8 s. The choice is
+   remembered. In the editor, Course, Generate a new course: one question about unsaved changes (not two), then the same
+   window; Build reopens the editor on the new course.
+2. The generator at his size (gap-gen). Open /en/fly/?scene=5dfeb49b (the skull), click into the scene, P, drag Scene size
+   to x15, "Generate a course", Beginner, Compact, Build: in a few seconds the course stands at the skull (gate 1 about
+   7 m from it), no "enlarge the scene" text. The drone itself still stands where the scene puts it, about 800 m away at
+   x15: follow the arrow (moving the drone to the course is not done yet, see Not verified). The same at x15 on the
+   micro-greens (ab5efa0e): about 7 gates under the leaves. On Hallstatt (1994c65c) at x1, Pro and Whole scene: 24 gates.
+3. Save at that size (gap-save). A scene, P, Drone, Meteor65 card's Fly; P, Scene size x15, P. Shift+B opens the editor
+   (it makes a course first). Course, New empty course (or keep the generated one): Add gate, click into the scene for
+   each gate; key Minus makes the selected gate smaller, down to 0.5 m. Open the editor's window, type a title and the
+   name, Save (and "Correct and save" when offered): "Saved as your course: <title>, version 1". Before, a whoop course
+   with 0.5 m gates at x15 was refused ("must be at least 0.05"). The new empty course now starts where the scene puts
+   the drone and keeps the size he flies at (it kept the old course's start and size).
+4. The sound lesson (gap-sound). Headphones on, /en/fly/?sonic=start: "Quick start" is first and already focused (Enter
+   starts). The headphone check has only left and right. Sound settings show 6 rows and "Show all settings (12 more)".
+   Quick start: "Sound 1 of 2" key 1, "Sound 2 of 2" key 2; about a minute later the small room names its walls (Wall,
+   On your right, Ceiling, Floor), then "Fly to each wall and stop close to it without touching it", "Go." at about 2
+   minutes. Leave and come back: Quick start is still first, "Continue: A small room" second.
+
 ## Not verified
 
 Car 1
@@ -532,6 +607,24 @@ Car 2
 - For the lead, not repaired: the editor opens at the flight camera and nothing points to the course when it looks away
   (a hint 'Home shows the whole course' would help); vox4's voxel failure and ux4b's walls failure still say their
   problems in their panels' status lines, not through ux4a's message service.
+
+Car 3
+- No person, phone, real controller or headphones took part; no audio was judged (gap-sound's seconds use the measured
+  en voice: 117.7 s against 120 s, little margin for a slower voice or another language).
+- The probes ran with ?render=off where the picture is not judged; no course was flown through after Generate.
+- At x15 the drone stays at the scene's spawn, about 800 m from the asked course (gap-gen, For the lead: the drone at the
+  course's start pose is course.ts work, not done). At x100 on 70b50d42 nothing fits and the editor does not open on an
+  empty course (gap-save-accept s100.emptySaved fails as gap-save's own Not verified says).
+- gap-save's saving steps ran only against a local API (they store); the live API's stored courses were read by the
+  gap-save review (GET only): none newly refused.
+- Not repaired, for the editor's owners: the editor's 'This course has no start. Press G for a new course.' names key G,
+  which does nothing in the editor since edit4b; gap-sound's keys line is said on every step (keysDue, proposal in
+  gap-sound's For the lead); gap-gen's PlanAnswer.eased is not shown; generate.ts/editor.ts round gate sizes to 0.001
+  scene units (a whoop's bar at x100 rounds to 0; gap-save's For the lead).
+- Race rooms: the room's course adopted with the asker's level and spread is proven in Node and by gap-gen-accept step 5
+  in one page; no two browsers raced (RACE_ON is still false).
+- The eight repaired live-check probes were run on the release build of 8eac608d (Status S3), not yet against the live
+  site with car 3's code: that is the release's live check.
 
 ## Cost notes
 
