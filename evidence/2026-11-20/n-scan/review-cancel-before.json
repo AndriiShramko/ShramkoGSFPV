@@ -1,0 +1,58 @@
+{
+  "base": "http://localhost:6941/en",
+  "scan": "c67edb74",
+  "at": "2026-11-21T17:19:19.016Z",
+  "steps": {
+    "during": {
+      "status": "loading",
+      "errorCode": null,
+      "scene": null,
+      "loaded": 44632295,
+      "cancel": false,
+      "cards": 0,
+      "line": null,
+      "drawn": null,
+      "tick": null,
+      "sw": null
+    },
+    "afterCancel": {
+      "status": "loading",
+      "errorCode": null,
+      "scene": null,
+      "loaded": 46343804,
+      "cancel": false,
+      "cards": 0,
+      "line": null,
+      "drawn": null,
+      "tick": null,
+      "sw": null
+    },
+    "card": null,
+    "opened": {
+      "status": "loading",
+      "errorCode": null,
+      "scene": null,
+      "loaded": 222913141,
+      "cancel": false,
+      "cards": 0,
+      "line": null,
+      "drawn": null,
+      "tick": null,
+      "sw": null
+    },
+    "flight": {
+      "keyboard": false,
+      "tick0": null,
+      "tick1": null
+    }
+  },
+  "errors": [],
+  "pass": false,
+  "why": [
+    "no Cancel on the card during the download",
+    "Cancel not clickable",
+    "no catalog card in the scene list after Cancel",
+    "the catalog scene did not open: {\"status\":\"loading\",\"errorCode\":null,\"scene\":null,\"loaded\":222913141,\"cancel\":false,\"cards\":0,\"line\":null,\"drawn\":null,\"tick\":null,\"sw\":null}",
+    "not flown: tick null -> null"
+  ]
+}

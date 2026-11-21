@@ -180,6 +180,8 @@ export async function fly(ui: HTMLElement, canvas: HTMLCanvasElement, link: Scen
         next: controlsNext ? t('loading.next') : null,
         onRetry: () => location.reload(),
         onBack: () => { location.search = ''; },
+        // n-scan review: a heavy scan downloads for minutes without a stall, so the card's Cancel (key Esc) is the way on
+        onCancel: () => { location.search = ''; },
         onFlyNow: () => flyNow.press()
     });
     const tLoad = performance.now();

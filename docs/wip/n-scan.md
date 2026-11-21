@@ -162,6 +162,23 @@ No SOG version 1 scan (means.shape) was found on superspl.at.
 - S3: about 40 calls; most went to finding where a failure reaches the pilot (three call sites: picker, first load, switch) and to two old tests that read source text or stub the renderer. Cheaper: the design could name the three call sites and say that ?render=off never runs the renderer's checks.
 - S4 run 2: about 50 calls; most went to the heavy-file line: told through ux4a, rebuilt, then found by a probe that ux4a lines wait under the loading card, and reverted. Cheaper: the design could say where the pilot looks during a download (the loading card, gap-msgs) and that tell() is covered there.
 
+- Review: about 45 calls; most went to waiting for the shared GPU lock and to a second build after the Cancel repair. Cheaper: the design could say that the first load's card has no Cancel (only switches do), so a probe of a heavy first load checks it from the start.
+
+## Review
+
+Verdict: SHIP (independent check, 2026-11-21; full text U:/Temp/gsfpv-train4/reviews/n-scan.md).
+- PROVEN, repaired in 78351fc3: SuperSplatCatalog.randomTopRated (superspl.ts) used its own rule that let 'legacy'
+  through, so the random SuperSplat button could draw a compressed PLY of up to 163 MB. Test in superspl.test.ts, NEG OK.
+- PROVEN, repaired in the review commit: the first load's card (app/flight.ts) had no Cancel; a heavy scan that
+  downloads steadily never stalls, so c67edb74 showed no Cancel and no "Choose another scan" for minutes (drawn probe
+  tools/bench/scripts/n-scan-review-cancel.mjs on the old build: "no Cancel on the card during the download",
+  evidence review-cancel-before.json). Now onCancel = the same as "Choose another scan"; on the new build Cancel was
+  on the card and clicked, then the scene list "Choose a scan" opened (review-cancel-after.json; picture). Claim 2's
+  c67edb74 PASS was recorded before n-scan-accept.mjs judged the Cancel.
+- Drawn on a build of 78351fc3 by mouse: a39abad1, a5d25fb4, 143e76b0 PASS flown (review-accept-drawn.json).
+- DOUBT: deviceSplatLimit (estimate) may refuse a large single SOG of the catalog on a low-memory phone;
+  scene-host.ts and flight.ts are not owned files (listed under For the lead).
+
 ## What the owner should try
 
 1. After the deploy open https://gsfpv.flyreelstudio.eu/en/fly/?scene=a39abad1: the hall with the brick dinosaurs opens and flies.
