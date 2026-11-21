@@ -261,7 +261,10 @@ the hot repair.
 Car 2's three failed live checks, second run (ship-car2/live-r2.log): sonic-course-wroclaw PASS, vox4-voxels-only PASS
 (unsteady, one of two each), edit4a-gizmo FAIL again at 13.laptop (the probe finds no other gate to click in the
 844x390 window; nothing lies over another thing). Lane fix-gizmo13 (prompts/t9-fix-gizmo13.md, copy C:/dev/gsfpv-t7-hot,
-check r-fix-gizmo13) decides page or probe; it runs since 12:30 UTC.
+check r-fix-gizmo13) decided: the probe (the page selects every gate clicked). Its repair of step 13 is checked
+(SHIP), merged into main as 13670b66 (tools/bench only, nothing to release), and edit4a-gizmo passes all 15 steps on
+the live site (about 13:15 UTC, ship-car2/live-r3.log). car3 must merge origin/main before its hand-over anyway (the
+hot repair is there): it takes this with it.
 The hot repair's failed live check, pause-rise-lublin, failed twice the same way: Lublin reveals after 45 s (26 s on
 2026-11-16) and draws 0.43 to 0.54 M splats in the flight, 0.82 to 0.95 M in the pause (2.45 M and 9.85 M then); the
 count does not fall after Continue. Either pilots lost detail and loading speed on big streamed scans (with car 2 or
