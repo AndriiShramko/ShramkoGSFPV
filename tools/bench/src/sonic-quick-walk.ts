@@ -138,7 +138,7 @@ const look = (page: Page): Promise<Look> =>
 const fits = (l: Look): boolean => l.overflowX <= 0 && l.small.length === 0 && l.outside.length === 0 && l.overlaps.length === 0 && l.buttons.length > 0;
 const fitValue = (l: Look): unknown => ({ overflowX: l.overflowX, buttons: l.buttons.length, small: l.small, outside: l.outside, overlaps: l.overlaps });
 
-type Hook = { __gsfpv?: { sonic?: (e?: boolean) => { lesson: string | null; phase: string | null; asking: boolean; question: { id: string; options: number } | null; speechQueue: number; engine: string; events: { kind: string; what?: string; lessonId?: string; key?: string }[] } } };
+type Hook = { __gsfpv?: { sonic?: (e?: boolean) => { lesson: string | null; phase: string | null; asking: boolean; question: { id: string; options: number } | null; speechQueue: number; engine: string; events: { kind: string; what?: string; lessonId?: string; key?: string; id?: string }[] } } };
 const hook = (page: Page) => page.evaluate(() => (window as unknown as Hook).__gsfpv?.sonic?.(true) ?? null);
 
 async function openStart(page: Page, origin: string): Promise<void> {
@@ -218,7 +218,8 @@ const savedPath = (page: Page): Promise<string | null> =>
  */
 async function switchPath(page: Page, origin: string, who: string): Promise<void> {
     const v: Record<string, unknown> = {};
-    const full = await page.locator('[data-testid="sonic-start-full"]').first().boundingBox();
+    // int4 car 5: tutor-say's All lessons (sonic-start-all) took Full course's place: it saves the full path
+    const full = await page.locator('[data-testid="sonic-start-all"]').first().boundingBox();
     if (full) {
         await page.mouse.click(full.x + full.width / 2, full.y + full.height / 2);
         for (let i = 0; i < 50 && (await savedPath(page)) !== 'full'; i++) await sleep(100);
@@ -242,7 +243,7 @@ async function switchPath(page: Page, origin: string, who: string): Promise<void
         v.afterQuick = await savedPath(page);
         v.lesson = s?.lesson ?? null;
     }
-    step(who, 11, 'Full course, back, then Quick start by Tab and Enter: path full, then fast, the headphone check opens', v.afterFull === 'full' && (v.tabs as number) < 40 && v.afterQuick === 'fast' && v.lesson === 'ears-headphones', v);
+    step(who, 11, 'All lessons, back, then Start flying by Tab and Enter: path full, then fast, the headphone check opens', v.afterFull === 'full' && (v.tabs as number) < 40 && v.afterQuick === 'fast' && v.lesson === 'ears-headphones', v);
 }
 
 async function chromeWalk(browser: Browser, origin: string): Promise<void> {
@@ -269,13 +270,23 @@ async function chromeWalk(browser: Browser, origin: string): Promise<void> {
     const dirs = spoken.filter((k) => k.startsWith('dir.'));
     const banned = spoken.filter((k) => k === 'dir.front' || k === 'dir.back' || k === 'headphones.q-front-back');
     const walls = ['cue.safety.wall.name', 'dir.right', 'cue.safety.ceiling.name', 'cue.safety.floor.name'];
-    step(who, 6, 'the small room names wall, right, ceiling, floor before its flight and nothing says front or behind', walls.every((k) => spoken.includes(k)) && banned.length === 0, { said: walls.filter((k) => spoken.includes(k)), dirs, banned });
+    const listed = walls.every((k) => spoken.includes(k));
+    // int4 car 5: a page that teaches by moments (tutor-moment, walls-hall v5; the lead's decision 3 of 2026-11-20: no ceiling or
+    // floor in the first set) lists no wall sounds before the room's flight: its flight stops and introduces them (a 'moment')
+    let moments: string[] = [];
+    for (let i = 0; !listed && s?.lesson === 'walls-hall' && i < 60 && moments.length === 0; i++) {
+        const ev = (await hook(page))?.events ?? [];
+        const ro = ev.findIndex((e) => e.kind === 'lesson' && e.what === 'open' && e.lessonId === 'walls-hall');
+        moments = ro < 0 ? [] : ev.slice(ro).filter((e) => e.kind === 'moment' && typeof e.id === 'string').map((e) => e.id as string);
+        if (moments.length === 0) await sleep(250);
+    }
+    step(who, 6, 'the small room names its walls (before its flight, or in a moment of it) and nothing says front or behind', (listed || moments.length > 0) && banned.length === 0, { by: listed ? 'list' : 'moments', said: walls.filter((k) => spoken.includes(k)), moments, dirs, banned });
     step(who, 7, 'walls-hall opens after it', s?.lesson === 'walls-hall', { lesson: s?.lesson ?? null, phase: s?.phase ?? null, seconds: Math.round((Date.now() - t0) / 1000) });
     await openStart(page, origin);
     const back = await look(page);
-    // gap-sound (car 3): Quick start stays first for a returning pilot, Continue second
-    const order = ['sonic-start-quick', 'sonic-start-continue', 'sonic-start-full'];
-    step(who, 8, 'back at Start: Quick start, Continue, Full course', order.every((id, i) => back.startOrder[i] === id), { order: back.startOrder });
+    // gap-sound (car 3): Quick start stays first for a returning pilot; int4 car 5: tutor-say's Start flying, All lessons, Continue
+    const order = ['sonic-start-quick', 'sonic-start-all', 'sonic-start-continue'];
+    step(who, 8, 'back at Start: Start flying, All lessons, Continue',order.every((id, i) => back.startOrder[i] === id), { order: back.startOrder });
     await page.setViewportSize({ width: 844, height: 390 });
     await sleep(500);
     const small = await look(page);

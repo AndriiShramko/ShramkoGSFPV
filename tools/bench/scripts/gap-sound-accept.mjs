@@ -220,7 +220,20 @@ try {
     const roomOpen = events.findIndex((e) => e.kind === 'lesson' && e.what === 'open' && e.lessonId === 'walls-hall');
     const roomKeys = roomOpen < 0 ? [] : events.slice(roomOpen).filter((e) => e.kind === 'speech').map((e) => e.key);
     const at = WALL_KEYS.map((k) => roomKeys.indexOf(k));
-    step('wallsInRoom', at.every((i) => i >= 0) && at.every((i, j) => j === 0 || i > (at[j - 1] ?? -1)) && ga.flyAt !== null, { roomKeys: roomKeys.slice(0, 12) });
+    const listed = at.every((i) => i >= 0) && at.every((i, j) => j === 0 || i > (at[j - 1] ?? -1));
+    // int4 car 5: a page that teaches by moments (tutor-moment, the package's walls-hall v5; the lead's decision 3 of 2026-11-20:
+    // ceiling and floor are not in the first set's moments) lists no wall sounds before the room's flight: the room stops and
+    // introduces its sounds in the air. Then the room is right when its flight brings a moment (tutor-air-accept walks one through)
+    let roomMoments = [];
+    if (!listed && ga.flyAt !== null) {
+        for (let i = 0; i < 150 && roomMoments.length === 0; i++) {
+            const ev = (await hook(page).catch(() => null))?.events ?? [];
+            const ro = ev.findIndex((e) => e.kind === 'lesson' && e.what === 'open' && e.lessonId === 'walls-hall');
+            roomMoments = ro < 0 ? [] : ev.slice(ro).filter((e) => e.kind === 'moment' && e.id).map((e) => e.id);
+            if (roomMoments.length === 0) await sleep(100);
+        }
+    }
+    step('wallsInRoom', ga.flyAt !== null && (listed || roomMoments.length > 0), { by: listed ? 'list' : 'moments', roomKeys: roomKeys.slice(0, 12), roomMoments });
     const fb = spokenKeys.filter((k) => FRONT_BACK_KEYS.test(k ?? ''));
     step('noBehindOnTheWay', spokenKeys.length > 0 && fb.length === 0, { frontBackKeys: fb, keysSaid: spokenKeys.length });
     facts.said = said.slice(0, 40).map((x) => ({ t: ga.quickAt === null ? null : Math.round((x.t - ga.quickAt) / 100) / 10, s: x.s, text: x.text.slice(0, 70) }));
@@ -231,14 +244,19 @@ try {
     const back = await ctx.newPage();
     await openStart(back);
     const ret = await look(back);
-    step('returningQuickFocused', ret.startOrder[0] === 'sonic-start-quick' && ret.focused === 'sonic-start-quick' && ret.startOrder[1] === 'sonic-start-continue' && /^Continue: \S/.test(ret.continueText ?? ''), { order: ret.startOrder, focused: ret.focused, continueText: ret.continueText });
+    // int4 car 5: tutor-say's Start group is Start flying, All lessons, then Continue (gap-sound had Continue second)
+    step('returningQuickFocused', ret.startOrder[0] === 'sonic-start-quick' && ret.focused === 'sonic-start-quick' && ret.startOrder.includes('sonic-start-continue') && /^Continue: \S/.test(ret.continueText ?? ''), { order: ret.startOrder, focused: ret.focused, continueText: ret.continueText });
     step('returningNoBehind', JSON.stringify(ret.hp) === '["sonic-hp-left","sonic-hp-right"]' && ret.behind.length === 0, { headphoneButtons: ret.hp, behindButtons: ret.behind });
 
     // 4. the independent check's step: the returning pilot who wants to go on, not start again, presses key Tab once from the
     //    focused Quick start (the keyboard reaches Continue next) and clicks Continue with the mouse: the lesson it named opens,
     //    not the headphone check again
-    await back.keyboard.press('Tab');
-    const tabbed = await back.evaluate(() => document.activeElement?.getAttribute('data-testid') ?? null);
+    //    int4 car 5: Continue is the third stop of Start now (after All lessons): key Tab at most twice
+    let tabbed = null;
+    for (let i = 0; i < 2 && tabbed !== 'sonic-start-continue'; i++) {
+        await back.keyboard.press('Tab');
+        tabbed = await back.evaluate(() => document.activeElement?.getAttribute('data-testid') ?? null);
+    }
     const roomTitle = PKG_EN['lesson.walls-hall.title'];
     await clickCentre(back, '[data-testid="sonic-start-continue"]');
     let resumed = null;

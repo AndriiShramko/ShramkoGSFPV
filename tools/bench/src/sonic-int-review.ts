@@ -680,8 +680,36 @@ const notes = (rows: readonly HumRow[]): Hum[] => rows.flatMap((r) => (r.hum ?? 
 const notBehind = (hs: readonly Hum[]): boolean => hs.every((h) => (h.dir as [number, number, number])[2] <= 1e-3);
 const sideOf = (h: Hum): number => (h.dir as [number, number, number])[0];
 
+/** The moment card (tutor-air's sonic-moment) is on the screen: the flight is frozen while a new sound is introduced. */
+const momentShown = (page: Page): Promise<boolean> =>
+    page
+        .evaluate(() => {
+            const el = document.querySelector('[data-testid="sonic-moment"]');
+            return !!el && getComputedStyle(el).display !== 'none' && el.getBoundingClientRect().height > 0;
+        })
+        .catch(() => false);
+
 /**
- * A lesson open with its flying phase reached; then W held (forward), D and A each held 1.5 s within it (a turn or a slide to each side),
+ * int4 car 5: a lesson that teaches by moments (tutor-moment: the corridor opens with its 'target' moment) freezes the flight at its
+ * start until the pilot goes on with key N, as the moment's line says. Waits up to 4 s for one, presses N at most 3 times; a page
+ * without moments (the site before car 5) only waits.
+ */
+async function goOnFromMoment(page: Page): Promise<void> {
+    let presses = 0;
+    const t0 = Date.now();
+    while (Date.now() - t0 < 12000) {
+        if (await momentShown(page)) {
+            if (presses >= 3) break;
+            await page.keyboard.press('KeyN');
+            presses++;
+            await sleep(800);
+        } else if (presses > 0 || Date.now() - t0 > 4000) break;
+        else await sleep(200);
+    }
+}
+
+/**
+ * A lesson open with its flying phase reached (and its start moment gone on with key N); then W held (forward), D and A each held 1.5 s within it (a turn or a slide to each side),
  * the rows of the flight returned. The keys the pilot uses; nothing is driven through the hook.
  */
 async function flyWithTurns(ctx: BrowserContext, served: Served, lesson: string, label: string): Promise<{ page: Page; rows: HumRow[]; flying: boolean }> {
@@ -691,6 +719,7 @@ async function flyWithTurns(ctx: BrowserContext, served: Served, lesson: string,
         log(`${label}: ${e.message.slice(0, 700)}`);
         return false;
     });
+    await goOnFromMoment(page);
     await humRows(page);
     await page.keyboard.down('KeyW');
     await sleep(2500);
