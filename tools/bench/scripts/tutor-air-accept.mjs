@@ -169,6 +169,15 @@ async function moment(page, first, inFlight) {
         await sleep(100);
     }
     await hold(page, 'KeyW', false);
+    if (DRAW) {
+        // the card with its line, at 1536x730, then at 844x390
+        for (let i = 0; i < 40 && !(await look(page))?.card?.line; i++) await sleep(100);
+        await page.screenshot({ path: `${DRAW}-1536.png` }).catch(() => undefined);
+        await page.setViewportSize({ width: 844, height: 390 });
+        await sleep(600);
+        await page.screenshot({ path: `${DRAW}-844.png` }).catch(() => undefined);
+        await page.setViewportSize(VIEW.viewport);
+    }
     // the moment's sentences: let the voice speak them (up to 20 s), the card read meanwhile
     for (let i = 0; i < 200; i++) {
         const s = await look(page);
@@ -379,12 +388,7 @@ async function launch() {
 try {
     let page = await launch();
     await firstFlight(page);
-    if (DRAW) {
-        await page.screenshot({ path: `${DRAW}-1536.png` }).catch(() => undefined);
-        await page.setViewportSize({ width: 844, height: 390 });
-        await sleep(600);
-        await page.screenshot({ path: `${DRAW}-844.png` }).catch(() => undefined);
-    } else {
+    if (!DRAW) {
         await ctx.close();
         page = await launch();
         await guideOff(page);

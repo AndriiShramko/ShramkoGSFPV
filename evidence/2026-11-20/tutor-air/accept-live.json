@@ -1,0 +1,101 @@
+{
+ "probe": "tutor-air-accept",
+ "base": "https://gsfpv.flyreelstudio.eu",
+ "browser": "system-chrome",
+ "view": "1536x730@1.25",
+ "draw": false,
+ "pass": false,
+ "steps": {
+  "start": {
+   "pass": true,
+   "clicked": true,
+   "lesson": "ears-headphones",
+   "pointerLock": false
+  },
+  "ears": {
+   "pass": true,
+   "check": "ears-headphones",
+   "next": "walls-hall",
+   "atS": 52.585
+  },
+  "move60": {
+   "pass": false,
+   "moveS": 109.153
+  },
+  "words60": {
+   "pass": false,
+   "words": 143,
+   "before": [
+    "Headphone check",
+    "Sound 1 of 2.",
+    "Where is this sound? Press 1 for left, 2 for right, 3 if you are not sure.",
+    "Taken: 1.",
+    "Sound 2 of 2.",
+    "Next, key N. Back, key B. Repeat, key Z. Menu, key Escape. Main menu, key X.",
+    "Where is this sound? Press 1 for left, 2 for right, 3 if you are not sure.",
+    "Taken: 2.",
+    "Good. Your headphones work well.",
+    "Your headphones work well. You are ready for the next step.",
+    "Lesson passed. Next, a bit harder: A small room.",
+    "A small room",
+    "Next, key N. Back, key B. Repeat, key Z. Menu, key Escape. Main menu, key X.",
+    "Wall",
+    "On your right.",
+    "Ceiling",
+    "Floor",
+    "Fly to each wall and stop close to it without touching it.",
+    "Go.",
+    "Next, key N. Back, key B. Repeat, key Z. Menu, key Escape. Main menu, key X."
+   ]
+  },
+  "freeze": {
+   "pass": false,
+   "moment": null,
+   "earlier": []
+  },
+  "card": {
+   "pass": false
+  },
+  "onN": {
+   "pass": false
+  },
+  "tour": {
+   "pass": false,
+   "said": [
+    "Meet the sounds",
+    "In this lesson you meet every sound you will hear while flying.",
+    "I name each one and play it. You do not have to remember them all at once.",
+    "Listen to every sound.",
+    "I will name each sound you will meet and then play it. Listen to how it changes.",
+    "Wall",
+    "A short wooden knock, coming from where the wall is. The closer you get, the faster the knocks.",
+    "Next sound.",
+    "Next, key N. Back, key B. Repeat, key Z. Menu, key Escape. Main menu, key X.",
+    "Floor",
+    "A low, soft thud from below. It speeds up when you sink toward the ground.",
+    "Next sound."
+   ],
+   "cardNames": [],
+   "moved": 0,
+   "back": false
+  },
+  "guideOff": {
+   "pass": true,
+   "free": {
+    "soundOn": "scan-free",
+    "cards": 0,
+    "said": [],
+    "maxSpeed": 5.23
+   },
+   "lesson": {
+    "lesson": "walls-hall",
+    "cards": 0,
+    "momentEvents": 0,
+    "maxSpeed": 3.19
+   }
+  }
+ },
+ "errors": [],
+ "built_from": "89af1ad2",
+ "command": "node tools/bench/scripts/tutor-air-accept.mjs <base> <out.json>"
+}

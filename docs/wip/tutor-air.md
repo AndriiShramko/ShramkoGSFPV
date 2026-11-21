@@ -58,8 +58,20 @@ Base (OLD of every diff and negative control): 03624451b8deb79d179cc9a5d07adf22f
   - [x] tools/bench/test/sonic-tour.test.ts 4/4 (real CuePlanner in walls-hall); NEG OK on 03624451 (and with bridge.ts alone);
         nearby tests 26 files 367 (10 skipped) pass; fly + bench typecheck rc 0; architecture ok
   - lesson-menu.ts: no change needed, the glossary is a lesson of the lesson list there (ears-glossary), not its own item
-- [ ] S4 the page acceptance (tutor-moment head already merged in S2; mouse probe local + live; one drawn run;
-      accept-fly B6-B16; gates once with catalog; "What the owner should try"; delete dist)
+- [ ] S4 the page acceptance
+  - [x] tutor-moment-done.txt = 1c804864 / package 9ac7876: both already merged in S2 (`git merge-base --is-ancestor` true
+        for tutor-say 21f94ebc and 1c804864; `git submodule status` 9ac7876 with no '+'); nothing to merge again
+  - [x] tools/bench/scripts/tutor-air-accept.mjs (b04b9b96): fresh profile, 1536x730 @1.25, ?render=off, mouse on Start flying
+  - [x] two page findings fixed (89af1ad2): (1) the card's line stayed empty - the package says a moment's first sentence
+        before it sends the moment, the card ignored it while hidden; now it keeps the sentence being spoken (ended() on
+        speech.end); (2) the lesson's line of keys (15 words) was said inside the headphone check: 67 words before the first
+        movement; a page that teaches by moments now names keys in the first moment and on K only (lessons.ts
+        teachesByMoments, keysDue). Tests sonic-moment-keysline 3/3, sonic-moment-card 4/4; NEG OK on b04b9b96 and the base
+  - [x] local 9/9 PASS (moving 31.6 s after the click, 51 words before it); live 6 FAIL (move60, words60, freeze, card, onN,
+        tour); evidence/2026-11-20/tutor-air/accept-local.json, accept-live.json
+  - [x] the drawn run (two pictures of the card, looked at); accept-fly B6-B12 PASS
+  - [ ] accept-fly B13-B16 (the first run timed out at 590 s after B12; rerun in progress)
+  - [ ] gates once (typecheck,vitest,architecture,i18n,b18,leaks,catalog); delete dist
 
 Differences from the plan (the code wins):
 - The runner plays a moment's sound as 'cue' actions (repeat-cue, with the form's direction), not through demoFrame: during a
@@ -72,7 +84,24 @@ Differences from the plan (the code wins):
 
 ## What the owner does
 
-(S4)
+1. Opens the sound page (`/en/fly/?sonic=start`) with headphones on and clicks Start flying with the mouse.
+2. The headphone check: "Sound 1 of 2", a sound on one side, "Press 1 for left, 2 for right"; he presses 1, then 2.
+   No list of keys is read. About half a minute after the click he is in the air ("A small room ... Go.").
+3. He flies forward with key W. Near the wall the game stops: the craft hangs still, every other sound goes quiet, the
+   voice says "Wall: a wooden knock from a wall near you, faster as you get closer.", the knock plays alone (far, then
+   near), then one sentence on what to do. The screen goes dark with the yellow word "Wall" and that one sentence in
+   large white letters. The voice names the keys once: key Z hears it again, key N goes on, Shift+K "I know this".
+4. He presses key N: the flight goes on.
+5. Any time in a flight by sound he presses key G ("What is this sound?"): the flight stops, "Sound 1 of 2: Wall." and
+   the knock alone, "Sound 2 of 2: Room." and the room alone, "Back to the flight.", and he flies on.
+6. With the narrator off (Shift+V) no moment stops the flight and nothing of this is said.
+
+### What the owner should try
+
+- Click Start flying, answer the headphone check (1, 2): you are flying within about half a minute.
+- Fly at the wall: the game stops, says what the new sound is, plays it alone, then says what to do; key N flies on.
+- The big line on the screen during that stop: the sound's name in yellow and the sentence being spoken.
+- Press key G in any flight by sound: each sound you hear now, named and played alone, then the flight goes on.
 
 ## Claims
 
@@ -87,10 +116,33 @@ Differences from the plan (the code wins):
 4. G ("What is this sound?") freezes the craft, names each sound heard now (safety first) and plays it alone, nothing sounding
    while a name is said; nothing heard: one line; G again ends it and gives the lesson its gate back; G is no longer the glossary.
    `npx vitest run tools/bench/test/sonic-tour.test.ts`: 4 passed; NEG OK on 03624451.
+5. A page that teaches by moments says no line of keys before the first movement (keys named in the first moment, then on
+   K), and the card shows a moment's first sentence at once. `npx vitest run tools/bench/test/sonic-moment-keysline.test.ts
+   tools/bench/test/sonic-moment-card.test.ts`: 7 passed; NEG OK on b04b9b96 and on 03624451.
+6. In the page, by the mouse at 1536x730 @1.25 on a new profile: moving 31.6 s after the click on Start flying, 51 words
+   before it; in the first moment the craft moved 0 m in 2 s with key W held while the engine planned only safety.wall; the
+   card showed "Wall" and the sentence spoken; N went on with one press; G said "Sound 1 of 2: Wall.", "Sound 2 of 2: Room."
+   with the craft still, then the flight went on; with the narrator off no card and no line in a free flight and no moment
+   in walls-hall. `node tools/bench/scripts/tutor-air-accept.mjs http://localhost:7061 <out>`: 9/9 PASS
+   (evidence/2026-11-20/tutor-air/accept-local.json).
+7. The same probe against the live site FAILs move60 (109 s), words60 (143 words), freeze, card, onN and tour (G opens the
+   glossary lesson there); start, ears and guideOff pass there (live has no moments at all, so guideOff cannot fail there).
+   `node tools/bench/scripts/tutor-air-accept.mjs https://gsfpv.flyreelstudio.eu <out>`: rc 1
+   (evidence/2026-11-20/tutor-air/accept-live.json). Read only: a throwaway profile, nothing saved, sent or created.
 
 ## Not verified
 
-(S4)
+- No person, no phone, no real controller and no screen reader took part: the speech is the page's own speech queue with
+  speechSynthesis replaced by a timed spy (0.065 s a character), so seconds are estimates, words are counted exactly.
+- The whole first set within 7 minutes is not flown in the page: a keyboard pilot for the corridor, the tunnels and the
+  rings in the real flight model is a lane of its own. It rests on tutor-moment's scripted pilot over the same lessons
+  (packages/sonic-fpv test/first-set.test.ts: the set in 298-327 s in four languages, evidence/2026-11-20/tutor-moment/
+  first-set.json). In the page only the first flying lesson's first moment and the tour were flown.
+- The first walls-hall moment met by the page pilot is the wall (the height moment opens the second attempt), so the
+  moment of a sound other than the wall was not seen in the page; the unit tests cover the others.
+- During a moment the recorder's small "Recording" chip (bottom right) stays visible above the card: it is the recorder's
+  privacy state, left on purpose; everything else is faded.
+- How the moment feels and sounds (a 2-3 s sound, far then near) is for human ears.
 
 ## For the lead
 
@@ -99,6 +151,15 @@ Differences from the plan (the code wins):
   (SonicState.known, S2); tools/bench/test/sonic-fake-dom.ts (a classList, test helper); packages/prefs/test/catalog.test.ts
   (the mode's key list gains Shift+K).
 - The moment's spoken lines are `sonic.say.*` keys (the engine's prefix), not `sonic.moment.*` as the plan's Part C 6 wrote.
+- S4: lessons.ts `keysDue()` (tutor-say's say path) gained one condition: a page that teaches by moments (teachesByMoments:
+  a MomentHost and the narrator on) says no line of keys at a lesson's start (the free flight keeps its own). Without it the
+  headphone check said "Next, key N. Back, key B. ..." and the first movement came after 67 words (decision 2 and 10).
+  tools/bench/test/sonic-lesson-rig.ts (test helper) takes an optional `moments`.
+- The package head the pin stands on: packages/sonic-fpv 9ac7876dee42b8a874e51e6d46eb7cf8d70c3a48 (tutor-moment's head
+  1c804864, branch tutor-moment of the package); deploy the sound package with the page.
+- Deploy order: the page only (apps/fly; no API file, no room, no nginx change), built with the package at 9ac7876.
+- Live checks after the deploy: `node tools/bench/scripts/tutor-air-accept.mjs https://gsfpv.flyreelstudio.eu <out>` must
+  then PASS 9/9 (read only); accept-fly B6-B16.
 
 ## Cost notes
 
