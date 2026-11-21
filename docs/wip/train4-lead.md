@@ -285,7 +285,8 @@ Watcher: lead_watch.sh, a background task of the lead's chat, as before.
 
 Live: `main` 72d4babf (built 13:32 UTC), sound package 719aaf5: car 3 (t7-base: gen4a, gen4b, gap-gen, gap-save,
 gap-sound) on top of car 2 and the hot repair. STATE.md has the entry. Live checks 22 of 23; FAIL gap-gen-asked-course
-case 2 (the skull scan: no Generate dialog after 241 s); the lead started a second run (ship-car3/live-r2.log).
+case 2 (the skull scan: no Generate dialog after 241 s); a second run passed all five cases (ship-car3/live-r2.log):
+unsteady, one of two.
 ship-car3 needed three tries: exit 30 (the package commit lived only in the integration copy's clone: ship_handover.py
 now fetches it from there) and exit 12 (the lead ran gates.py in the lead copy and the b18 gate rewrote a tracked
 evidence file: never run gates in C:/dev/gsfpv-v03, or `git checkout -- evidence` after; the lane's copy is the place).
