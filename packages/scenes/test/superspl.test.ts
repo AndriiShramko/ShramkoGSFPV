@@ -444,12 +444,12 @@ describe('pickRandomTopRated', () => {
 
 describe('formats the API does not name (review C9)', () => {
     // c67edb74 "Gothic Church - Kefermarkt": the best-liked walkable scene on 2026-10-01; the API gives its format
-    // as '' and the CDN has only scene.compressed.ply for it (resolveScene: 'unsupported')
+    // as '' and the CDN has only scene.compressed.ply for it (resolveScene: kind 'ply'; never picked at random)
     const tier = items(20, (i) => (i === 0 ? { id: 'c67edb74', format: '' } : {}));
 
     it('only sog, ssog and sogs count as known; the pure picker never draws an unknown one', () => {
         expect(['sog', 'ssog', 'sogs', 'compressed.ply', '', 'ply', 'SOG'].map(formatVerdict))
-            .toEqual(['opens', 'opens', 'opens', 'unsupported', 'unknown', 'unknown', 'unknown']);
+            .toEqual(['opens', 'opens', 'opens', 'legacy', 'unknown', 'unknown', 'unknown']);
         const count = (o: Partial<Parameters<typeof pickRandomTopRated>[1]>) => {
             const rng = mulberry32(3);
             let n = 0;

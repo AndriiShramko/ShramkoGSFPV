@@ -20,7 +20,8 @@ const ID_RE = SCENE_ID_RE;
  * fly locale's `error.<code>` in every language, except 'unsupported' (scenes.unsupported); a test holds
  * every code to that. The technical reason stays in the error's message (the test hook's error, a bug
  * report's details), never on screen.
- * 'unsupported': the scene exists, but in a format the simulator cannot open yet (2025 compressed PLY).
+ * 'unsupported': the scene exists, but in a format the simulator cannot open yet (GSAF, SuperSplat's animated
+ * scans: UNSUPPORTED_FILES); the message names the format.
  * 'broken': the scene's content files arrived, but none is a scan the engine can open (a damaged
  * lod-meta.json and nothing to fall back to).
  */
@@ -211,6 +212,15 @@ async function findVersion(id: string, f: FetchLike, onFound: (v: number) => voi
     throw new SceneError('not-found', `scene ${id} not found`);
 }
 
+/**
+ * Files SuperSplat publishes that no PlayCanvas engine reads (up to 2.25.0-beta.10, 2026-11-20): a folder
+ * holding one of them and none of CONTENT_FILES is 'unsupported' with the format's name, not 'not-found'.
+ * GSAF: SuperSplat's animated (4D) scans, `scene.gsaf`, API format 'gsaf' (superspl.ts UNSUPPORTED_FORMATS).
+ */
+export const UNSUPPORTED_FILES: ReadonlyArray<{ readonly file: string; readonly format: string }> = [
+    { file: 'scene.gsaf', format: 'GSAF' }
+];
+
 export async function resolveScene(id: string, f: FetchLike = fetch, blocked: string[] = []): Promise<ResolvedScene> {
     if (!ID_RE.test(id)) throw new SceneError('invalid-link', `not a scene id: ${id}`);
     if (blocked.includes(id)) throw new SceneError('blocked', `scene ${id} was taken down on request`);
@@ -242,11 +252,19 @@ export async function resolveScene(id: string, f: FetchLike = fetch, blocked: st
     const at = files(v);
     const [lod, meta, walls] = await ask(v);
     // levels of detail first; a file whose lookup did not answer is still tried before the next one
-    const content = contentOrder(`${CDN}/${id}/v${v}`, { 'lod-meta': lod, meta });
+    let content = contentOrder(`${CDN}/${id}/v${v}`, { 'lod-meta': lod, meta });
     if (content.length === 0) {
         if (lod === 'unknown' || meta === 'unknown') throw new SceneError('network', `scene ${id} v${v}: the CDN did not say which format it is`);
-        // 2025 uploads (19% of the catalogue): the engine parses PLY, but bake and load progress know only lod-meta/meta
-        if ((await exists(at.ply, f)) === 'yes') throw new SceneError('unsupported', `scene ${id} v${v} is a legacy compressed PLY, not supported yet`);
+        // 2025 uploads (19% of the catalogue in 2026-09): one compressed PLY, which the engine parses
+        content = contentOrder(`${CDN}/${id}/v${v}`, { ply: await exists(at.ply, f) });
+    }
+    if (content.length === 0) {
+        // a folder with a file of a format the engine does not read is that format, not a missing scene
+        for (const u of UNSUPPORTED_FILES) {
+            const there = await exists(`${CDN}/${id}/v${v}/${u.file}`, f);
+            if (there === 'yes') throw new SceneError('unsupported', `scene ${id} v${v} is ${u.format} (${u.file}), a format the engine does not read`);
+            if (there === 'unknown') throw new SceneError('network', `scene ${id} v${v}: the CDN did not say whether ${u.file} is there`);
+        }
         throw new SceneError('not-found', `scene ${id} v${v} has no splat content on the CDN`);
     }
     const settings = (await r.json()) as Record<string, unknown>;

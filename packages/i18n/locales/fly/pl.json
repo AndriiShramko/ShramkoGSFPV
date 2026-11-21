@@ -77,7 +77,7 @@
   "scenes.byAuthor": "Scena należy do jej autora — oryginał zobaczysz na SuperSplat",
   "scenes.attribution": "Scena: {title}, autor: {author}, {license}",
   "scenes.report": "Zgłoś tę scenę",
-  "scenes.unsupported": "Ta scena jest zapisana w starszym formacie PLY SuperSplat, którego symulator jeszcze nie otwiera. Sceny w obecnym formacie otwierają się bez problemu.",
+  "scenes.unsupported": "Ten skan jest w formacie SuperSplat, którego symulator jeszcze nie otwiera (skan animowany). Wybierz inny skan: skany w zwykłych formatach się otwierają.",
   "error.invalid-link": "To nie jest link do SuperSplat ani ID sceny. Wklej link w rodzaju superspl.at/scene/39e63ce9.",
   "error.not-found": "Tej sceny nie ma na SuperSplat albo nie jest publiczna.",
   "error.network": "Serwery SuperSplat nie odpowiedziały. Sprawdź połączenie i spróbuj ponownie.",

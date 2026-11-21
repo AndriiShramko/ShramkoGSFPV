@@ -7,8 +7,19 @@ splat-transform 3.12.0, probe tools/bench/scripts/hot-sog3-scans.mjs, live check
 ## Status
 
 - [x] S1 the diagnosis (read, not repeated) and its reproduction in a unit test; the version check before loading. DONE in commit "n-scan S1" (after merge of hot-sog3 d432c2d9): render-pc lod.ts ENGINE_SOG_VERSIONS, sogVersionProblem, lodChunkVersionProblem, UnsupportedFormatError; renderer.ts loadSplat checks meta.json and the first chunk of lod-meta.json before the engine asset; scan-sog-version.test.ts 7 tests pass, render-pc 391 pass, typecheck passes, NEG OK (lod.ts at 03624451). The UnsupportedFormatError still reaches the picker as the generic engine text: its plain line is S3.
-  S2 next: PLY (ContentKind 'ply': content.ts, renderer.ts isMeta/progress, bake.ts input), GSAF (index.ts:250 + formatVerdict), more kinds in superspl-kinds.json (a5d25fb4 PLY, c67edb74 PLY 163 MB, 5012e205 GSAF, 593f8c06 streamed v3 4 levels, 70b50d42 / 2f1ddf5f streamed v2, 5c0f892e 191 MB v2; record their CDN answers read-only with curl -sI into U:/Temp/gsfpv-train4/n-scan).
-- [ ] S2 the kinds: superspl-kinds.json with one real id per storage kind; resolveScene and the loader open each kind (compressed PLY opens, GSAF named as unsupported); unit tests + NEG.
+- [x] S2 the kinds: superspl-kinds.json with one real id per storage kind; resolveScene and the loader open each kind (compressed PLY opens, GSAF named as unsupported); unit tests + NEG. DONE in commit "n-scan S2":
+  fixture 11 ids (a39abad1, 98f74d54 SOG v3; 143e76b0 SOG v2; 5c0f892e SOG v2 191 MB / 14.1 M; f924b0f5, 593f8c06 streamed v3
+  1 and 4 levels; 70b50d42 streamed v2 10 levels; 2f1ddf5f streamed v2 13 levels 518 M; a5d25fb4, c67edb74 compressed PLY
+  2.5 / 163 MB gzip; 5012e205 GSAF), CDN answers recorded read-only 2026-11-21 with curl -sI. Code: ContentKind 'ply'
+  (content.ts, asked only when both JSON files are missing), resolveScene opens it and names GSAF 'unsupported'
+  (index.ts UNSUPPORTED_FILES; a silent CDN about scene.gsaf is 'network'); formatVerdict 'legacy' for compressed.ply (opens when
+  chosen, never picked at random or by the tour), 'unsupported' for gsaf, card badge "Does not open yet"; renderer.ts loadSplat
+  reads a .ply (kind 'ply', the file's own bytes as the download count, plyBytes); bake.ts BakeKind with 'ply' (sceneSize reads
+  'element vertex N' from the streamed header, readFile inputFormat 'ply'). Tests: packages/scenes/test/scan-kinds.test.ts (16),
+  tools/bench/test/scan-ply-size.test.ts (5); scenes + render-pc + the ply test 616 pass; `vitest --changed HEAD` 94 files pass
+  (scene-default needs python on PATH); typecheck scenes, render-pc, fly pass. NEG OK on 03624451 (10 tests fail there: both PLY
+  kinds, GSAF, gsaf network, formats, the PLY size). No SOG version 1 id (means.shape) was found: the diagnosis names none.
+  S3 needs: the PLY drawn (no unit test drives the engine's PLY parser; S4's acceptance opens a5d25fb4 and c67edb74).
 - [ ] S3 the device and the plain line: lighter LOD level or one plain line (too-large / gone / unknown-format / network) through ux4a's lines and ux4b's Cancel; zero splats drawn is an error; n-scan-errors.mjs (stubbed 404, stubbed huge scan, render off) + unit tests + NEG.
 - [ ] S4 the acceptance: n-scan-accept.mjs by mouse at 1536x730 x1.25 on the local build (a39abad1 first) and against the live site (must FAIL a39abad1); one drawn picture; scans-open extended; gates once; "What the owner should try"; dist deleted.
 
@@ -49,5 +60,12 @@ Read from C:/dev/.gsfpv-lanes/designs/t7-scene-open.md (confirmed by a second ag
 - packages/render-pc/test/scan-sog-version.test.ts lives in render-pc (the check it tests is render-pc's lod.ts), not under
   packages/scenes/test as the prompt's owned pattern says; it reads the scenes fixture by relative path.
 
+- S2, files outside the owned list: packages/scenes/src/content.ts (ContentKind 'ply'); packages/render-pc/src/renderer.ts
+  (loadSplat reads .ply, plyBytes); apps/fly/src/bake.ts, bake-off-thread.ts, bake-worker.ts (BakeKind with 'ply',
+  plyVertexCount); tests whose old expectation was "PLY is refused": packages/scenes/test/resolve.test.ts:165,
+  superspl.test.ts:451, content.test.ts:17; new tools/bench/test/scan-ply-size.test.ts (bake.ts is tested from tools/bench);
+  locale texts: fly `scenes.unsupported` (now GSAF, not PLY) and new fly/superspl `superspl.badge.unsupported`, all four languages.
+
 ## Cost notes
 - S1: about 25 calls; most went to finding where the check belongs (renderer.ts vs scenes) and to neg_control needing `npx.cmd` on Windows (plain `npx` is not found by CreateProcess). Cheaper: the lane prompt could name renderer.ts as the check's place.
+- S2: about 35 calls; most went to node -e edits whose backslashes the shell ate (a regex and a test pattern had to be fixed by hand) and to three old tests that held "PLY is refused". Cheaper: write edit scripts with the Write tool from the start; grep the tests for the behaviour before changing it.

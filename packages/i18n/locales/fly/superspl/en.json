@@ -41,6 +41,7 @@
   "superspl.badge.walkable": "Walls",
   "superspl.badge.downloadable": "Download",
   "superspl.badge.old": "Old format",
+  "superspl.badge.unsupported": "Does not open yet",
   "superspl.fav": "Add “{title}” to favourites",
   "superspl.unfav": "Remove “{title}” from favourites",
   "superspl.credit": "Scenes, authors and licences as SuperSplat lists them."

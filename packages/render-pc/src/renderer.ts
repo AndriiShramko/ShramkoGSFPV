@@ -256,7 +256,7 @@ export class SplatRenderer {
      */
     streamTicks = 0;
     /** what the scan on screen was loaded from (lodState) */
-    private contentKind: 'lod-meta' | 'meta' | null = null;
+    private contentKind: LodState['kind'] = null;
     /** engine frame in which the scan's entity was made: frames up to it say nothing about this scan (firstView) */
     private splatMadeAt = -1;
     /** which code draws "stochastic" (accum-policy.ts); the bench sets it to 'engine' for its control arm */
@@ -481,7 +481,8 @@ export class SplatRenderer {
     }
 
     /**
-     * Load splat content: lod-meta.json (streamed octree, levels of detail) or meta.json (single SOG).
+     * Load splat content: lod-meta.json (streamed octree, levels of detail), meta.json (single SOG) or
+     * scene.compressed.ply (one compressed PLY, 2025 uploads; the engine fetches and parses it itself).
      * Rejects when the file cannot be read or is not an octree the engine can open (lod.ts
      * lodMetaProblem), so the caller can open the scene's next content file; unloadSplat() then frees
      * whatever the attempt left. A file that arrived damaged (not JSON, not an octree) rejects with a
@@ -491,7 +492,8 @@ export class SplatRenderer {
         this.loadStartedAt = performance.now();
         const filename = new URL(url, location.href).pathname.split('/').pop() || 'scene';
         const isMeta = filename.toLowerCase() === 'meta.json';
-        this.contentKind = isMeta ? 'meta' : 'lod-meta';
+        const isPly = filename.toLowerCase().endsWith('.ply');
+        this.contentKind = isMeta ? 'meta' : isPly ? 'ply' : 'lod-meta';
         const c = this.count;
         c.base = dirOf(url);
         /** The file's JSON; HTTP failures are plain errors, a body that is not JSON a damaged file. */
@@ -505,6 +507,13 @@ export class SplatRenderer {
             }
         };
         const start = async (): Promise<unknown> => {
+            if (isPly) {
+                // one file, all of it the first view; its splat count is in its header, its bytes come as the
+                // asset's own progress (plyBytes below)
+                c.expected.set(c.base, null);
+                c.listed = true;
+                return undefined;
+            }
             if (!isMeta) {
                 // the engine fetches lod-meta.json itself and cannot be handed it; read it first so a broken
                 // one is a BrokenFileError here, before an engine asset exists, instead of the engine's own
@@ -568,6 +577,7 @@ export class SplatRenderer {
                 resolve(e);
             });
             asset.on('progress', (rec: number, len: number) => onProgress?.(Math.min(100, (rec / Math.max(1, len)) * 100)));
+            if (isPly) this.plyBytes(asset, url);
             asset.on('error', (err: unknown) => {
                 if (dropStale()) return;
                 reject(err instanceof Error ? err : new Error(String(err)));
@@ -594,6 +604,22 @@ export class SplatRenderer {
         }
         if (octree.environmentUrl) c.expected.set(dirOf(octree.environmentUrl), null);
         c.listed = true;
+    }
+
+    /** A PLY has no images: the file's own bytes are the download (splatBytes reads them as one image of the scan's folder). */
+    private plyBytes(asset: Asset, url: string): void {
+        const c = this.count;
+        const rec = { dir: c.base, loaded: 0, total: 0, failed: false };
+        c.images.set(url, rec);
+        asset.on('progress', (loaded: number, total: number) => {
+            if (loaded > rec.loaded) {
+                rec.loaded = loaded;
+                c.lastByteAt = performance.now();
+            }
+            // a gzip-encoded file reports its encoded length: what arrived decoded may pass it
+            if (total > 0) rec.total = Math.max(total, rec.loaded);
+        });
+        asset.once('error', () => { rec.failed = true; });
     }
 
     private countAsset(a: Asset): void {

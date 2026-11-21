@@ -144,8 +144,9 @@ export function lodMetaProblem(json: unknown): string | null {
 
 /** What the scan on screen is drawn from and how its levels of detail work right now (SplatRenderer.lodState). */
 export interface LodState {
-    /** 'lod-meta': a streamed octree (levels of detail); 'meta': one SOG file; null: no scan loaded */
-    kind: 'lod-meta' | 'meta' | null;
+    /** 'lod-meta': a streamed octree (levels of detail); 'meta': one SOG file; 'ply': one compressed PLY
+     *  (2025 uploads); null: no scan loaded */
+    kind: 'lod-meta' | 'meta' | 'ply' | null;
     /** levels of detail in the scan (1 for a single file) */
     levels: number;
     /** the LOD range the engine may pick from: [finest, coarsest] (0 = the finest level) */

@@ -41,6 +41,7 @@
   "superspl.badge.walkable": "Со стенами",
   "superspl.badge.downloadable": "Скачиваемая",
   "superspl.badge.old": "Старый формат",
+  "superspl.badge.unsupported": "Пока не открывается",
   "superspl.fav": "Добавить «{title}» в избранное",
   "superspl.unfav": "Убрать «{title}» из избранного",
   "superspl.credit": "Сцены, авторы и лицензии — как в каталоге SuperSplat."
