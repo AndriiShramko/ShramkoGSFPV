@@ -183,4 +183,24 @@ Nothing yet: the package carries the moments, and the simulator turns them on on
 - S3 (part 2): the run overran (about 90 calls): the words check needs the listen venv (U:/venvs/shramko-listen) and a
   copy of the Whisper model in the lane's cache, and host tests that fly a changed lesson's task timing. Cheaper: name
   the listen environment and the "absent = as before" default for new runner options in the common prompt.
+- Review: most replies went to a test pilot that presses a moment key on the very frame a moment freezes
+  (RecordingHost.flyTo runs a whole freeze inside one call); a `flyTo(to, speed, onFrame)` hook in the test host would save four runs.
 - S4: most replies went to fitting the 60 s bound (three runs: the headphone check's repeated question and three plays, then the room's start moment); a schedule print of the first minute per language at the stage start would have shown both at once. One gate test from S3 (a v012 replay) surfaced only in the full host run: run tools/bench sonic*-replay tests with the count tests when lesson intros change.
+
+## Review
+
+Verdict: SHIP (independent check, 2026-11-21; review file U:/Temp/gsfpv-train4/reviews/tutor-moment.md).
+
+- PROVEN, repaired: leaving a lesson inside a moment (lesson menu, next or previous lesson) left the last 'moment'
+  action non-null and the engine's audible list at the moment's one cue; CuePlanner.reset keeps that list and a lesson
+  without moments (tunnel-gaps) sends none, so a host that follows the actions would hold the craft and sound one cue
+  in the next lesson. MomentMachine.leave (called by Runner.leave before 'go') sends 'moment' null and 'audible' null.
+  test/moments-review.test.ts, NEG OK on a017e44. Package head 9ac7876dee42b8a874e51e6d46eb7cf8d70c3a48.
+- DOUBT: a 'start' moment fires on the first flying frame after the moment before it ends, not on an attempt's first
+  frame: after 'I know this' at the wall the flight freezes again at once for the height tone (one frame later).
+- DOUBT: ru moment.way-through.do says the free way's name (declined) by hand; the name check covers en only.
+- Rechecked: the lane's two negative controls with only runner.ts and the five lessons at 719aaf5 (ru first move
+  121.6 s there; one new sound a moment fails), the five lane test files 95 of 95, the package 1474 passed, 4 skipped.
+- Host gates once on the repaired tree (logs U:/Temp/gsfpv-gates-20261121-144317): typecheck PASS, b18 PASS, vitest 5743
+  passed, 2 failed on timing under load: sonic-start-screen (a 1 s waitFor of a lazy import; passed alone with the four
+  count tests, 122 of 122) and app-dji-rc2 (HidSource timing; not this lane's, not rerun).
