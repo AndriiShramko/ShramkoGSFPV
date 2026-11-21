@@ -35,9 +35,11 @@ mkdirSync(dirname(outFile), { recursive: true });
 
 // the texts of the course feature (en), as patterns: the problem of a worker that did not load and the ready line
 const course = JSON.parse(readFileSync(`${ROOT}/packages/i18n/locales/fly/course/en.json`, 'utf8'));
-const pattern = (s) => '^' + s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\\\{n\\\}/g, '\\d+') + '$';
+const pattern = (s) => '^' + s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\\\{\w+\\\}/g, '\\d+') + '$';
 const FAILED = pattern(course['course.failed']);
-const READY = pattern(course['course.ready']);
+// int4 car 3: since gen4b the course's ready line is its start line (where the start gate is), kept START_LINE_MS at least
+const READY = [course['course.gen.startHere'], course['course.gen.startAhead']].map(pattern).join('|');
+const START_LINE_MS = 8000;
 /** messages-logic.ts shownMs for an info or done line (copied numbers: BASE_MS 3000, MS_PER_CHAR 70, 4000-15000) */
 const shownMs = (text) => Math.min(15000, Math.max(4000, 3000 + 70 * text.length));
 
@@ -112,6 +114,9 @@ const SAMPLER = () => {
         }
         S.maxKeyNodes = Math.max(S.maxKeyNodes, keyNodes);
         S.samples++;
+        // int4 car 3: gen4b's progress box (the build's steps since the t7-base join)
+        const box = document.querySelector('[data-testid=gen-progress]');
+        if (box && box.getBoundingClientRect().height > 0) S.boxSeen = (S.boxSeen ?? 0) + 1;
     }, 100);
 };
 
@@ -120,7 +125,7 @@ const seen = (page) => page.evaluate(() => {
     const S = window.__ux4a;
     const rows = [];
     for (const L of Object.values(S.lines)) for (const [text, T] of Object.entries(L.texts)) rows.push({ id: L.id, key: L.key, font: L.font, kind: T.kind, text, first: T.first, last: T.last, ms: Math.round(T.last - T.first) });
-    return { rows, maxKeyNodes: S.maxKeyNodes, faults: S.faults, samples: S.samples, now: performance.now(), timeline: S.timeline };
+    return { rows, boxSeen: S.boxSeen ?? 0, maxKeyNodes: S.maxKeyNodes, faults: S.faults, samples: S.samples, now: performance.now(), timeline: S.timeline };
 });
 
 async function pollUntil(page, fn, ms) {
@@ -233,10 +238,11 @@ async function runSize({ w, h, dsf }) {
         step(1, 'Generate course: a line appears, its font-size >= 16 px', !!first && first.font >= 16, { text: first?.text ?? null, font: first?.font ?? null });
         const prog = after.filter((r) => r.key === 'course.progress' || (r.kind === '?' && !new RegExp(READY).test(r.text)));
         const nodes = new Set(prog.map((r) => r.id));
-        step(3, 'progress lines replace in place (one node under course.progress)', prog.length >= 2 && nodes.size === 1 && s.maxKeyNodes <= 1,
-            { texts: prog.length, nodes: nodes.size, maxNodesAtOnce: s.maxKeyNodes, sample: prog.slice(0, 3).map((r) => r.text) });
+        // int4 car 3 (t7-base join): the build's steps show in gen4b's progress box; the course's keyed line is one node
+        step(3, 'progress in place: the progress box while building, one node under course.progress', (s.boxSeen > 0 || prog.length >= 2) && nodes.size === 1 && s.maxKeyNodes <= 1,
+            { boxSeen: s.boxSeen, texts: prog.length, nodes: nodes.size, maxNodesAtOnce: s.maxKeyNodes, sample: prog.slice(0, 3).map((r) => r.text) });
         res.readyText = ready?.text ?? null;
-        const need = ready ? shownMs(ready.text) - 200 : null;
+        const need = ready ? Math.max(START_LINE_MS, shownMs(ready.text)) - 200 : null;
         step(2, 'the ready line stays >= shownMs(text) - 200 ms', !!ready && ready.ms >= need, { text: ready?.text ?? null, shownMs: ready?.ms ?? null, need });
     } catch (e) { step(1, 'Generate course', false, { error: errText(e) }); }
 
