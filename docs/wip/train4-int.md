@@ -261,6 +261,25 @@ the dialog's options reaching gen4a's generator are car 3's seams)
   - edit-mouse-wroclaw d.controls: 'courses' and 'keys' were 'not on screen' because edit4b (car 1) moved Courses and Keys
     into the top bar's Course menu; the probe now opens Course and presses the item, the pilot's path (711f2520).
 
+Car 3 (t7-base 03624451 on car 2's head 267923c3; base7's base_of was 030d11d1). Car 2's product change after base_of
+is only apps/fly/src/ui/top-row.ts (3d86ffee, a message over the top-row buttons), so the seams are base7's open ones
+against car 1 and car 2 lanes:
+- edit4b Course menu Generate x gen4b Generate dialog: the seam call was right (keeper draft, then the dialog from
+  'editor', its build reopens the editor); the dialog named the unsaved changes a second time after life.ts's question
+  had named them and the pilot said yes. Repaired (47d3c657): from 'editor' the dialog has no lost line; int4-seams car 3
+  tests, NEG OK. edit4b-probe step 13 walks it by mouse on the build (Course > Generate, Yes, the dialog, Build, the
+  editor on the new course).
+- gen4b's start line x ux4a's message rules: base7 dropped gen4b's 8 s (START_LINE_MS); the service's reading time gave
+  the ru 'you are at the start gate' line 7.6 s. Repaired: PilotMessage.minMs (messages-logic.ts, never past
+  MAX_SHOWN_MS), course.ts passes START_LINE_MS with the start line; int4-seams tests in en/es/pl/ru, NEG OK.
+- gen4b's Shift+G opens the dialog first (G9): the probes that made a course by Shift+G alone would wait for a course
+  forever (edit4b, edit4a, edit-mouse); they now press the dialog's Build by mouse (d73cd1b9), recorded as genDialog.
+- gap-gen's progress box x ux4a's keyed progress line (base7: the box alone shows the steps; an old problem line stays
+  until closed or the ready line replaces it): left as base7 joined it, within the owner's rules (one progress view).
+- Not seams of this car, the lanes' own needs for the lead (not changed here): gap-gen's course.ts hook.adopt line for
+  race rooms (RACE_ON is false: nothing on the page uses it yet) and 'the drone stands at the course start' at x15;
+  gap-save's startNew transform and the editor at x100 when nothing fits; gap-sound's keysDue once a lesson.
+
 ## Deploy order
 
 Car 1 (from the merged lanes' 'For the lead' and `git diff origin/main HEAD -- apps/api deploy packages/sonic-fpv`)

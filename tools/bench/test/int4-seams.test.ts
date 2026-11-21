@@ -2,9 +2,12 @@
 // edit4a-camera.test.ts: the course feature's closure needs the whole page, so the test reads the calls it must make.
 //   - edit4a's drag cancel (Esc, a right click) and edit4c's live warnings: the tag of a cancelled drag goes with it
 //   - edit4s's save and edit4b's seam: a save is heard by the parts (life.ts clears 'unsaved' on the seam's 'saved')
+// Car 3 (t7-base's open seams): edit4b's Course menu Generate x gen4b's dialog; gen4b's start line x ux4a's message rules.
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { shownMs } from '../../../apps/fly/src/messages-logic';
+import { fakeDocument } from './helpers/fake-dom';
 
 const SRC = join(__dirname, '../../../apps/fly/src');
 const course = readFileSync(join(SRC, 'app/builtin/course.ts'), 'utf8').replace(/^\s*\/\/.*$/gm, '');
@@ -99,5 +102,26 @@ describe('int4 car 3: edit4b Course menu Generate x gen4b Generate dialog (t7-ba
         const at = course.indexOf('build: (r) => {');
         const build = course.slice(at, course.indexOf('cancel: () => {', at));
         expect(build).toMatch(/if \(f\?\.from === 'editor'\) \{[^}]*reopenAfter = true;/);
+    });
+});
+
+describe('int4 car 3: gen4b start line x ux4a message rules (t7-base open seam: the 8 s were dropped)', () => {
+    const LOC = join(__dirname, '../../../packages/i18n/locales/fly/course');
+    for (const lang of ['en', 'es', 'pl', 'ru']) {
+        it(`${lang}: the start line stays at least START_LINE_MS, here or far, few gates or many`, async () => {
+            // progress-box.ts reaches i18n.ts (the page's path on load) and ui/dom.ts (as course-progress.test withPage)
+            const g = globalThis as { location?: unknown; document?: unknown };
+            g.document ??= fakeDocument();
+            g.location ??= { pathname: '/en/', search: '', href: 'http://localhost/en/' };
+            const { START_LINE_MS, startLine } = await import('../../../apps/fly/src/course/progress-box');
+            const words = JSON.parse(readFileSync(join(LOC, `${lang}.json`), 'utf8')) as Record<string, string>;
+            const t = (k: string, p?: Record<string, string | number>): string => words[k]!.replace(/\{(\w+)\}/g, (_, n: string) => String(p?.[n] ?? ''));
+            for (const far of [0, 5, 805]) for (const n of [3, 24]) {
+                expect(shownMs({ text: startLine(far, n, t), kind: 'done', minMs: START_LINE_MS }), `${far} m, ${n} gates`).toBeGreaterThanOrEqual(START_LINE_MS);
+            }
+        });
+    }
+    it('course.ts hands START_LINE_MS to the service with the start line', () => {
+        expect(course).toMatch(/tell\(\{ text: hook\.startLine, kind: 'done', key: COURSE_LINE, minMs: START_LINE_MS \}\)/);
     });
 });

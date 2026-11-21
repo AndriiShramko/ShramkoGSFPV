@@ -33,7 +33,7 @@ import { bestKey, courseOfLink, editOfLink, firstOffer, readBest, servedOfLink, 
 import { CourseStore, type CourseRow } from '../../course/store';
 import type { CheckJob, CourseGrid, CourseJob, FromCourseWorker } from '../../course/worker';
 import { COURSE_WARN_MS, PROGRESS_TICK_MS, ProgressClock, SpeechPacer, courseSteps, isParked, planSteps, progressLine, spokenLine } from '../../course/progress';
-import { CourseBox, noRoomModel, progressBoxModel, startLine } from '../../course/progress-box';
+import { CourseBox, START_LINE_MS, noRoomModel, progressBoxModel, startLine } from '../../course/progress-box';
 import { sayVia } from '../say-via';
 import type { CueEvent } from '@shramko/sonic-fpv';
 import { soundCourseSeed } from './sonic-flight';
@@ -570,12 +570,12 @@ export const course: Feature = {
                 setTrack(tr, 'generated', tr.generator?.seed ?? pending);
                 history.replaceState(history.state, '', withCourse(location.href, linkId));
                 // the end of G3: the line says where the start gate is from the craft; the guide arrow points at it. ux4a: it
-                // is the course's keyed line (it takes the place of a problem line), how long it stays is the service's rule
+                // is the course's keyed line (it takes the place of a problem line); it stays the service's reading time, at least START_LINE_MS
                 const g1 = run?.gates[0];
                 const sim = ctx.session.runner.sim.s;
                 const far = g1 ? Math.hypot(g1.pos[0] - sim[S.px]!, g1.pos[1] - sim[S.py]!, g1.pos[2] - sim[S.pz]!) : 0;
                 hook.startLine = startLine(far, tr.gates.length, t);
-                tell({ text: hook.startLine, kind: 'done', key: COURSE_LINE });
+                tell({ text: hook.startLine, kind: 'done', key: COURSE_LINE, minMs: START_LINE_MS });
                 // lead's decision P2: the spoken line names the chord in words ("Shift and key T"), the written one keeps Shift+T
                 sayLine(t('course.readySpoken', { n: tr.gates.length }), COURSE_READY_CUE);
             };

@@ -18,6 +18,8 @@ export interface PilotMessage {
     from?: string;
     /** what to do: shown under a problem */
     fix?: string;
+    /** at least this long on the screen (a feature's own reading rule, e.g. gen4b's start line START_LINE_MS); never past MAX_SHOWN_MS */
+    minMs?: number;
 }
 
 /** A message as the log keeps it. */
@@ -64,7 +66,7 @@ export function shownMs(m: PilotMessage): number {
     if (kind === 'problem') return Infinity;
     if (kind === 'progress') return PROGRESS_IDLE_MS;
     const chars = m.text.length + (m.fix?.length ?? 0);
-    return Math.min(MAX_SHOWN_MS, Math.max(MIN_SHOWN_MS, BASE_MS + MS_PER_CHAR * chars));
+    return Math.min(MAX_SHOWN_MS, Math.max(MIN_SHOWN_MS, m.minMs ?? 0, BASE_MS + MS_PER_CHAR * chars));
 }
 
 /**
