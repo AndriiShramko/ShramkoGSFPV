@@ -196,7 +196,8 @@ t7-base 03624451 of job base7: gap-gen (gen4a, gen4b), gap-save, gap-sound and t
       app or package source) merged, 5f85f7ad; `git diff 8eac608d HEAD -- apps packages pnpm-lock.yaml` is empty, so the
       dist of 8eac608d is this head's product; edit4a-gizmo with the repaired probe on it: PASS. The gates once more on
       the tree handed over: all PASS rc 0 on 7e13d7b6 (vitest, api-unittest and the six others; U:/Temp/gsfpv-gates-
-      20261121-141042, int4/gates-car3s3b.log). int4-car3.json's sha is the commit that writes this line.
+      20261121-141042, int4/gates-car3s3b.log). Then origin/main d7d60663 (STATE.md and the lead note, docs only) merged:
+      the gates are enough. int4-car3.json's sha is the commit that writes this line.
 
 ## Progress
 
