@@ -17,7 +17,7 @@ Base (OLD of every diff and negative control): 03624451b8deb79d179cc9a5d07adf22f
         (LessonPage.moments); feature.ts makes the MomentHost and momentOnly from the pause reasons; release on teardown
   - [x] tools/bench/test/sonic-moment-freeze.test.ts 3/3 (with sonic-bridge 18/18); NEG OK on the base (all three files),
         and NEG OK with bridge.ts alone swapped back; fly typecheck rc 0
-- [ ] S2 the card, the keys, the known sounds (run 1 committed as "tutor-air S2 (wip)")
+- [x] S2 the card, the keys, the known sounds (run 1 e3e09c0e wip; run 2 bb4eab79, tests, this commit)
   - [x] merged tutor-say's review 21f94ebc and tutor-moment's head 1c804864 now (not in S4): the pin stands on 9ac7876
         (`git submodule status` no '+'); S4 only re-checks both are ancestors and merges again if they moved
   - [x] packages/prefs doc.ts SonicState.known (cue ids, each once, cap 64); store.ts knownSounds/addKnownSound,
@@ -34,18 +34,14 @@ Base (OLD of every diff and negative control): 03624451b8deb79d179cc9a5d07adf22f
   - [x] keymap row sonic.know (Shift+K); mode-keys help row sonic.moment.helpKnow; locale keys sonic.moment.keys,
         knowOutside, helpKnow (fly/sonic) and keys.sonic.know (fly/sonickeys), four languages
   - [x] guide.ts GuideLevel from the package; fly + prefs typecheck rc 0
-  LEFT (exact):
-  - [ ] packages/prefs/test/keymap.test.ts DESIGN_TABLE (+ 'sonic.know': ['Shift+K'], MODE_KEYS list) and
-        tools/bench/test/app-keys.test.ts SOUND list; packages/prefs/test/catalog.test.ts (the mode's keys) - 5 fail now
-  - [ ] tools/bench/test/sonic-lesson-keys.test.ts B7 fails (K's lines: the new help row; see whether the rig's engine
-        dict lacks sonic.moment.helpKnow or the test lists the lines) - fix in the owned side if possible
-  - [ ] new tools/bench/test/sonic-moment-card.test.ts (card DOM: name + line only, hidden on null, aria-hidden; check
-        for a DOM env in the repo first) and sonic-moment-keys.test.ts (runnerOptions known/guide given only with a
-        MomentHost and narrator on; store known round trip through mkStore; bridge.momentKey records the key event
-        before runner.momentKey; mode N/Z route by inMoment; prefs known validator) ; NEG on 03624451
-  - [ ] "Start flying opens straight into the air after the headphone check": verify which lesson Start flying opens
-        (start-model.ts) and that the package's first set needs nothing more from the page
-  - [ ] commit S2, Status, cost note
+  - [x] the spoken lines renamed to the engine's prefix (host-lines.ts speaks only `sonic.say.*`): sonic.say.momentKeys
+        (two sentences, sonic-say-length), sonic.say.momentKnowOutside, sonic.say.helpKnow (bb4eab79)
+  - [x] sonic.know in keymap.test DESIGN_TABLE/MODE_KEYS, catalog.test, app-keys.test SOUND; with sonic-lesson-keys 101/101
+  - [x] tools/bench/test/sonic-moment-card.test.ts 3/3 and sonic-moment-keys.test.ts 6/6 (a classList on the shared
+        sonic-fake-dom.ts); NEG OK on 03624451 (7 of 9 fail there); fly + bench typecheck rc 0; nearby sonic + prefs 347/347
+  - [x] Start flying = sonic-start-quick -> firstOf('fast') = ears-headphones (the headphone check), then walls-hall whose
+        first moment is height.tone at the start (safety.wall when near comes next and names the keys): nothing more
+        from the page; proven in the page in S4
 - [ ] S3 "What is this sound?" (G)
 - [ ] S4 the page acceptance (tutor-moment head already merged in S2; mouse probe local + live; one drawn run;
       accept-fly B6-B16; gates once with catalog; "What the owner should try"; delete dist)
@@ -65,6 +61,11 @@ Differences from the plan (the code wins):
 
 1. A moment freezes the craft while the engine keeps planning the moment's cue alone; the flight goes on after it.
    `npx vitest run tools/bench/test/sonic-moment-freeze.test.ts`: 3 passed; NEG OK on 03624451.
+2. During a moment the screen shows one large line (the sentence spoken) and the sound's name only, aria-hidden, with a
+   short-screen rule and forced colours. `npx vitest run tools/bench/test/sonic-moment-card.test.ts`: 3 passed; NEG OK.
+3. In a moment Z hears the sound again, N goes on, Shift+K says "I know this"; each key event is written before the runner hears
+   it; the known sounds are kept with the progress and given to the runner (with the guide level) only when the page can freeze
+   and the narrator is on. `npx vitest run tools/bench/test/sonic-moment-keys.test.ts`: 6 passed; NEG OK on 03624451.
 
 ## Not verified
 
@@ -73,7 +74,9 @@ Differences from the plan (the code wins):
 ## For the lead
 
 - Files changed outside the owned list: apps/fly/src/app/context.ts (PauseReason gains 'moment'); packages/prefs/src/doc.ts
-  (SonicState.known, S2).
+  (SonicState.known, S2); tools/bench/test/sonic-fake-dom.ts (a classList, test helper); packages/prefs/test/catalog.test.ts
+  (the mode's key list gains Shift+K).
+- The moment's spoken lines are `sonic.say.*` keys (the engine's prefix), not `sonic.moment.*` as the plan's Part C 6 wrote.
 
 ## Cost notes
 
@@ -81,3 +84,5 @@ Differences from the plan (the code wins):
   drives a moment" in tutor-moment's contract marker would have saved four reads.
 - S2 run 1: finding where speech text, key names and the saved collection meet took the most replies (feature.ts, bridge,
   key-names, doc.ts); a map line per host hook in docs/agent-map.md for the sound mode would have saved about six reads.
+- S2 run 2: finding test seams (no DOM env, the bridge's `on` gate, real cue ids, the engine's `sonic.say.` prefix) took the
+  most replies; a short "how to test a sound-mode host piece" note beside sonic-fake-dom.ts would have saved about five.

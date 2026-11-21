@@ -128,7 +128,7 @@
   "sonic.say.gateBehind": "The gate is behind you.",
   "sonic.settings.showAll": "Show all settings ({n} more)",
   "sonic.start.all": "All lessons",
-  "sonic.say.momentKeys": "Hear it again, key {again}. Go on, key {on}. I know this sound, key {know}.",
+  "sonic.say.momentKeys": "Hear it again, key {again}, go on, key {on}. I know this sound, key {know}.",
   "sonic.say.momentKnowOutside": "Key {key} tells the game you know a new sound. It works when the game stops to show one.",
   "sonic.say.helpKnow": "Press key {key} when the game stops for a new sound you know already."
 }
