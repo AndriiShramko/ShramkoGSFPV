@@ -207,6 +207,9 @@ async function entry(name, o) {
 
 const openMenuItem = async (action) => {
     await page.keyboard.press('KeyP');
+    // menu4: an item above the pilot's menu level (pause.rooms is 'sim', menu-levels.ts) waits under "More"
+    const seen = await page.waitForSelector(`[data-action="${action}"]`, { timeout: 2500 }).then(() => true, () => false);
+    if (!seen) await page.locator('[data-action="menu-more"]').click({ timeout: 2500 }).catch(() => {});
     await page.waitForSelector(`[data-action="${action}"]`, { timeout: 5000 });
     await page.locator(`[data-action="${action}"]`).click();
 };

@@ -182,6 +182,17 @@ async function scene(page: Page, id: string, log: string[]): Promise<Record<stri
     } else out.click = { target: -1, note: 'no other gate on screen away from the handles', gates: d1.gates.length };
     await page.screenshot({ path: join(SHOTS, `editor3-${TAG}-${id}-selected.png`) });
 
+    // int4 car 3: edit4a frames nothing on open, and an asked course's gate 1 (gen4b's dialog) may stand behind the camera
+    // (build of 8eac608d, Wroclaw: gate 1 at screen z -4.07, every drag below missed); the pilot's way to it is F (frame
+    // the selection, view-mouse.ts), recorded as framedByF
+    const offScreen = (d: Dbg | null): boolean => !d || !((d.stand.screen[2] ?? 0) > 0) || d.stand.screen[0]! < 0 || d.stand.screen[0]! >= vp.width || d.stand.screen[1]! < 0 || d.stand.screen[1]! >= vp.height;
+    out.framedByF = false;
+    if (offScreen(await dbg(page))) {
+        out.framedByF = true;
+        await page.keyboard.press('KeyF');
+        await until(() => dbg(page), (d) => !offScreen(d), 4000);
+        await sleep(800);
+    }
     // a drag on the centre box: the opening changes
     const d2 = (await dbg(page))!;
     await drag(page, d2.stand.screen[0]!, d2.stand.screen[1]!, 40, -40);

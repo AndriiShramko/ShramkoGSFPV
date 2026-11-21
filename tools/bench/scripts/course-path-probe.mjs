@@ -122,7 +122,12 @@ const TOPDOWN = () => {
     g.fillStyle = '#fff'; g.font = '13px sans-serif';
     g.fillText(`${(x1 - x0).toFixed(0)} x ${(z1 - z0).toFixed(0)} m, ${step.toFixed(2)} m/px; green ${EYE_LO}-${EYE_HI} m above the ground (eye level), blue lower, yellow to 4 m, red higher`, 8, H - 10);
     let span = 0; for (const a of poses) for (const b of poses) span = Math.max(span, Math.hypot(a.pos[0] - b.pos[0], a.pos[2] - b.pos[2]));
-    return { url: cv.toDataURL('image/png'), W, H, step, heights, flat, eye: heights.filter((v) => v !== null && v >= EYE_LO && v <= EYE_HI).length, spanM: +span.toFixed(1), yRange: [Math.min(...ys), Math.max(...ys)] };
+    // int4 car 3: a course built by gen4b's Generate dialog is an asked course (course.request): gap-gen's planner
+    // (packages/tracks/src/plan.ts zoneAt, 'street') stands its centre from EYE_LO to EYE_HI + half a gate over the
+    // ground, half = (SQUARE_SIDE_M / 2 + SQUARE_BAR_M) x opening / RING_DIAMETER_M = 0.85 x opening / 1.2
+    const asked = !!h.course.request;
+    const half = poses.map((p) => { const o = p.shape?.diameter ?? p.shape?.side; return asked && typeof o === 'number' ? +((0.85 * o) / 1.2).toFixed(2) : 0; });
+    return { url: cv.toDataURL('image/png'), W, H, step, heights, flat, asked, half, eye: heights.filter((v) => v !== null && v >= EYE_LO && v <= EYE_HI).length, spanM: +span.toFixed(1), yRange: [Math.min(...ys), Math.max(...ys)] };
 };
 
 const rot = (q, v) => { // q = [w, x, y, z]
@@ -308,7 +313,8 @@ for (const r of out) console.log(JSON.stringify({ id: r.id, courseAtS: r.courseA
 // exit 1 on a failed run or a gate out of the eye band (with EYE_TOL_M) or with no wall below it
 // a flat square stands up to FLAT_RISE_M (2.5 m, elements.ts) over the band: its own band is EYE_LO .. EYE_HI + 2.5
 const FLAT_RISE = 2.5;
-const offBand = (hs, fl) => (hs ?? []).filter((v, k) => v === null || v < EYE_LO - EYE_TOL_M || v > EYE_HI + (fl?.[k] ? FLAT_RISE : 0) + EYE_TOL_M).length;
-const badN = out.filter((r) => r.fail || !r.top || offBand(r.top.heights, r.top.flat) > 0).length;
-console.log(`eye band ${EYE_LO}-${EYE_HI} m (+-${EYE_TOL_M}; flat squares +${FLAT_RISE} m): ${out.map((r) => `${r.id} first course ${r.top ? r.top.heights.length - offBand(r.top.heights, r.top.flat) : 0} of ${r.top?.heights.length ?? 0} (flat ${(r.top?.flat ?? []).filter(Boolean).length})`).join(', ')}; runs failing ${badN}`);
+// an asked course (gen4b's dialog): its own band is EYE_LO .. EYE_HI + half a gate (TOPDOWN's half, plan.ts zoneAt)
+const offBand = (hs, fl, hf) => (hs ?? []).filter((v, k) => v === null || v < EYE_LO - EYE_TOL_M || v > EYE_HI + (fl?.[k] ? FLAT_RISE : 0) + (hf?.[k] ?? 0) + EYE_TOL_M).length;
+const badN = out.filter((r) => r.fail || !r.top || offBand(r.top.heights, r.top.flat, r.top.half) > 0).length;
+console.log(`eye band ${EYE_LO}-${EYE_HI} m (+-${EYE_TOL_M}; flat squares +${FLAT_RISE} m; an asked course + half a gate): ${out.map((r) => `${r.id} first course ${r.top ? r.top.heights.length - offBand(r.top.heights, r.top.flat, r.top.half) : 0} of ${r.top?.heights.length ?? 0} (flat ${(r.top?.flat ?? []).filter(Boolean).length}${r.top?.asked ? `, asked, half up to ${Math.max(0, ...(r.top.half ?? []))} m` : ''})`).join(', ')}; runs failing ${badN}`);
 process.exit(badN ? 1 : 0);
