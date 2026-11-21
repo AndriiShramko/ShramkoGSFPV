@@ -1,0 +1,1053 @@
+{
+ "address": "http://localhost:6180/en",
+ "scan": "70b50d42",
+ "size": [
+  1536,
+  730
+ ],
+ "dsf": 1.25,
+ "touch": false,
+ "layout": "en",
+ "name": "int4c3-mouse",
+ "lockAsked": true,
+ "early": "",
+ "fly": true,
+ "query": "",
+ "live": false,
+ "date": "2026-11-21T03:43:31.033Z",
+ "steps": {
+  "open": {
+   "ok": true,
+   "mode": "edit",
+   "lock": null
+  },
+  "oneSpace": {
+   "ok": true,
+   "armedAtOpen": false,
+   "fly": true,
+   "flyMs": 3,
+   "back": true,
+   "backMs": 265,
+   "hud": {
+    "armed": false,
+    "crashed": false,
+    "throttlePct": 0,
+    "speed": 9.707406641546021e-9,
+    "altitude": -0.001980060047056753,
+    "crashes": 0
+   },
+   "topLine": "Click a gate to change it. Fly the course (or key Space, or your controller's arm switch) flies it at once"
+  },
+  "a.view": {
+   "ok": true,
+   "moves": [
+    {
+     "by": "KeyW",
+     "moved": 3.96
+    },
+    {
+     "by": "KeyS",
+     "moved": 4.15
+    },
+    {
+     "by": "KeyD",
+     "moved": 3.96
+    },
+    {
+     "by": "KeyA",
+     "moved": 3.96
+    },
+    {
+     "by": "KeyE",
+     "moved": 3.96
+    },
+    {
+     "by": "KeyQ",
+     "moved": 3.96
+    },
+    {
+     "by": "rightDrag",
+     "moved": 0.43,
+     "changedBefore": false,
+     "changedAfter": false,
+     "said": "Editor open. Keys W A S D move the view, key E up, key Q down. Drag with the left mouse button on empty space to circle round, with Shift to slide; the wheel go"
+    },
+    {
+     "by": "rightDragEmpty",
+     "moved": 0.42,
+     "changedBefore": false,
+     "changedAfter": false,
+     "said": "Editor open. Keys W A S D move the view, key E up, key Q down. Drag with the left mouse button on empty space to circle round, with Shift to slide; the wheel go"
+    },
+    {
+     "by": "leftDragEmpty",
+     "moved": 29.83,
+     "changedBefore": false,
+     "changedAfter": false,
+     "said": "Editor open. Keys W A S D move the view, key E up, key Q down. Drag with the left mouse button on empty space to circle round, with Shift to slide; the wheel go"
+    },
+    {
+     "by": "wheel",
+     "speed": [
+      4,
+      4
+     ],
+     "moved": 0
+    }
+   ]
+  },
+  "b.select": {
+   "ok": true,
+   "candidates": 1,
+   "home": false,
+   "from": 0,
+   "picked": 13,
+   "gatesOnScreen": 1
+  },
+  "c.add": {
+   "ok": true,
+   "gates": [
+    14,
+    15
+   ],
+   "newGate": [
+    768,
+    515,
+    13.1
+   ],
+   "inView": true,
+   "line": "The new gate is red. The way from gate 2 to gate 3 goes through a wall. Pull the arrows of gate 3 until the straight way between them is clear, or delete it with the cross on its bar.",
+   "said": "The new gate is red. The way from gate 2 to gate 3 goes through a wall. Pull the arrows of gate 3 until the straight way between them is clear, or delete it wit",
+   "place": {
+    "place": {
+     "o": [
+      10.548969994027825,
+      9.047334072716298,
+      -0.15160479246487846
+     ],
+     "d": [
+      0.19221061155492228,
+      -0.5025992833385823,
+      0.8428813921265709
+     ],
+     "hit": 15.613500322939885,
+     "at": [
+      13.216551983659429,
+      2.375552344572736,
+      11.546267675882056
+     ],
+     "prev": [
+      -7.4,
+      9.8,
+      17
+     ],
+     "after": 1,
+     "quat": [
+      0.9999832697335482,
+      0,
+      -0.005784483814629136,
+      0
+     ],
+     "tr": [
+      1,
+      0,
+      0,
+      0
+     ],
+     "camEye": [
+      -12.080193932858071,
+      3.6369405310896097,
+      -13.695558716523289
+     ]
+    },
+    "drone": [
+     -11.9,
+     3.12,
+     -16.83
+    ],
+    "stand": {
+     "pos": [
+      13.217000007629395,
+      2.375999927520752,
+      11.545999526977539
+     ],
+     "quat": [
+      0.9999832725410257,
+      0,
+      -0.005783998456143351,
+      0
+     ],
+     "scale": 1,
+     "opening": 0.922,
+     "screen": [
+      768,
+      515,
+      13.1
+     ]
+    }
+   }
+  },
+  "d.controls": {
+   "ok": true,
+   "top": [
+    {
+     "id": "undo",
+     "ok": true,
+     "effect": true,
+     "disabled": false,
+     "title": "",
+     "line": "undo. Gate 14 of 14: square, 0.9 m",
+     "panel": [
+      1148,
+      90,
+      380,
+      43
+     ]
+    },
+    {
+     "id": "redo",
+     "ok": true,
+     "effect": true,
+     "disabled": false,
+     "title": "",
+     "line": "redo. Gate 3 of 15: square, 0.9 m",
+     "panel": [
+      1148,
+      90,
+      380,
+      43
+     ]
+    },
+    {
+     "id": "save",
+     "ok": true,
+     "effect": true,
+     "disabled": false,
+     "title": "",
+     "line": "Click a gate to change it. Fly the course (or key Space, or your controller's arm switch) flies it at once",
+     "panel": [
+      1148,
+      90,
+      380,
+      632
+     ]
+    },
+    {
+     "id": "courses",
+     "ok": true,
+     "effect": true,
+     "disabled": false,
+     "title": "",
+     "line": "Click a gate to change it. Fly the course (or key Space, or your controller's arm switch) flies it at once",
+     "panel": [
+      1148,
+      90,
+      380,
+      632
+     ]
+    },
+    {
+     "id": "keys",
+     "ok": true,
+     "effect": true,
+     "disabled": false,
+     "title": "",
+     "line": "Click a gate to change it. Fly the course (or key Space, or your controller's arm switch) flies it at once",
+     "panel": [
+      1148,
+      90,
+      380,
+      632
+     ]
+    }
+   ],
+   "window": [
+    {
+     "n": 0,
+     "text": "Course editor",
+     "act": "",
+     "effect": true,
+     "disabled": false,
+     "title": "",
+     "under": null
+    },
+    {
+     "n": 1,
+     "text": "Your name",
+     "act": "",
+     "effect": true,
+     "disabled": false,
+     "title": "",
+     "under": "INPUT.ce-name"
+    },
+    {
+     "n": 2,
+     "text": "Course gx9nun",
+     "act": "",
+     "effect": true,
+     "disabled": false,
+     "title": "",
+     "under": "INPUT.ce-course-title"
+    },
+    {
+     "n": 3,
+     "text": "Save as my course",
+     "act": "",
+     "effect": true,
+     "disabled": false,
+     "title": "",
+     "under": "BUTTON.ce-save-mine"
+    },
+    {
+     "n": 4,
+     "text": "Save for everyone",
+     "act": "",
+     "skipped": "saves or sends"
+    },
+    {
+     "n": 5,
+     "text": "04:44 · gates: 15 · undo or redo",
+     "act": "",
+     "effect": true,
+     "disabled": false,
+     "title": "Go back to this version",
+     "under": null
+    }
+   ]
+  },
+  "e.exit": {
+   "ok": true,
+   "presses": [
+    {
+     "n": 0,
+     "open": true,
+     "line": "The changes are not saved. Esc again leaves without saving"
+    },
+    {
+     "n": 1,
+     "open": false,
+     "line": null
+    }
+   ],
+   "override": false,
+   "paused": false,
+   "windows": []
+  }
+ },
+ "clicks": [
+  {
+   "label": "controls.keyboard",
+   "at": [
+    498,
+    687
+   ],
+   "lockBefore": null,
+   "under": "BUTTON.btn",
+   "peChain": [
+    [
+     "BUTTON.btn",
+     "auto"
+    ],
+    [
+     "DIV#ui",
+     "none"
+    ]
+   ],
+   "windowSaw": [
+    "pointerdown>BUTTON.btn",
+    "click>BUTTON.btn"
+   ],
+   "clickBubbled": [
+    "BUTTON.btn"
+   ]
+  },
+  {
+   "label": "scene.toFly",
+   "at": [
+    768,
+    365
+   ],
+   "lockBefore": null,
+   "under": "CANVAS#view",
+   "peChain": [
+    [
+     "CANVAS#view",
+     "auto"
+    ]
+   ],
+   "windowSaw": [
+    "pointerdown>CANVAS#view",
+    "click>CANVAS#view"
+   ],
+   "clickBubbled": [
+    "CANVAS#view"
+   ]
+  },
+  {
+   "label": "view.rightDrag",
+   "at": [
+    768,
+    365
+   ],
+   "lockBefore": null,
+   "under": "CANVAS#view",
+   "peChain": [
+    [
+     "CANVAS#view",
+     "auto"
+    ]
+   ]
+  },
+  {
+   "label": "view.rightDragEmpty",
+   "at": [
+    307,
+    453
+   ],
+   "lockBefore": null,
+   "under": "CANVAS#view",
+   "peChain": [
+    [
+     "CANVAS#view",
+     "auto"
+    ]
+   ]
+  },
+  {
+   "label": "view.leftDragEmpty",
+   "at": [
+    307,
+    453
+   ],
+   "lockBefore": null,
+   "under": "CANVAS#view",
+   "peChain": [
+    [
+     "CANVAS#view",
+     "auto"
+    ]
+   ]
+  },
+  {
+   "label": "gate.13",
+   "at": [
+    1426,
+    236
+   ],
+   "lockBefore": null,
+   "under": "CANVAS#view",
+   "peChain": [
+    [
+     "CANVAS#view",
+     "auto"
+    ]
+   ],
+   "windowSaw": [
+    "pointerdown>CANVAS#view",
+    "click>CANVAS#view"
+   ],
+   "clickBubbled": [
+    "CANVAS#view"
+   ],
+   "effect": {
+    "selected": 13,
+    "want": 13
+   }
+  },
+  {
+   "label": "top.add",
+   "at": [
+    349,
+    28
+   ],
+   "lockBefore": null,
+   "under": "BUTTON.ce-tb[top=add]",
+   "peChain": [
+    [
+     "BUTTON.ce-tb[top=add]",
+     "auto"
+    ],
+    [
+     "DIV#ui",
+     "none"
+    ]
+   ],
+   "windowSaw": [
+    "pointerdown>BUTTON.ce-tb[top=add]",
+    "click>BUTTON.ce-tb[top=add]"
+   ],
+   "clickBubbled": [
+    "BUTTON.ce-tb[top=add]"
+   ],
+   "effect": {
+    "topLine": "Click the place for the new gate (Esc: no new gate)",
+    "pressed": "true"
+   }
+  },
+  {
+   "label": "scene.place",
+   "at": [
+    768,
+    526
+   ],
+   "lockBefore": null,
+   "under": "CANVAS#view",
+   "peChain": [
+    [
+     "CANVAS#view",
+     "auto"
+    ]
+   ],
+   "windowSaw": [
+    "pointerdown>CANVAS#view",
+    "click>CANVAS#view"
+   ],
+   "clickBubbled": [
+    "CANVAS#view"
+   ]
+  },
+  {
+   "label": "top.undo",
+   "at": [
+    420,
+    28
+   ],
+   "lockBefore": null,
+   "under": "BUTTON.ce-tb[top=undo]",
+   "peChain": [
+    [
+     "BUTTON.ce-tb[top=undo]",
+     "auto"
+    ],
+    [
+     "DIV#ui",
+     "none"
+    ]
+   ],
+   "windowSaw": [
+    "pointerdown>BUTTON.ce-tb[top=undo]",
+    "click>BUTTON.ce-tb[top=undo]"
+   ],
+   "clickBubbled": [
+    "BUTTON.ce-tb[top=undo]"
+   ],
+   "effect": true
+  },
+  {
+   "label": "top.redo",
+   "at": [
+    480,
+    28
+   ],
+   "lockBefore": null,
+   "under": "BUTTON.ce-tb[top=redo]",
+   "peChain": [
+    [
+     "BUTTON.ce-tb[top=redo]",
+     "auto"
+    ],
+    [
+     "DIV#ui",
+     "none"
+    ]
+   ],
+   "windowSaw": [
+    "pointerdown>BUTTON.ce-tb[top=redo]",
+    "click>BUTTON.ce-tb[top=redo]"
+   ],
+   "clickBubbled": [
+    "BUTTON.ce-tb[top=redo]"
+   ],
+   "effect": true
+  },
+  {
+   "label": "top.save",
+   "at": [
+    651,
+    28
+   ],
+   "lockBefore": null,
+   "under": "BUTTON.ce-tb[top=save]",
+   "peChain": [
+    [
+     "BUTTON.ce-tb[top=save]",
+     "auto"
+    ],
+    [
+     "DIV#ui",
+     "none"
+    ]
+   ],
+   "windowSaw": [
+    "pointerdown>BUTTON.ce-tb[top=save]",
+    "click>BUTTON.ce-tb[top=save]"
+   ],
+   "clickBubbled": [
+    "BUTTON.ce-tb[top=save]"
+   ],
+   "effect": true
+  },
+  {
+   "label": "top.course",
+   "at": [
+    716,
+    28
+   ],
+   "lockBefore": null,
+   "under": "BUTTON.ce-tb[top=course]",
+   "peChain": [
+    [
+     "BUTTON.ce-tb[top=course]",
+     "auto"
+    ],
+    [
+     "DIV#ui",
+     "none"
+    ]
+   ],
+   "windowSaw": [
+    "pointerdown>BUTTON.ce-tb[top=course]",
+    "click>BUTTON.ce-tb[top=course]"
+   ],
+   "clickBubbled": [
+    "BUTTON.ce-tb[top=course]"
+   ]
+  },
+  {
+   "label": "top.courses",
+   "at": [
+    798,
+    297
+   ],
+   "lockBefore": null,
+   "under": "BUTTON",
+   "peChain": [
+    [
+     "BUTTON",
+     "auto"
+    ],
+    [
+     "DIV#ui",
+     "none"
+    ]
+   ],
+   "windowSaw": [
+    "pointerdown>BUTTON",
+    "click>BUTTON"
+   ],
+   "clickBubbled": [
+    "BUTTON"
+   ],
+   "effect": true
+  },
+  {
+   "label": "top.course",
+   "at": [
+    716,
+    28
+   ],
+   "lockBefore": null,
+   "under": "BUTTON.ce-tb[top=course]",
+   "peChain": [
+    [
+     "BUTTON.ce-tb[top=course]",
+     "auto"
+    ],
+    [
+     "DIV#ui",
+     "none"
+    ]
+   ],
+   "windowSaw": [
+    "pointerdown>BUTTON.ce-tb[top=course]",
+    "click>BUTTON.ce-tb[top=course]"
+   ],
+   "clickBubbled": [
+    "BUTTON.ce-tb[top=course]"
+   ]
+  },
+  {
+   "label": "top.keys",
+   "at": [
+    798,
+    341
+   ],
+   "lockBefore": null,
+   "under": "BUTTON",
+   "peChain": [
+    [
+     "BUTTON",
+     "auto"
+    ],
+    [
+     "DIV#ui",
+     "none"
+    ]
+   ],
+   "windowSaw": [
+    "pointerdown>BUTTON",
+    "click>BUTTON"
+   ],
+   "clickBubbled": [
+    "BUTTON"
+   ],
+   "effect": true
+  },
+  {
+   "label": "win.0",
+   "at": [
+    1220,
+    -127
+   ],
+   "lockBefore": null,
+   "under": null,
+   "peChain": [],
+   "windowSaw": [
+    "pointerdown>HTML",
+    "click>HTML"
+   ],
+   "clickBubbled": [
+    "HTML"
+   ],
+   "effect": true
+  },
+  {
+   "label": "win.1",
+   "at": [
+    1249,
+    664
+   ],
+   "lockBefore": null,
+   "under": "INPUT.ce-name",
+   "peChain": [
+    [
+     "INPUT.ce-name",
+     "auto"
+    ],
+    [
+     "DIV#ui",
+     "none"
+    ]
+   ],
+   "windowSaw": [
+    "pointerdown>INPUT.ce-name",
+    "click>INPUT.ce-name"
+   ],
+   "clickBubbled": [
+    "INPUT.ce-name"
+   ],
+   "effect": true
+  },
+  {
+   "label": "win.2",
+   "at": [
+    1428,
+    664
+   ],
+   "lockBefore": null,
+   "under": "INPUT.ce-course-title",
+   "peChain": [
+    [
+     "INPUT.ce-course-title",
+     "auto"
+    ],
+    [
+     "DIV#ui",
+     "none"
+    ]
+   ],
+   "windowSaw": [
+    "pointerdown>INPUT.ce-course-title",
+    "click>INPUT.ce-course-title"
+   ],
+   "clickBubbled": [
+    "INPUT.ce-course-title"
+   ],
+   "effect": true
+  },
+  {
+   "label": "win.3",
+   "at": [
+    1249,
+    694
+   ],
+   "lockBefore": null,
+   "under": "BUTTON.ce-save-mine",
+   "peChain": [
+    [
+     "BUTTON.ce-save-mine",
+     "auto"
+    ],
+    [
+     "DIV#ui",
+     "none"
+    ]
+   ],
+   "windowSaw": [
+    "pointerdown>BUTTON.ce-save-mine",
+    "click>BUTTON.ce-save-mine"
+   ],
+   "clickBubbled": [
+    "BUTTON.ce-save-mine"
+   ],
+   "effect": true
+  },
+  {
+   "label": "win.5",
+   "at": [
+    1338,
+    1031
+   ],
+   "lockBefore": null,
+   "under": null,
+   "peChain": [],
+   "windowSaw": [
+    "pointerdown>HTML",
+    "click>HTML"
+   ],
+   "clickBubbled": [
+    "HTML"
+   ],
+   "effect": true
+  },
+  {
+   "label": "top.exit",
+   "at": [
+    776,
+    28
+   ],
+   "lockBefore": null,
+   "under": "BUTTON.ce-tb[top=exit]",
+   "peChain": [
+    [
+     "BUTTON.ce-tb[top=exit]",
+     "auto"
+    ],
+    [
+     "DIV#ui",
+     "none"
+    ]
+   ],
+   "windowSaw": [
+    "pointerdown>BUTTON.ce-tb[top=exit]",
+    "click>BUTTON.ce-tb[top=exit]"
+   ],
+   "clickBubbled": [
+    "BUTTON.ce-tb[top=exit]"
+   ],
+   "effect": {
+    "open": true,
+    "line": "The changes are not saved. Esc again leaves without saving"
+   }
+  },
+  {
+   "label": "top.exit",
+   "at": [
+    776,
+    28
+   ],
+   "lockBefore": null,
+   "under": "BUTTON.ce-tb[top=exit]",
+   "peChain": [
+    [
+     "BUTTON.ce-tb[top=exit]",
+     "auto"
+    ],
+    [
+     "DIV#ui",
+     "none"
+    ]
+   ],
+   "windowSaw": [
+    "pointerdown>BUTTON.ce-tb[top=exit]",
+    "click>BUTTON.ce-tb[top=exit]"
+   ],
+   "clickBubbled": [
+    "BUTTON.ce-tb[top=exit]"
+   ],
+   "effect": {
+    "open": false,
+    "line": null
+   }
+  }
+ ],
+ "ready": {
+  "status": "ready",
+  "ms": 8212
+ },
+ "afterControls": {
+  "open": false,
+  "selected": 0,
+  "changed": false,
+  "said": "",
+  "flying": false,
+  "refused": null,
+  "mode": null,
+  "gatesN": null,
+  "courseGates": 0,
+  "courseOn": false,
+  "problem": null,
+  "cam": null,
+  "view": null,
+  "handles": null,
+  "stand": null,
+  "gates": null,
+  "override": false,
+  "lock": null,
+  "topLine": null,
+  "topClass": null,
+  "panelClass": null,
+  "panelBox": null,
+  "panelScroll": null,
+  "shown": null,
+  "canvas": [
+   1920,
+   913,
+   1536,
+   730
+  ],
+  "dpr": 1.25,
+  "maxTouch": 0,
+  "status": "ready",
+  "paused": false,
+  "windows": [],
+  "hud": {
+   "armed": false,
+   "crashed": false,
+   "throttlePct": 0,
+   "speed": 0,
+   "altitude": 0,
+   "crashes": 0
+  },
+  "active": "BODY.flying"
+ },
+ "lockAfterClick": "CANVAS#view",
+ "takeoff": {
+  "hudBefore": {
+   "armed": false,
+   "crashed": false,
+   "throttlePct": 0,
+   "speed": 0,
+   "altitude": 0,
+   "crashes": 0
+  },
+  "hudAfter": {
+   "armed": true,
+   "crashed": false,
+   "throttlePct": 29,
+   "speed": 0.157235662550019,
+   "altitude": 7.724323967106393,
+   "crashes": 0
+  },
+  "lock": "CANVAS#view"
+ },
+ "genDialog": true,
+ "course": {
+  "ok": true,
+  "ms": 6065,
+  "gates": 14,
+  "problem": null
+ },
+ "open": {
+  "ok": true,
+  "ms": 5,
+  "mode": "edit",
+  "flying": false,
+  "lock": null,
+  "handles": true,
+  "topClass": "ce-topbar interactive",
+  "topLine": "Editor open. Keys W A S D move the view, key E up, key Q down. Drag with the left mouse button on empty space to circle round, with Shift to slide; the wheel goes towards the cursor; hold the right button to look around. Click a gate: the arrows move it, the rings turn it, the boxes size it; key F or a double click brings the view to it, key Home shows the whole course. Space or your controller's arm switch flies the course (hold Space to climb); a short Space or the switch again goes back to editing. Key Esc leaves",
+  "canvas": [
+   1920,
+   913,
+   1536,
+   730
+  ],
+  "dpr": 1.25,
+  "maxTouch": 0,
+  "hud": {
+   "armed": false,
+   "crashed": false,
+   "throttlePct": 0,
+   "speed": 9.702865027274348e-9,
+   "altitude": -0.001970814441787816,
+   "crashes": 0
+  },
+  "windows": [],
+  "gatesN": 14,
+  "selected": 0,
+  "override": true
+ },
+ "oneSpace": {
+  "armedAtOpen": false,
+  "fly": true,
+  "flyMs": 3,
+  "back": true,
+  "backMs": 265,
+  "hud": {
+   "armed": false,
+   "crashed": false,
+   "throttlePct": 0,
+   "speed": 9.707406641546021e-9,
+   "altitude": -0.001980060047056753,
+   "crashes": 0
+  },
+  "topLine": "Click a gate to change it. Fly the course (or key Space, or your controller's arm switch) flies it at once"
+ },
+ "final": {
+  "open": false,
+  "selected": 2,
+  "changed": true,
+  "said": "The changes are not saved. Esc again leaves without saving",
+  "flying": false,
+  "refused": null,
+  "mode": null,
+  "gatesN": null,
+  "courseGates": 14,
+  "courseOn": true,
+  "problem": null,
+  "cam": null,
+  "view": null,
+  "handles": null,
+  "stand": null,
+  "override": false,
+  "lock": null,
+  "topLine": null,
+  "topClass": null,
+  "panelClass": null,
+  "panelBox": null,
+  "panelScroll": null,
+  "shown": null,
+  "canvas": [
+   1920,
+   913,
+   1536,
+   730
+  ],
+  "dpr": 1.25,
+  "maxTouch": 0,
+  "status": "ready",
+  "paused": false,
+  "windows": [],
+  "hud": {
+   "armed": false,
+   "crashed": false,
+   "throttlePct": 0,
+   "speed": 9.707098944065679e-9,
+   "altitude": -0.001979921419351882,
+   "crashes": 0
+  },
+  "active": "BODY.flying"
+ },
+ "fails": [],
+ "log": [
+  "console: Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "console: Failed to load resource: the server responded with a status of 403 ()",
+  "console: Failed to load resource: the server responded with a status of 403 ()",
+  "console: Failed to load resource: the server responded with a status of 403 ()",
+  "console: Failed to load resource: the server responded with a status of 403 ()",
+  "console: Failed to load resource: the server responded with a status of 403 ()",
+  "console: Failed to load resource: the server responded with a status of 403 ()",
+  "console: Failed to load resource: the server responded with a status of 404 (Not Found)"
+ ]
+}

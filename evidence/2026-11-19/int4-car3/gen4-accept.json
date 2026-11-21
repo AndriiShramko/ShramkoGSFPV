@@ -1,0 +1,224 @@
+{
+ "base": "http://localhost:6180/en",
+ "scene": "5dfeb49b",
+ "lublin": "2f1ddf5f",
+ "render": false,
+ "viewport": "1536x730@1.25",
+ "steps": [
+  {
+   "step": 1,
+   "name": "open the scene at x1",
+   "pass": true,
+   "detail": {
+    "scale": 1,
+    "gates": 0
+   }
+  },
+  {
+   "step": 2,
+   "name": "menu -> dialog in view, cross 44 px, nothing built",
+   "pass": true,
+   "detail": {
+    "how": {
+     "lock": true,
+     "menu": true,
+     "item": true
+    },
+    "dialog": {
+     "rect": {
+      "x": 488,
+      "y": 212,
+      "w": 560,
+      "h": 306
+     },
+     "x": {
+      "x": 987,
+      "y": 229,
+      "w": 44,
+      "h": 44
+     },
+     "replaces": null
+    },
+    "gates": 0,
+    "W": 1536,
+    "H": 730
+   }
+  },
+  {
+   "step": 3,
+   "name": "click Beginner, Compact, Build",
+   "pass": true,
+   "detail": {
+    "pressed": [
+     true,
+     true,
+     true
+    ],
+    "dialogGone": true,
+    "request": {
+     "seed": 1369222267,
+     "level": "beginner",
+     "spread": "compact",
+     "anyQuality": false
+    }
+   }
+  },
+  {
+   "step": 4,
+   "name": "progress box: 16 px, in view, never back, until the answer",
+   "pass": true,
+   "detail": {
+    "samples": 34,
+    "withBox": 34,
+    "pcts": [
+     0,
+     8,
+     26,
+     33,
+     72,
+     77
+    ],
+    "minFont": 16,
+    "inView": true,
+    "steps": [
+     "finding the best scanned part",
+     "finding the free space",
+     "placing the gates and obstacles"
+    ],
+    "lastText": {
+     "kind": "progress",
+     "title": "Building the course",
+     "step": "placing the gates and obstacles",
+     "pct": 77,
+     "stepOf": "Step 3 of 3",
+     "left": "About 0:05 left",
+     "cancel": "Cancel"
+    },
+    "ms": 3688
+   }
+  },
+  {
+   "step": 5,
+   "name": "course shown: gates >= 1, outside 0, closed",
+   "pass": true,
+   "detail": {
+    "gates": 7,
+    "drawn": 57,
+    "plan": {
+     "ok": true,
+     "stats": {
+      "kind": "room",
+      "gates": 7,
+      "closed": true,
+      "startFinishM": 0,
+      "startToCoreM": 2.323670487823864,
+      "finishToCoreM": 2.323670487823864,
+      "underTopShare": 1,
+      "goodShare": 1,
+      "outside": 0,
+      "underGround": 0,
+      "nearGroundShare": 0,
+      "openingM": 1.536
+     },
+     "shrunk": false
+    }
+   }
+  },
+  {
+   "step": 6,
+   "name": "start line visible >= 8 s",
+   "pass": true,
+   "detail": {
+    "line": "Gates: 7. The start gate is 52 m away: follow the arrow. Key Shift+T hides the course",
+    "shownMs": 8826,
+    "lastNote": null
+   }
+  },
+  {
+   "step": 7,
+   "name": "dialog again: 'Replaces' line, Cancel keeps the course",
+   "pass": true,
+   "detail": {
+    "replaces": "Replaces the current course (7 gates)",
+    "cancelled": true,
+    "same": true,
+    "gates": 7
+   }
+  },
+  {
+   "step": 8,
+   "name": "again: Replace -> a new course",
+   "pass": true,
+   "detail": {
+    "built": true,
+    "seed": [
+     1369222267,
+     635311771
+    ],
+    "gates": 7,
+    "ms": 5444
+   }
+  },
+  {
+   "step": 11,
+   "name": "Shift+G, Tab to Cancel, Enter: nothing replaced",
+   "pass": true,
+   "detail": {
+    "opened": true,
+    "focused": "gen-cancel",
+    "dialogGone": true,
+    "same": true,
+    "box": null
+   }
+  },
+  {
+   "step": 10,
+   "name": "dialog at 844x390: no overlap, in view, buttons >= 44 px",
+   "pass": true,
+   "detail": {
+    "parts": 12,
+    "dialog": {
+     "x": 142,
+     "y": 41.5625,
+     "w": 560,
+     "h": 306.875
+    },
+    "scrolls": false,
+    "overlaps": [],
+    "outside": [],
+    "small": []
+   }
+  },
+  {
+   "step": 9,
+   "name": "Lublin: underGround 0, nearGroundShare <= 0.2",
+   "pass": true,
+   "detail": {
+    "built": true,
+    "gates": 14,
+    "stats": {
+     "kind": "cityAbove",
+     "gates": 14,
+     "closed": true,
+     "startFinishM": 0,
+     "startToCoreM": 1.8391765116247727,
+     "finishToCoreM": 1.8391765116247727,
+     "underTopShare": 1,
+     "goodShare": 1,
+     "outside": 0,
+     "underGround": 0,
+     "nearGroundShare": 0,
+     "openingM": 0.922
+    },
+    "measured": true,
+    "note": null
+   }
+  }
+ ],
+ "errors": [],
+ "verdict": {
+  "pass": true,
+  "failed": [],
+  "pending": []
+ }
+}

@@ -1,0 +1,235 @@
+{
+ "probe": "gap-sound-accept",
+ "base": "http://localhost:6180",
+ "browser": "system-chrome",
+ "viewport": "1536x730@1.25",
+ "speech": "measured en (David) lengths, else the package estimate",
+ "steps": {
+  "firstQuickFocused": "PASS",
+  "firstNoBehind": "PASS",
+  "settingsShort": "PASS",
+  "moveWithin120": "PASS",
+  "wallsInRoom": "PASS",
+  "noBehindOnTheWay": "PASS",
+  "returningQuickFocused": "PASS",
+  "returningNoBehind": "PASS",
+  "returningContinueResumes": "PASS"
+ },
+ "pass": true,
+ "facts": {
+  "firstQuickFocused": {
+   "order": [
+    "sonic-start-quick",
+    "sonic-start-full"
+   ],
+   "focused": "sonic-start-quick"
+  },
+  "firstNoBehind": {
+   "headphoneButtons": [
+    "sonic-hp-left",
+    "sonic-hp-right"
+   ],
+   "behindButtons": []
+  },
+  "settingsShort": {
+   "shownFirst": [
+    "sonic-rate",
+    "sonic-captions",
+    "sonic-sr",
+    "sonic-narrator",
+    "sonic-key-hints",
+    "sonic-head"
+   ],
+   "showAll": "Show all settings (12 more)",
+   "shownAfter": 17
+  },
+  "moveWithin120": {
+   "seconds": 117.8,
+   "clicked": "[data-testid=\"sonic-start-quick\"]",
+   "lessonsOpened": [
+    "ears-headphones",
+    "walls-hall"
+   ],
+   "answers": [
+    "ears-headphones:1:1:side=Digit1",
+    "ears-headphones:1:2:side=Digit2"
+   ],
+   "lines": 20,
+   "linesMeasured": 13,
+   "speechSeconds": 57.7,
+   "trail": [
+    {
+     "t": 0.8,
+     "lesson": "ears-headphones",
+     "phase": "intro"
+    },
+    {
+     "t": 5.8,
+     "lesson": "ears-headphones",
+     "phase": "flying"
+    },
+    {
+     "t": 48,
+     "lesson": "ears-headphones",
+     "phase": "passed"
+    },
+    {
+     "t": 60.5,
+     "lesson": "walls-hall",
+     "phase": "intro"
+    },
+    {
+     "t": 117.8,
+     "lesson": "walls-hall",
+     "phase": "flying"
+    }
+   ]
+  },
+  "wallsInRoom": {
+   "roomKeys": [
+    "lesson.walls-hall.title",
+    "sonic.say.lessonKeys",
+    "cue.safety.wall.name",
+    "speech.end",
+    "dir.right",
+    "speech.end",
+    "cue.safety.ceiling.name",
+    "speech.end",
+    "cue.safety.floor.name",
+    "speech.end",
+    "lesson.walls-hall.goal.1",
+    "speech.end"
+   ]
+  },
+  "noBehindOnTheWay": {
+   "frontBackKeys": [],
+   "keysSaid": 35
+  },
+  "said": [
+   {
+    "t": 0.7,
+    "s": 1.765,
+    "text": "Headphone check"
+   },
+   {
+    "t": 2.5,
+    "s": 3.255,
+    "text": "Headphones on, L on your left ear."
+   },
+   {
+    "t": 5.7,
+    "s": 1.245,
+    "text": "Sound 1 of 2."
+   },
+   {
+    "t": 17.5,
+    "s": 6.83,
+    "text": "Where is this sound? Press 1 for left, 2 for right, 3 if you are not s"
+   },
+   {
+    "t": 24.4,
+    "s": 0.985,
+    "text": "Taken: 1."
+   },
+   {
+    "t": 25.4,
+    "s": 1.245,
+    "text": "Sound 2 of 2."
+   },
+   {
+    "t": 26.7,
+    "s": 5.34,
+    "text": "Next, key N. Back, key B. Repeat, key Z. Menu, key Escape. Main menu, "
+   },
+   {
+    "t": 40.1,
+    "s": 6.83,
+    "text": "Where is this sound? Press 1 for left, 2 for right, 3 if you are not s"
+   },
+   {
+    "t": 46.9,
+    "s": 0.985,
+    "text": "Taken: 2."
+   },
+   {
+    "t": 47.9,
+    "s": 3.455,
+    "text": "Good. Your headphones work well."
+   },
+   {
+    "t": 51.4,
+    "s": 4.655,
+    "text": "Your headphones work well. You are ready for the next step."
+   },
+   {
+    "t": 56.1,
+    "s": 3.52,
+    "text": "Lesson passed. Next, a bit harder: A small room."
+   },
+   {
+    "t": 60.5,
+    "s": 1.64,
+    "text": "A small room"
+   },
+   {
+    "t": 62.2,
+    "s": 5.34,
+    "text": "Next, key N. Back, key B. Repeat, key Z. Menu, key Escape. Main menu, "
+   },
+   {
+    "t": 67.5,
+    "s": 1.29,
+    "text": "Wall"
+   },
+   {
+    "t": 78,
+    "s": 1.525,
+    "text": "On your right."
+   },
+   {
+    "t": 90.1,
+    "s": 1.41,
+    "text": "Ceiling"
+   },
+   {
+    "t": 102,
+    "s": 1.275,
+    "text": "Floor"
+   },
+   {
+    "t": 113.8,
+    "s": 3.975,
+    "text": "Fly to each wall and stop close to it without touching it."
+   },
+   {
+    "t": 117.8,
+    "s": 1.13,
+    "text": "Go."
+   }
+  ],
+  "hookErrors": [],
+  "returningQuickFocused": {
+   "order": [
+    "sonic-start-quick",
+    "sonic-start-continue",
+    "sonic-start-full"
+   ],
+   "focused": "sonic-start-quick",
+   "continueText": "Continue: A small roomLesson 2 of 7, in progress"
+  },
+  "returningNoBehind": {
+   "headphoneButtons": [
+    "sonic-hp-left",
+    "sonic-hp-right"
+   ],
+   "behindButtons": []
+  },
+  "returningContinueResumes": {
+   "tabbed": "sonic-start-continue",
+   "resumed": "walls-hall",
+   "continueText": "Continue: A small roomLesson 2 of 7, in progress",
+   "roomTitle": "A small room"
+  }
+ },
+ "errors": []
+}

@@ -1,0 +1,171 @@
+{
+ "base": "http://localhost:6180/en",
+ "from": "70b50d42",
+ "to": "2f1ddf5f",
+ "steps": {
+  "1.cancel-shown": {
+   "ok": true,
+   "ms": 3,
+   "box": {
+    "x": 640.9140625,
+    "y": 451.4375,
+    "w": 78,
+    "h": 44,
+    "inView": true,
+    "covered": false,
+    "under": "BUTTON.btn",
+    "text": "Cancel"
+   }
+  },
+  "2.cancel-closes": {
+   "ok": true,
+   "ms": 2,
+   "card": false,
+   "picker": true,
+   "sw": {
+    "state": "cancelled",
+    "from": "70b50d42",
+    "to": "2f1ddf5f",
+    "reason": "pick",
+    "why": "pilot",
+    "ms": 2631
+   },
+   "said": true
+  },
+  "3.no-late-requests": {
+   "ok": true,
+   "lublinFolders": 6,
+   "late": [],
+   "lateN": 0
+  },
+  "4.nothing-left": {
+   "ok": true,
+   "lublinAssets": [],
+   "entities": 0,
+   "assets": [],
+   "walls": "none"
+  },
+  "5.back-to-from": {
+   "ok": true,
+   "ms": 7123,
+   "sw": {
+    "state": "done",
+    "from": "70b50d42",
+    "to": "70b50d42",
+    "reason": "back",
+    "ms": 6661
+   },
+   "scene": "70b50d42",
+   "said": true,
+   "cross": {
+    "w": 44,
+    "h": 44
+   }
+  },
+  "6.n-replaces": {
+   "ok": true,
+   "picked": "2f1ddf5f",
+   "pickHow": "typed",
+   "underWay": true,
+   "atN": {
+    "state": "loading",
+    "from": "70b50d42",
+    "to": "2f1ddf5f",
+    "reason": "pick"
+   },
+   "ms": 13197,
+   "sw": {
+    "state": "done",
+    "from": "70b50d42",
+    "to": "39e63ce9",
+    "reason": "next",
+    "ms": 12739
+   },
+   "scene": "39e63ce9",
+   "pickedAssets": [],
+   "entities": 1
+  },
+  "9.esc-esc-back": {
+   "ok": true,
+   "picked": "2f1ddf5f",
+   "flown": "39e63ce9",
+   "underWay": true,
+   "escCard": {
+    "ok": true,
+    "ms": 2,
+    "sw": {
+     "state": "cancelled",
+     "from": "39e63ce9",
+     "to": "2f1ddf5f",
+     "reason": "pick",
+     "why": "pilot",
+     "ms": 1522
+    }
+   },
+   "back": {
+    "ok": true,
+    "ms": 71623,
+    "sw": {
+     "state": "done",
+     "from": "39e63ce9",
+     "to": "39e63ce9",
+     "reason": "back",
+     "ms": 71563
+    },
+    "scene": "39e63ce9",
+    "said": true
+   },
+   "pickedAssets": [],
+   "entities": 1
+  },
+  "7.cancel-phone": {
+   "ok": true,
+   "box": {
+    "x": 294.9140625,
+    "y": 281.4375,
+    "w": 78,
+    "h": 44,
+    "inView": true,
+    "covered": false,
+    "under": "BUTTON.btn",
+    "text": "Cancel"
+   }
+  },
+  "8.no-errors-after-cancel": {
+   "ok": true,
+   "phone": 0,
+   "desktop": 0,
+   "picker": true
+  }
+ },
+ "log": [],
+ "ready": {
+  "ms": 7084,
+  "lockAfterClick": true
+ },
+ "pick": {
+  "t0": 1795232772983,
+  "how": "typed"
+ },
+ "beforeCancel": {
+  "sw": {
+   "state": "loading",
+   "from": "70b50d42",
+   "to": "2f1ddf5f",
+   "reason": "pick"
+  },
+  "assets": [],
+  "entities": 0
+ },
+ "lublinFolders": [
+  "https://d28zzqy0iyovbz.cloudfront.net/70b50d42/v1/6_5/",
+  "https://d28zzqy0iyovbz.cloudfront.net/2f1ddf5f/v1/",
+  "https://d28zzqy0iyovbz.cloudfront.net/2f1ddf5f/v2/",
+  "https://d28zzqy0iyovbz.cloudfront.net/2f1ddf5f/v3/",
+  "https://d28zzqy0iyovbz.cloudfront.net/2f1ddf5f/v4/",
+  "https://d28zzqy0iyovbz.cloudfront.net/2f1ddf5f/v5/"
+ ],
+ "errsWhileCancelled": 0,
+ "pass": true,
+ "fails": []
+}
