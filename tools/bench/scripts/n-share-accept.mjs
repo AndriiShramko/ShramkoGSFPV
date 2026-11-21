@@ -254,9 +254,24 @@ async function row(browser, name) {
     facts[`${name}.sharer`] = { opened: at, soundBy, ...sharer };
     log(name, 'sharer', JSON.stringify(sharer));
     const url = await shareFromPause(page, ctx, name);
-    await ctx.close();
     judgeAddress(name, url);
-    await friend(name, url, sharer);
+    // sound: a sound page lays a generated course without the competition elements (course/finish.ts courseElements(ctx.sonic),
+    // lane course4 CU-1: the ear pilot flies single upright gates), so the sharer who turned sound on in place flies more gates
+    // than any sound page laying the same link. The friend is compared with the same address opened in the sharer's own browser
+    // (a profile that has flown here): a fresh profile must fly what a known one flies. The in-place count is kept in the facts.
+    let expect = sharer;
+    if (sound && url) {
+        const ref = await ctx.newPage();
+        await ref.goto(url + (url.includes('?') ? '&' : '?') + 'render=off', { waitUntil: 'load', timeout: 120000 });
+        await ref.waitForSelector('[data-testid="sonic-start-scan"]', { state: 'visible', timeout: 30000 }).catch(() => null);
+        await sleep(1200);
+        await clickCentre(ref, '[data-testid="sonic-start-scan"]');
+        const r = await until(ref, (x) => (x.gates ?? 0) > 0, COURSE_MS, 500);
+        expect = { ...sharer, gates: r ? r.gates : null, inPlaceGates: sharer.gates, by: 'the same address in the sharer browser' };
+        facts[`${name}.reference`] = r;
+    }
+    await ctx.close();
+    await friend(name, url, expect);
 }
 
 const browser = await chromium.launch(launch);

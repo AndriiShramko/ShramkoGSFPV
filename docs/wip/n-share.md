@@ -18,27 +18,16 @@ the sound lessons, not the scene.
       An unsaved hand-built course: the Share panel shares the scene alone and says so in one line (`share-note`, share.unsaved, four
       languages). Tests: share-links-landing.test.ts (6), sonic-start-screen.test.ts "link with a scene" (2). NEG OK on the base
       (start-model, start-screen, start.ts) and on S1 (start-model, flight-link). Commit 11210118.
-- [ ] S3 the acceptance by mouse: tools/bench/scripts/n-share-accept.mjs (local build and live site, read only), at most three
-      pictures, gates once (typecheck,vitest,architecture,i18n,b18,leaks), "What the owner should try", delete dist.
-      DONE in run 1 of S3: the probe written and committed (8cfa3df7 + this commit); the release built (dist/, sha 8cfa3df7 + the
-      nine walls folders) and run locally on port 6921 (U:/Temp/gsfpv-train4/n-share/accept-local.json): sound.shareCarries PASS
-      (`/fly/?sonic=fly&scene=887f27aa&sz=1&course=g1.1`), sound.landsOnScene PASS (one main button sonic-start-scan, focused; the
-      lessons link 44 px, not primary), normal.shareCarries PASS (`/en/fly/?scene=887f27aa&course=g1.1`), normal.landsOnScene PASS
-      (the first-visit question's first answer; the site's consent bar is listed apart), normal.fliesSame PASS (36 gates, g1.1),
-      sound.fliesSame FAIL: the friend flies scan-free in 887f27aa with course=g1.1 and the same gate 1, but 24 gates where the
-      sharer had 36. Cause (found, same walls 0.05 m, size 1, seed 1): the sharer laid the course in the normal flight (with the
-      competition elements) and then switched Fly by Sound on in place (pause.flyBySound); a sound page lays the same seed without
-      elements (course/finish.ts courseElements(ctx.sonic), app/builtin/course.ts:762, lane onecourse/course4 CU-1: the ear pilot
-      flies single upright gates). Pictures taken (not yet looked at): shots/n-share-local-sound.png, n-share-local-normal.png.
-      LEFT (exact): 1. decide the sound row: either the link of an in-place sound flight whose course carries elements must name
-      that (course/link.ts is owned; the reading side is course.ts, not ours: For the lead), or the probe compares against the
-      same link laid in a sound page and the difference goes to For the lead; recommended: the second, with the cause written
-      under For the lead and the owner's line kept honest in "What the owner does". 2. look at the two pictures once (one sentence
-      each). 3. the live run, read only: serve not needed; `SHOT_ROWS=sound node tools/bench/scripts/n-share-accept.mjs
-      https://gsfpv.flyreelstudio.eu U:/Temp/gsfpv-train4/n-share/accept-live.json live` (expect sound FAILs: lessons first, no
-      course), look at its one picture. 4. copy both JSONs to evidence/2026-11-20/n-share/. 5. gates once. 6. "What the owner
-      does", Claims 3, Not verified, For the lead (+ panel.ts still uploads a picture to /api/share before a course flight's
-      link, which then does not use it), Cost notes. 7. rm -rf dist; delete U:/Temp/gsfpv-train4/n-share/profile-*.
+- [x] S3 the acceptance by mouse: tools/bench/scripts/n-share-accept.mjs. Local release (sha 8cfa3df7 + the probe fix, port 6921):
+      all six steps PASS (evidence/2026-11-20/n-share/accept-local-run1.json: normal rows and the sound share and landing;
+      accept-local-sound.json: the sound row again with its reference). The sound friend is compared with the same address opened
+      in the sharer's own browser (24 gates both), not with the in-place flight (36 gates): see For the lead. Live site, read only
+      (accept-live.json): sound.shareCarries FAIL (`sonic=scan-free`, no course), sound.landsOnScene FAIL (main button Quick start,
+      the scan third), sound.fliesSame FAIL (the friend's one press opens the lesson ears-headphones): the lane's negative control.
+      Pictures, each looked at once: n-share-local-sound.png: one green button "Fly this scan by sound / With the course of the
+      link", under it the small link "New to flying by sound? Open the lessons"; n-share-local-normal.png: "Before you fly" with
+      its first answer green, the site's cookie bar under it; n-share-live-sound.png: "Quick start" green, "Full course" beside it,
+      "I already fly by sound: fly this scan" a grey third button. Gates: see Claims 3. dist deleted, the profiles deleted.
 
 Findings of S1 (the code wins over the plan where they differ):
 - The plain flight's Share (share/links.ts shareLink) dropped the course too: in a flight it gives the picture page /s/<id>, whose
@@ -59,7 +48,16 @@ Findings of S1 (the code wins over the plan where they differ):
 
 ## What the owner does
 
-(S3)
+1. Opens a scene with gates (for example Tunis, `/en/fly/?scene=887f27aa&course=g1.1`), clicks into the scene, flies.
+2. Key Escape, the pause menu, "Fly by Sound here": the flight goes on by sound. Key Escape again: the pause menu; "Share scene".
+3. The Share panel shows and copies `.../fly/?sonic=fly&scene=887f27aa&sz=1&course=g1.1` (before: `sonic=scan-free`, no course).
+4. The friend (a browser that never opened the site) opens it: "Fly by Sound" with ONE green button "Fly this scan by sound" (its
+   line: "With the course of the link: you hear its gates") and under it a small link to the lessons. One click: the flight by
+   sound starts in that scene with that course.
+5. A normal flight's Share gives `/en/fly/?scene=...&course=...`: the friend answers "Before you fly" (one green first answer), clicks
+   into the scene, flies the same course (36 gates in Tunis g1.1).
+Known difference: a sound page lays a generated course as single upright gates (24 in Tunis g1.1), so the friend flies 24 gates by
+sound where the owner, who turned sound on in place over a laid course, had 36 (see For the lead).
 
 ## Claims
 
@@ -71,7 +69,12 @@ Findings of S1 (the code wins over the plan where they differ):
 
 ## Not verified
 
-(S3) No person, phone or real controller took part.
+- No person, phone or real controller took part; the pilot was a headless Chrome driven by the mouse at 1536 x 730 @ 1.25 with
+  `render=off` (the picture of the flight was not judged, only the landing screens).
+- The live run had only the sound row (the row the lane repairs; the plain flight's live Share gives the picture page /s/<id>,
+  which uploads a picture: not run on the live site, it would create one; the probe aborts every non-GET /api request).
+- "Save and share" for a hand-built course never saved: not built (see For the lead); the Share shares the scene and says so.
+- The sound friend's gate count equals the in-place sharer's only when the sharer laid the course by sound (see For the lead).
 
 ## For the lead
 
@@ -81,6 +84,16 @@ Findings of S1 (the code wins over the plan where they differ):
   old lessons-first order the owner rejected; rewritten to the new one).
 - "Save and share" needs a hook from the course feature (lane n-save): e.g. `CourseHook.saveForShare?: () => Promise<boolean>`;
   with it the Share panel's note can carry the button. store.ts fliesBySound stays (in-place.ts still uses it).
+- The sound friend flies fewer gates than the in-place sharer: course/finish.ts courseElements(ctx.sonic) (app/builtin/course.ts
+  ~:762, lane course4 CU-1) lays a generated course without the competition elements on a sound page, but a course laid in a normal
+  flight keeps them when the pilot turns sound on in place (pause.flyBySound). Tunis g1.1: 36 gates in place, 24 on any sound page.
+  The link is the same course; the owner should decide which is right: either the in-place switch re-lays the course as the ear
+  pilot's (course.ts, not this lane), or the link names the elements (course/link.ts + course.ts reading it). Not changed here.
+- apps/fly/src/share/panel.ts still uploads a picture to /api/share before a course flight's link is chosen, and that link does
+  not use it (a wasted upload; the panel could ask flightLink first).
+- Deploy: page only (apps/fly). No API, rooms, nginx or sound package change. Live checks after deploy:
+  `ROWS=sound node tools/bench/scripts/n-share-accept.mjs https://gsfpv.flyreelstudio.eu <out.json> live` must PASS its three
+  steps (read only).
 - Later, optional: the server's /s/<id> page could carry `course=` (apps/api/server.py fly_link), so a course flight keeps its picture
   card; until then a flight with a course shares its flight address.
 
