@@ -15,9 +15,15 @@ Temp: U:/Temp/gsfpv-train4/n-save. Evidence: evidence/2026-11-20/n-save/.
   moves; turned along the leg, between the legs within the level's tolerance); tests packages/tracks/test/autofix.test.ts (8)
   and tools/bench/test/save-fix-one.test.ts (2: fixes.ts proposeFixes is fixAll for one gate); NEG OK on the base for both. Commit 45ddad2d.
   n-route's route() is not merged in this tree (048629d is no ancestor), so the turn is along the leg.
-- [ ] S3 the dialog and the line: `save-warnings` with `save-fix-all`, `save-as-is`, `save-show-me`; `save-fixed` + `save-undo`;
-  ghosts (flash.ts); blockers one plain line; the editor's message line at least 16 px, wraps to 3 lines, never "..."; fake-DOM
-  tests + NEG; repair the Save steps of the edit4b and edit-mouse probes.
+- [x] S3 the dialog and the line: saveMine / saveAdmin take the verdict (course.ts verdictNow: the editor's problems plus
+  autofix `courseWarnings`, now exported); a blocker is one plain line with its way out (save-words.ts blockerWords); warnings
+  open the edit4s offer box turned into the Save dialog (panel.ts askSave: `save-warnings`, `save-fix-all`, `save-as-is`,
+  `save-show-me`, the 44 px cross `save-warnings-close`); Fix all = fixAll as one undo step ('replace'), ghosts of the old
+  places for GHOST_MS 5 s (flash.ts GateGhosts, an SVG layer), the line `save-fixed` with `save-undo` (the editor's undo of that
+  step; no Undo when nothing moved), then the save; Show me = showWrong, else the first warned gate. The old refusedSave /
+  applyFixes are gone (one flow). The message line: 16 px, line-height 1.25, max 3.75em, wraps, no ellipsis. Tests
+  tools/bench/test/save-dialog.test.ts (8) NEG OK on the base. edit4b step 10 presses `save-show-me` by id; the edit-mouse
+  probe never presses Save mine (its top-bar Save only opens the name field), so it does not meet the dialog. Commit d74ab9f9.
 - [ ] S4 the acceptance by mouse: tools/bench/scripts/n-save-accept.mjs on the local build + local API, and against the live site
   (must FAIL "Save as it is", read only); gates typecheck,vitest,architecture,i18n,b18,leaks; "What the owner should try".
 
@@ -41,12 +47,19 @@ applyFixes :1065, saveMine :1833, saveAdmin :~1885 (the design named :893-1754);
    `npx vitest run packages/tracks/test/autofix.test.ts` (8 passed); NEG OK on 03624451.
 4. The edit4s offer's turn and nudge are fixAll's repair of that one gate. Proof:
    `npx vitest run tools/bench/test/save-fix-one.test.ts tools/bench/test/edit4s-fixes.test.ts` (2 + 9 passed); NEG OK.
+5. Save with a gate in a wall and two gates on one spot opens one dialog: the count, one line per kind with the gates from 1,
+   the buttons save-fix-all, save-as-is, save-show-me in that order, each answering once; after Fix all the line save-fixed
+   names the moved gates and save-undo runs once (none when nothing moved); the ghosts ring the old places; every blocker is
+   one line with its way out; the words exist in en, es, pl, ru; the editor's message line is at least 16 px, wraps to three
+   lines and has no ellipsis. Proof: `npx vitest run tools/bench/test/save-dialog.test.ts` (8 passed); NEG OK on 03624451.
 
 ## Not verified
 
 - No person, phone or real controller took part in any check of this lane.
 - 'name-refused' in saveVerdict uses the same rule as the server (textIssues of server.ts, which tracks.py mirrors); the page
-  passes the typed name only from S3 on.
+  passes the typed name and title to it since S3.
+- S3 was not run in a browser: the dialog, the ghosts and the line are proved on a fake DOM; S4's mouse acceptance runs it.
+- 'sharp-turn' is not in the dialog yet: autofix courseWarnings does not measure it (lane n-level measures it by level).
 
 ## For the lead
 
@@ -54,6 +67,14 @@ applyFixes :1065, saveMine :1833, saveAdmin :~1885 (the design named :893-1754);
   problem blocks saving": they now say Save is allowed while the problems stay).
 - S2: packages/tracks/src/index.ts exports autofix.ts (one line); apps/fly/src/course/editor/warn.ts CLOSE_GAP_M is now
   tracks' APART_GAP_M (same 0.2 m).
+- S3: tools/bench/test/editor3-i2.test.ts (the line was asserted one line with an ellipsis; Decision 6 reverses it),
+  tools/bench/test/edit4s-fixes.test.ts (the page test of the old offer now asserts the Save dialog) and
+  tools/bench/test/edit4b-numbers.test.ts (its slice ended at the removed refusedSave; now at fixWalls). course.ts markChanged
+  (outside the named Save functions, one line: a change takes the dialog and the fixed line away, as it took the offer away).
+- S3, probes not mine that meet the dialog: tools/bench/scripts/gap-save-accept.mjs presses `.ce-fix-yes` (now Fix all
+  automatically, which also saves: the same outcome) and tools/bench/scripts/edit4s-probe.mjs reads the old offer
+  (`.ce-fix-offer`, fixHook offered/answer 'yes'); its offer step needs `save-fix-all` and the new fixHook
+  `{ kinds, answer, moved, left, undone }`.
 - Deploy order: page only (no API file changed so far).
 
 ## Cost notes
@@ -62,3 +83,5 @@ applyFixes :1065, saveMine :1833, saveAdmin :~1885 (the design named :893-1754);
   apps/api/server.py with PORT and DATA_DIR was simpler). A pointer to that recipe in docs/agent-map.md would save four replies.
 - S2: most replies went to test fixtures (a reversed gate within 3 m is a turn round, the yaw table is 22.5 degrees per
   step); a note on yawQuatStep and TURN_PAIR_M in the scan-worlds header would save three replies.
+- S3: most replies went to finding the old offer's users (three tests and two probes assert its code by regex) and the fake
+  DOM's limits (no childElementCount); a list of source-regex tests per file in docs/agent-map.md would save four replies.

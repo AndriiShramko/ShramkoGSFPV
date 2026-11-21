@@ -251,21 +251,21 @@ try {
     let save = null;
     if ((refused || before.problems > 0) && !LIVE && (await snap()).problems > 0) {
         if ((await boxOf('.cl-num, .cl-edge')) === null) res.log.push('no label before Save');
-        // the top bar's Save opens the window's save part at the name; Save mine there checks first (course.ts saveMine:
-        // canSave false -> refusedSave -> the sentence naming the gate) and sends nothing
+        // the top bar's Save opens the window's save part at the name; Save mine there asks first (course.ts saveMine:
+        // a gate in a wall is a warning -> the Save dialog, lane n-save) and sends nothing until it is answered
         await press('[data-top="save"]', 600);
         const nameBox = await press('.ce-name', 200);
         if (nameBox) await page.keyboard.type('probe', { delay: 30 });
         await eyeRest();
         const b = await snap();
         await press('.ce-save-mine', 0);
-        let got = await until(async () => ({ v: await snap(), offer: await boxOf('.course-editor .ce-fix-offer .ce-fix-show') }), (x) => (x.v.said !== b.said && x.v.flash.length > 0) || !!x.offer, 8000, 100);
-        // int4: since edit4s (E7) a Save whose problems have small corrections first offers them; its 'Show me' is the
-        // pilot's way to the named gate (course.ts refusedSave -> pointAtWrong), so the probe presses it there
+        let got = await until(async () => ({ v: await snap(), offer: await boxOf('.course-editor [data-testid="save-show-me"]') }), (x) => (x.v.said !== b.said && x.v.flash.length > 0) || !!x.offer, 8000, 100);
+        // lane n-save: a Save with warnings opens the dialog (save-warnings); its Show me (save-show-me) is the
+        // pilot's way to the named gate (course.ts showMe -> showWrong), so the probe presses it by its id
         const offered = !!got.v.offer && got.v.v.flash.length === 0;
-        if (offered) await press('.course-editor .ce-fix-offer .ce-fix-show', 0);
+        if (offered) await press('.course-editor [data-testid="save-show-me"]', 0);
         got = await until(snap, (v) => v.said !== b.said && v.flash.length > 0, 3000, 100);
-        if (offered) res.log.push('save offered corrections: Show me pressed');
+        if (offered) res.log.push('save dialog: Show me pressed');
         await sleep(1500);
         const later = await snap();
         save = { said: got.v.said, flash: got.v.flash, pointed: got.v.b?.pointed ?? null, selected: got.v.selected, wrong: got.v.wrong, eyeMoved: Math.round(dist(later.eye, b.eye) * 1000) / 1000, nameAsked: later.windows };
