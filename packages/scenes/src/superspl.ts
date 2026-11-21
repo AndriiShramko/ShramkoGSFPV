@@ -371,7 +371,8 @@ export class SuperSplatCatalog {
         const verdictOf = (it: ExploreItem) => this.opensSeen.get(`${it.id}/v${it.version}`);
         const isBroken = o.isBroken ?? ((it: ExploreItem) => {
             const v = formatVerdict(it.format);
-            return v === 'unsupported' || (v === 'unknown' && (!check || verdictOf(it) === 'no'));
+            // 'legacy' (compressed PLY) opens only when the pilot picks it, never at random
+            return v === 'unsupported' || v === 'legacy' || (v === 'unknown' && (!check || verdictOf(it) === 'no'));
         });
         const opts: PickOptions = { ...o, rng: o.rng ?? Math.random, broken: ruledOut, isBroken };
         const pool = new Map<string, ExploreItem>();

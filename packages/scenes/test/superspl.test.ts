@@ -485,6 +485,17 @@ describe('formats the API does not name (review C9)', () => {
         const r = await unsure.randomTopRated({ rng: () => 0, check: async () => 'unknown' });
         expect(r!.item.id).toBe(id(2)); // no clear answer: not this time, the next scene of the tier instead
     });
+
+    it('randomTopRated never draws a legacy compressed PLY or a GSAF scan (they open only when the pilot picks them)', async () => {
+        // n-scan review: 'legacy' (compressed.ply: one file up to 163 MB, no levels) is not a random pick
+        const pool = Array.from({ length: 40 }, (_, i) => wire(i, i === 0 ? { format: 'compressed.ply' } : i === 1 ? { format: 'gsaf' } : {}));
+        const cat = new SuperSplatCatalog({ fetch: proxy(pageOf(pool)).fetch });
+        const got: string[] = [];
+        for (let k = 0; k < 40; k++) got.push((await cat.randomTopRated({ rng: () => (k + 0.5) / 40 }))!.item.id);
+        expect(got).not.toContain(id(0));
+        expect(got).not.toContain(id(1));
+        expect(got).toContain(id(2)); // control: the next scene of the tier is drawn
+    });
 });
 
 describe('SuperSplatCatalog.topRated / randomTopRated', () => {
