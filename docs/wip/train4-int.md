@@ -152,7 +152,7 @@ t7-base 03624451 of job base7: gap-gen (gen4a, gen4b), gap-save, gap-sound and t
       rc 0 (typecheck, vitest 449 files / 5728 tests, api-unittest, architecture, i18n, catalog, b18, leaks;
       U:/Temp/gsfpv-gates-20261121-084002, int4/gates-car3.log). a6-reference alone PASS (int4/a6-car3.log). No server
       left on 6180-6199. S2 done.
-- [ ] S3 the hand-over (Car 3 parts, U:/Temp/gsfpv-train4/int4-car3.json)
+- [x] S3 the hand-over (Car 3 parts, U:/Temp/gsfpv-train4/int4-car3.json)
       Run of 2026-11-21 ~10:00 UTC: `git fetch origin`: origin/main 852821e5 (hot-sog3: playcanvas 2.24.2,
       splat-transform 3.12.0; the lead's release merge) brings CODE: merged 8eac608d (only evidence/2026-11-21/b-fly*
       conflicted, add/add of two accept-fly runs: ours kept at the path, hot-sog3's run moved whole to
@@ -186,6 +186,12 @@ t7-base 03624451 of job base7: gap-gen (gen4a, gen4b), gap-save, gap-sound and t
       release: the panel never opens; car 3 changed nothing in rooms). Found: course-path-wroclaw FAILs on the live site
       today, before car 3 (release 852821e5, the g1 course: 37 gates, one at 2.2 m against 2.1); after the release Shift+G
       builds through the dialog and the check takes the asked path.
+      Gates once on 4c9b27ed (the code handed over): all PASS rc 0 (typecheck, vitest 449 files / 5728 tests, api-unittest,
+      architecture, i18n, catalog, b18, leaks; U:/Temp/gsfpv-gates-20261121-135833, int4/gates-car3s3.log); a6-reference
+      alone PASS (int4/a6-car3s3.log). `git fetch origin`: 511a44cb (STATE.md and the lead note, docs only) merged,
+      c90020ae: the gates are enough. S3 done: int4-car3.json written with the head of the commit that ticks this box:
+      api ["tracks.py"], rooms false, nginx false, package_sha 719aaf5454ddb15677ad4dc090ac6faeab853e77 (the pin moved
+      from 53a56759, which is the package's main today), held [], live_only as in Live checks (Car 3).
 
 ## Progress
 
@@ -512,9 +518,12 @@ The positive side on the release build of 8eac608d and the negative side against
 logs-car3s3 live-local and live-neg3 (the reruns: live-local2, live-local-cp1, live-local-cp2, live-site3).
 
 live_only (int4-car3.json, one line): gen4-generate-dialog,gap-gen-asked-course,gap-sound-start,edit4b-course-life,
-ux4a-messages,edit4s-drafts,edit4a-gizmo,edit-mouse-wroclaw,sound6-quick-walk,sonic-in-place-tunis,sonic-course-wroclaw,
+ux4a-messages,edit4s-drafts,edit-mouse-wroclaw,sound6-quick-walk,sonic-in-place-tunis,sonic-course-wroclaw,
 sonic-course-wroclaw-n,narrator-off,accept-fly,scans-open,course-path-wroclaw,gate-guide-wroclaw,mouse-free-probe,
 one-course,voxels-alone-wroclaw,voxel-panel-wroclaw,edit-mode-wroclaw,sonic-eye-course-wroclaw
+Left out on purpose: edit4a-gizmo (it fails on the live site since car 2 at 13.laptop, before car 3; lane fix-gizmo13
+decides page or probe, the lead's note of 12:50 UTC; edit-mode-wroclaw and edit-mouse-wroclaw cover the editor here),
+pause-rise-lublin (hot-sog3's, lane fix-lod).
 
 ## What the owner should try
 
@@ -684,3 +693,8 @@ Car 3
 - S2 (car 3), last run: about 20 calls; two gate runs were lost because this shell's PATH has neither `python` (only
   the py launcher) nor Node 22 first (vitest's rolldown needs node:util styleText). Cheaper: gates.py should find
   Python itself (sys.executable) as it already finds ~/node-v22; run single tests with ~/node-v22 on PATH.
+- S3 (car 3), last run: about 45 calls; most went to three live checks that failed on the build for three different
+  reasons (an editor that frames nothing, a generator with a new height rule, a menu item under More) and to a check
+  line in live-checks.sh that repeated its probe's judge (cpband), so the probe's repair did not reach it. Cheaper: a
+  live check should take its probe's exit code as its verdict (one judge, not two), and a lane that changes a rule
+  (gap-gen's heights, menu4's levels, edit4a's framing) should grep deploy/live-checks.sh and tools/bench for the old rule.
