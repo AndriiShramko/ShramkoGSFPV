@@ -13,7 +13,8 @@
 // PILOT_AT (s after the reveal: the setting is written live then, as the owner did in the settings), DELAY (ms of busy CPU
 // per frame from the reveal: hook.setFrameDelay, a slower device), DROP (every Nth distinct scan file fails) and
 // DROPTRIES (its first k requests fail: 3 = the engine gives it up; 1 = one failure), STALL (every Nth distinct scan file
-// never answers), UP / PITCH (hold the camera that far above the start place, pitch in degrees; unset = the start place
+// never answers), UP / PITCH (hold the camera that far above the start place, pitch in degrees; unset = the start place;
+// AT=x,y,z with YAW: an absolute place in the world instead, see loadq-hold.mjs
 // held as it is), SHOTS (seconds after the reveal for pictures, comma separated; the last sample is always taken as
 // `end`), ALIAS (names under which the `end` picture is also written, for a reference run), STILL (G6 measurement switch,
 // probe side only: from STILL s after the reveal the budget is raised x1.5 a second while the last second's median frame
@@ -26,6 +27,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { pickBrowser } from '../src/chrome.mjs';
 import { nvidiaThermal } from './gpu-select-fly.mjs';
+import { holdExpr, holdSpec } from './loadq-hold.mjs';
 
 const require = createRequire(import.meta.url);
 const { chromium } = require('playwright');
@@ -50,6 +52,7 @@ const STALL = Number(env.STALL || 0);
 const STALLTRIES = env.STALLTRIES !== undefined ? Number(env.STALLTRIES) : Infinity;
 const UP = env.UP !== undefined ? Number(env.UP) : null;
 const PITCH = Number(env.PITCH || -35);
+const HOLDSPEC = holdSpec(env);
 const SHOTS = (env.SHOTS || '').split(',').filter(Boolean).map(Number);
 const ALIAS = (env.ALIAS || '').split(',').filter(Boolean);
 const STILL = env.STILL !== undefined ? Number(env.STILL) : null;
@@ -171,7 +174,7 @@ const STATE = `(() => {
         const cosH = 1 / Math.hypot(1, tanH), sinH = tanH * cosH, cosV = 1 / Math.hypot(1, tanV), sinV = tanV * cosV;
         const wt = inst.placement.node.getWorldTransform(); const sc = Math.abs(wt.getScale().x) || 1; const v = cp.clone();
         const ns = inst.octree.nodes;
-        let area = 0, areaLevel = 0, areaWant = 0, nIn = 0, inSplats = 0, allSplats = 0, finer = 0;
+        let area = 0, areaLevel = 0, areaWant = 0, wantArea = 0, nIn = 0, inSplats = 0, allSplats = 0, finer = 0;
         inst.nodeInfos.forEach((ni, i) => {
             const b = ns[i].boundingSphere; v.set(b.x, b.y, b.z); wt.transformPoint(v, v);
             const dx = v.x - cp.x, dy = v.y - cp.y, dz = v.z - cp.z; const dd = Math.hypot(dx, dy, dz); const rad = b.w * sc;
@@ -183,10 +186,10 @@ const STATE = `(() => {
             nIn++; inSplats += cnt;
             if (l > 0) finer++;
             const w = dd > rad ? (rad / dd) * (rad / dd) : 1;
-            if (l >= 0) { area += w; areaLevel += w * l; areaWant += w * (ni.optimalLod >= 0 ? ni.optimalLod : l); }
+            if (l >= 0) { area += w; areaLevel += w * l; if (typeof ni.optimalLod === 'number') { wantArea += w; areaWant += w * (ni.optimalLod >= 0 ? ni.optimalLod : l); } }
         });
         out.areaLevel = area > 0 ? Math.round(areaLevel / area * 100) / 100 : null;
-        out.areaWanted = area > 0 ? Math.round(areaWant / area * 100) / 100 : null;
+        out.areaWanted = wantArea > 0 && wantArea === area ? Math.round(areaWant / area * 100) / 100 : null; // null: the engine has no optimalLod (playcanvas 2.24)
         out.inFrameM = Math.round(inSplats / 1e4) / 100; out.nodesInFrame = nIn; out.nodesInFrameNotFinest = finer;
         out.lodLevels = inst.octree.lodLevels;
     }
@@ -195,17 +198,8 @@ const STATE = `(() => {
     return out;
 })()`;
 
-/** The camera held by the probe (the session's cameraOverride), every engine update; c.pos null = not yet. */
-const HOLD = (up, pitch) => `(() => {
-    const h = window.__gsfpv; const s = h.session; const r = s.renderer; const a = r.app;
-    const p = r.camera.getPosition(); const f = r.camera.forward;
-    const c = { pos: [p.x, p.y + ${up ?? 0}, p.z], yaw: Math.atan2(f.x, f.z), pitch: ${up === null ? 'Math.asin(Math.max(-1, Math.min(1, f.y)))' : `${pitch} * Math.PI / 180`} };
-    window.__gsHold = c;
-    s.cameraOverride = true;
-    a.on('update', (dt) => { const k = window.__gsHold; const fl = window.__gsFly;
-        if (fl && performance.now() < fl.until) { k.pos[0] += Math.sin(k.yaw) * fl.v * dt; k.pos[2] += Math.cos(k.yaw) * fl.v * dt; const v = s.runner.sim.s; v[3] = 2; v[4] = 0; v[5] = 0; } r.setCameraLookAt(k.pos[0], k.pos[1], k.pos[2], k.pos[0] + Math.sin(k.yaw) * Math.cos(k.pitch) * 10, k.pos[1] + Math.sin(k.pitch) * 10, k.pos[2] + Math.cos(k.yaw) * Math.cos(k.pitch) * 10); });
-    return { pos: c.pos.map((x) => Math.round(x * 10) / 10), yawDeg: Math.round(c.yaw * 1800 / Math.PI) / 10, pitchDeg: Math.round(c.pitch * 1800 / Math.PI) / 10 };
-})()`;
+/** The camera held by the probe from the reveal (loadq-hold.mjs: the start place, UP above it, or AT an absolute place). */
+const HOLD = holdExpr(HOLDSPEC);
 
 const pct = (a, q) => {
     if (!a.length) return null;
@@ -220,7 +214,7 @@ const page = await ctx.newPage();
 await page.addInitScript(INIT);
 const pilotQ = PILOT && PILOT_AT === null ? `&set.display.budget=${PILOT}` : '';
 const url = `${base}/fly/?scene=${SCENE}&nowarn=1&input=touch&drawing=sorted&set.display.deviceClass=${CLASS}${GOV ? '' : '&governor=0'}${pilotQ}${query}`;
-const res = { label, url, env: { SCENE, SECONDS, CLASS, GOV, PILOT, PILOT_AT, DELAY, DROP, DROPTRIES, STALL, UP, PITCH, STILL, STILLMS, STILLMAX, vw, vh, uncapped: env.BENCH_UNCAPPED === '1' }, browser: { kind: pick.kind, version: browser.version() }, errors: [], samples: [], notes: [], files: { asked: 0, distinct: 0, loaded: 0, failed: 0, dropped: 0, stalled: 0, bytes: 0 } };
+const res = { label, url, env: { SCENE, SECONDS, CLASS, GOV, PILOT, PILOT_AT, DELAY, DROP, DROPTRIES, STALL, UP, PITCH, hold: HOLDSPEC, STILL, STILLMS, STILLMAX, vw, vh, uncapped: env.BENCH_UNCAPPED === '1' }, browser: { kind: pick.kind, version: browser.version() }, errors: [], samples: [], notes: [], files: { asked: 0, distinct: 0, loaded: 0, failed: 0, dropped: 0, stalled: 0, bytes: 0 } };
 page.on('pageerror', (e) => res.errors.push(String(e.message).slice(0, 200)));
 const isScanFile = (u) => u.includes(`/${SCENE}/`) && /\/\d+_\d+\//.test(u);
 // every Nth distinct scan file: fail its first DROPTRIES requests, or never answer it
@@ -276,7 +270,7 @@ try {
             revealAt = Date.now();
             res.revealS = s;
             await page.addStyleTag({ content: '#ui.loadq-hide { visibility: hidden !important; }' }).catch(() => {});
-            res.hold = await page.evaluate(HOLD(UP, PITCH)).catch((e) => ({ error: String(e.message) }));
+            res.hold = await page.evaluate(HOLD).catch((e) => ({ error: String(e.message) }));
         }
         // the hook's setFrameDelay may come after the reveal (loadq2: one run lost its delay): asked every second until set
         if (revealAt !== null && DELAY && !res.delaySet) {
