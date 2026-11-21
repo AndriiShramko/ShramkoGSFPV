@@ -72,5 +72,6 @@
   "course.fix.none": "Ninguna puerta se pudo mover a un sitio mejor.",
   "course.fix.left": "Queda tal como está: {what}.",
   "course.fix.undo": "Deshacer",
-  "course.fix.undone": "Todas las puertas movidas han vuelto. Pulsa Guardar para dejar el circuito asi."
+  "course.fix.undone": "Todas las puertas movidas han vuelto. Pulsa Guardar para dejar el circuito asi.",
+  "course.edit.saveOpenedWarned": "Circuito abierto, puertas: {n}. Algunas puertas tienen avisos (una pared u otra puerta demasiado cerca): pulsa Guardar para verlos o corregirlos todos de una vez."
 }

@@ -72,5 +72,6 @@
   "course.fix.none": "Żadnej bramki nie dało się przesunąć w lepsze miejsce.",
   "course.fix.left": "Zostawione tak, jak jest: {what}.",
   "course.fix.undo": "Cofnij",
-  "course.fix.undone": "Wszystkie przesunięte bramki wróciły. Naciśnij Zapisz, aby zostawić tor tak."
+  "course.fix.undone": "Wszystkie przesunięte bramki wróciły. Naciśnij Zapisz, aby zostawić tor tak.",
+  "course.edit.saveOpenedWarned": "Trasa otwarta, bramek: {n}. Niektóre bramki mają ostrzeżenia (ściana albo inna bramka za blisko): naciśnij Zapisz, aby je zobaczyć albo poprawić wszystkie jednym naciśnięciem."
 }

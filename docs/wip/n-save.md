@@ -29,6 +29,10 @@ Temp: U:/Temp/gsfpv-train4/n-save. Evidence: evidence/2026-11-20/n-save/.
   Done so far (commit 7cbf4e3b + the next): the probe exists; dist/ is built at 373cd684 with the walls copied in (no rebuild
   needed while only the probe changes). Run 4 (U:/Temp/gsfpv-train4/n-save/accept4.json, local, port 6902/6903): open, dialog
   (Warnings: 8, ids in order), asIs.saved (201, the API holds the places), showMe, fixAll (2 moved, 201, stored), fixAll.undo PASS.
+  Run 7 found a dead end: a course saved as it is did not open again (course.ts 'checked': a stored course that fails the
+  walls proof was never shown). Now a course the pilot names (a row's Open, a link) is shown with the line
+  course.edit.saveOpenedWarned; test tools/bench/test/save-reopen.test.ts (2) NEG OK on 03624451. The probe presses the
+  gizmo's arrows at their drawn tips (__gsfpvEditMeasure parts) and orbits with the middle button for the depth.
   LEFT, exactly:
   1. build: "two gates on one spot" by mouse. A click on gate A's place cannot do it (course-line.ts legOnRay puts the new gate
      ON_LEG_END_M 2 m along the leg; with A alone its gizmo takes the click). pullOnto drags the third gate onto A with the gizmo

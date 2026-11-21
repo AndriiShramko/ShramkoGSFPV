@@ -72,5 +72,6 @@
   "course.fix.none": "No gate could be moved to a better place.",
   "course.fix.left": "Left as it is: {what}.",
   "course.fix.undo": "Undo",
-  "course.fix.undone": "Every moved gate is back. Press Save to keep the course this way."
+  "course.fix.undone": "Every moved gate is back. Press Save to keep the course this way.",
+  "course.edit.saveOpenedWarned": "Course opened, gates: {n}. Some gates have warnings (a wall or another gate too near): press Save to see them or fix them all in one press."
 }

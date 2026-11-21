@@ -206,7 +206,7 @@ try {
         for (let n = 0; n < 24; n++) {
             const s = await snap();
             const p = s.egates?.[i];
-            if (!p || s.selected !== i || !s.stand || !s.axes) { tries.push({ n, lost: true }); break; }
+            if (!p || s.selected !== i || !s.stand || !s.axes) { tries.push({ n, lost: { selected: s.selected, gates: s.egates?.length ?? null, stand: !!s.stand } }); break; }
             const gap = [target[0] - p[0], target[1] - p[1], target[2] - p[2]];
             if (Math.hypot(...gap) < near) return { ok: true, tries, apart: Math.hypot(...gap) };
             const ax = ['x', 'z', 'y'][n % 3];
@@ -270,14 +270,17 @@ try {
         if (!rid.v) return { title, item: !!item, row: false };
         const sel = `.ce-list .ce-row[data-id="${rid.v}"] button.ce-open`;
         let pressed = false;
+        const seen = [];
         for (let n = 0; n < 20 && !pressed; n++) {
             const [bb, win] = [await boxOf(sel), await boxOf('.course-editor')];
             if (bb && win && bb.y > win.y - win.h / 2 + 8 && bb.y < Math.min(H, win.y + win.h / 2) - 8) {
                 const was = JSON.stringify((await snap()).egates);
+                const hit = await page.evaluate(([x, y]) => { const e = document.elementFromPoint(x, y); return e ? `${e.tagName}.${e.className}`.slice(0, 80) : null; }, [bb.x, bb.y]);
                 await click(bb.x, bb.y, 600);
                 pressed = true;
+                seen.push({ hit, line: (await snap()).topLine?.slice(0, 120) ?? null });
                 // a course with unsaved changes asks first (the line says so): Open pressed again drops them (review TK-4)
-                if (!(await until(snap, (x) => JSON.stringify(x.egates) !== was, 2500, 300)).ok && (await boxOf(sel))) await clickSel(sel, 600);
+                if (!(await until(snap, (x) => JSON.stringify(x.egates) !== was, 4000, 300)).ok && (await boxOf(sel))) { await clickSel(sel, 600); seen.push({ again: true, line: (await snap()).topLine?.slice(0, 120) ?? null }); }
                 break;
             }
             const list = await boxOf('.course-editor .ce-list');
@@ -289,7 +292,7 @@ try {
         for (let i = 0; i < 2; i++) { const y = await boxOf('.life-ask [data-ask="yes"]'); if (!y) break; await click(y.x, y.y, 800); }
         const w = await until(snap, (x) => x.open && x.egates?.length === 3, 20000, 400);
         await sleep(1000);
-        return { title, id: rid.v, row: true, pressed, ms: w.ms };
+        return { title, id: rid.v, row: true, pressed, ms: w.ms, seen };
     }
 
     // ---- open
@@ -302,14 +305,37 @@ try {
     await clickSel('.ce-menu [data-item="new"]', 800);
     for (let i = 0; i < 2; i++) { const y = await boxOf('.life-ask [data-ask="yes"]'); if (!y) break; await click(y.x, y.y, 800); }
     await until(snap, (s) => (s.egates?.length ?? -1) === 0, 10000, 300);
-    // gate A on a point, gate B elsewhere pulled into the floor by its gizmo, then gate C on A's point (the selected gate's
-    // gizmo stands on it, so C is added once B holds the selection)
-    // gate A, gate B elsewhere, gate C by a click on A's place (the course's leg takes it 2 m along), then C pulled onto A
+    // gate A on a point; gate C by a click just beyond the selected A's gizmo (125 px off its centre, past the arrows' tips:
+    // the gizmo takes a press nearer; A alone has no leg, so the scan's point there stands), then C pulled onto A by its
+    // arrows in the picture's plane; gate B elsewhere, pulled into the floor by its gizmo below
     const added = [await addAt(W * 0.5, H * 0.5)];
-    const aPos = (await snap()).egates?.[0] ?? null;
+    let s0 = await snap();
+    const aPos = s0.egates?.[0] ?? null;
+    const aScr = s0.gates?.[0] ?? [W * 0.5, H * 0.5];
+    const offs = [[88, 88], [-88, 88], [88, -88], [-88, -88]];
+    let cOff = null;
+    for (const [dx, dy] of offs) {
+        const c = await addAt(aScr[0] + dx, aScr[1] + dy);
+        if (c === null) continue;
+        s0 = await snap();
+        cOff = { at: [dx, dy], apart: Math.round(dist3(s0.egates?.[c], aPos) * 1000) / 1000 };
+        added.push(c);
+        break;
+    }
+    // Add gate let go (a short drag in Add mode would place a gate), then C pulled; what the picture's depth hides is pulled
+    // after an orbit (the middle button dragged sideways turns the view round the selected gate)
+    const addOff = async () => { if (await page.evaluate(() => document.querySelector('.ce-topbar [data-top="add"]')?.getAttribute('aria-pressed') === 'true')) await clickSel('.ce-topbar [data-top="add"]', 400); };
+    await addOff();
+    let pull = aPos && added[1] != null ? await pullOnto(added[1], aPos, 0.25) : { ok: false };
+    if (aPos && added[1] != null && !pull.ok && (await snap()).selected === added[1]) {
+        await page.mouse.move(W * 0.5, H * 0.3);
+        await page.mouse.down({ button: 'middle' });
+        await page.mouse.move(W * 0.5 + 260, H * 0.3, { steps: 16 });
+        await page.mouse.up({ button: 'middle' });
+        await sleep(700);
+        pull = { first: pull, ...(await pullOnto(added[1], aPos, 0.25)) };
+    }
     added.push(await addAt(W * 0.25, H * 0.68));
-    added.push(await addAt(W * 0.5, H * 0.5));
-    const pull = aPos && added[2] !== null ? await pullOnto(added[2], aPos) : { ok: false };
     // gate B selected by a click on it (its place on the page), then pulled down (a drag that misses the arrow circles the view)
     let s = await snap();
     const bAt = s.egates ? s.egates.findIndex((p, i) => s.egates.every((q, j) => j === i || dist3(p, q) > 0.5)) : -1;
@@ -326,7 +352,7 @@ try {
     }
     const lowNow = s.problems?.find((p) => WALL.includes(p.code) && p.gate !== null && !pair.includes(p.gate))?.gate ?? null;
     const bad = [pair[0], pair[1], lowNow].filter((x) => x !== null);
-    judge('build', built?.length === 3 && pairM >= 0 && pairM < 0.3 && bury.ok && lowNow !== null, { gates: built?.length ?? null, added, pull, pair, pairApart: Math.round(pairM * 1000) / 1000, low: lowNow, bury, problems: s.problems, line: s.topLine });
+    judge('build', built?.length === 3 && pairM >= 0 && pairM < 0.3 && bury.ok && lowNow !== null, { gates: built?.length ?? null, added, cOff, pull, pair, pairApart: Math.round(pairM * 1000) / 1000, low: lowNow, bury, problems: s.problems, line: s.topLine });
 
     // ---- the dialog and Save as it is
     const d1 = await saveToDialog('n-save as is');

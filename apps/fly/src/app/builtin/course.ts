@@ -537,6 +537,14 @@ export const course: Feature = {
                 }
                 // a course that does not fit the pilot's own walls is never shown (the server cannot see walls); TR-3: the next
                 // saved course is tried instead of stopping at the newest
+                // lane n-save: a course the pilot named (a row's Open, a link) is shown even so: it was saved as it is with
+                // warnings (the owner's wish 1 of 2026-11-20); the editor names them and Save fixes them in one press
+                if (!m.ok && why.only) {
+                    setTrack(tr, 'server', tr.generator?.seed ?? null);
+                    dropLink();
+                    tell({ text: t('course.edit.saveOpenedWarned', { n: tr.gates.length }), kind: 'info', key: COURSE_LINE });
+                    return;
+                }
                 if (!m.ok) {
                     if (!why.only && why.index + 1 < rows.length) return void loadServer(why.index + 1);
                     return fail(`refused: ${m.issues.join('; ') || 'not clear'}`.slice(0, 200), t('course.server.refused'));
