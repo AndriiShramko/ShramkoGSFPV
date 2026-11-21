@@ -226,3 +226,29 @@ on DONE or RETRY-LATER of ship-car*, not on WAKE DONE of a car (the release job 
 the window is closed it holds the wake until the reset.
 The site sound page's session was told on the coop board that Quick start and the listening part change with the
 tutorial car. For the owner after that car is live: the three questions of t8-plan.md Part D for Dawid and the testers.
+
+## State, 2026-11-21 07:45 UTC: car 2 is live (READ THIS FIRST)
+
+Live: `main` 267923c3, sound package 53a5675, built 03:04 UTC; released 02:56-04:50 UTC by the job ship-car2
+(ship_handover.py, no model): the package's main pushed, API files server.py and tracks.py, CI, 302 smoke checks,
+neighbours equal. Car 2 = ux4a, ux4b, vox4, edit4a, edit4s, edit4c, sound6 (gen4a and gen4b left for car 3). STATE.md
+has its entry.
+Live checks: 15 of 18 PASS (U:/Temp/gsfpv-train4/ship-car2/live.log). FAIL, one run each, not judged yet:
+- sonic-course-wroclaw (R11): after Backslash in the air the speed fell from 6.99 to 1.68 m/s at the first cue (the
+  rule: at least half), and the ear pilot stood at gate 10 of 24 after 63 s (capS 60 in the result);
+- vox4-voxels-only step 5-cost: fog on 7.74 ms against 5.17 ms off, three samples each that overlap (a timing on a
+  busy machine);
+- edit4a-gizmo step 13.laptop (steps 1 to 12 pass).
+Running now, with no model: U:/Temp/gsfpv-train4/lead/after-car2.sh (log after-car2.log beside it). It brings the lead
+copy's package checkout to the pin, runs the three checks once more (ship-car2/live-r2.log, marker live-r2.done) and
+then puts ship-car0 back to wait. The lead reads live-r2.log at the next wake: a check that fails twice gets a repair
+lane on the live code (the hot lane's copy C:/dev/gsfpv-t7-hot holds it once the hot repair is live), a check that
+passes is written down as unsteady.
+The first try of ship-car2 (02:50 UTC) died in three minutes: Python's bare "bash" on Windows is System32's WSL
+launcher. ship_handover.py now calls Git Bash by its full path and returns 50 for exit 1 without live.log.
+ship-car0 (the hot repair of SOG version 3 scans, candidate d432c2d9, check SHIP) stopped with exit 12: after car 2
+moved the package pin the lead copy showed ' M packages/sonic-fpv'. ship_chain.sh now runs `git submodule update`
+before its check of tracked changes and after it brings main to the target.
+The conductor: new runs after a window's reset now start 90 s past it, the moment the cut runs may start again, so
+the priority decides (car3 lost its slot to fresh lanes at 07:30 UTC; int4 lost one the same way at 21:30 UTC).
+Queue at 07:45 UTC: running n-share (S4), tutor-moment (S4), n-scan (S1); car3 (S1 done) takes the next free slot.
