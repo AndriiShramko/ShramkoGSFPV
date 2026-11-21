@@ -125,7 +125,13 @@ t7-base 03624451 of job base7: gap-gen (gen4a, gen4b), gap-save, gap-sound and t
       (PilotMessage.minMs: the start line stays START_LINE_MS). Release build of d100b6fc with the nine walls, then
       U:/Temp/gsfpv-train4/int4/probes-car3.sh (server :6180; gap-gen-accept, gen4-accept, gap-sound-accept,
       gap-save-accept, the car 1/2 probes, accept-fly B6-B16; logs-car3/summary.txt, ALLDONE at the end; evidence
-      2026-11-19/int4-car3). Left: read the summary, repair what fails, the gates once on the final tree, a6-reference.
+      2026-11-19/int4-car3). Results (logs-car3/summary.txt): gap-gen-accept, gen4-accept, gap-sound-accept,
+      edit4b-course-life (with the new step 13), edit4c, ux4b-phone, head4-accept, edit-mouse-wroclaw, edit4a,
+      ux4b-cancel, vox4, vox4-switch, menu4-first-minute, tails4-start-moved rc 0. Four probes out of date, repaired in
+      the probes (no product change): gap-save-accept 76595c87, edit4s s9 7f4a508e, ux4a-messages 359d4c54 (each left
+      gen4b's Generate dialog open after the Course menu's or the pause menu's Generate), sound6-walk a8e5bc76 (gap-sound's
+      start order and the room's four wall names). Their rerun on the same dist: probes-car3b.sh (summary '--- rerun').
+      Left: accept-fly's result, probes-car3b.sh, the gates once on the final tree, a6-reference.
 - [ ] S3 the hand-over (Car 3 parts, U:/Temp/gsfpv-train4/int4-car3.json)
 
 ## Progress
