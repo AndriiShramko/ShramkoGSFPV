@@ -413,6 +413,8 @@ try {
         await key('Home');
         await sleep(1200);
         const a = await snap();
+        res.gates13 = { selected: a.selected, stand: a.stand && a.stand.screen, gates: (a.gates || []).map((g) => g.map((n) => Math.round(n))) };
+        if (env.SHOT13) { mkdirSync(dirname(env.SHOT13), { recursive: true }); writeFileSync(env.SHOT13, await page.screenshot()); }
         // the gizmo's arrows end 115 px out (handle-look.ts handleBands): a press further away is on the scene
         const c = await pickable(onScreen(a, w, h, [], 125));
         const tried = [];
