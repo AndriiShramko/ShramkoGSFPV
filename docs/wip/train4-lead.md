@@ -132,3 +132,97 @@ of designs/t7-plan.md and `train4.py status`. Not done: the mouse walk of car 1'
 
 Cost facts (tools/gsfpv/run_cost.py in the vault): a run of 31-38 replies 0.2-0.3 M weighted tokens, 92-123 replies
 0.9-1.5 M; a window holds about 12 M (an estimate).
+
+## State, 2026-11-20 12:45 UTC: the scan's cause, the hot lane, the release guard
+
+Scene a39abad1: superspl.at publishes SOG version 3 since 2026-11-10; playcanvas 2.23.2 cannot read it (endless loader,
+or "ready" over black for streamed scans); 65 of 190 public scans fail. Diagnosis with an independent check:
+C:/dev/.gsfpv-lanes/designs/t7-scene-open.md. Repair = playcanvas 2.24.2 + splat-transform 3.12.0, proven on the bare
+engine only.
+Hot lane: hot-copy (cmd) -> hot-sog3 (prompts/t7-hot-sog3.md, copy C:/dev/gsfpv-t7-hot from origin/main) -> r-hot-sog3
+-> ship-car0 (cmd `bash C:/dev/.gsfpv-lanes/t7-hot.sh ship`: needs Verdict: SHIP, then ship_handover.py on
+U:/Temp/gsfpv-train4/hot-sog3.json into U:/Temp/gsfpv-train4/ship-car0). n-scan waits for file hot-sog3.json and does
+the rest of the repair list.
+Release guard: ship_handover.py exits 40 when origin/main holds code the candidate does not contain (outside docs/,
+*.md, packages/i18n/locales/); t4-int4.md, t4-car3.md and t6-car4.md got the paragraph MAIN MOVES (merge origin/main
+before the hand-over, re-check when it brings code). --allow-moved-main overrides by hand.
+Conductor: commit 7df1f38 in the vault paces by the five-hour window (status line 2; events WINDOW, RETRY-AFTER-WINDOW;
+set --max-runs / --not-before). Priorities: integration jobs and the hot lane 1, new lanes 2, gap lanes 3.
+plan-new is done: designs/t7-plan.md ("For the lead" at its end), six lanes n-route, n-save, n-scan, n-share, n-level,
+n-path with checks r-n-*; open decisions taken as recommended (g3 links for path-first courses, g2 kept; the level in
+the browser's prefs). Live is ac11d2c2 (car 1 + sound page texts of another session, released 11:50 UTC).
+Watchers: b8em29xja (DONE ship-car*), bunm3y3m2 (WAKE FAILED / HOLD / LIMIT), bme117exk (disk C).
+
+## State, 2026-11-20 16:50 UTC: the tutorial feedback, the window, what is queued (READ THIS FIRST)
+
+Live: still ac11d2c2 (car 1 + the sound page texts of another session). Nothing of this train went live today: the
+five-hour window ended about 14:15 UTC and every job waited until 16:30 (this window resets 21:30 UTC).
+The owner raised the five-hour boundary (message 75): the hook's line is 97 % (limit_reserve.py priority --h5-line 97),
+the conductor starts new runs up to 95 % (five_stop in the plan).
+Incident 12:36-12:56 UTC: the hook's new five-hour publication reserve (its line was 85 %) refused the train's prompts.
+The refusal text echoes the prompt, whose last line names the markers, so the conductor counted stages: n-route, n-save,
+n-share and gap-editor lost all their runs with no work done. Repaired: gsfpv_lanes.last_result returns (no result, True)
+for a text with operation blocked by hook (vault commit 00fa862); the runs were given back.
+Message 76: the feedback of a low-vision pilot about the Fly by Sound tutorial (chaotic, too much at once, the menu
+buttons read at every step, sounds should be brought in at the action with a pause). The owner's earlier wishes about
+the lessons are built in sound6 (car 2) and gap-sound (t7-base) and are not live. Decisions: designs/t8-tutor-brief.md
+(say only what is new; the first flight is the tutorial; one new sound at a time with the other layers silent; a moment
+= freeze, one sentence, the sound alone, the task; a What is this sound key; at most eight moments; short speech; large
+text for low vision; the numbers that prove it). Planner job plan-tutor (prompts/t8-plan.md) writes designs/t8-plan.md,
+the lanes tutor-*, their checks, and car 5 if they cannot ride car 4.
+Queue at 16:50 UTC: running n-route, n-path, hot-sog3; ready int4, n-save, n-share, plan-tutor, gap lanes 4-7.
+THIS SESSION IS HEAVY (about 300 thousand tokens of context on the top model): its wake after a pause of three hours
+took about a quarter of a five-hour window (38 % was seen nine minutes into the window; an estimate, not a measurement).
+A new lead session should start from this file and should not set watchers that wake the old one.
+Open for the owner: whether to answer the author of the feedback in the Facebook thread and invite him as a tester.
+
+## State, 2026-11-20 17:25 UTC: a new lead session took over (READ THIS FIRST)
+
+The lead is now a new, small chat (the owner pasted the old lead's last message into it). The old chat ('Simulator:
+token optimisation and lessons') must stay asleep: its two live watchers (disk C under 10 GB; DONE ship-car*) were
+SUSPENDED, not killed, because a background task that ends wakes its session. Tool:
+U:/Temp/gsfpv-train4/lead/suspend_tree.ps1 -RootPid 93952 -Marker "DISK C LOW" and -RootPid 101276 -Marker
+"DONE ship-car"; -Resume gives them back; they end with the app. The disk one would have fired within two minutes.
+The new lead's watcher: U:/Temp/gsfpv-train4/lead/lead_watch.sh, a background task of the new chat. It exits on a new
+' WAKE ' or ' DONE ship-car' line of events.log, or under 5 GB free on C:. An event seen before the window's reset is
+delivered at 21:31 UTC: a lead woken in a closed window can do nothing and only pays for the wake.
+Live: still ac11d2c2 (release.json read at 16:58 UTC). STATE.md got the missing entry of car 1.
+Window: 91 % at 17:09 UTC (new runs start up to 95 %). int4 (car 2) took the slot n-route left and runs since
+17:07 UTC (run 3 of 14, stage S2); if the window closes on it, its commits stay and the conductor retries after the
+reset at 21:30 UTC. The lead tools are also in the vault: .claude/tools/gsfpv/suspend_tree.ps1 and lead_watch.sh.
+plan-tutor was registered again with priority 1 and --wake. It had priority 2, and the ready jobs sort by priority and
+then by name, so the one slot left for priority 2 would have gone round n-path, n-route, n-save, n-share and never
+reached it. After the reset the three slots serve hot-sog3, int4 and plan-tutor first. `set` cannot change a priority:
+`add` with the same name replaces the job (only for a job that never ran, and not in the first seconds of a minute,
+when the tick runs).
+On WAKE DONE plan-tutor: read 'For the lead' of designs/t8-plan.md and release its held jobs.
+Disk C: 9.97 GB free at 17:05 UTC. Measured with U:/Temp/gsfpv-train4/lead/dev_sizes.py: C:/dev holds 101 work
+copies, 54.6 GB without node_modules, and the big part is bench caches (.cache) of old copies. Moved to U: with
+junctions by the disk-c skill (`offload.py move`, ledger `offload.py list`): the .cache of ShramkoSonicFPV,
+gsfpv-loadq, gsfpv-site-sound and gsfpv-v03 (15.3 GB by its plan). Not moved: C:/dev/ShramkoGSFPV/.cache (4.95 GB,
+317 links inside: the tool refuses it) and ~/.claude/projects (25.7 GB of session logs: the owner decides).
+Not done: the mouse walk of car 1's roads on the live site; econ4.md into the skills; no new Workflow was started
+(the window is the bottleneck and the conductor is the orchestrator).
+Still open for the owner (asked in the new chat): the answer to the feedback's author in the Facebook thread.
+
+## State, 2026-11-20 22:00 UTC: the tutorial plan is in, the queue is fair (READ THIS FIRST)
+
+Live: still ac11d2c2. int4 ended stage S2 at 21:53 UTC and runs S3, the hand-over of car 2; ship-car2 (no model)
+follows by itself. The window that opened at 21:30 UTC stood at 68 % at 21:53 (three lanes and the lead's wake).
+plan-tutor is done (3 runs): designs/t8-plan.md, lanes tutor-moment (the package: the moment machine, the first set),
+tutor-say (after n-share: say only what is new) and tutor-air (after tutor-say and tutor-moment's contract: the first
+flight is the tutorial), checks r-tutor-*, car5 and ship-car5; copies made by t8-copies. Its five open calls are taken
+as recommended (the end of t8-plan.md). The tutorial chain hangs on n-share, which had not run once.
+The conductor (vault, .claude/tools/gsfpv/train4.py) changed: ready jobs of one priority now start in the order of
+their last start (the one that waited longest first; it was by name, which starved n-share, plan-tutor and every late
+name while one slot went round the early names), and `set --priority P` exists (never 0: it reads as 5).
+Priorities now: 1 int4, the cars, the hot lane; 2 n-share, tutor-*, r-tutor-*, r-n-share; 3 the other n-* lanes and
+their checks; 4 the gap lanes 4-7.
+Car order, to decide when the checks are in: car5 waits for car4 as planned; if r-tutor-* say SHIP before car 4's
+lanes are ready, put car 5 before car 4 (add car5 again with --after car3,r-tutor-say,r-tutor-moment,r-tutor-air,
+r-n-share and adjust prompts t8-car5.md and t6-car4.md: tutor-say carries n-share's commits).
+The lead's watcher (vault, .claude/tools/gsfpv/lead_watch.sh) wakes on WAKE FAILED / BLOCKED / HOLD / LIMIT / END and
+on DONE or RETRY-LATER of ship-car*, not on WAKE DONE of a car (the release job needs no lead); while the plan says
+the window is closed it holds the wake until the reset.
+The site sound page's session was told on the coop board that Quick start and the listening part change with the
+tutorial car. For the owner after that car is live: the three questions of t8-plan.md Part D for Dawid and the testers.
