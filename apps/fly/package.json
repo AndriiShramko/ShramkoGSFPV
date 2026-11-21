@@ -22,10 +22,10 @@
     "@gsfpv/sim-core": "workspace:*",
     "@gsfpv/tracks": "workspace:*",
     "@mediapipe/tasks-vision": "1.2.3",
-    "@playcanvas/splat-transform": "3.6.4",
+    "@playcanvas/splat-transform": "3.12.0",
     "@shramko/sonic-fpv": "workspace:*",
     "mediabunny": "1.59.1",
-    "playcanvas": "2.23.2"
+    "playcanvas": "2.24.2"
   },
   "devDependencies": {
     "@playcanvas/supersplat-viewer": "1.35.0",

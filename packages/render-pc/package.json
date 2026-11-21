@@ -13,6 +13,6 @@
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
-    "playcanvas": "2.23.2"
+    "playcanvas": "2.24.2"
   }
 }

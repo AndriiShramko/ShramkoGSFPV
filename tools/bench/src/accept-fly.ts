@@ -502,7 +502,12 @@ if (want('B14')) {
 // or after tick 10 000) must move the replayed path more than 1 cm. A 1-LSB change moves the path
 // by less than 1 um before the crash: its 5-30 mm afterwards are the tumble's chaos, a lottery
 // (0 to 32 mm by record, Node, 2026-10-01), so it cannot be the path control.
+// The controls' tick follows the flight: 4300 ticks after the flip's start (the flip began at
+// tick ~5700 on an idle machine, so this is the old tick 10 000, in powered flight). On a loaded
+// machine the scenario's flip began at tick 21 833 (2026-11-20): an absolute tick 10 000 then
+// met idle throttle -1, where a flipped LSB is clamped away and the LSB control cannot fire.
 const B15_TICK = 10000;
+const B15_AFTER_FLIP = 4300;
 if (want('B15')) {
     await page.goto(flyLogic('en', 'scene=887f27aa&simradio=scenario&flip=1&nowarn=1&set.respawn.auto=0'));
     await waitLogic(page, 180000);
@@ -525,11 +530,13 @@ if (want('B15')) {
     await p2.goto(flyLogic('en', 'scene=887f27aa&nowarn=1&input=touch'));
     await waitLogic(p2, 180000);
     const again = await hookEval<Record<string, unknown>>(p2, 'const r = h.verifyLastLog(); return { saved: r.saved, hash: r.hash, endTick: r.endTick, lives: r.lives, refused: r.refused ?? null };');
+    const flipStart = (fl.flip as { startTick?: number } | null)?.startTick;
+    const atTick = typeof flipStart === 'number' ? flipStart + B15_AFTER_FLIP : B15_TICK;
     const ctl = await hookEval<Record<string, unknown>>(p2, `const a = h.verifyLastLog();
         const div = (b) => { let d = 0; for (let i = 0; i + 2 < Math.min(a.track.length, b.track.length); i += 3) d = Math.max(d, Math.hypot(a.track[i] - b.track[i], a.track[i + 1] - b.track[i + 1], a.track[i + 2] - b.track[i + 2])); return d; };
-        const lsb = h.verifyLastLog({ atTick: ${B15_TICK}, channel: 2 });
-        const twitch = h.verifyLastLog({ atTick: ${B15_TICK}, channel: 2, delta: 0.05 });
-        return { atTick: ${B15_TICK}, channel: 'throttle',
+        const lsb = h.verifyLastLog({ atTick: ${atTick}, channel: 2 });
+        const twitch = h.verifyLastLog({ atTick: ${atTick}, channel: 2, delta: 0.05 });
+        return { atTick: ${atTick}, channel: 'throttle',
             lsb: { hash: lsb.hash, differs: lsb.hash !== a.hash, maxDivergenceM: div(lsb), tamperedValue: lsb.tampered, fired: lsb.hash !== a.hash },
             twitch: { delta: 0.05, hash: twitch.hash, differs: twitch.hash !== a.hash, maxDivergenceM: div(twitch), tamperedValue: twitch.tampered, fired: twitch.hash !== a.hash && div(twitch) > 0.01 } };`);
     await p2.close();

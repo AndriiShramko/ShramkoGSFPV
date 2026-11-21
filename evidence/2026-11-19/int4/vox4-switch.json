@@ -3,50 +3,50 @@
   "runs": {
     "only": {
       "mode": "only",
-      "wallsMs": 17,
+      "wallsMs": 4,
       "before": {
         "mode": "only",
         "splatVisible": false
       },
       "switchOk": true,
-      "switchWaitMs": 1887,
+      "switchWaitMs": 16528,
       "sceneSwitch": {
         "state": "done",
         "from": "70b50d42",
         "to": "2f1ddf5f",
         "reason": "pick",
-        "ms": 1849
+        "ms": 16519
       },
       "reveal": "ready",
-      "visibleMs": 1116,
+      "visibleMs": 15796,
       "splatVisible": false
     },
     "overlay": {
       "mode": "overlay",
-      "wallsMs": 7,
+      "wallsMs": 2,
       "before": {
         "mode": "overlay",
         "splatVisible": true
       },
       "switchOk": true,
-      "switchWaitMs": 1912,
+      "switchWaitMs": 21850,
       "sceneSwitch": {
         "state": "done",
         "from": "70b50d42",
         "to": "2f1ddf5f",
         "reason": "pick",
-        "ms": 1884
+        "ms": 21651
       },
       "reveal": "ready",
-      "visibleMs": 1157,
+      "visibleMs": 20927,
       "splatVisible": true
     }
   },
   "steps": {
     "7-switch-from-only": {
       "pass": true,
-      "onlyMs": 1887,
-      "overlayMs": 1912,
+      "onlyMs": 16528,
+      "overlayMs": 21850,
       "onlyReveal": "ready",
       "overlayReveal": "ready"
     }

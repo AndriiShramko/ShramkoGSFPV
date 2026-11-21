@@ -255,6 +255,16 @@ try {
     const cands = (s) => (s.gates || []).map((g, i) => ({ g, i })).filter(({ g, i }) => i !== s.selected && g[2] > 0 && g[0] > 20 && g[0] < W - 20 && g[1] > 60 && g[1] < H - 20 && (!s.stand || Math.hypot(g[0] - s.stand[0], g[1] - s.stand[1]) > 140)).sort((a, b) => a.g[2] - b.g[2]);
     let c = cands(s1);
     for (let n = 0; n < 4 && !c[0]; n++) { await key('KeyS', { hold: 700 }); await sleep(500); s1 = await snap(); c = cands(s1); }
+    // int4 car 2 S3: the editor opens at the flight camera and nothing frames the course by itself (edit4a, the owner's rule
+    // E1), so a generated course that runs away behind the drone can leave one gate in view even after backing off (the live
+    // check on release ac11d2c2: 12 gates, 1 on screen, no candidate). The pilot's way to the whole course is Home (edit4a
+    // frameAll), the same as edit4b-probe step 1; recorded as home.
+    let home = false;
+    if (!c[0]) {
+        home = true;
+        await page.keyboard.press('Home'); // a key without text (key() sends text)
+        await sleep(1200); s1 = await snap(); c = cands(s1);
+    }
     let picked = null;
     for (const { g, i } of c.slice(0, 3)) {
         const rec = await click(`gate.${i}`, g[0], g[1], { after: 300 });
@@ -262,7 +272,7 @@ try {
         rec.effect = { selected: got.v.selected, want: i };
         if (got.ok) { picked = i; break; }
     }
-    judge('b.select', picked !== null, { candidates: c.length, from: s1.selected, picked, gatesOnScreen: (s1.gates || []).filter((g) => g[2] > 0 && g[0] >= 0 && g[0] < W && g[1] >= 0 && g[1] < H).length });
+    judge('b.select', picked !== null, { candidates: c.length, home, from: s1.selected, picked, gatesOnScreen: (s1.gates || []).filter((g) => g[2] > 0 && g[0] >= 0 && g[0] < W && g[1] >= 0 && g[1] < H).length });
 
     // (c) Add gate, then a click on the scene
     {

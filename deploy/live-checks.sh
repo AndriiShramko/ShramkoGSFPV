@@ -314,6 +314,12 @@ run menu4-first-minute locked node scripts/menu4-first-minute-probe.mjs "$SITE/e
 # tails4-review-start.mjs (header: opens three scans in the page, one click into the scene, sticks still, render off; it
 # reads the start the page placed): on 2f1ddf5f, d10c5638 and ab5efa0e the drone starts near the ground, free of the walls.
 run tails4-start-moved locked node scripts/tails4-review-start.mjs "$SITE/en" "$OUT/tails4-start-moved.json"
+# hot-sog3 (docs/wip/hot-sog3.md): SuperSplat scans in SOG version 3 open and are DRAWN (engine 2.24.2). Reads only
+# (hot-sog3-scans.mjs header: opens /fly/?scene=<id>, presses nothing): each id passes when the page is ready, the engine
+# draws splats and over 5 % of the picture differs from the clear colour, with no console error and no CSP report.
+# Streamed v3 f924b0f5, 593f8c06; single v3 a39abad1 (the owner's), 28ad27ed, 98f74d54; v2 controls 143e76b0, 70b50d42.
+# On the engine 2.23.2 the v3 ids fail (streamed: ready over a black scene; single: endless loader).
+run scans-open locked env MAXS=120 SHOTS="$OUT/scans-open" PREFIX=live node scripts/hot-sog3-scans.mjs "$SITE/en" "$OUT/scans-open.json" f924b0f5,593f8c06,a39abad1,28ad27ed,98f74d54,143e76b0,70b50d42
 # head4 (deploy/nginx.conf, after the nginx reload): only the simulator page may ask for the camera; every other page keeps
 # camera=() (two HEAD requests).
 head4headers() {
@@ -333,6 +339,50 @@ run head4-camera-headers head4headers
 # clip the probe stops with an error and the check FAILs.
 head4accept() { node scripts/head4-accept.mjs "$SITE" "$OUT/head4-accept.json" "${HEAD4_CLIP:-U:/Temp/gsfpv-train4/head4/head4-clip.mjpeg}"; }
 run head4-accept locked head4accept
+# Train 4, car 2 (docs/wip/train4-int.md "Live checks"; lanes ux4a, ux4b, vox4, edit4a, edit4s, edit4c, sound6). Each
+# probe prints one JSON verdict and exits non-zero on a failed step; each passed on the release build of car 2 (S2).
+# ux4a-messages-probe.mjs (header: render off, no GPU lock; a course is only generated in the page, the report form is
+# opened and closed by its cross, never sent; the probe refuses the course worker's script in its own browser): a problem
+# line that stays with its fix and 'Send to the author', the progress lines in place, the Messages list by its button and
+# Shift+J, no message over a top-row button, at 1536x730 and 844x390.
+run ux4a-messages node scripts/ux4a-messages-probe.mjs "$SITE/en" "$OUT/ux4a-messages.json"
+# ux4b-cancel-probe.mjs (header: drawn, so in the GPU lock; a pick, Cancel, the cross and key N only, nothing saved, sent
+# or created): a scan's download cancelled from the pause's scan list leaves no asset, no bake, the old scan flying; the
+# card at 844x390.
+run ux4b-cancel locked node scripts/ux4b-cancel-probe.mjs "$SITE/en" "$OUT/ux4b-cancel.json"
+# vox4-probe.mjs (lane vox4 'For the lead': read-only, the voxel mode is a setting of the probe browser's own profile;
+# drawn): "Voxels only" stops the scan's drawing (no frozen frame), Lublin's thin walls said, the shading, the fog's
+# cost, the panel's cross at two sizes.
+run vox4-voxels-only locked env BENCH_UNCAPPED=1 node scripts/vox4-probe.mjs "$SITE/en" "$OUT/vox4-voxels-only.json"
+# edit4a-probe.mjs (header: never presses Save, Send, Vote or Create; the course lives in the page; drawn, never with
+# render=off): Home frames all, a click selects without moving the view, orbit, pan, the wheel towards the cursor, the
+# one gizmo's arrow, ring and size box, Esc cancels a drag, the window at 844x390.
+run edit4a-gizmo locked node scripts/edit4a-probe.mjs "$SITE/en" 70b50d42 1536x730 1.25 live "$OUT/edit4a-gizmo.json"
+# edit4c-probe.mjs (header: never presses Save, Send or any control that stores; on a non-localhost address the course
+# stays in the page; render off): the Add list, the live warnings while a gate is dragged, the warning bar, the list at
+# 844x390.
+edit4cwarn() { COURSE=g1.1 QUERY='&render=off' node scripts/edit4c-probe.mjs "$SITE/en" "$OUT/edit4c-warnings.json"; }
+run edit4c-warnings locked edit4cwarn
+# edit4s-probe.mjs with the https address (header: every request but GET to /api/ is aborted by the probe, s7 and s8 are
+# not run; nothing reaches the server). Judged here: open, s1 a gate moved, s2 a draft within 3 s, s3 the draft back after
+# a reload, s4 Versions with its time, s5 the corrections offer, s9 a new course drops the changes. s6 is left out: it
+# needs the stored version's 201, which the probe itself refuses to send on this address.
+edit4sdrafts() {
+  node scripts/edit4s-probe.mjs "$SITE/en" 70b50d42 1 "$OUT/edit4s-drafts.json"
+  node -e '
+const j = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
+const want = ["open", "s1.moveGate2", "s2.draftIn3s", "s3.restored", "s4.versions", "s5.offer", "s9.generateDropsForReal"];
+const st = j.steps || {};
+const bad = want.filter((k) => !(st[k] && st[k].ok === true));
+console.log("judged", want.length, "failed", JSON.stringify(bad), "posts", (j.posts || []).length, j.error || "");
+process.exit(j.live === true && !j.error && bad.length === 0 ? 0 : 1);' "$OUT/edit4s-drafts.json"
+}
+run edit4s-drafts locked edit4sdrafts
+# sonic-quick-walk.ts (header: render off, no GPU lock; the page keeps its prefs in the browser, nothing is saved, sent or
+# created on the site): Fly by Sound's start screen with Quick start first, sound within 2 s of the click, the first wall
+# cue within 12 s, no front or behind in ears-walls, the order of Continue, Quick start and Full course; Chromium, then
+# steps 1 to 4 in Firefox.
+run sound6-quick-walk env SITE="$SITE" npx tsx src/sonic-quick-walk.ts "$OUT/sound6-quick-walk.json"
 
 if [ "$FAILED" = 0 ]; then echo "LIVE CHECKS: PASS"; exit 0; fi
 echo "LIVE CHECKS: FAIL"

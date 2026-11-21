@@ -1,7 +1,7 @@
 {
   "probe": "sonic-quick-walk",
   "target": "http://localhost:6180",
-  "at": "2026-11-19T22:27:31.738Z",
+  "at": "2026-11-20T17:35:24.244Z",
   "pass": true,
   "failed": [],
   "steps": [
@@ -50,36 +50,36 @@
       "name": "the first wall cue within 12 s of the click",
       "pass": true,
       "value": {
-        "seconds": 7.6,
+        "seconds": 7.7,
         "hook": true,
         "speech": [
           {
             "text": "",
             "voice": null,
             "called": 1,
-            "started": 218,
-            "ended": 219
+            "started": 182,
+            "ended": 182
           },
           {
             "text": "Headphone check",
             "voice": "Microsoft David - English (United States)",
-            "called": 476,
-            "started": 568,
-            "ended": 2300
+            "called": 503,
+            "started": 592,
+            "ended": 2323
           },
           {
             "text": "Headphones on, L on your left ear.",
             "voice": "Microsoft David - English (United States)",
-            "called": 478,
-            "started": 2345,
-            "ended": 5622
+            "called": 505,
+            "started": 2372,
+            "ended": 5645
           },
           {
             "text": "Sound 1 of 3.",
             "voice": "Microsoft David - English (United States)",
-            "called": 5622,
-            "started": 5666,
-            "ended": 7643
+            "called": 5645,
+            "started": 5689,
+            "ended": 7666
           }
         ]
       }
@@ -208,36 +208,36 @@
       "name": "the first wall cue within 12 s of the click",
       "pass": true,
       "value": {
-        "seconds": 8.4,
+        "seconds": 8.3,
         "hook": true,
         "speech": [
           {
             "text": "",
             "voice": null,
             "called": 0,
-            "started": 838,
-            "ended": 838
+            "started": 870,
+            "ended": 870
           },
           {
             "text": "Headphone check",
             "voice": "Microsoft David - English (United States)",
-            "called": 690,
-            "started": 1166,
-            "ended": 2950
+            "called": 789,
+            "started": 1039,
+            "ended": 2838
           },
           {
             "text": "Headphones on, L on your left ear.",
             "voice": "Microsoft David - English (United States)",
-            "called": 692,
-            "started": 3058,
-            "ended": 6333
+            "called": 790,
+            "started": 2948,
+            "ended": 6213
           },
           {
             "text": "Sound 1 of 3.",
             "voice": "Microsoft David - English (United States)",
-            "called": 6333,
-            "started": 6447,
-            "ended": 8424
+            "called": 6213,
+            "started": 6297,
+            "ended": 8272
           }
         ]
       }

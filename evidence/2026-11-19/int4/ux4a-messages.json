@@ -16,14 +16,14 @@
     "2": {
      "name": "the ready line stays >= shownMs(text) - 200 ms",
      "pass": true,
-     "text": "Gates: 39. Fly through START to start the clock. Shift+T hides the course",
-     "shownMs": 7999,
+     "text": "Gates: 41. Fly through START to start the clock. Shift+T hides the course",
+     "shownMs": 8004,
      "need": 7910
     },
     "3": {
      "name": "progress lines replace in place (one node under course.progress)",
      "pass": true,
-     "texts": 7,
+     "texts": 32,
      "nodes": 1,
      "maxNodesAtOnce": 1,
      "sample": [
@@ -36,7 +36,7 @@
      "name": "a problem stays 20 s with a 44 px cross and a fix line; Esc, Messages, Send to the author opens the form with its text",
      "pass": true,
      "text": "This course did not come out. Shift+G builds another one",
-     "shownMs": 20700,
+     "shownMs": 20699,
      "cross": {
       "w": 44,
       "h": 44,
@@ -72,7 +72,7 @@
     "6": {
      "name": "every message: inside the view, over no top-row button or OSD, outside the middle third",
      "pass": true,
-     "samples": 657,
+     "samples": 892,
      "faults": {}
     },
     "7": {
@@ -101,13 +101,13 @@
    "pointerLock": true,
    "escFrees": 5,
    "problemText": "This course did not come out. Shift+G builds another one",
-   "readyText": "Gates: 39. Fly through START to start the clock. Shift+T hides the course",
+   "readyText": "Gates: 41. Fly through START to start the clock. Shift+T hides the course",
    "lines": [
     {
      "id": 1,
      "key": "course.progress",
      "kind": "problem",
-     "ms": 20700,
+     "ms": 20699,
      "font": 16,
      "text": "This course did not come out. Shift+G builds another one"
     },
@@ -115,180 +115,15 @@
      "id": 2,
      "key": "course.progress",
      "kind": "progress",
-     "ms": 900,
+     "ms": 945,
      "font": 16,
      "text": "Course: finding the free space. Step 1 of 2, 0 %. 0:00 so far, about 0:10 left."
-    },
-    {
-     "id": 2,
-     "key": "course.progress",
-     "kind": "progress",
-     "ms": 600,
-     "font": 16,
-     "text": "Course: finding the free space. Step 1 of 2, 11 %. 0:01 so far, about 0:10 left."
-    },
-    {
-     "id": 2,
-     "key": "course.progress",
-     "kind": "progress",
-     "ms": 200,
-     "font": 16,
-     "text": "Course: placing the gates and obstacles. Step 2 of 2, 75 %. 0:01 so far, about 0:05 left."
-    },
-    {
-     "id": 2,
-     "key": "course.progress",
-     "kind": "progress",
-     "ms": 900,
-     "font": 16,
-     "text": "Course: placing the gates and obstacles. Step 2 of 2, 79 %. 0:02 so far, about 0:05 left."
-    },
-    {
-     "id": 2,
-     "key": "course.progress",
-     "kind": "progress",
-     "ms": 899,
-     "font": 16,
-     "text": "Course: placing the gates and obstacles. Step 2 of 2, 94 %. 0:03 so far, about 0:05 left."
     },
     {
      "id": 2,
      "key": "course.progress",
      "kind": "progress",
      "ms": 499,
-     "font": 16,
-     "text": "Course: placing the gates and obstacles. Step 2 of 2. 0:04 so far; longer than usual, still working."
-    },
-    {
-     "id": 2,
-     "key": "course.progress",
-     "kind": "done",
-     "ms": 7999,
-     "font": 16,
-     "text": "Gates: 39. Fly through START to start the clock. Shift+T hides the course"
-    }
-   ]
-  },
-  {
-   "size": "844x390@1",
-   "steps": {
-    "1": {
-     "name": "Generate course: a line appears, its font-size >= 16 px",
-     "pass": true,
-     "text": "Course: finding the free space. Step 1 of 2, 0 %. 0:00 so far, about 0:10 left.",
-     "font": 16
-    },
-    "2": {
-     "name": "the ready line stays >= shownMs(text) - 200 ms",
-     "pass": true,
-     "text": "Gates: 29. Fly through START to start the clock. Shift+T hides the course",
-     "shownMs": 8057,
-     "need": 7910
-    },
-    "3": {
-     "name": "progress lines replace in place (one node under course.progress)",
-     "pass": true,
-     "texts": 10,
-     "nodes": 1,
-     "maxNodesAtOnce": 1,
-     "sample": [
-      "Course: finding the free space. Step 1 of 2, 0 %. 0:00 so far, about 0:10 left.",
-      "Course: finding the free space. Step 1 of 2, 11 %. 0:01 so far, about 0:10 left.",
-      "Course: placing the gates and obstacles. Step 2 of 2, 75 %. 0:01 so far, about 0:05 left."
-     ]
-    },
-    "4": {
-     "name": "a problem stays 20 s with a 44 px cross and a fix line; Esc, Messages, Send to the author opens the form with its text",
-     "pass": true,
-     "text": "This course did not come out. Shift+G builds another one",
-     "shownMs": 20494,
-     "cross": {
-      "w": 44,
-      "h": 44,
-      "free": true
-     },
-     "fix": "If it comes again, send it to the author: the button below.",
-     "send": true,
-     "underMenu": true,
-     "inList": true,
-     "formHasText": true,
-     "offScreenAfterList": true
-    },
-    "5": {
-     "name": "the top-row Messages button opens the list with 1 and 4; Shift+J toggles it; its cross and Esc close it",
-     "pass": true,
-     "button": true,
-     "opened": true,
-     "items": 2,
-     "hasProblem": true,
-     "hasReady": true,
-     "cross": {
-      "w": 44,
-      "h": 44
-     },
-     "crossCloses": true,
-     "menuAfterList": true,
-     "shiftHOpens": true,
-     "shiftHCloses": true,
-     "lockBeforeEsc": false,
-     "menuAfterEsc": false,
-     "escCloses": true
-    },
-    "6": {
-     "name": "every message: inside the view, over no top-row button or OSD, outside the middle third",
-     "pass": true,
-     "samples": 680,
-     "faults": {}
-    },
-    "7": {
-     "name": "with the pause menu up, key Shift+J (named on its Messages item) opens the list at one press; Esc closes it",
-     "pass": true,
-     "menu": true,
-     "itemKey": true,
-     "opened": true,
-     "escCloses": true
-    },
-    "8": {
-     "name": "edit mode: three keys of the flight give one line saying what to press, no problem, gone by itself",
-     "pass": true,
-     "editMode": true,
-     "lines": 1,
-     "said": "P works in flight, not in the editor: press Esc to leave the editor, then P.",
-     "problems": 0,
-     "after16s": 0
-    }
-   },
-   "errors": [],
-   "status": {
-    "status": "ready",
-    "walls": "none"
-   },
-   "pointerLock": true,
-   "escFrees": 5,
-   "problemText": "This course did not come out. Shift+G builds another one",
-   "readyText": "Gates: 29. Fly through START to start the clock. Shift+T hides the course",
-   "lines": [
-    {
-     "id": 1,
-     "key": "course.progress",
-     "kind": "problem",
-     "ms": 20494,
-     "font": 16,
-     "text": "This course did not come out. Shift+G builds another one"
-    },
-    {
-     "id": 2,
-     "key": "course.progress",
-     "kind": "progress",
-     "ms": 903,
-     "font": 16,
-     "text": "Course: finding the free space. Step 1 of 2, 0 %. 0:00 so far, about 0:10 left."
-    },
-    {
-     "id": 2,
-     "key": "course.progress",
-     "kind": "progress",
-     "ms": 500,
      "font": 16,
      "text": "Course: finding the free space. Step 1 of 2, 11 %. 0:01 so far, about 0:10 left."
     },
@@ -304,7 +139,7 @@
      "id": 2,
      "key": "course.progress",
      "kind": "progress",
-     "ms": 899,
+     "ms": 903,
      "font": 16,
      "text": "Course: placing the gates and obstacles. Step 2 of 2, 81 %. 0:02 so far, about 0:05 left."
     },
@@ -312,9 +147,374 @@
      "id": 2,
      "key": "course.progress",
      "kind": "progress",
+     "ms": 896,
+     "font": 16,
+     "text": "Course: placing the gates and obstacles. Step 2 of 2, 96 %. 0:03 so far, about 0:05 left."
+    },
+    {
+     "id": 2,
+     "key": "course.progress",
+     "kind": "progress",
+     "ms": 901,
+     "font": 16,
+     "text": "Course: placing the gates and obstacles. Step 2 of 2. 0:04 so far; longer than usual, still working."
+    },
+    {
+     "id": 2,
+     "key": "course.progress",
+     "kind": "progress",
      "ms": 900,
      "font": 16,
-     "text": "Course: placing the gates and obstacles. Step 2 of 2, 95 %. 0:03 so far, about 0:05 left."
+     "text": "Course: placing the gates and obstacles. Step 2 of 2. 0:05 so far; longer than usual, still working."
+    },
+    {
+     "id": 2,
+     "key": "course.progress",
+     "kind": "progress",
+     "ms": 901,
+     "font": 16,
+     "text": "Course: placing the gates and obstacles. Step 2 of 2. 0:06 so far; longer than usual, still working."
+    },
+    {
+     "id": 2,
+     "key": "course.progress",
+     "kind": "progress",
+     "ms": 896,
+     "font": 16,
+     "text": "Course: placing the gates and obstacles. Step 2 of 2. 0:07 so far; longer than usual, still working."
+    },
+    {
+     "id": 2,
+     "key": "course.progress",
+     "kind": "progress",
+     "ms": 896,
+     "font": 16,
+     "text": "Course: placing the gates and obstacles. Step 2 of 2. 0:08 so far; longer than usual, still working."
+    },
+    {
+     "id": 2,
+     "key": "course.progress",
+     "kind": "progress",
+     "ms": 897,
+     "font": 16,
+     "text": "Course: placing the gates and obstacles. Step 2 of 2. 0:09 so far; longer than usual, still working."
+    },
+    {
+     "id": 2,
+     "key": "course.progress",
+     "kind": "progress",
+     "ms": 600,
+     "font": 16,
+     "text": "Course: placing the gates and obstacles. Step 2 of 2. 0:10 so far; longer than usual, still working."
+    },
+    {
+     "id": 2,
+     "key": "course.progress",
+     "kind": "progress",
+     "ms": 204,
+     "font": 16,
+     "text": "Course: placing the gates again, try 2. Step 2 of 2, 99 %. 0:10 so far, about 0:10 left."
+    },
+    {
+     "id": 2,
+     "key": "course.progress",
+     "kind": "progress",
+     "ms": 897,
+     "font": 16,
+     "text": "Course: placing the gates again, try 2. Step 2 of 2, 99 %. 0:11 so far, about 0:10 left."
+    },
+    {
+     "id": 2,
+     "key": "course.progress",
+     "kind": "progress",
+     "ms": 899,
+     "font": 16,
+     "text": "Course: placing the gates again, try 2. Step 2 of 2, 99 %. 0:12 so far, about 0:10 left."
+    },
+    {
+     "id": 2,
+     "key": "course.progress",
+     "kind": "progress",
+     "ms": 900,
+     "font": 16,
+     "text": "Course: placing the gates again, try 2. Step 2 of 2, 99 %. 0:13 so far, about 0:10 left."
+    },
+    {
+     "id": 2,
+     "key": "course.progress",
+     "kind": "progress",
+     "ms": 896,
+     "font": 16,
+     "text": "Course: placing the gates again, try 2. Step 2 of 2, 99 %. 0:14 so far, about 0:10 left."
+    },
+    {
+     "id": 2,
+     "key": "course.progress",
+     "kind": "progress",
+     "ms": 905,
+     "font": 16,
+     "text": "Course: placing the gates again, try 2. Step 2 of 2, 99 %. 0:15 so far, about 0:05 left."
+    },
+    {
+     "id": 2,
+     "key": "course.progress",
+     "kind": "progress",
+     "ms": 900,
+     "font": 16,
+     "text": "Course: placing the gates again, try 2. Step 2 of 2, 99 %. 0:16 so far, about 0:05 left."
+    },
+    {
+     "id": 2,
+     "key": "course.progress",
+     "kind": "progress",
+     "ms": 899,
+     "font": 16,
+     "text": "Course: placing the gates again, try 2. Step 2 of 2, 99 %. 0:17 so far, about 0:05 left."
+    },
+    {
+     "id": 2,
+     "key": "course.progress",
+     "kind": "progress",
+     "ms": 900,
+     "font": 16,
+     "text": "Course: placing the gates again, try 2. Step 2 of 2, 99 %. 0:18 so far, about 0:05 left."
+    },
+    {
+     "id": 2,
+     "key": "course.progress",
+     "kind": "progress",
+     "ms": 600,
+     "font": 16,
+     "text": "Course: placing the gates again, try 2. Step 2 of 2, 99 %. 0:19 so far, about 0:05 left."
+    },
+    {
+     "id": 2,
+     "key": "course.progress",
+     "kind": "progress",
+     "ms": 200,
+     "font": 16,
+     "text": "Course: placing the gates again, try 3. Step 2 of 2, 99 %. 0:19 so far, about 0:10 left."
+    },
+    {
+     "id": 2,
+     "key": "course.progress",
+     "kind": "progress",
+     "ms": 904,
+     "font": 16,
+     "text": "Course: placing the gates again, try 3. Step 2 of 2, 99 %. 0:20 so far, about 0:10 left."
+    },
+    {
+     "id": 2,
+     "key": "course.progress",
+     "kind": "progress",
+     "ms": 901,
+     "font": 16,
+     "text": "Course: placing the gates again, try 3. Step 2 of 2, 99 %. 0:21 so far, about 0:10 left."
+    },
+    {
+     "id": 2,
+     "key": "course.progress",
+     "kind": "progress",
+     "ms": 917,
+     "font": 16,
+     "text": "Course: placing the gates again, try 3. Step 2 of 2, 99 %. 0:22 so far, about 0:10 left."
+    },
+    {
+     "id": 2,
+     "key": "course.progress",
+     "kind": "progress",
+     "ms": 900,
+     "font": 16,
+     "text": "Course: placing the gates again, try 3. Step 2 of 2, 99 %. 0:23 so far, about 0:10 left."
+    },
+    {
+     "id": 2,
+     "key": "course.progress",
+     "kind": "progress",
+     "ms": 899,
+     "font": 16,
+     "text": "Course: placing the gates again, try 3. Step 2 of 2, 99 %. 0:24 so far, about 0:05 left."
+    },
+    {
+     "id": 2,
+     "key": "course.progress",
+     "kind": "progress",
+     "ms": 900,
+     "font": 16,
+     "text": "Course: placing the gates again, try 3. Step 2 of 2, 99 %. 0:25 so far, about 0:05 left."
+    },
+    {
+     "id": 2,
+     "key": "course.progress",
+     "kind": "progress",
+     "ms": 904,
+     "font": 16,
+     "text": "Course: placing the gates again, try 3. Step 2 of 2, 99 %. 0:26 so far, about 0:05 left."
+    },
+    {
+     "id": 2,
+     "key": "course.progress",
+     "kind": "progress",
+     "ms": 800,
+     "font": 16,
+     "text": "Course: placing the gates again, try 3. Step 2 of 2, 99 %. 0:27 so far, about 0:05 left."
+    },
+    {
+     "id": 2,
+     "key": "course.progress",
+     "kind": "done",
+     "ms": 8004,
+     "font": 16,
+     "text": "Gates: 41. Fly through START to start the clock. Shift+T hides the course"
+    }
+   ]
+  },
+  {
+   "size": "844x390@1",
+   "steps": {
+    "1": {
+     "name": "Generate course: a line appears, its font-size >= 16 px",
+     "pass": true,
+     "text": "Course: finding the free space. Step 1 of 2, 0 %. 0:00 so far, about 0:10 left.",
+     "font": 16
+    },
+    "2": {
+     "name": "the ready line stays >= shownMs(text) - 200 ms",
+     "pass": true,
+     "text": "Gates: 46. Fly through START to start the clock. Shift+T hides the course",
+     "shownMs": 8101,
+     "need": 7910
+    },
+    "3": {
+     "name": "progress lines replace in place (one node under course.progress)",
+     "pass": true,
+     "texts": 11,
+     "nodes": 1,
+     "maxNodesAtOnce": 1,
+     "sample": [
+      "Course: finding the free space. Step 1 of 2, 0 %. 0:00 so far, about 0:10 left.",
+      "Course: finding the free space. Step 1 of 2, 11 %. 0:01 so far, about 0:10 left.",
+      "Course: placing the gates and obstacles. Step 2 of 2, 75 %. 0:01 so far, about 0:05 left."
+     ]
+    },
+    "4": {
+     "name": "a problem stays 20 s with a 44 px cross and a fix line; Esc, Messages, Send to the author opens the form with its text",
+     "pass": true,
+     "text": "This course did not come out. Shift+G builds another one",
+     "shownMs": 20701,
+     "cross": {
+      "w": 44,
+      "h": 44,
+      "free": true
+     },
+     "fix": "If it comes again, send it to the author: the button below.",
+     "send": true,
+     "underMenu": true,
+     "inList": true,
+     "formHasText": true,
+     "offScreenAfterList": true
+    },
+    "5": {
+     "name": "the top-row Messages button opens the list with 1 and 4; Shift+J toggles it; its cross and Esc close it",
+     "pass": true,
+     "button": true,
+     "opened": true,
+     "items": 2,
+     "hasProblem": true,
+     "hasReady": true,
+     "cross": {
+      "w": 44,
+      "h": 44
+     },
+     "crossCloses": true,
+     "menuAfterList": true,
+     "shiftHOpens": true,
+     "shiftHCloses": true,
+     "lockBeforeEsc": false,
+     "menuAfterEsc": false,
+     "escCloses": true
+    },
+    "6": {
+     "name": "every message: inside the view, over no top-row button or OSD, outside the middle third",
+     "pass": true,
+     "samples": 694,
+     "faults": {}
+    },
+    "7": {
+     "name": "with the pause menu up, key Shift+J (named on its Messages item) opens the list at one press; Esc closes it",
+     "pass": true,
+     "menu": true,
+     "itemKey": true,
+     "opened": true,
+     "escCloses": true
+    },
+    "8": {
+     "name": "edit mode: three keys of the flight give one line saying what to press, no problem, gone by itself",
+     "pass": true,
+     "editMode": true,
+     "lines": 1,
+     "said": "P works in flight, not in the editor: press Esc to leave the editor, then P.",
+     "problems": 0,
+     "after16s": 0
+    }
+   },
+   "errors": [],
+   "status": {
+    "status": "ready",
+    "walls": "none"
+   },
+   "pointerLock": true,
+   "escFrees": 5,
+   "problemText": "This course did not come out. Shift+G builds another one",
+   "readyText": "Gates: 46. Fly through START to start the clock. Shift+T hides the course",
+   "lines": [
+    {
+     "id": 1,
+     "key": "course.progress",
+     "kind": "problem",
+     "ms": 20701,
+     "font": 16,
+     "text": "This course did not come out. Shift+G builds another one"
+    },
+    {
+     "id": 2,
+     "key": "course.progress",
+     "kind": "progress",
+     "ms": 989,
+     "font": 16,
+     "text": "Course: finding the free space. Step 1 of 2, 0 %. 0:00 so far, about 0:10 left."
+    },
+    {
+     "id": 2,
+     "key": "course.progress",
+     "kind": "progress",
+     "ms": 601,
+     "font": 16,
+     "text": "Course: finding the free space. Step 1 of 2, 11 %. 0:01 so far, about 0:10 left."
+    },
+    {
+     "id": 2,
+     "key": "course.progress",
+     "kind": "progress",
+     "ms": 201,
+     "font": 16,
+     "text": "Course: placing the gates and obstacles. Step 2 of 2, 75 %. 0:01 so far, about 0:05 left."
+    },
+    {
+     "id": 2,
+     "key": "course.progress",
+     "kind": "progress",
+     "ms": 900,
+     "font": 16,
+     "text": "Course: placing the gates and obstacles. Step 2 of 2, 79 %. 0:02 so far, about 0:05 left."
+    },
+    {
+     "id": 2,
+     "key": "course.progress",
+     "kind": "progress",
+     "ms": 901,
+     "font": 16,
+     "text": "Course: placing the gates and obstacles. Step 2 of 2, 93 %. 0:03 so far, about 0:05 left."
     },
     {
      "id": 2,
@@ -336,7 +536,7 @@
      "id": 2,
      "key": "course.progress",
      "kind": "progress",
-     "ms": 903,
+     "ms": 900,
      "font": 16,
      "text": "Course: placing the gates and obstacles. Step 2 of 2. 0:06 so far; longer than usual, still working."
     },
@@ -344,17 +544,25 @@
      "id": 2,
      "key": "course.progress",
      "kind": "progress",
-     "ms": 0,
+     "ms": 900,
      "font": 16,
      "text": "Course: placing the gates and obstacles. Step 2 of 2. 0:07 so far; longer than usual, still working."
     },
     {
      "id": 2,
      "key": "course.progress",
-     "kind": "done",
-     "ms": 8057,
+     "kind": "progress",
+     "ms": 301,
      "font": 16,
-     "text": "Gates: 29. Fly through START to start the clock. Shift+T hides the course"
+     "text": "Course: placing the gates and obstacles. Step 2 of 2. 0:08 so far; longer than usual, still working."
+    },
+    {
+     "id": 2,
+     "key": "course.progress",
+     "kind": "done",
+     "ms": 8101,
+     "font": 16,
+     "text": "Gates: 46. Fly through START to start the clock. Shift+T hides the course"
     }
    ]
   }

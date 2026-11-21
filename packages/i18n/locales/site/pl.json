@@ -1074,7 +1074,7 @@
         "title": "Ściany: im bliżej uderzenia, tym szybsze stukanie",
         "text": [
           "Ściana stuka ze swojej strony, z lewej albo z prawej. Stukanie zależy od tego, ile sekund zostało do uderzenia, a nie od metrów.",
-          "Na 4 sekundy przed uderzeniem stuknięcie pada mniej więcej co 1,4 sekundy, tuż przed nim co 0,11 sekundy. Bliżej niż 2 metry stukanie przyspiesza też od samej bliskości.",
+          "Ściana zaczyna stukać, gdy do uderzenia zostaje mniej niż 2,5 sekundy: stuknięcie pada mniej więcej co 0,54 sekundy, tuż przed uderzeniem co 0,11 sekundy. Bliżej niż 2 metry stukanie przyspiesza też od samej bliskości, a bliżej niż 0,8 metra ścianę słychać, nawet gdy nie lecisz w jej stronę.",
           "Gdy do uderzenia zostaje mniej niż 1,5 sekundy, inne dźwięki cichną, żeby ścianę było dobrze słychać."
         ]
       },
@@ -1119,7 +1119,7 @@
     "how": {
       "title": "Jak w ogóle można latać na słuch?",
       "text": "Symulator zamienia to, co widzi kamera drona, w dźwięk. W słuchawkach słychać, gdzie jest ściana, gdzie wolna droga i gdzie następna obręcz.",
-      "items": ["Ścianę słychać z wyprzedzeniem. Dźwięk zależy od tego, za ile sekund byś w nią uderzył, a nie od metrów.", "Wysokość to ton, który płynnie się przesuwa. Docelowa wysokość ma swoją nutę: kiedy tony się zgrają, jesteś na miejscu.", "Wolną drogę oznacza krótki dzwonek. Lecisz w złą stronę: aplikacja to powie.", "To, co ważne, brzmi ze swojej strony, z lewej albo z prawej. Dlatego potrzebne są słuchawki.", "Na początku silnika nie słychać, słyszysz tylko podpowiedzi. Dźwięk silnika włączysz w ustawieniach, tam też zmienisz jego głośność.", "Lekcje prowadzi głos: 28 lekcji, od zawisu przez ściany i korytarze po sześć tuneli i obręcze na trzech wysokościach. Są małe pokoje dla mikrodrona i lekcja w prawdziwym miejscu zapisanym jako 3DGS (Gaussian splat): Winter Garden.", "Menu i ustawienia też mówią: Escape otwiera mówione menu lekcji.", "Dla słabowidzących pokoje lekcji są narysowane w mocnym kontraście i jest duży wskaźnik horyzontu. Dla głuchych pilotów jest panel, na którym widać podpowiedzi dźwiękowe."]
+      "items": ["Ścianę słychać z wyprzedzeniem. Dźwięk zależy od tego, za ile sekund byś w nią uderzył, a nie od metrów.", "Wysokość to ton, który płynnie się przesuwa. Docelowa wysokość ma swoją nutę: kiedy tony się zgrają, jesteś na miejscu.", "Wolną drogę oznacza krótki dzwonek. Lecisz w złą stronę: aplikacja to powie.", "To, co ważne, brzmi ze swojej strony, z lewej albo z prawej. Dlatego potrzebne są słuchawki.", "Na początku silnika nie słychać, słyszysz tylko podpowiedzi. Dźwięk silnika włączysz w ustawieniach, tam też zmienisz jego głośność.", "Lekcje prowadzi głos: 33 lekcje i krótka szybka ścieżka, od zawisu przez ściany i korytarze po sześć tuneli, obręcze na trzech wysokościach i prędkość do 4,5 metra na sekundę. Są małe pokoje dla mikrodrona i lekcja w prawdziwym miejscu zapisanym jako 3DGS (Gaussian splat): Winter Garden.", "Menu i ustawienia też mówią: Escape otwiera mówione menu lekcji.", "Dla słabowidzących pokoje lekcji są narysowane w mocnym kontraście i jest duży wskaźnik horyzontu. Dla głuchych pilotów jest panel, na którym widać podpowiedzi dźwiękowe."]
     },
     "need": {
       "title": "Czego potrzebuję?",
@@ -1135,9 +1135,9 @@
       "title": "Co już działa, a czego jeszcze nie ma",
       "tested": "Co już sprawdziliśmy: widzący piloci FPV, autor i jego znajomi, latali z zamkniętymi oczami i przelatywali korytarze i przeszkody wyłącznie na słuch. To działa. Czego jeszcze nie było: nie próbowali tego piloci niewidomi od urodzenia. Ich opinie są potrzebne, żeby znaleźć problemy i poprawić orientację na słuch. Wysłuchamy każdej opinii i wprowadzimy poprawki.",
       "worksTitle": "Działa już dziś",
-      "works": ["28 lekcji z głosem i podpowiedzi dźwiękowe.", "Klawiatura, pad albo aparatura.", "Nagranie lotu razem z Twoim głosem, wysłanie go autorowi, krótka ankieta.", "Link do lekcji z Twoimi ustawieniami dźwięku (klawisz L).", "Angielski, hiszpański, polski i rosyjski."],
+      "works": ["33 lekcje z głosem, krótka szybka ścieżka i podpowiedzi dźwiękowe.", "Dźwięk w każdym skanie: klawisz ukośnik wsteczny (Backslash) włącza lot na słuch w trakcie lotu, a Shift+G buduje tam trasę z bramek. Buczenie prowadzi od bramki do bramki, a głos podaje czas każdego okrążenia.", "Lot z innymi: poza lekcją dźwiękową klawisz 9 otwiera „Lot z innymi” i przenosi do otwartego pokoju na Twoim skanie. Aplikacja mówi na głos, kto dołącza i kto wychodzi.", "Klawiatura, pad albo aparatura.", "Nagranie lotu razem z Twoim głosem, wysłanie go autorowi, krótka ankieta.", "Link do lekcji z Twoimi ustawieniami dźwięku (klawisz L).", "Angielski, hiszpański, polski i rosyjski."],
       "notYetTitle": "Jeszcze nie ma",
-      "notYet": ["Tryb nie był jeszcze sprawdzony w praktyce z NVDA ani JAWS.", "Telefony i tablety nie są sprawdzone, na razie potrzebny jest komputer.", "Nie ma jeszcze tras z przeszkodami i pomiarem czasu na słuch ani latania razem z innymi pilotami. Są w planach, terminów nie podajemy.", "Kwestii mówionych po hiszpańsku, polsku i rosyjsku nie słuchali jeszcze rodzimi użytkownicy tych języków."],
+      "notYet": ["Tryb nie był jeszcze sprawdzony w praktyce z NVDA ani JAWS.", "Telefony i tablety nie są sprawdzone, na razie potrzebny jest komputer.", "Kwestii mówionych po hiszpańsku, polsku i rosyjsku nie słuchali jeszcze rodzimi użytkownicy tych języków."],
       "goal": "Dokąd to prowadzi. Cele są dwa. Pierwszy: żeby osoby niewidome mogły startować w międzynarodowych zawodach jako piloci FPV. Drugi: aplikacja na telefon. Kamera widzi otoczenie, aplikacja je analizuje i buduje mapę dźwiękową, a osoba niewidoma idzie w słuchawkach i orientuje się na słuch. Oba cele najpierw sprawdzamy tutaj, w symulatorze: tak jest prościej, a do pracy można zaprosić wiele osób niewidomych, żeby razem przeanalizować i ulepszyć zamianę obrazu na dźwięk."
     },
     "test": {
@@ -1190,7 +1190,7 @@
       "lesson": ["Przygotuj komputer z Chrome albo Edge i przewodowe słuchawki dla każdego ucznia. Głośność skalibruj wcześniej.", "Zacznij od testu słuchawek i lekcji zawisu. Dalej uczeń idzie we własnym tempie: R wraca do ostatniego punktu kontrolnego, przytrzymanie R zaczyna lekcję od nowa.", "Za pierwszym razem pomocnik jest obok: podłącza aparaturę i potwierdza zgodę na nagrywanie.", "Po lekcji zapytaj ucznia, co słyszał. Jeśli się zgodzi, niech powie to w nagraniu: opinia dotrze do nas razem z lotem.", "Klawisz L kopiuje link do lekcji z ustawieniami dźwięku. Możesz go dać uczniowi, żeby kontynuował w domu.", "Szkoły dla niewidomych i organizacje osób niewidomych: napiszcie do nas, jeśli chcecie zajęcia próbne albo grupę testerów."]
     },
     "press": {
-      "facts": "Fakty: za darmo, bez zakładania konta; 28 lekcji; angielski, hiszpański, polski, rosyjski; licencja MIT; autor Andrii Shramko, pilot FPV i specjalista od 3DGS.",
+      "facts": "Fakty: za darmo, bez zakładania konta; 33 lekcje; angielski, hiszpański, polski, rosyjski; licencja MIT; autor Andrii Shramko, pilot FPV i specjalista od 3DGS.",
       "write": "Napisz do autora",
       "call": "Umów rozmowę"
     },

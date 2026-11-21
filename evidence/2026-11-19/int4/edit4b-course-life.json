@@ -9,22 +9,22 @@
  "name": "int4",
  "query": "&render=off",
  "live": false,
- "date": "2026-11-19T22:09:10.195Z",
+ "date": "2026-11-20T12:15:32.453Z",
  "steps": {
   "1-open-numbers": {
    "ok": true,
-   "gates": 26,
+   "gates": 30,
    "labels": [
     1,
     2,
     3,
     4,
     5,
+    6,
     9,
-    13,
-    16,
-    23,
-    26
+    26,
+    28,
+    29
    ],
    "onScreen": [
     1,
@@ -32,13 +32,83 @@
     3,
     4,
     5,
+    6,
     9,
-    13,
-    16,
-    23,
-    26
+    26,
+    28,
+    29
    ],
-   "mode": "edit"
+   "mode": "edit",
+   "home": false,
+   "numbers": {
+    "mode": "edit",
+    "labels": [
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     9,
+     26,
+     28,
+     29
+    ],
+    "spots": [
+     [
+      1,
+      1035,
+      701
+     ],
+     [
+      2,
+      1187,
+      550
+     ],
+     [
+      3,
+      1208,
+      476
+     ],
+     [
+      4,
+      1245,
+      524
+     ],
+     [
+      5,
+      1287,
+      469
+     ],
+     [
+      6,
+      1316,
+      437
+     ],
+     [
+      9,
+      1380,
+      429
+     ],
+     [
+      26,
+      1492,
+      441
+     ],
+     [
+      28,
+      1223,
+      416
+     ],
+     [
+      29,
+      1255,
+      415
+     ]
+    ],
+    "gates": 30,
+    "arrow": null
+   }
   },
   "2-clear-no": {
    "ok": true,
@@ -46,7 +116,7 @@
    "item": true,
    "asked": true,
    "answered": true,
-   "gates": 26
+   "gates": 30
   },
   "3-clear-yes": {
    "ok": true,
@@ -59,7 +129,7 @@
   },
   "4-undo": {
    "ok": true,
-   "gates": 26
+   "gates": 30
   },
   "5-new-empty": {
    "ok": true,
@@ -97,13 +167,13 @@
   },
   "7-fly": {
    "ok": true,
-   "ms": 112,
+   "ms": 114,
    "mode": "fly",
    "button": "Back to editing"
   },
   "8-back": {
    "ok": true,
-   "ms": 111,
+   "ms": 113,
    "mode": "edit",
    "top": true,
    "button": "Fly the course"
@@ -136,7 +206,7 @@
    "problems": 3,
    "said": "Nothing changed: your gates stay",
    "save": {
-    "said": "Not saved. The way from the start to gate 1 goes through a wall. Pull the arrows of gate 1 toward the start until the straight way to it is clear.",
+    "said": "Not saved. Gate 1 stands in a wall. Pull its arrows to move it out into the open, or delete it with the cross on its bar.",
     "flash": [
      "1"
     ],
@@ -149,7 +219,7 @@
     "selected": 0,
     "wrong": {
      "index": 0,
-     "key": "course.edit.fix.legStart",
+     "key": "course.edit.fix.gateWall",
      "lead": "course.edit.saveFix"
     },
     "eyeMoved": 0,
@@ -163,7 +233,7 @@
    "menuEsc": {
     "menu": 0,
     "open": true,
-    "said": "Not saved. The way from the start to gate 1 goes through a wall. Pull the arrows of gate 1 toward the start until the straight way to it is clear."
+    "said": "Not saved. Gate 1 stands in a wall. Pull its arrows to move it out into the open, or delete it with the cross on its bar."
    },
    "asked": true,
    "askEsc": {
@@ -224,13 +294,13 @@
  ],
  "ready": {
   "status": "ready",
-  "ms": 2092
+  "ms": 3068
  },
  "lock": true,
  "course": {
   "ok": true,
-  "ms": 9110,
-  "gates": 26
+  "ms": 12170,
+  "gates": 30
  },
  "fails": [],
  "verdict": "PASS"
