@@ -1,0 +1,50 @@
+{
+  "base": "http://localhost:6940/en",
+  "build": "224f8c20",
+  "drawn": true,
+  "note": "the run was stopped at the 10 min background limit while 5c0f892e loaded; these lines are its console verdicts, the picture of a39abad1 is U:/Temp/gsfpv-train4/shots/n-scan-a39abad1.png (lit share checked by the probe)",
+  "ids": {
+    "a39abad1": {
+      "kind": "sog-v3",
+      "pass": true,
+      "outcome": "flown",
+      "seconds": 35
+    },
+    "98f74d54": {
+      "kind": "sog-v3",
+      "pass": true,
+      "outcome": "flown",
+      "seconds": 10
+    },
+    "143e76b0": {
+      "kind": "sog-v2",
+      "pass": true,
+      "outcome": "flown",
+      "seconds": 10
+    },
+    "f924b0f5": {
+      "kind": "streamed-sog-v3",
+      "pass": true,
+      "outcome": "flown",
+      "seconds": 36
+    },
+    "593f8c06": {
+      "kind": "streamed-sog-v3",
+      "pass": true,
+      "outcome": "flown",
+      "seconds": 22
+    },
+    "70b50d42": {
+      "kind": "streamed-sog-v2",
+      "pass": true,
+      "outcome": "flown",
+      "seconds": 12
+    },
+    "2f1ddf5f": {
+      "kind": "streamed-sog-v2-huge",
+      "pass": true,
+      "outcome": "flown",
+      "seconds": 13
+    }
+  }
+}

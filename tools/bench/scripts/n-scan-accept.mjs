@@ -46,6 +46,7 @@ const STATE = `(() => {
     const e = document.querySelector('.scene-error');
     return { status: h.status || null, errorCode: h.errorCode || null, error: h.error ? String(h.error).slice(0, 200) : null,
         line: e ? e.textContent : null, drawn: a ? a.stats.frame.gsplats : null,
+        stage: h.loading ? h.loading.stage : null, loaded: h.loading ? h.loading.loaded : null, total: h.loading ? h.loading.total : null,
         tick: s && s.sim ? s.sim.tick : null, paused: s ? !!s.paused : null, locked: !!document.pointerLockElement };
 })()`;
 const CLEAR = `(() => { const c = window.__gsfpv.session.renderer.camera.camera.clearColor; return [c.r, c.g, c.b].map((v) => Math.round(v * 255)); })()`;
@@ -98,6 +99,8 @@ try {
                 await page.waitForTimeout(1000);
                 last = await page.evaluate(STATE).catch(() => null);
                 if (!last) continue;
+                const s = Math.round((Date.now() - t0) / 1000);
+                if (s % 20 === 0) (r.samples ||= []).push({ s, status: last.status, stage: last.stage, loaded: last.loaded, total: last.total, drawn: last.drawn });
                 if (last.status === 'error' && last.line) break;
                 drawnRun = last.status === 'ready' && (!DRAWN || last.drawn > 0) ? drawnRun + 1 : 0;
                 if (drawnRun >= 3) break;
@@ -129,7 +132,7 @@ try {
                     const png = await page.screenshot({ type: 'png' });
                     const lit = await blank.evaluate(LIT(png.toString('base64'), clear));
                     r.picture = { clear, ...lit };
-                    if (id === 'a39abad1') { r.picture.shot = join(SHOTS, `n-scan-${id}.png`); writeFileSync(r.picture.shot, png); }
+                    if (id === 'a39abad1' || lit.lit < MINLIT) { r.picture.shot = join(SHOTS, `n-scan-${id}.png`); writeFileSync(r.picture.shot, png); }
                     if (lit.lit < MINLIT) r.why = `picture empty: ${(lit.lit * 100).toFixed(1)} % of pixels differ from the clear colour`;
                 }
             } else {

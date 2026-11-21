@@ -42,7 +42,26 @@ splat-transform 3.12.0, probe tools/bench/scripts/hot-sog3-scans.mjs, live check
     (72d4babf contains d432c2d9), so a39abad1 opens there; the a39abad1 failures this lane repairs (gone, huge, newer
     version) FAIL on live in n-scan-errors.mjs (S3).
   - [x] deploy/live-checks.sh scans-open: hot-sog3-scans.mjs also draws a5d25fb4, c67edb74; then n-scan-accept.mjs render off.
-  - [ ] the drawn run on the local build (GPU lock, all ids, picture of a39abad1); gates; owner parts; dist deleted.
+  - [x] the drawn run on the local build 224f8c20 (GPU lock). Part 1 (stopped by the 10 min background limit while
+    5c0f892e loaded; lock released by hand, it was this run's): a39abad1, 98f74d54, 143e76b0, f924b0f5, 593f8c06, 70b50d42,
+    2f1ddf5f PASS flown and drawn (n-scan-accept-drawn-local-part1.json). Picture U:/Temp/gsfpv-train4/shots/n-scan-a39abad1.png:
+    a bright exhibition hall with large brick-built dinosaur models, seen from the drone, HUD hidden. Part 2
+    (n-scan-accept-drawn-local-part2.json): 5012e205 PASS (the GSAF line); 3 FAIL, found only when drawn:
+    5c0f892e (single SOG v2, 191 MB, 14.1 M) still "loading" at 200 s; c67edb74 (compressed PLY 163 MB gzip) still
+    "loading" at 200 s; a5d25fb4 (compressed PLY 2.5 MB) flown and splats drawn, but the picture 1.3 % lit (nearly empty).
+  - LEFT (exact list, next run):
+    1. Rerun drawn, ONE command under the GPU lock, background timeout 2400000: `MAXS=400 node scripts/n-scan-accept.mjs
+       http://localhost:6940/en <out> 5c0f892e,a5d25fb4,c67edb74` (the probe now records loading stage/loaded/total every
+       20 s and writes the picture of any empty-picture id). Decide from the samples: slow download with visible progress
+       and Cancel (then the heavy single file must "ask or say why": e.g. one line before loading when the file is over
+       a size, through openCheck/ux4a) or a hang (a bug: find it in renderer.ts loadSplat 'ply'/'sog').
+    2. a5d25fb4: look at n-scan-a5d25fb4.png; if the PLY is drawn but the spawn/orientation is wrong (compressed PLY may
+       need the SOG/PLY axis flip or its own bounds), repair in renderer.ts/the start placement with a unit test + NEG.
+    3. Rebuild once (node scripts/build-release.mjs, walls copied), rerun the drawn probe on the 3 ids, then the
+       render-off live probe again only if the probe's logic changed.
+    4. Gates once (typecheck,vitest,architecture,i18n,b18,leaks), files staged first.
+    5. Status parts: What the owner does, Claims, Not verified, For the lead (deploy/live-checks.sh scans-open is owned;
+       n-scan-accept.mjs new), "What the owner should try" (3-5 lines). Delete dist. LANE-DONE.
 
 ## Diagnosis (S1)
 
@@ -97,4 +116,5 @@ Read from C:/dev/.gsfpv-lanes/designs/t7-scene-open.md (confirmed by a second ag
 ## Cost notes
 - S1: about 25 calls; most went to finding where the check belongs (renderer.ts vs scenes) and to neg_control needing `npx.cmd` on Windows (plain `npx` is not found by CreateProcess). Cheaper: the lane prompt could name renderer.ts as the check's place.
 - S2: about 35 calls; most went to node -e edits whose backslashes the shell ate (a regex and a test pattern had to be fixed by hand) and to three old tests that held "PLY is refused". Cheaper: write edit scripts with the Write tool from the start; grep the tests for the behaviour before changing it.
+- S4 run 1: about 45 calls; most went to the pilot's path (the Controls screen at "ready" pauses the flight until Keyboard is chosen; found by a debug shot) and to a drawn run of 11 ids killed at the 10 min background limit while it held the GPU lock. Cheaper: the design could name `[data-action="radio-keyboard"]` as the step after ready; start long drawn runs with a background timeout of 40 min and a per-id MAXS, and record loading progress from the first version of a probe.
 - S3: about 40 calls; most went to finding where a failure reaches the pilot (three call sites: picker, first load, switch) and to two old tests that read source text or stub the renderer. Cheaper: the design could name the three call sites and say that ?render=off never runs the renderer's checks.
