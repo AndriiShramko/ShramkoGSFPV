@@ -210,9 +210,22 @@ car 3's head.)
       fetched from C:/dev/gsfpv-t8-tutor-moment/packages/sonic-fpv; 719aaf54 is its ancestor, so no join branch; not yet
       on the package's main). Every lane head is an ancestor of HEAD; pnpm install --frozen-lockfile rc 0, gen-catalog
       everything up to date, pnpm -r typecheck rc 0 on a7ac26e6.
-- [ ] S2 the seams (start-screen/start-model, lessons.ts, sonic locales, keymap G and Shift+K, doc.ts guide, the #ui
+- [x] S2 the seams (start-screen/start-model, lessons.ts, sonic locales, keymap G and Shift+K, doc.ts guide, the #ui
       live region in a lesson), the one full check: gates, a6-reference, the package's tests, one release build,
       tutor-say-accept, tutor-air-accept, n-share-accept, first-set.test.ts, accept-fly B6-B16, pictures
+      Result: no product source changed in S2 (see Seams). Release build of 9bebe9b1 (1950 files, sonic 9ac7876, int4/
+      build-car5.log) with the nine walls on :6180 (U:/Temp/gsfpv-train4/int4/probes-car5.sh, logs-car5/summary.txt):
+      n-share-accept rc 0, tutor-say-accept rc 0, tutor-air-accept rc 0 (evidence 2026-11-21/int4-car5); the sound live
+      checks against the build (LIVE_ONLY, 11 names): sonic-in-place-tunis, sonic-course-wroclaw, sonic-course-wroclaw-n,
+      narrator-off, sonic-eye-course-wroclaw, menu4-first-minute, tails4-start-moved, head4-accept PASS; sonic-int-review-r9,
+      sound6-quick-walk, gap-sound-start FAIL on probes out of date (Seams), repaired, then PASS on the same build
+      (live-local2, live-local3; only tools/bench changed since the build). accept-fly B6 B7 B9-B16 all PASS (888 s; B15
+      too, against tutor-air's note). Package tests (packages/sonic-fpv at 9ac7876d): 82 files / 1474 tests PASS;
+      test/first-set.test.ts 20/20. Gates once on 611af500 (+ this status): all PASS rc 0 (typecheck, vitest 467 files /
+      5846 tests, api-unittest, architecture, i18n, catalog, b18, leaks; U:/Temp/gsfpv-gates-20261121-183018, int4/
+      gates-car5.log); a6-reference alone PASS. Pictures (tutor-air-accept DRAW, one drawn run): int4-car5-moment-1536.png
+      and -844.png: the moment card, a yellow tag "Wall" over one large two-line sentence ("Wall: a wooden knock from a
+      wall near you, faster as you get closer."), centred, nothing over it, fits 844x390. dist deleted, no server left.
       Done so far: every lane head still an ancestor of HEAD, every review still SHIP. The four lanes share one base
       (03624451, t7-base's last repair), so the seams are among themselves (joined on tutor-air's branch) and with what
       car 3 added after that base (course.ts, life.ts, messages-logic.ts minMs, top-row.ts, playcanvas 2.24.2, probes).
@@ -398,6 +411,36 @@ against car 1 and car 2 lanes:
 - Not seams of this car, the lanes' own needs for the lead (not changed here): gap-gen's course.ts hook.adopt line for
   race rooms (RACE_ON is false: nothing on the page uses it yet) and 'the drone stands at the course start' at x15;
   gap-save's startNew transform and the editor at x100 when nothing fits; gap-sound's keysDue once a lesson.
+
+Car 5 (since car 3's head 72d4babf; the four lanes share one base, 03624451, and tutor-air carries the other three, so the
+joins among them were made on tutor-air's branch; the seams below are the header's, each made real and tested)
+
+- start-screen.ts / start-model.ts, n-share's link screen x tutor-say's Start group and its spoken open line: a link with a
+  scene has ONE main button (Fly this scan by sound), the lessons a small link (n-share's tests, unchanged); the plain screen
+  has Start flying, All lessons (Continue third once there is progress). New test (sonic-start-screen.test.ts 'int4 car 5'):
+  the first key on a link's screen says "Fly by Sound. Fly this scan by sound. ..." once and never "Start flying". PASS.
+- lessons.ts: tutor-say's say path x tutor-air's 'moment' and 'audible' cases and its keysDue condition (a page that teaches by
+  moments says no keys line at a lesson's start): joined on tutor-air's branch; its tests and the three probes PASS on the build.
+- locales fly/sonic, fly/sonickeys, fly/share: the same keys in all four (the i18n gate). No held lane adds a key.
+- keymap.ts: tutor-air's G = sonic.whatSound and Shift+K = sonic.know (when 'sonic') x gen4b's Shift+G (always: the Generate
+  dialog; in a sound flight the asked course) x K (help.keys): keymapProblems empty; new test int4-car5-seams.test.ts: in a
+  sound flight G, Shift+K, Shift+G, K are four actions; outside it G and Shift+K are nothing, Shift+G still Generate. PASS.
+- doc.ts SonicState.guide (tutor-say) and .known (tutor-air): both fields, merged clean; prefs tests PASS.
+- #ui live region: tutor-say holds it 'off' while a lesson runs (LessonHold); the HUD's news goes to the captions
+  (captions.ts pageNews -> relayHeldNews). New test int4-car5-seams.test.ts with the REAL ui/messages.ts service (ux4a, car 3's
+  minMs): a crash line and a problem with its fix reach the captions once while held; not held, nothing relayed. PASS.
+- NEG OK for the three new tests on car 3's head (captions, live-quiet, keymap, start-screen, start-model swapped).
+- Probes out of date after the tutorial lanes (the design changed, not a seam; repaired in the probes, 5793738f, 611af500):
+  gap-sound-accept (gap-sound-start) and sonic-quick-walk (sound6-quick-walk) expected Quick start, Continue, Full course and
+  the room listing wall, right, ceiling, floor before its flight; now Start flying, All lessons, Continue (tutor-say), and the
+  room introduces its wall in a moment in the air (tutor-moment walls-hall v5; no ceiling or floor in the first set: the lead's
+  decision 3 of 2026-11-20): the walks hold key W until the room's wall-ahead moment comes (either form passes, so the live
+  site before the release still passes them). sonic-int-review R9: the corridor now opens with its 'target' moment (the
+  flight frozen until key N): R9 goes on with N (at most 3 presses), as the pilot is told, before its turns.
+- Stale page harnesses no live check or test runs (tutor-say's list; not repaired, for the lead): sonic-int-review R10
+  (sonic-start-full), sonic-v13-page.ts (:291 Quick start / Full course), sonic-start-keyboard.ts (:356 the full button).
+- Open for the package (not editable here): the headphone trial still SAYS "Sound 1 of 2." (headphones.trial, runner.ts
+  :1663; decision 7 asks for no counter unless asked); the screen no longer shows it.
 
 ## Deploy order
 
@@ -736,3 +779,6 @@ Car 3
   live check should take its probe's exit code as its verdict (one judge, not two), and a lane that changes a rule
   (gap-gen's heights, menu4's levels, edit4a's framing) should grep deploy/live-checks.sh and tools/bench for the old rule.
 - Car 5 S1 (12 calls): four clean merges; the one slip was merging tutor-moment before fetching its package head (the gitlink was right, the checkout lagged until git submodule update). Cheaper: fetch the package head before the merge that moves the pin, as the header says.
+- Car 5 S2 (~50 calls): the most turns went to three sound probes out of date after the tutorial lanes (two reruns: the
+  room's first moment needs the craft to fly to a wall). Cheaper: a lane that changes the start order or a lesson's intro
+  greps deploy/live-checks.sh's probes for the old testids and lines and runs those probes itself (tutor-say listed them).
