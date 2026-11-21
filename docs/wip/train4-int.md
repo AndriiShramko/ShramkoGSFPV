@@ -111,6 +111,17 @@ aa18f1e4 of origin/main; the lead's change of 17:50 UTC: car 2 takes the lanes w
       voxels-alone-wroclaw,voxel-panel-wroclaw,sonic-in-place-tunis,sonic-course-wroclaw,narrator-off,menu4-first-minute
       (one line, no spaces); a cost note; LANE-DONE.
 
+Car 3 (job int4-car3, work copy C:/dev/gsfpv-v13-int, branch train4 on car 2's head 267923c3; it brings ONE branch,
+t7-base 03624451 of job base7: gap-gen (gen4a, gen4b), gap-save, gap-sound and the joined sound package 719aaf54).
+
+- [x] S1 the merge of t7-base: `git fetch origin`: origin/main has no commit that is not in HEAD; reviews gap-gen,
+      gap-save, gap-sound all 'Verdict: SHIP'; 03624451 was not an ancestor; package 719aaf54 fetched into
+      packages/sonic-fpv from C:/dev/gsfpv-t7-base/packages/sonic-fpv branch t7-base (it descends from car 2's pin
+      53a56759); `git merge --no-ff 03624451` = 6ef4e3b8, no conflict, the gitlink is 719aaf54; the lock did not change;
+      gen-catalog everything up to date (no change); pnpm -r typecheck rc 0.
+- [ ] S2 the seams (base7's open seams against car 2) and the one full check
+- [ ] S3 the hand-over (Car 3 parts, U:/Temp/gsfpv-train4/int4-car3.json)
+
 ## Progress
 
 Car 1 (one line a lane, in the merge order)
@@ -142,6 +153,10 @@ Car 2 (job int4, on top of car 1's head 2716e78e and the release merge aa18f1e4 
 - gen4a: car 3 (no review file when S1 reached it)
 - gen4b: car 3, needs gen4a (review SHIP, but without gen4a its level and spread buttons change nothing)
 - sound6: merged 2540dea0 (review SHIP); conflicts: evidence/2026-11-19/b-repo-b18.json (add/add, a gate's output: ours, the gates write it again) and tools/bench/test/sonic-start-screen.test.ts (both kept: head4's rig and row test, sound6's path option, noWebAudio and S4 tests; settings count 18 = 17 + head4's row, sound6 adds no setting); the package pin moves 293ebaea -> 53a56759 (fetched from sound6's copy; not yet on the package's main)
+
+Car 3 (job int4-car3, on car 2's head 267923c3; one line)
+
+- t7-base (gap-gen with gen4a and gen4b, gap-save, gap-sound; base_of 030d11d1): merged 6ef4e3b8 (reviews gap-gen, gap-save, gap-sound SHIP), no conflict; the package pin moves 53a56759 -> 719aaf54 (fetched from base7's copy, not yet on the package's main); gen-catalog no change; pnpm -r typecheck rc 0
 
 ## Seams
 
@@ -462,3 +477,5 @@ Car 2
 - S3 (car 2, run of 2026-11-21): about 25 calls; most went to a live check that failed on a view (no gate on screen)
   and its proof on the release build. Cheaper: probes that click something in the 3D view first bring it into view the
   pilot's way (Home), in one shared helper, so a new framing rule does not break them one by one.
+- S1 (car 3): about 10 calls; a clean merge since base7 settled the conflicts once on base_of. Cheaper: nothing to
+  gain; the one branch per car is the saving.
