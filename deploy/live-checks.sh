@@ -314,6 +314,12 @@ run menu4-first-minute locked node scripts/menu4-first-minute-probe.mjs "$SITE/e
 # tails4-review-start.mjs (header: opens three scans in the page, one click into the scene, sticks still, render off; it
 # reads the start the page placed): on 2f1ddf5f, d10c5638 and ab5efa0e the drone starts near the ground, free of the walls.
 run tails4-start-moved locked node scripts/tails4-review-start.mjs "$SITE/en" "$OUT/tails4-start-moved.json"
+# hot-sog3 (docs/wip/hot-sog3.md): SuperSplat scans in SOG version 3 open and are DRAWN (engine 2.24.2). Reads only
+# (hot-sog3-scans.mjs header: opens /fly/?scene=<id>, presses nothing): each id passes when the page is ready, the engine
+# draws splats and over 5 % of the picture differs from the clear colour, with no console error and no CSP report.
+# Streamed v3 f924b0f5, 593f8c06; single v3 a39abad1 (the owner's), 28ad27ed, 98f74d54; v2 controls 143e76b0, 70b50d42.
+# On the engine 2.23.2 the v3 ids fail (streamed: ready over a black scene; single: endless loader).
+run scans-open locked env MAXS=120 SHOTS="$OUT/scans-open" PREFIX=live node scripts/hot-sog3-scans.mjs "$SITE/en" "$OUT/scans-open.json" f924b0f5,593f8c06,a39abad1,28ad27ed,98f74d54,143e76b0,70b50d42
 # head4 (deploy/nginx.conf, after the nginx reload): only the simulator page may ask for the camera; every other page keeps
 # camera=() (two HEAD requests).
 head4headers() {
