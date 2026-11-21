@@ -305,6 +305,24 @@ try {
     // ---- open
     const o = await openPage(`${base}/fly/?scene=${scan}&render=off&nowarn=1`);
     judge('open', o.status === 'ready' && o.open, o);
+    if (process.env.MEASURE_TOP === '1') {
+        // review: the page's top-row buttons under the editor's top bar (the 16 px message wraps): how much of each is covered,
+        // and whether a press at its centre reaches it
+        const m = await page.evaluate(() => {
+            const bar = document.querySelector('.ce-topbar')?.getBoundingClientRect();
+            if (!bar) return null;
+            const line = document.querySelector('.ce-topbar .ce-tb-line');
+            const out = [...document.querySelectorAll('button, a')].filter((e) => !e.closest('.ce-topbar') && !e.closest('.course-editor')).map((e) => ({ e, r: e.getBoundingClientRect() })).filter(({ r }) => r.width > 0 && r.top < 70 && r.bottom > 20 && r.right > bar.left && r.left < bar.right).map(({ e, r }) => {
+                const cover = Math.max(0, Math.min(bar.bottom, r.bottom) - Math.max(bar.top, r.top));
+                const hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+                return { name: (e.getAttribute('aria-label') || e.textContent || '').trim().slice(0, 20), top: Math.round(r.top), h: Math.round(r.height), coveredPx: Math.round(cover), centreReaches: !!hit && (hit === e || e.contains(hit)) };
+            });
+            return { bar: [Math.round(bar.left), Math.round(bar.top), Math.round(bar.right), Math.round(bar.bottom)], line: line?.textContent ?? null, lineH: line ? Math.round(line.getBoundingClientRect().height) : null, under: out };
+        });
+        console.log(`MEASURE ${JSON.stringify(m)}`);
+        res.measureTop = m;
+        throw new Error('STOP after measure');
+    }
     if (!o.open) throw new Error('the editor did not open');
 
     // ---- build: a new empty course, two gates on one spot, one gate in a wall
@@ -427,6 +445,35 @@ try {
     // course, saying so (drafts.ts; the line offers key Ctrl+Z). Either the saved places, or the draft with that line
     const draftBack = samePlaces(s.egates, beforeFix) && /Ctrl\+Z/.test(s.topLine ?? '');
     judge('reload', o3.open && row3.pressed && (samePlaces(s.egates, fixed) || draftBack) && samePlaces(stored4?.places, fixed), { open: o3, row: row3, gates: s.egates?.length ?? null, pageSameAsFixed: samePlaces(s.egates, fixed), draftBack, stored: stored4 ? { version: stored4.version, same: samePlaces(stored4.places, fixed) } : null, line: s.topLine });
+
+    // ---- the review's own step (a thing a pilot does): Fix all, then one moved gate pulled by hand, then the way back.
+    // What must hold: the pilot can get every gate back to before Fix all (save-undo, or key Ctrl+Z as the line says), and
+    // no Undo button stays that does something else than it says
+    const beforeOwn = (await snap()).egates;
+    const d5 = await saveToDialog('n-save own');
+    if (!d5.dialog) res.notRun.push('own.handAfterFix: no Save dialog on the reloaded page');
+    else {
+        await clickSel('[data-testid="save-fix-all"]', 300);
+        await until(snap, () => postsSince(d5.t0).includes(201), 20000, 300);
+        let t = await snap();
+        const fixedOwn = t.egates;
+        const sel = t.selected;
+        const tip = sel !== null && t.axes?.y ? await arrowTip(t, 'y') : null;
+        if (tip) {
+            const a = t.axes.y, down = a[1] < 0 ? -1 : 1;
+            await page.mouse.move(tip.x, tip.y, { steps: 3 }); await sleep(120); await page.mouse.down();
+            await page.mouse.move(tip.x + down * a[0] * 60, Math.min(H - 5, tip.y + down * a[1] * 60), { steps: 10 });
+            await page.mouse.up(); await sleep(600);
+        }
+        t = await snap();
+        const handMoved = !samePlaces(t.egates, fixedOwn);
+        const undoBox = await boxOf('[data-testid="save-undo"]');
+        const ways = [];
+        if (undoBox) { await click(undoBox.x, undoBox.y, 700); ways.push('save-undo'); }
+        for (let n = 0; n < 3 && !samePlaces((await snap()).egates, beforeOwn); n++) { await page.keyboard.press('Control+KeyZ'); await sleep(400); ways.push('Ctrl+Z'); }
+        t = await snap();
+        judge('own.handAfterFix', handMoved && samePlaces(t.egates, beforeOwn), { handMoved, undoShownAfterHandMove: !!undoBox, ways, back: samePlaces(t.egates, beforeOwn), line: t.topLine });
+    }
 } catch (e) {
     res.error = String(e).slice(0, 400);
     if (!(LIVE && /stopped before any save/.test(res.error))) fails.push('error');

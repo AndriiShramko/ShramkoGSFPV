@@ -149,6 +149,8 @@ applyFixes :1065, saveMine :1833, saveAdmin :~1885 (the design named :893-1754);
 - S4 (run 4): most replies went to the gates' environment (this shell has Node 20 and no `python` on PATH; vitest's API
   tests and leaks need Python 3.11, vitest needs Node 22) and to the tracks rule forbidding trig in autofix.ts; running
   `scripts/check-architecture.mjs` after S2 and a PATH line in train4-common.md would have saved six replies.
+- Review: most turns went to a build that ran while neg_control.py had swapped files to the base (the bundle held the old
+  panel); run negative controls only after the build finishes, never in parallel with it.
 
 ## What the owner should try
 
@@ -158,3 +160,17 @@ applyFixes :1065, saveMine :1833, saveAdmin :~1885 (the design named :893-1754);
 3. Save again and press "Fix all automatically": the moved gates show their old places dashed for 5 s, the line says how
    many moved; press Undo there and every gate goes back.
 4. Press "Show me": the first warned gate is selected for moving by hand.
+
+## Review
+
+Verdict: HOLD (independent check of 511f9594; the full review is U:/Temp/gsfpv-train4/reviews/n-save.md).
+- PROVEN, holds: at 1536x730 (scale 1.25), when the editor opens, its 3-line 16 px message makes the top bar end at y 78
+  CSS px. It covers 40 of the 44 px of the page's Motor sound, Full screen, Messages and Share buttons, and a click at
+  their centre lands on the bar. The live site covers 10 px and every centre is reachable. Evidence:
+  evidence/2026-11-20/n-save/review-top-row-head.json and review-top-row-live.json (n-save-accept.mjs MEASURE_TOP=1). The
+  fix is the bar's place (top-bar.ts place(), For the lead S4), not the message rule.
+- Holding: saveVerdict mirrors tracks.py validate_track and _bounds; NEG OK on the base for save-verdict and save-dialog;
+  27 lane tests pass. The mouse acceptance on a build of 511f9594 passes every step, plus the review's own step
+  own.handAfterFix (Fix all, then a moved gate dragged by hand: Undo is gone, key Ctrl+Z twice gives every gate back).
+  Evidence: evidence/2026-11-20/n-save/review-accept-local.json.
+- DOUBT: after a hand edit the fixed line and its Undo go without saying key Ctrl+Z; Show me ends on the words "Not saved. ...".
