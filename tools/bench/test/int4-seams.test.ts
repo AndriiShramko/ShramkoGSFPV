@@ -83,3 +83,21 @@ describe('int4: edit4s save x edit4b seam', () => {
         expect(life).toMatch(/seam\.on\('saved', \(\) => \{ changedSinceSave = false; \}\)/);
     });
 });
+
+describe('int4 car 3: edit4b Course menu Generate x gen4b Generate dialog (t7-base open seam)', () => {
+    it('the seam opens the dialog from the editor, after edit4s keeps a draft', () => {
+        const from = course.indexOf('generate: (seed) => {');
+        const gen = course.slice(from, course.indexOf('say: (text, level)', from));
+        expect(gen).toMatch(/keeper\?\.beforeLoss\('generate'\);\s*openGenerateDialog\('editor', seed\);/);
+    });
+    it('from the editor the dialog does not name the unsaved changes again (life.ts asked and the pilot said yes)', () => {
+        const open = body('openGenerateDialog');
+        expect(open).toMatch(/const unsaved = from !== 'editor' && !!ed && edChanged;/);
+        expect(open).toMatch(/genDialog\.open\(\{[^}]*\bunsaved \}\)/);
+    });
+    it('a build asked from the editor opens the editor again on the new course', () => {
+        const at = course.indexOf('build: (r) => {');
+        const build = course.slice(at, course.indexOf('cancel: () => {', at));
+        expect(build).toMatch(/if \(f\?\.from === 'editor'\) \{[^}]*reopenAfter = true;/);
+    });
+});

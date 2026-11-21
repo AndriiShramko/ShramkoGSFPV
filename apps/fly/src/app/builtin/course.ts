@@ -909,7 +909,10 @@ export const course: Feature = {
             dialogFor = { from, seed };
             ctx.pause('panel');
             const r = remembered();
-            genDialog.open({ level: r.level, spread: r.spread, voxelsOnly: r.anyQuality, shownGates: run?.gates.length ?? 0, unsaved: !!ed && edChanged });
+            // int4 car 3: from 'editor' the Course menu's own question (edit4b life.ts) has named the unsaved changes and the
+            // pilot said yes (edit4s kept a draft): the dialog does not warn a second time
+            const unsaved = from !== 'editor' && !!ed && edChanged;
+            genDialog.open({ level: r.level, spread: r.spread, voxelsOnly: r.anyQuality, shownGates: run?.gates.length ?? 0, unsaved });
         };
         hook.generateDialog = (from) => openGenerateDialog(from);
         hook.dialog = () => genDialog.model();
