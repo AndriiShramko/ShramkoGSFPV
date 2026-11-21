@@ -89,7 +89,23 @@ aa18f1e4 of origin/main; the lead's change of 17:50 UTC: car 2 takes the lanes w
       has no commit that is not in HEAD (nothing to merge, the S2 gates stand for the code). Seven new read-only live
       checks committed (ee0f5348); their negative control against the live site (car 1's release) runs in the background:
       U:/Temp/gsfpv-train4/int4/live-neg2/summary.txt. Deploy order, Live checks, What the owner should try, Not
-      verified written (Car 2). Left: read live-neg2, write its result under Live checks, int4.json, commit.
+      verified written (Car 2). The live site is release ac11d2c2 (sound page texts, an ancestor of HEAD and of
+      origin/main), not aa18f1e4. The negative control finished (exit 0 of the wrapper; the verdicts are in
+      live-neg2/summary.txt and the logs, NOT read yet: the run stopped at the subscription's reserve hook, 97 % of the
+      five-hour window, 2026-11-21 ~02:00 UTC). Expected: the seven new checks FAIL (car 2's code is not live), the two
+      repaired car 1 checks (edit4b-course-life, edit-mouse-wroclaw) PASS.
+      2026-11-21 run: live-neg2 read: the seven new checks FAIL as expected, edit4b-course-life PASS, edit-mouse-wroclaw
+      FAIL at b.select (d.controls now ok): 12 gates, 1 on screen, no candidate after backing off four times (all 44
+      earlier b.select runs on our builds ok). The view, not the product: a course that runs away behind the drone and
+      nothing frames it by itself (E1). The probe now presses Home (edit4a frameAll) when no gate is a candidate, as
+      edit4b-probe step 1 does (recorded as home). Runs on the release build: probes12.sh, logs12/summary.txt (three
+      plain runs, one with the Home path forced by a temporary copy). origin/main 9b4cbd87 (one lead note, docs only)
+      is merged after that (the gates are enough). Left: logs12, commit, the gates, int4.json, then write U:/Temp/gsfpv-train4/int4.json with sha = the new HEAD, api
+      ["server.py", "tracks.py"], rooms false, nginx false, package_sha 53a567591f2b273fd9d80cbea4e509a4a7447843,
+      held ["gen4a", "gen4b"], live_only ux4a-messages,ux4b-cancel,vox4-voxels-only,edit4a-gizmo,edit4c-warnings,
+      edit4s-drafts,sound6-quick-walk,edit4b-course-life,edit-mouse-wroclaw,accept-fly,head4-accept,edit-mode-wroclaw,
+      voxels-alone-wroclaw,voxel-panel-wroclaw,sonic-in-place-tunis,sonic-course-wroclaw,narrator-off,menu4-first-minute
+      (one line, no spaces); a cost note; LANE-DONE.
 
 ## Progress
 
