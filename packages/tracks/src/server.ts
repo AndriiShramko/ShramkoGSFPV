@@ -53,10 +53,11 @@ export function validateServerTrack(input: unknown): ServerCheck {
 // room for hand-added ones; a gate wider than 20 m is no gate in any scan the site serves.
 export const SERVER_MAX_GATES = 60;
 export const MAX_GATE_SIZE_M = 20;
-const NAME_LEN: readonly [number, number] = [2, 32];
-const NAME_EXTRA = " -_.'";
-const TITLE_LEN: readonly [number, number] = [3, 60];
-const TITLE_EXTRA = " -_.',!?#()+:&";
+/** the rules of a pilot's name and title (exported for the save fields' live check, lane edit4s) */
+export const NAME_LEN: readonly [number, number] = [2, 32];
+export const NAME_EXTRA = " -_.'";
+export const TITLE_LEN: readonly [number, number] = [3, 60];
+export const TITLE_EXTRA = " -_.',!?#()+:&";
 /** the short blocklist of tracks.py BLOCKLIST (the admin hides the rest) */
 const BLOCKLIST: readonly string[] = ['fuck', 'cunt', 'nigger', 'faggot', 'porn', 'viagra', 'casino', 'kurwa', 'pierdol', 'huj', 'pizd', 'blyat'];
 const WORD_CHAR = /^[\p{L}\p{M}\p{N}]$/u;

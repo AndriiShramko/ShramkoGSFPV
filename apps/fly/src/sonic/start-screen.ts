@@ -34,7 +34,8 @@ import { t } from '../i18n';
 import type { SonicSetup, VisitPrefs } from './entry';
 import { SpokenList } from './spoken-list';
 import type { SpokenAnchor, SpokenItem } from './spoken-list';
-import { buildModel, lessonPlace, scanStartOrder } from './start-model';
+import { audioProblemKey } from './audio';
+import { buildModel, firstOf, lessonPlace, scanStartOrder } from './start-model';
 import type { LessonPlace, LessonRow, LessonState, SonicRequest, StartModel } from './start-model';
 import { KEY_HINTS_CHOICES, keyHintsChoice, setKeyHints } from './key-hints';
 import type { KeyHintsChoice } from './key-hints';
@@ -325,6 +326,7 @@ export class StartScreen {
 
     private startSection(): HTMLElement {
         this.begin('start');
+        const problem = this.audioProblemNote();
         const prefs = this.d.setup.prefs;
         const m = this.model;
         const req = this.d.request;
@@ -369,38 +371,74 @@ export class StartScreen {
             buttons.push(lessonButton(m.continueId, t('sonic.start.continue', { title: titleOf(m.continueId) }), sub, !primaryTaken, 'sonic-start-continue'));
             primaryTaken = true;
         }
-        // the course from its first lesson; the saved progress is kept (Reset is a choice of its own, in the lessons)
-        const first = `${t('sonic.start.courseWhat', { lesson: this.placeText(lessonPlace(m.beginningId, prefs.path)), title: titleOf(m.beginningId) })}${m.continueId ? ` ${t('sonic.start.courseKeeps')}` : ''}`;
-        buttons.push(lessonButton(m.beginningId, t('sonic.start.course'), first, !primaryTaken, 'sonic-start-beginning'));
+        // lane sound6 S2 (the owner: the quick lesson is the default, the long course for those who need it): Quick start, then Full
+        // course; each sets the path and opens its first lesson; the saved progress is kept (Reset is a choice of its own, in the lessons)
+        const pathButton = (path: 'fast' | 'full', primary: boolean): HTMLElement => {
+            const id = firstOf(path);
+            const label = t(path === 'fast' ? 'sonic.start.quick' : 'sonic.start.full');
+            const sub = `${this.key(path === 'fast' ? 'menu.path.fast-what' : 'menu.path.full-what')}${m.continueId ? ` ${t('sonic.start.courseKeeps')}` : ''}`;
+            const b = h('button', { type: 'button', class: `btn${primary ? ' primary' : ''}`, 'data-testid': path === 'fast' ? 'sonic-start-quick' : 'sonic-start-full', 'data-lesson': id, ...(primary && visit ? { 'aria-describedby': VISIT_TEXT_ID } : {}), onclick: () => this.startPath(path) }, label, h('span', { class: 'sonic-sub' }, sub));
+            this.stop(b, () => `${label}. ${sub.replace(/\.$/, '')}`);
+            return b;
+        };
+        buttons.push(pathButton('fast', !primaryTaken), pathButton('full', false));
         if (order?.[0] === 'lessons') buttons.push(scanButton(false));
         const back = this.d.onClose ? h('button', { type: 'button', class: 'btn', 'data-testid': 'sonic-back', onclick: () => this.d.onClose?.() }, t('sonic.close')) : null;
         if (back) this.stop(back, () => t('sonic.close'));
         const choice = visit?.choice ?? null;
         if (choice) for (const b of choice.querySelectorAll<HTMLElement>('button')) this.stop(b, () => b.textContent ?? '');
-        // the path: one stop per choice; Left and Right go to the other one and choose it, Enter chooses this one
-        const pathName = (p: 'full' | 'fast'): string => this.key(p === 'fast' ? 'menu.main.path-fast' : 'menu.main.path-full');
-        const inputs: HTMLInputElement[] = [];
-        const radios = (['full', 'fast'] as const).map((p, i) => {
-            const input = h('input', { type: 'radio', name: 'sonic-path', value: p, id: `sonic-path-${p}`, 'data-testid': `sonic-path-${p}`, ...(prefs.path === p ? { checked: true } : {}) });
-            inputs.push(input);
-            input.addEventListener('change', () => this.change({ path: p }));
-            const pick = (j: number): void => {
-                const to = inputs[j] as HTMLInputElement;
-                for (const r of inputs) r.checked = r === to;
-                to.focus();
-                this.change({ path: (['full', 'fast'] as const)[j] as 'full' | 'fast' });
-            };
-            this.stop(input, () => `${t('sonic.path.legend')}: ${pathName(p)}, ${this.key(input.checked ? 'menu.value.on' : 'menu.value.off')}. ${this.key(p === 'fast' ? 'menu.path.fast-what' : 'menu.path.full-what').replace(/\.$/, '')}`, {
-                change: (dir) => pick((i + dir + 2) % 2),
-                choose: () => {
-                    if (input.checked) return;
-                    pick(i);
-                }
-            });
-            return h('div', { class: 'sonic-choice' }, input, h('label', { for: `sonic-path-${p}` }, pathName(p), h('span', { class: 'sonic-sub' }, this.key(p === 'fast' ? 'menu.path.fast-what' : 'menu.path.full-what'))));
-        });
         const unknown = req.kind === 'unknown' ? h('p', { class: 'sonic-note', role: 'note', 'data-testid': 'sonic-unknown' }, t('sonic.start.unknown', { id: req.raw })) : null;
-        return this.section('start', t('sonic.start.heading'), unknown, visit?.note ?? null, h('div', { class: 'sonic-actions', role: 'group', 'aria-label': t('sonic.start.heading') }, ...buttons, back), choice, h('fieldset', { class: 'sonic-fieldset' }, h('legend', {}, t('sonic.path.legend')), ...radios));
+        return this.section('start', t('sonic.start.heading'), problem, unknown, visit?.note ?? null, h('div', { class: 'sonic-actions', role: 'group', 'aria-label': t('sonic.start.heading') }, ...buttons, back), choice);
+    }
+
+    /**
+     * The sound did not come up (lane sound6 S4): what happened and the way on (another browser, or a reload), on the screen and
+     * not only in the live region, with one press that copies the page's link for that browser. Null while the sound is fine.
+     */
+    private audioProblemNote(): HTMLElement | null {
+        const key = audioProblemKey(this.d.setup.audio.failure);
+        if (key === null) return null;
+        const result = h('p', { 'data-testid': 'sonic-copy-result' });
+        const copy = h('button', { type: 'button', class: 'btn primary', 'data-testid': 'sonic-copy-link', onclick: () => this.copyLink(result) }, t('sonic.start.copyLink'));
+        this.stop(copy, () => `${t(key)} ${t('sonic.start.copyLink')}`);
+        return h('div', { class: 'sonic-note', role: 'note', 'data-testid': 'sonic-audio-problem' }, h('p', {}, t(key)), copy, result);
+    }
+
+    /** The page's link to the clipboard; what happened is shown under the button and said (a refused clipboard names the address bar). */
+    private copyLink(result: HTMLElement): void {
+        const done = (ok: boolean): void => {
+            const text = t(ok ? 'sonic.start.linkCopied' : 'sonic.start.copyFailed');
+            result.textContent = text;
+            this.say(text);
+        };
+        const clip = (globalThis.navigator as Navigator | undefined)?.clipboard;
+        if (!clip?.writeText) {
+            done(false);
+            return;
+        }
+        clip.writeText(location.href).then(() => done(true), () => done(false));
+    }
+
+    /** The sound did not come up: the screen is shown with the line at the top of Start, said, and its Copy link button focused. */
+    showAudioProblem(): void {
+        this.show();
+        const key = audioProblemKey(this.d.setup.audio.failure);
+        if (key === null) return;
+        this.say(t(key));
+        this.root.querySelector<HTMLElement>('[data-testid="sonic-copy-link"]')?.focus();
+    }
+
+    /** Quick start (fast) or Full course (full): the pilot's path is saved as that one, then its first lesson opens. */
+    private startPath(path: 'fast' | 'full'): void {
+        if (this.d.setup.prefs.path !== path) {
+            const r = this.d.setup.update({ path });
+            if (!r.ok) {
+                this.say(r.reasons.join('. '));
+                return;
+            }
+            this.model = buildModel(this.d.progress(), this.d.current(), path);
+        }
+        this.start(firstOf(path));
     }
 
     /**
@@ -443,7 +481,7 @@ export class StartScreen {
             this.stop(b, () => t(`sonic.hp.${side}`));
             return b;
         });
-        const notes = h('ul', { class: 'sonic-notes' }, h('li', {}, this.key('headphones.intro')), h('li', {}, this.key('headphones.wired')), h('li', {}, this.key('headphones.os-spatial')));
+        const notes = h('ul', { class: 'sonic-notes' }, h('li', {}, this.key('lesson.ears-headphones.intro.1')), h('li', {}, this.key('headphones.wired')), h('li', {}, this.key('headphones.os-spatial')));
         const loud = h('div', { class: 'sonic-loud', role: 'group', 'aria-labelledby': 'sonic-h-loud' }, h('h3', { id: 'sonic-h-loud', tabindex: -1 }, t('sonic.loud.heading')), h('p', { 'data-testid': 'sonic-loud-note' }, this.key('menu.hearing-note')), h('p', {}, this.key('headphones.volume')));
         return this.section('headphones', t('sonic.hp.heading'), notes, h('div', { class: 'sonic-actions', role: 'group', 'aria-label': t('sonic.hp.heading') }, ...buttons), loud);
     }
@@ -706,7 +744,7 @@ export class StartScreen {
             this.d.onReset?.();
             this.render();
             this.announce(t('sonic.reset.done'));
-            this.root.querySelector<HTMLElement>('[data-testid="sonic-start-beginning"]')?.focus();
+            this.root.querySelector<HTMLElement>('[data-testid="sonic-start-quick"]')?.focus();
             return;
         }
         this.redrawReset();
@@ -736,7 +774,7 @@ export class StartScreen {
         this.say(t(`sonic.hp.playing.${side}`));
         void started.then(() => {
             if (!audio.available) {
-                this.say(t('sonic.start.noAudio'));
+                this.showAudioProblem();
                 return;
             }
             const e = audio.engine;

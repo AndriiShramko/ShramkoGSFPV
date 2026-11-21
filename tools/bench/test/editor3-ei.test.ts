@@ -81,7 +81,8 @@ describe('EI-3, EI-6, EI-7: the shown turn handle, the probe-only hook, the fram
         expect(course).toMatch(/if \(pageQuery\.get\('probe'\) === '1'\) \(window[^\n]*__gsfpvEditPutAhead =/);
     });
     it('EI-7: the selection counts as framed only when the framing was done', () => {
-        expect(course).toMatch(/eg\.id !== framedId && frameSel\(\)\) framedId = eg\.id/);
+        // train 4 edit4a A1 (brief 547): a new selection no longer frames; F, Numpad . and a double click still glide
+        expect(course).not.toMatch(/framedId/);
         expect(course).toMatch(/return f \? view\.glideTo\(/);
     });
 });

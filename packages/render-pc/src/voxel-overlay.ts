@@ -24,20 +24,25 @@ import {
     VertexFormat, VertexBuffer, IndexBuffer, RenderComponent,
     PRIMITIVE_TRIANGLES, BLEND_NORMAL, BLEND_NONE, PIXELFORMAT_RGBA8, ADDRESS_REPEAT, FILTER_LINEAR, FILTER_LINEAR_MIPMAP_LINEAR,
     SEMANTIC_POSITION, SEMANTIC_NORMAL, SEMANTIC_TEXCOORD0, SEMANTIC_COLOR, TYPE_FLOAT32, TYPE_UINT8,
-    BUFFER_STATIC, INDEXFORMAT_UINT16, INDEXFORMAT_UINT32, CULLFACE_NONE
+    BUFFER_STATIC, INDEXFORMAT_UINT16, INDEXFORMAT_UINT32, CULLFACE_NONE, FOG_LINEAR
 } from 'playcanvas';
 import type { SplatRenderer } from './renderer';
 import { depthSyncDue, diffDepthCopies, joinsVoxelDepth } from './voxel-depth';
-import { VOXEL_STYLES, writeColors } from './voxel-colors';
-import type { VoxelStyle, VoxelLayout, PackedChunk } from './voxel-colors';
+import { VOXEL_GLOW, VOXEL_STYLES, voxelFog, writeColors } from './voxel-colors';
+import type { VoxelFog, VoxelStyle, VoxelLayout, PackedChunk } from './voxel-colors';
 
-export { VOXEL_STYLES };
-export type { VoxelStyle, VoxelLayout, PackedChunk };
+export { VOXEL_GLOW, VOXEL_STYLES, voxelFog };
+export type { VoxelFog, VoxelStyle, VoxelLayout, PackedChunk };
+
+/** The scene's fog as it was before the voxels-only view set its own (put back when the view ends). */
+interface SavedFog { type: string; color: Color; start: number; end: number; density: number }
 
 interface Entry {
     mi: MeshInstance;
     vb: VertexBuffer;
     floater: Uint8Array;
+    /** per vertex, its ambient occlusion level (PackedChunk.ao), re-applied on a recolour */
+    ao?: Uint8Array;
     quads: number;
     /** style (and height range, for 'height') its colours were written for */
     colored: VoxelStyle;
@@ -78,6 +83,8 @@ export interface VoxelOverlayStats {
     uploadQuads: number;
     /** V1: depth-only copies of the World items (gates, arrows, drones) drawn before the voxels */
     depthItems: number;
+    /** voxux4 V3: the voxels-only view's fog (m), null while the scene's own fog holds */
+    fog: VoxelFog | null;
 }
 
 export class VoxelOverlay {
@@ -97,6 +104,11 @@ export class VoxelOverlay {
     private tex: Texture;
     private lights: Entity[] = [];
     private mats: Record<VoxelStyle, StandardMaterial>;
+    /** V3 (voxux4): the voxels-only view's materials, lit with little glow and fogged */
+    private matsAlone: Record<VoxelStyle, StandardMaterial>;
+    /** V3: the voxels-only view's reach (setFogReach) and the scene's own fog while that view holds it */
+    private fogReach = 200;
+    private fogSaved: SavedFog | null = null;
     private format: VertexFormat;
     /** the interleaved vertex layout chunks must be packed in (packChunk) */
     readonly layout: VoxelLayout;
@@ -173,14 +185,24 @@ export class VoxelOverlay {
             height: this.material('height'),
             floaters: this.material('floaters')
         };
-        this.wireBack = this.material('wire', true);
+        this.matsAlone = {
+            solid: this.material('solid', false, true),
+            wire: this.material('wire', false, true),
+            height: this.material('height', false, true),
+            floaters: this.material('floaters', false, true)
+        };
+        this.wireBack = this.material('wire', true, true);
         this.applyOpacity();
     }
 
-    private material(style: VoxelStyle, back = false): StandardMaterial {
+    /**
+     * One style's material. `alone`: the voxels-only view (V3 of voxux4): every style with faces is lit by the layer's two lights with
+     * little glow, so the three face directions of a cube read apart, and fogs into the background with distance (setFogReach).
+     */
+    private material(style: VoxelStyle, back = false, alone = false): StandardMaterial {
         const m = new StandardMaterial();
-        m.name = `gsfpv-voxels-${style}${back ? '-back' : ''}`;
-        m.useFog = false;
+        m.name = `gsfpv-voxels-${style}${back ? '-back' : ''}${alone ? '-alone' : ''}`;
+        m.useFog = alone;
         m.useSkybox = false;
         m.useTonemap = false;
         m.depthWrite = true;
@@ -194,7 +216,7 @@ export class VoxelOverlay {
             m.diffuseMapChannel = 'rrr';
             m.specular = new Color(0.06, 0.06, 0.06);
             m.gloss = 0.25;
-            const e = style === 'floaters' ? 0.3 : 0.12;
+            const e = VOXEL_GLOW[alone ? 'alone' : 'over'][style];
             m.emissive = new Color(e, e, e);
             m.emissiveVertexColor = true;
         } else if (style === 'wire' && back) {
@@ -216,6 +238,17 @@ export class VoxelOverlay {
             m.emissiveVertexColor = true;
             m.opacityMap = this.tex;
             m.opacityMapChannel = 'a';
+        } else if (alone) {
+            // V3: the height bands as lit faces (the band mask in the diffuse) with a little glow left on the bands
+            m.useLighting = true;
+            m.diffuse = new Color(1, 1, 1);
+            m.diffuseVertexColor = true;
+            m.diffuseMap = this.tex;
+            m.diffuseMapChannel = 'ggg';
+            m.specular = new Color(0, 0, 0);
+            const e = VOXEL_GLOW.alone.height;
+            m.emissive = new Color(e, e, e);
+            m.emissiveVertexColor = true;
         } else {
             // glowing height bands with brighter edges
             m.useLighting = false;
@@ -232,13 +265,51 @@ export class VoxelOverlay {
     private applyOpacity(): void {
         const a = this.opacityNow;
         for (const s of VOXEL_STYLES) {
-            const m = this.mats[s];
-            m.opacity = a;
-            // wire: the mask is 0 inside a cell and 1 on its edges; far away its mip levels average
-            // the edges down to ~0.1, so the test only drops the empty inside, never a far edge
-            m.alphaTest = s === 'wire' ? Math.min(0.02, a * 0.05) : 0;
-            m.blendType = a < 0.999 || s === 'wire' ? BLEND_NORMAL : BLEND_NONE;
-            m.update();
+            for (const m of [this.mats[s], this.matsAlone[s]]) {
+                m.opacity = a;
+                // wire: the mask is 0 inside a cell and 1 on its edges; far away its mip levels average
+                // the edges down to ~0.1, so the test only drops the empty inside, never a far edge
+                m.alphaTest = s === 'wire' ? Math.min(0.02, a * 0.05) : 0;
+                m.blendType = a < 0.999 || s === 'wire' ? BLEND_NORMAL : BLEND_NONE;
+                m.update();
+            }
+        }
+    }
+
+    /**
+     * V3: how far the voxels-only view reaches (the chunk plan's radius, m): the fog ends there in the background colour. Applied while
+     * the voxels are shown alone; the scene's own fog is kept and put back when they are not (applyFog).
+     */
+    setFogReach(m: number): void {
+        if (!(m > 0) || !Number.isFinite(m) || m === this.fogReach) return;
+        this.fogReach = m;
+        this.applyFog();
+    }
+
+    /** the fog the voxels-only view uses now, null when the scene's own fog holds (the probe reads it) */
+    get fog(): VoxelFog | null {
+        return this.fogSaved ? voxelFog(this.fogReach) : null;
+    }
+
+    private applyFog(): void {
+        const f = this.r.app.scene.fog;
+        const want = this.aloneNow && this.layer.enabled;
+        if (want) {
+            if (!this.fogSaved) this.fogSaved = { type: f.type, color: f.color.clone(), start: f.start, end: f.end, density: f.density };
+            const v = voxelFog(this.fogReach);
+            const bg = this.r.camera.camera?.clearColor;
+            f.type = FOG_LINEAR;
+            f.color = bg ? new Color(bg.r, bg.g, bg.b) : new Color(0, 0, 0);
+            f.start = v.start;
+            f.end = v.end;
+        } else if (this.fogSaved) {
+            const s = this.fogSaved;
+            f.type = s.type;
+            f.color = s.color;
+            f.start = s.start;
+            f.end = s.end;
+            f.density = s.density;
+            this.fogSaved = null;
         }
     }
 
@@ -255,11 +326,13 @@ export class VoxelOverlay {
         this.depthLayer.enabled = on;
         if (on) this.syncDepth();
         else this.dropDepth();
+        this.applyFog();
     }
 
-    /** The material for the style now: the wire gets faces in the voxels-only view at full opacity (V1). */
+    /** The material for the style now: the wire gets faces in the voxels-only view at full opacity (V1); alone, the lit set (V3). */
     private matNow(): StandardMaterial {
-        return this.styleNow === 'wire' && this.aloneNow && this.opacityNow >= 0.999 ? this.wireBack : this.mats[this.styleNow];
+        if (!this.aloneNow) return this.mats[this.styleNow];
+        return this.styleNow === 'wire' && this.opacityNow >= 0.999 ? this.wireBack : this.matsAlone[this.styleNow];
     }
 
     /**
@@ -320,6 +393,7 @@ export class VoxelOverlay {
         this.aloneNow = alone;
         const m = this.matNow();
         if (m !== before) for (const e of this.entries.values()) e.mi.material = m;
+        this.applyFog();
     }
 
     /**
@@ -437,7 +511,7 @@ export class VoxelOverlay {
             if (!this.stale(e)) continue;
             if (recolor > 0 && recolor + e.quads > this.maxRecolorQuadsPerFrame) break;
             const buf = e.vb.lock();
-            writeColors(ArrayBuffer.isView(buf) ? (buf.buffer as ArrayBuffer) : buf, this.layout, e.quads * 4, this.styleNow, e.floater, this.lo, this.hi);
+            writeColors(ArrayBuffer.isView(buf) ? (buf.buffer as ArrayBuffer) : buf, this.layout, e.quads * 4, this.styleNow, e.floater, this.lo, this.hi, e.ao);
             e.vb.unlock();
             e.colored = this.styleNow;
             e.lo = this.lo;
@@ -469,19 +543,22 @@ export class VoxelOverlay {
         const mi = new MeshInstance(mesh, this.matNow(), this.root);
         mi.castShadow = false;
         this.layer.addMeshInstances([mi]);
-        this.entries.set(key, { mi, vb, floater: c.floater, quads: c.quads, colored: c.style, lo: c.lo, hi: c.hi });
+        this.entries.set(key, { mi, vb, floater: c.floater, ...(c.ao ? { ao: c.ao } : {}), quads: c.quads, colored: c.style, lo: c.lo, hi: c.hi });
         this.quadsNow += c.quads;
     }
 
     stats(): VoxelOverlayStats {
         let recolorPending = 0;
         for (const e of this.entries.values()) if (this.stale(e)) recolorPending++;
-        return { chunks: this.entries.size, quads: this.quadsNow, triangles: this.quadsNow * 2, pendingUploads: this.queue.size, recolorPending, uploads: this.up.n, uploadMs: this.up.ms, uploadMaxMs: this.up.max, uploadQuads: this.up.quads, depthItems: this.depthCopies.size };
+        return { chunks: this.entries.size, quads: this.quadsNow, triangles: this.quadsNow * 2, pendingUploads: this.queue.size, recolorPending, uploads: this.up.n, uploadMs: this.up.ms, uploadMaxMs: this.up.max, uploadQuads: this.up.quads, depthItems: this.depthCopies.size, fog: this.fog };
     }
 
     dispose(): void {
         this.clear();
         this.dropDepth();
+        this.aloneNow = false;
+        this.applyFog();
+        for (const s of VOXEL_STYLES) this.matsAlone[s].destroy();
         const layers = this.r.app.scene.layers;
         const cam = this.r.camera.camera;
         if (cam) cam.layers = cam.layers.filter((id) => id !== this.layer.id && id !== this.depthLayer.id);

@@ -11,6 +11,8 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { mkStore } from '../../../packages/prefs/test/helpers';
 import { KEYMAP } from '../../../packages/prefs/src/keymap';
+import { KEY_HELP, keyHelpLines } from '../../../apps/fly/src/sonic/mode-keys';
+import { keysFor } from '../../../packages/prefs/src/keymap';
 import { validateCollection } from '../../../packages/prefs/src/doc';
 import { headTrackOn, setHeadTrack } from '../../../apps/fly/src/sonic/head/switch';
 import { cameraRefusal } from '../../../apps/fly/src/sonic/head/tracking';
@@ -138,6 +140,12 @@ describe('head tracking setting (lane head4, H2)', () => {
         expect(Math.abs(rig.listener.forwardX.target)).toBeLessThan(0.15);
         // the key is Shift+H in the sound mode only
         expect(KEYMAP.find((b) => b.action === 'sonic.headCentre')).toMatchObject({ when: 'sonic', keys: [{ code: 'KeyH', shift: true, cap: 'Shift+H' }] });
+        // int4 (the seam of head4 and the mode's key help): K names it, with the page's cap
+        expect(KEY_HELP.find(([, action]) => action === 'sonic.headCentre')?.[0]).toBe('sonic.say.helpHead');
+        const said = keyHelpLines((a) => keysFor(a, { sonic: true })[0]?.cap ?? '');
+        expect(said).toContainEqual({ key: 'sonic.say.helpHead', params: { key: 'Shift+H' } });
+        // control: off the sound page the key has no cap, so K would leave the line out
+        expect(keyHelpLines((a) => keysFor(a)[0]?.cap ?? '').some((l) => l.key === 'sonic.say.helpHead')).toBe(false);
     });
 
     it('a lost face is said once with the narrator on, never with it off; the ears glide back to straight ahead', async () => {

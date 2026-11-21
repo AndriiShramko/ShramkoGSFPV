@@ -96,6 +96,14 @@ describe('applyStochastic (the whole of SplatRenderer.setStochastic, without the
         expect(run({ hold: true }, was)).toMatchObject({ plan: { draw: 'sorted', why: 'loading' }, on: false, made: 0, calls: ['disable'], params: { stochastic: false } });
         expect(run({ hold: true }, null)).toMatchObject({ made: 0, on: false });
     });
+    it('voxux4 V1: the scan hidden (voxels only): the accumulating renderer is handed back, nothing made, no dither (no frozen picture behind the voxels)', () => {
+        const was = fake();
+        expect(run({ hidden: true }, was)).toMatchObject({ plan: { draw: 'sorted', why: 'hidden' }, on: false, made: 0, calls: ['disable'], params: { stochastic: false } });
+        expect(run({ hidden: true, impl: 'engine' }, null)).toMatchObject({ plan: { draw: 'sorted', why: 'hidden' }, on: false, params: { stochastic: false } });
+        expect(run({ hidden: true, hold: true, failed: true }, null).plan).toEqual({ draw: 'sorted', why: 'hidden' });
+        // shown again: the pilot's drawing comes back
+        expect(run({ hidden: false }, fake()).plan).toEqual({ draw: 'accum', why: 'ok' });
+    });
     it('an engine that lacks members: the engine\'s dither, nothing made', () => {
         expect(run({ missing: ['gsplatDirector'] }, null)).toMatchObject({ plan: { draw: 'engine', why: 'unsupported' }, on: true, made: 0, params: { stochastic: true } });
     });

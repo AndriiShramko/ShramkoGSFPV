@@ -5,6 +5,7 @@
   "keys.frameStats.toggle": "Tiempos de fotograma y retardo",
   "keys.fullscreen.toggle": "Pantalla completa sí / no",
   "keys.hud.toggle": "Mostrar u ocultar el HUD",
+  "keys.messages.open": "Mensajes: leer de nuevo las últimas líneas",
   "keys.mode.cycle": "Modo de vuelo",
   "keys.pause.toggle": "Pausa / continuar",
   "keys.record.toggle": "Iniciar o detener la grabación",

@@ -3,7 +3,7 @@
 // import, so a Node test can hold the tables to the four languages.
 import type { Course, CourseProblem, EditAction, EditRefusal } from '@gsfpv/tracks';
 import { CAM_ROWS, KEY_ROWS } from './keys';
-import { COURSE_MENU_HUB, TOOLS, TOP_BUTTONS } from './bar-place';
+import { COURSE_MENU_HUB, TOP_BUTTONS } from './bar-place';
 
 /** the locale key of every refusal code: the test holds this table to EditRefusal and to the four languages */
 export const REFUSAL_KEYS: Record<EditRefusal['code'], string> = {
@@ -108,6 +108,8 @@ export const ACTION_KEYS: Record<EditAction['kind'], string> = {
     size: 'course.edit.key.sized',
     insert: 'course.edit.key.insert',
     add: 'course.edit.bar.add',
+    // lane edit4c C2: a ready piece is put by Add too (its own words come from course.piece.added)
+    piece: 'course.edit.bar.add',
     delete: 'course.edit.key.delete',
     replace: 'course.edit.key.cleared',
     order: 'course.edit.key.order',
@@ -138,7 +140,7 @@ export function editorLocaleKeys(): string[] {
         // review ED-6: a gate taken by a click
         'course.edit.selected', LEG_START_KEY, SAVE_FIX_KEY, ADD_FIX_KEY];
     return [...new Set([...fixed, ...Object.values(FIX_KEYS),...Object.values(REFUSAL_KEYS), ...Object.values(PROBLEM_KEYS), ...Object.values(ACTION_KEYS), ...KEY_ROWS.map((r) => r.labelKey),
-        ...CAM_ROWS.map((r) => r.labelKey), ...TOP_BUTTONS.map((b) => b.labelKey), ...COURSE_MENU_HUB.map((b) => b.labelKey), 'course.edit.bar.back', ...TOOLS.map((b) => b.labelKey)])];
+        ...CAM_ROWS.map((r) => r.labelKey), ...TOP_BUTTONS.map((b) => b.labelKey), ...COURSE_MENU_HUB.map((b) => b.labelKey), 'course.edit.bar.back'])];
 }
 
 /** review ED-6: the word for what an accepted edit did: a step back says "previous gate", a click (select) says "selected" */

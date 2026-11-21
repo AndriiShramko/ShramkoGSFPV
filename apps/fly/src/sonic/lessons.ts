@@ -204,6 +204,10 @@ export class LessonHost {
      * pilot's "Key hints: off" (SonicState.keyHints false) leaves it out.
      */
     private hintStep: string | null = null;
+    /** A listening lesson (no world) has played its first sound or scene since it opened (keysDue). */
+    private soundHeard = false;
+    /** A listening lesson has said its one line of keys since it opened (keysDue). */
+    private keysSaid = false;
     /**
      * The runner whose counts the pilot reset (v13-int step 5: "Reset my progress" answered Yes on the start screen shown over this
      * lesson). The screen cleared the saved progress, but this runner still holds the lesson's old counts: nothing of it is saved again
@@ -499,6 +503,8 @@ export class LessonHost {
             // lesson's first line cuts them, as N and an answer do inside a lesson; the bridge counts lines per run (review D2)
             this.cutSpeech = o.keepSpeech !== true && this.p.mode.bridge.speechQueue > 0;
             this.hintStep = null;
+            this.soundHeard = false;
+            this.keysSaid = false;
             // the bridge's clock starts at 0 for this lesson: the engine first forgets what it heard on the last one's clock (v13-int step
             // 1, v13-host's need 2: its scene sampler keeps an active sector 0.3 s on when the clock goes back, so the first frames of this
             // lesson voiced the last one's sectors with these walls, which the replay, a new planner per lesson, does not derive). Before
@@ -719,11 +725,15 @@ export class LessonHost {
                     const first = this.hintStep === null;
                     this.hintStep = step;
                     if (first && this.lesson?.id !== SCAN_FREE_ID && this.p.narratorOff?.() === true) void mode.bridge.say({ key: 'sonic.say.lessonNarrator' }, false, { lesson: true });
-                    if (this.p.keyHints?.() !== false) void mode.bridge.say(this.keysLine(), false, { lesson: true });
+                    if (this.keysDue()) {
+                        this.keysSaid = true;
+                        void mode.bridge.say(this.keysLine(), false, { lesson: true });
+                    }
                 }
                 break;
             }
             case 'cue':
+                if (a.event.kind === 'repeat-cue' || a.event.kind === 'preview') this.soundHeard = true;
                 mode.bridge.engine?.cue(a.event);
                 break;
             case 'place':
@@ -737,9 +747,22 @@ export class LessonHost {
                 this.question = a.question;
                 break;
             case 'scene':
+                if (a.scene) this.soundHeard = true;
                 this.demo = a.scene;
                 break;
         }
+    }
+
+    /**
+     * Whether the step that begins now says the line of keys (lane sound6, the owner's words of 2026-11-19: "the sound at once, short
+     * explanations"). A flying lesson: every step, as before. A listening lesson (no world: module 0): once a lesson, at the first
+     * step after its first sound or scene: the runner waits for the host's speech before a sound, so the 9.9 s line said with
+     * the title kept the first wall knock 16.5 s away (S5 walk), and said with every step it stood before every sound.
+     */
+    private keysDue(): boolean {
+        if (this.p.keyHints?.() === false) return false;
+        if (this.lesson?.world.kind !== 'none') return true;
+        return this.soundHeard && !this.keysSaid;
     }
 
     /** An event of the mode: progress is saved at every attempt, block and pass; an answer (or a skip) closes the question. */

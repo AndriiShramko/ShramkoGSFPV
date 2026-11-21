@@ -95,7 +95,9 @@ const ADDED_AFTER_DESIGN: Record<string, string[]> = {
     // train 4, lane head4: Shift+H, head tracking centred in a flight of the sound mode
     'sonic.headCentre': ['Shift+H'],
     // train 3, lane sonic3: Backslash, Fly by Sound on and off in place
-    'flyBySound.toggle': ['\\']
+    'flyBySound.toggle': ['\\'],
+    // train 4, lane ux4a: Shift+J, the Messages list
+    'messages.open': ['Shift+J']
 };
 
 /**
@@ -117,6 +119,8 @@ const SHIPPED_BY_TRACKS: readonly string[] = ['course.toggle', 'course.generate'
 // lane tracks edits only the list above, lane rooms only the list below.
 /** Lane rooms: both, since 'Fly with others' is in every pilot's menu (lane rooms-public; review RV-1's list). */
 const SHIPPED_BY_ROOMS: readonly string[] = ['rooms.panel', 'rooms.who'];
+/** Train 4, lane ux4a: Shift+J opens the Messages list (app/builtin/hud.ts). */
+const SHIPPED_BY_UX4A: readonly string[] = ['messages.open'];
 
 const press = (code: string, extra: Partial<KeyPress> = {}): KeyPress => ({ code, shiftKey: false, ...extra });
 const plant = (b: Partial<KeyBinding> & Pick<KeyBinding, 'action' | 'keys'>): KeyBinding[] =>
@@ -159,7 +163,7 @@ describe('v0.2 keys keep working', () => {
     });
 
     it('only the keys the page handled at the start of wave 1 are shipped, so the refactor changes no key (plus those wave 2 and v0.12 shipped)', () => {
-        expect(KEYMAP.filter((b) => b.status === 'shipped').map((b) => b.action).sort()).toEqual([...SHIPPED_AT_WAVE1, ...SHIPPED_IN_WAVE2, ...MODE_KEYS, ...SHIPPED_BY_TRACKS, ...SHIPPED_BY_ROOMS, ...SHIPPED_BY_SONIC3].sort());
+        expect(KEYMAP.filter((b) => b.status === 'shipped').map((b) => b.action).sort()).toEqual([...SHIPPED_AT_WAVE1, ...SHIPPED_IN_WAVE2, ...MODE_KEYS, ...SHIPPED_BY_TRACKS, ...SHIPPED_BY_ROOMS, ...SHIPPED_BY_SONIC3, ...SHIPPED_BY_UX4A].sort());
     });
 
     it('Fly by Sound\'s T U I Z G route in flight and while crashed on a page entered through ?sonic=, with no Shift, Ctrl, Alt or Meta; none is a keyboard-flying key', () => {
@@ -267,6 +271,25 @@ describe('the sound mode\'s keys exist only in the mode (v12-optin: when \'sonic
             { action: 'test.b', keys: [{ code: 'Digit1', cap: '1', aria: '1' }], when: 'crash', labelKey: 'keys.test.b', status: 'shipped' }
         ];
         expect(keymapProblems([...KEYMAP, ...free])).toEqual([]);
+    });
+});
+
+describe('the Messages list key (train 4, lane ux4a)', () => {
+    it('Shift+J opens Messages in flight and while crashed; J alone stays the throttle style; Shift+H routes nothing outside the sound mode', () => {
+        for (const state of ['flight', 'crash'] as const) {
+            expect(actionFor(press('KeyJ', { shiftKey: true }), state)).toBe('messages.open');
+            expect(actionFor(press('KeyJ'), state)).toBe('throttle.style');
+            expect(actionFor(press('KeyI', { shiftKey: true }), state, { sonic: true })).toBeNull();
+            expect(actionFor(press('KeyH', { shiftKey: true }), state)).toBeNull();
+            // the seam of ux4a and head4 (int4): on a ?sonic= page Shift+H centres the head and Shift+J still opens Messages
+            expect(actionFor(press('KeyH', { shiftKey: true }), state, { sonic: true })).toBe('sonic.headCentre');
+            expect(actionFor(press('KeyJ', { shiftKey: true }), state, { sonic: true })).toBe('messages.open');
+        }
+    });
+    it('control: a second action planted on Shift+J is caught as a double binding', () => {
+        const p = keymapProblems(plant({ action: 'test.j', keys: [{ code: 'KeyJ', shift: true, cap: 'Shift+J', aria: 'Shift+J' }], status: 'shipped' }));
+        expect(p).toHaveLength(1);
+        expect(p[0]).toContain('messages.open');
     });
 });
 

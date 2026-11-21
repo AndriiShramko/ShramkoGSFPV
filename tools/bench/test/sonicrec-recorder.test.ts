@@ -301,7 +301,7 @@ describe('the recorder: T asks, T records, T stops', () => {
         expect(pkg.manifest.clock.voiceOffsetMs).toBeLessThan(100);
         expect(pkg.manifest.consent).toMatchObject({ recording: true, voice: true, send: false, speechRecognition: false, minor: false, guardianConfirmed: null });
         // the lesson's own version, as the package ships it (walls-hall is version 2 since v0.13)
-        expect(pkg.manifest.lesson).toEqual({ id: 'walls-hall', version: getLesson('walls-hall').version, path: 'full' });
+        expect(pkg.manifest.lesson).toEqual({ id: 'walls-hall', version: getLesson('walls-hall').version, path: 'fast' }); // a new pilot's path is the fast one (lane sound6 S2)
         expect(pkg.manifest.scene.kind).toBe('analytic');
         expect(pkg.manifest.complete).toBe(true);
         expect(pkg.manifest.app).toEqual({ name: 'ShramkoGSFPV', release: 'abc1234', sonic: '3959930' });

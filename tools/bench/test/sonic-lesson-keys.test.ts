@@ -839,7 +839,7 @@ describe('B6 (M41-3): Escape opens the spoken lesson menu; the line at every les
         vi.unstubAllGlobals();
     });
 
-    it('the line at every lesson\'s start: right after the title, the keys of the menu, the task and next by the pilot\'s names, queued (not cutting); the glossary opened by G says it too', async () => {
+    it('the line at every lesson\'s start: right after the title, the keys of the menu, the task and next by the pilot\'s names, queued (not cutting); the glossary opened by G not with its title', async () => {
         const names = pageNames();
         names.setLayout(new Map([['KeyZ', 'y'], ['KeyN', 'n']]));
         const r = await open('rings-first', (rr) => { rr.lessonKeys = names.lessonStart(); });
@@ -853,7 +853,8 @@ describe('B6 (M41-3): Escape opens the spoken lesson menu; the line at every les
         expect(await r.host.glossary()).toBe(true);
         const mine = r.engine.said.slice(before);
         expect(mine[0]!.line.key).toBe('lesson.ears-glossary.title');
-        expect(mine[1]).toMatchObject({ line: { key: 'sonic.say.lessonKeys' }, interrupt: false });
+        // lane sound6: a listening lesson says its keys once, after its first sound (sonic-hints.test.ts), not with its title
+        expect(mine.some((s) => s.line.key === 'sonic.say.lessonKeys')).toBe(false);
         // its words in the four languages, each naming the three keys
         const dicts = engineDicts();
         for (const l of ['en', 'es', 'pl', 'ru'] as const) {

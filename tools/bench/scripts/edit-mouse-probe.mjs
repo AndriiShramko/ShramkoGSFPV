@@ -255,6 +255,16 @@ try {
     const cands = (s) => (s.gates || []).map((g, i) => ({ g, i })).filter(({ g, i }) => i !== s.selected && g[2] > 0 && g[0] > 20 && g[0] < W - 20 && g[1] > 60 && g[1] < H - 20 && (!s.stand || Math.hypot(g[0] - s.stand[0], g[1] - s.stand[1]) > 140)).sort((a, b) => a.g[2] - b.g[2]);
     let c = cands(s1);
     for (let n = 0; n < 4 && !c[0]; n++) { await key('KeyS', { hold: 700 }); await sleep(500); s1 = await snap(); c = cands(s1); }
+    // int4 car 2 S3: the editor opens at the flight camera and nothing frames the course by itself (edit4a, the owner's rule
+    // E1), so a generated course that runs away behind the drone can leave one gate in view even after backing off (the live
+    // check on release ac11d2c2: 12 gates, 1 on screen, no candidate). The pilot's way to the whole course is Home (edit4a
+    // frameAll), the same as edit4b-probe step 1; recorded as home.
+    let home = false;
+    if (!c[0]) {
+        home = true;
+        await page.keyboard.press('Home'); // a key without text (key() sends text)
+        await sleep(1200); s1 = await snap(); c = cands(s1);
+    }
     let picked = null;
     for (const { g, i } of c.slice(0, 3)) {
         const rec = await click(`gate.${i}`, g[0], g[1], { after: 300 });
@@ -262,7 +272,7 @@ try {
         rec.effect = { selected: got.v.selected, want: i };
         if (got.ok) { picked = i; break; }
     }
-    judge('b.select', picked !== null, { candidates: c.length, from: s1.selected, picked, gatesOnScreen: (s1.gates || []).filter((g) => g[2] > 0 && g[0] >= 0 && g[0] < W && g[1] >= 0 && g[1] < H).length });
+    judge('b.select', picked !== null, { candidates: c.length, home, from: s1.selected, picked, gatesOnScreen: (s1.gates || []).filter((g) => g[2] > 0 && g[0] >= 0 && g[0] < W && g[1] >= 0 && g[1] < H).length });
 
     // (c) Add gate, then a click on the scene
     {
@@ -279,7 +289,9 @@ try {
             const b = (await until(snap, (s) => (s.gatesN ?? 0) > (a.gatesN ?? 0), 6000, 300)).v;
             const ng = b.gates && b.selected !== null ? b.gates[b.selected] : null;
             const inView = !!ng && ng[2] > 0 && ng[0] >= 0 && ng[0] < W && ng[1] >= 0 && ng[1] < H;
-            judge('c.add', (b.gatesN ?? 0) > (a.gatesN ?? 0) && inView, { gates: [a.gatesN, b.gatesN], newGate: ng, inView, line: b.topLine, said: b.said });
+            // int4: what the click gave (the eye, the ray's hit in metres, the point): a gate out of view is then explained
+            const place = await page.evaluate(() => { const v = window.__gsfpvEditView ? window.__gsfpvEditView() : null; return v ? { place: v.place, drone: v.drone, stand: v.stand ?? null } : null; });
+            judge('c.add', (b.gatesN ?? 0) > (a.gatesN ?? 0) && inView, { gates: [a.gatesN, b.gatesN], newGate: ng, inView, line: b.topLine, said: b.said, place });
         }
     }
 
@@ -287,7 +299,16 @@ try {
     const others = [];
     for (const id of ['undo', 'redo', 'save', 'courses', 'keys']) {
         if (LIVE && id === 'save') { others.push({ id, skipped: 'live' }); continue; }
-        const bx = await boxOf(`.ce-topbar [data-top="${id}"]`);
+        // since train 4 (lane edit4b, car 1) Courses and Keys are items of the top bar's Course menu, no longer buttons of
+        // their own (bar-place.ts COURSE_MENU_HUB): the pilot's path is Course, then the item (int4: car 1's live run
+        // failed here with 'not on screen')
+        const inMenu = id === 'courses' || id === 'keys';
+        if (inMenu) {
+            const cb = await boxOf('.ce-topbar [data-top="course"]');
+            if (!cb) { others.push({ id, ok: false, why: 'no Course button' }); continue; }
+            if (!(await boxOf('.ce-menu[data-menu="course"]'))) await click('top.course', cb.x, cb.y, { after: 500 });
+        }
+        const bx = await boxOf(inMenu ? `.ce-menu[data-menu="course"] [data-item="${id}"]` : `.ce-topbar [data-top="${id}"]`);
         if (!bx) { others.push({ id, ok: false, why: 'not on screen' }); continue; }
         const a = await snap();
         const rec = await click(`top.${id}`, bx.x, bx.y, { after: id === 'save' ? 3000 : 900 });
@@ -296,8 +317,10 @@ try {
         rec.effect = effect;
         others.push({ id, ok: effect || bx.disabled, effect, disabled: bx.disabled, title: bx.title, line: b.topLine, panel: b.panelBox });
     }
+    // int4: the rows of the Keys table (.ce-keys, shown since Course, Keys opens it) are left out: a press on a row does that key
+    // (Esc leaves, Del deletes), which is the keys' own check, not the window's, and it left the next step a changed page
     const wins = [];
-    const ctl = await page.evaluate(() => [...document.querySelectorAll('.course-editor button, .course-editor [role="button"], .course-editor input, .course-editor select, .course-editor summary')].filter((e) => e.getClientRects().length && getComputedStyle(e).visibility !== 'hidden').slice(0, 30).map((e, n) => { e.dataset.probeN = String(n); return { n, text: (e.textContent || e.value || e.getAttribute('aria-label') || '').trim().slice(0, 40), act: e.dataset.act || e.dataset.action || e.name || '' }; }));
+    const ctl = await page.evaluate(() => [...document.querySelectorAll('.course-editor button, .course-editor [role="button"], .course-editor input, .course-editor select, .course-editor summary')].filter((e) => e.getClientRects().length && getComputedStyle(e).visibility !== 'hidden' && !e.closest('.ce-keys')).slice(0, 30).map((e, n) => { e.dataset.probeN = String(n); return { n, text: (e.textContent || e.value || e.getAttribute('aria-label') || '').trim().slice(0, 40), act: e.dataset.act || e.dataset.action || e.name || '' }; }));
     for (const k of ctl) {
         if (/save|vote|send|report|admin|publish|create/i.test(`${k.text} ${k.act}`) && (LIVE || /everyone|admin|vote/i.test(`${k.text} ${k.act}`))) { wins.push({ ...k, skipped: 'saves or sends' }); continue; }
         if (!(await snap()).open) { wins.push({ ...k, skipped: 'editor closed before' }); continue; }

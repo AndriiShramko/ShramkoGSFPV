@@ -9,6 +9,10 @@ import { LineHold } from './line-hold';
 import type { MenuItem } from './seam';
 import './parts/life.css';
 
+/** int4: the narrowest the editor window may be beside the top bar on a small view (CSS px); with less room it starts
+ * under the bar. The window's widest row (a course row's name and its buttons) still reads at 260 px. */
+export const BESIDE_MIN = 260;
+
 export interface TopBarHost {
     key(press: KeyPress): void;
     /** Add gate pressed: the next click on the scene puts a gate (pressed again: no more) */
@@ -94,7 +98,8 @@ export class TopBar {
     /** train 3 I2 (D7): on a view lower than 500 px the bar goes under the scene credit and the Walls chip's summary, so it
      * covers neither: their lowest bottom edge (page px) is written to --ce-below, used by editor.css (max-height: 500px) */
     private readonly place = (): void => {
-        const parts = [...this.ui.querySelectorAll('.attribution, [data-testid="walls-box"]')];
+        // int4: the bar itself is watched too (its width follows the language and Fly / Back to editing)
+        const parts = [...this.ui.querySelectorAll('.attribution, [data-testid="walls-box"]'), this.root];
         if (this.watch && (parts.length !== this.watched.length || parts.some((p, i) => p !== this.watched[i]))) {
             this.watch.disconnect();
             for (const p of parts) this.watch.observe(p);
@@ -102,10 +107,30 @@ export class TopBar {
         }
         let below = 0;
         for (const p of parts) {
+            // the bar is watched for its size only: its own bottom must not push it down (it walked to mid-view at 844x390)
+            if (p === this.root) continue;
             const r = p.getBoundingClientRect();
             if (r.height > 0 && r.top < window.innerHeight / 2) below = Math.max(below, r.bottom);
         }
         this.root.style.setProperty('--ce-below', `${Math.round(below + 4)}px`);
+        // int4 (the seam of edit4b's longer bar and the window, found by edit4a's 844x390 step): on a view narrower than 900 px
+        // or lower than 500 px the bar reaches past the window's left edge. The window stays at the top right, narrowed to the
+        // room right of the bar (--ce-beside); only when less than BESIDE_MIN is left does it start under the bar
+        // (--ce-topbar-bottom). Under the bar always (30ae9183) put the window over the view's middle, where the gates of a
+        // framed course lie, and over edit4c's Add list when the Walls chip had pushed the bar down (int4 S2, 844x390).
+        // the window is anchored by its right edge (editor.css: 64 px in on a low view, left of the sound button), so the
+        // room is measured from that edge, which its width does not move
+        const bar = this.root.getBoundingClientRect();
+        const win = this.ui.querySelector('.course-editor')?.getBoundingClientRect();
+        const room = Math.floor((win && win.width > 0 ? win.right : window.innerWidth - 8) - bar.right - 8);
+        if (bar.height > 0 && room < BESIDE_MIN) {
+            this.ui.style.setProperty('--ce-topbar-bottom', `${Math.round(bar.bottom)}px`);
+            this.ui.style.removeProperty('--ce-beside');
+        } else {
+            this.ui.style.removeProperty('--ce-topbar-bottom');
+            if (bar.height > 0) this.ui.style.setProperty('--ce-beside', `${room}px`);
+            else this.ui.style.removeProperty('--ce-beside');
+        }
     };
 
     /** D6: one line, at most 420 px with an ellipsis (editor.css); the full text in its title */
@@ -211,6 +236,8 @@ export class TopBar {
         window.removeEventListener('pointerup', this.onAct, true);
         window.removeEventListener('resize', this.place);
         this.watch?.disconnect();
+        this.ui.style.removeProperty('--ce-topbar-bottom');
+        this.ui.style.removeProperty('--ce-beside');
         this.root.remove();
     }
 }

@@ -14,3 +14,4 @@ export * from './fly';
 export * from './server';
 export * from './format';
 export * from './editor';
+export * from './pieces';

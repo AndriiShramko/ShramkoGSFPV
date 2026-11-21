@@ -3,6 +3,7 @@ import { h } from '../../ui/dom';
 import { t } from '../../i18n';
 import { openSettings } from './settings';
 import { openFeedback } from './feedback';
+import { messagesButton } from '../../ui/messages-panel';
 import { fullscreenAvailable, isFullscreen, onFullscreenChange, toggleFullscreen } from '../../play/fullscreen';
 import type { Feature } from '../context';
 
@@ -66,6 +67,8 @@ export const topActions: Feature = {
         const fbName = `${t('fb.menu')}${fbCaps.length ? ` (${fbCaps.map((c) => c.cap).join(', ')})` : ''}`;
         ctx.ui.append(h('div', { class: 'top-actions' },
             fsBtn,
+            // lane ux4a: the Messages list (ui/messages-panel.ts), with the count of problems not read yet
+            messagesButton({ parent: ctx.ui, pause: () => ctx.pause('panel'), resume: () => ctx.resume('panel') }, ctx.keys.caps('messages.open')),
             settingsBtn,
             h('button', { type: 'button', class: 'btn', 'data-action': 'open-feedback', title: fbName, 'aria-keyshortcuts': fbCaps.map((c) => c.aria).join(' ') || undefined, onclick: () => openFeedback(ctx) }, t('fb.button')),
             h('button', { type: 'button', class: 'btn', 'data-action': 'open-controls', onclick: () => ctx.input.openRadio() }, t('top.controls')),

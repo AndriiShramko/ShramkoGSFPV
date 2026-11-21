@@ -1,0 +1,6 @@
+{
+  "course.view.handle.move": "Move along {axis}",
+  "course.view.handle.turn": "Turn around {axis}",
+  "course.view.handle.size": "Size",
+  "course.view.cancelled": "Cancelled: the gate is back where it was"
+}

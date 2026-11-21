@@ -1,0 +1,23 @@
+{
+  "course.piece.warn.sharpTurn": "Za ostry zakręt, by wlecieć w bramkę {gate}",
+  "course.piece.warn.tooClose": "Bramka {gate} stoi za blisko bramki {other}",
+  "course.piece.warn.wallInOpening": "W otworze bramki {gate} stoi ściana",
+  "course.piece.warn.legLong": "Od bramki {gate} do bramki {other} jest ponad {max} m",
+  "course.piece.warn.legWall": "Droga od bramki {gate} do bramki {other} przechodzi przez ścianę",
+  "course.piece.warn.legWallStart": "Droga od startu do bramki {other} przechodzi przez ścianę",
+  "course.piece.ask": "Zostawić ją tutaj?",
+  "course.piece.keep": "Zostaw",
+  "course.piece.putBack": "Cofnij (klawisz Ctrl+Z)",
+  "course.piece.close": "Zamknij: bramka zostaje tutaj",
+  "course.piece.kept": "Zostaje tam, gdzie stoi. Bramka {gate} jest pomarańczowa, dopóki problem nie zniknie.",
+  "course.piece.more": "i jeszcze {n}",
+  "course.piece.addTitle": "Co dodać",
+  "course.piece.addClose": "Zamknij: nic nie dodawaj",
+  "course.piece.item.gate": "Bramka",
+  "course.piece.item.doubleVertical": "Podwójna pionowa",
+  "course.piece.item.tripleVertical": "Potrójna pionowa",
+  "course.piece.item.doubleHorizontal": "Podwójna pozioma",
+  "course.piece.item.tripleHorizontal": "Potrójna pozioma",
+  "course.piece.hint": "Kliknij miejsce dla: {piece} (Esc: nic nie dodawaj)",
+  "course.piece.added": "Dodano: {piece}, bramki od {from} do {to}. Wleć przez bramkę {from}, zawróć i wróć przez następną."
+}

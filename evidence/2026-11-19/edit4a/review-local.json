@@ -1,0 +1,1345 @@
+{
+ "address": "http://localhost:5950/en",
+ "scan": "70b50d42",
+ "size": [
+  1536,
+  730
+ ],
+ "dsf": 1.25,
+ "name": "local",
+ "query": "",
+ "live": false,
+ "date": "2026-11-19T17:18:35.164Z",
+ "steps": {
+  "1.open": {
+   "ok": true,
+   "mode": "edit",
+   "lock": false,
+   "gates": 34,
+   "E0": [
+    -11.900656700134277,
+    3.1238160133361816,
+    -16.831905364990234
+   ]
+  },
+  "2.home": {
+   "ok": true,
+   "nav": {
+    "kind": "frame-all",
+    "at": [
+     5.600000000000001,
+     3.1,
+     26.400000000000002
+    ]
+   },
+   "eyeMoved": 81.776,
+   "outside": []
+  },
+  "3.select": {
+   "ok": true,
+   "gate": 3,
+   "selected": 3,
+   "eyeMoved": 0,
+   "line": "Selected. Gate 4 of 34: ring, 1.2 m"
+  },
+  "4.orbit": {
+   "ok": true,
+   "at": [
+    307,
+    548
+   ],
+   "nav": {
+    "kind": "orbit",
+    "at": [
+     26.8,
+     3.4,
+     31.2
+    ]
+   },
+   "distBefore": 103.601,
+   "distAfter": 103.601,
+   "eyeMoved": 91.453,
+   "pivotIsGate": true
+  },
+  "5.pan": {
+   "ok": true,
+   "nav": "pan",
+   "eyeMoved": 27.034,
+   "yaw": [
+    2.673,
+    2.673
+   ],
+   "pitch": [
+    -0.611,
+    -0.611
+   ]
+  },
+  "6.wheel": {
+   "ok": true,
+   "overGate": true,
+   "nav": {
+    "kind": "dolly",
+    "at": [
+     26.8,
+     3.4,
+     31.2
+    ]
+   },
+   "distBefore": 106.937,
+   "distAfter": 72.399,
+   "toGate": [
+    106.937,
+    72.399
+   ]
+  },
+  "7.hover": {
+   "ok": true,
+   "arrowX": {
+    "ok": true,
+    "hover": [
+     "move",
+     "x"
+    ],
+    "tag": "Move along X",
+    "cursor": "grab"
+   },
+   "box": {
+    "ok": true,
+    "hover": [
+     "size",
+     "xyz"
+    ],
+    "tag": "Size",
+    "cursor": "grab"
+   },
+   "ringY": {
+    "ok": true,
+    "hover": [
+     "turn",
+     "y"
+    ],
+    "tag": "Turn around Y",
+    "cursor": "grab"
+   }
+  },
+  "8.arrowX": {
+   "ok": true,
+   "along": 0.8,
+   "off": 0,
+   "eyeMoved": 0,
+   "line": "Moved. Gate 4 of 34: ring, 1.2 m"
+  },
+  "9.ringY": {
+   "ok": true,
+   "part": [
+    "turn",
+    "ring:y"
+   ],
+   "deg": 30,
+   "moved": 0,
+   "eyeMoved": 0,
+   "line": "Turned. Gate 4 of 34: ring, 1.2 m"
+  },
+  "10.box": {
+   "ok": true,
+   "part": [
+    "size",
+    "xyz"
+   ],
+   "opening": [
+    1.2,
+    1.406
+   ],
+   "scale": [
+    1,
+    1
+   ],
+   "eyeMoved": 0,
+   "line": "Size changed. Gate 4 of 34: ring, 1.4 m"
+  },
+  "cancel": {
+   "ok": true,
+   "movedMid": 0.5,
+   "after": 0,
+   "cancels": [
+    0,
+    1
+   ],
+   "tag": "Cancelled: the gate is back where it was"
+  },
+  "R.escTwice": {
+   "ok": true,
+   "said": [
+    [
+     true,
+     "edit",
+     "Size changed. Gate 4 of 34: ring, 1.4 m",
+     "Click a gate to change it. Arm your controller to fly the course at once, disarm to edit again"
+    ],
+    [
+     true,
+     "edit",
+     "Size changed. Gate 4 of 34: ring, 1.4 m",
+     "Click a gate to change it. Arm your controller to fly the course at once, disarm to edit again"
+    ]
+   ],
+   "open": true,
+   "mode": "edit",
+   "asked": false
+  },
+  "11.another": {
+   "ok": true,
+   "gate": 1,
+   "selected": 1,
+   "eyeAfterClick": 0,
+   "eyeAfterDrag": 0,
+   "gateMoved": 11.5
+  },
+  "12.double": {
+   "ok": true,
+   "gate": 2,
+   "selected": 2,
+   "screen": [
+    768,
+    365,
+    2.39
+   ],
+   "eyeMoved": 74.411
+  },
+  "13.laptop": {
+   "ok": false,
+   "before": 2,
+   "tried": [],
+   "candidates": 0,
+   "selected": 2,
+   "line": "Click a gate to change it. Arm your controller to fly the course at once, disarm to edit again",
+   "hovered": [
+    "move",
+    "x"
+   ],
+   "rects": {
+    "topbar": [
+     [
+      8,
+      109,
+      381,
+      52
+     ]
+    ],
+    "gatebar": [
+     [
+      195,
+      328,
+      390,
+      54
+     ]
+    ],
+    "hoverTag": [
+     [
+      466,
+      210,
+      110,
+      28
+     ]
+    ],
+    "sizeTag": [],
+    "editor": [
+     [
+      400,
+      86,
+      380,
+      35
+     ]
+    ],
+    "panels": []
+   },
+   "over": [],
+   "outside": []
+  }
+ },
+ "lockBeforeEditor": true,
+ "course": {
+  "ok": true,
+  "ms": 7080,
+  "gates": 34
+ },
+ "presses": [
+  {
+   "at": [
+    307,
+    548
+   ],
+   "pre": [
+    null,
+    null
+   ],
+   "before": {
+    "grabbed": null,
+    "dragging": false,
+    "ring": null,
+    "nav": "frame-all",
+    "sets": [
+     [
+      true,
+      1,
+      "",
+      ""
+     ],
+     [
+      true,
+      1,
+      "",
+      ""
+     ],
+     [
+      true,
+      1,
+      "",
+      ""
+     ]
+    ],
+    "stand": [
+     785,
+     305,
+     102.76
+    ]
+   },
+   "down": {
+    "client": [
+     307,
+     548
+    ],
+    "offset": [
+     307,
+     548
+    ],
+    "hit": null
+   },
+   "taken": {
+    "grabbed": null,
+    "dragging": false,
+    "ring": null,
+    "nav": "orbit",
+    "sets": [
+     [
+      true,
+      1,
+      "",
+      ""
+     ],
+     [
+      true,
+      1,
+      "",
+      ""
+     ],
+     [
+      true,
+      1,
+      "",
+      ""
+     ]
+    ],
+    "stand": [
+     785,
+     305,
+     102.76
+    ]
+   }
+  },
+  {
+   "at": [
+    307,
+    548
+   ],
+   "pre": [
+    null,
+    null
+   ],
+   "before": {
+    "grabbed": null,
+    "dragging": false,
+    "ring": null,
+    "nav": "orbit",
+    "sets": [
+     [
+      true,
+      1,
+      "",
+      ""
+     ],
+     [
+      true,
+      1,
+      "",
+      ""
+     ],
+     [
+      true,
+      1,
+      "",
+      ""
+     ]
+    ],
+    "stand": [
+     785,
+     305,
+     102.76
+    ]
+   },
+   "down": {
+    "client": [
+     307,
+     548
+    ],
+    "offset": [
+     307,
+     548
+    ],
+    "hit": null
+   },
+   "taken": {
+    "grabbed": null,
+    "dragging": false,
+    "ring": null,
+    "nav": "pan",
+    "sets": [
+     [
+      true,
+      1,
+      "",
+      ""
+     ],
+     [
+      true,
+      1,
+      "",
+      ""
+     ],
+     [
+      true,
+      1,
+      "",
+      ""
+     ]
+    ],
+    "stand": [
+     816,
+     315,
+     102.76
+    ]
+   }
+  },
+  {
+   "at": [
+    824,
+    350
+   ],
+   "pre": [
+    [
+     "move",
+     "x"
+    ],
+    [
+     "move",
+     "x"
+    ]
+   ],
+   "before": {
+    "grabbed": null,
+    "dragging": false,
+    "ring": null,
+    "nav": "dolly",
+    "sets": [
+     [
+      true,
+      1,
+      "",
+      "x"
+     ],
+     [
+      true,
+      1,
+      "",
+      ""
+     ],
+     [
+      true,
+      1,
+      "",
+      ""
+     ]
+    ],
+    "stand": [
+     768,
+     365,
+     2.39
+    ]
+   },
+   "down": {
+    "client": [
+     824,
+     350
+    ],
+    "offset": [
+     824,
+     350
+    ],
+    "hit": [
+     "move",
+     "x"
+    ]
+   },
+   "taken": {
+    "grabbed": {
+     "handle": "move",
+     "axis": "x"
+    },
+    "dragging": true,
+    "ring": null,
+    "nav": "dolly",
+    "sets": [
+     [
+      true,
+      1,
+      "x",
+      ""
+     ],
+     [
+      false,
+      1,
+      "",
+      ""
+     ],
+     [
+      false,
+      1,
+      "",
+      ""
+     ]
+    ],
+    "stand": [
+     800,
+     357,
+     2.5
+    ]
+   }
+  },
+  {
+   "at": [
+    878,
+    330
+   ],
+   "pre": [
+    [
+     "turn",
+     "ring:y"
+    ],
+    null
+   ],
+   "before": {
+    "grabbed": null,
+    "dragging": false,
+    "ring": null,
+    "nav": "dolly",
+    "sets": [
+     [
+      true,
+      1,
+      "",
+      ""
+     ],
+     [
+      true,
+      1,
+      "",
+      ""
+     ],
+     [
+      true,
+      1,
+      "",
+      ""
+     ]
+    ],
+    "stand": [
+     881,
+     338,
+     2.82
+    ]
+   },
+   "down": {
+    "client": [
+     878,
+     330
+    ],
+    "offset": [
+     878,
+     330
+    ],
+    "hit": [
+     "turn",
+     "ring:y"
+    ]
+   },
+   "taken": {
+    "grabbed": {
+     "handle": "turn",
+     "axis": "y"
+    },
+    "dragging": true,
+    "ring": 1,
+    "nav": "dolly",
+    "sets": [
+     [
+      true,
+      1,
+      "",
+      ""
+     ],
+     [
+      true,
+      1,
+      "",
+      ""
+     ],
+     [
+      true,
+      1,
+      "",
+      ""
+     ]
+    ],
+    "stand": [
+     881,
+     338,
+     2.82
+    ]
+   }
+  },
+  {
+   "at": [
+    884,
+    340
+   ],
+   "pre": [
+    [
+     "size",
+     "xyz"
+    ],
+    [
+     "size",
+     "xyz"
+    ]
+   ],
+   "before": {
+    "grabbed": null,
+    "dragging": false,
+    "ring": null,
+    "nav": "dolly",
+    "sets": [
+     [
+      true,
+      1,
+      "",
+      ""
+     ],
+     [
+      true,
+      1,
+      "",
+      ""
+     ],
+     [
+      true,
+      1,
+      "",
+      "xyz"
+     ]
+    ],
+    "stand": [
+     881,
+     338,
+     2.82
+    ]
+   },
+   "down": {
+    "client": [
+     884,
+     340
+    ],
+    "offset": [
+     884,
+     340
+    ],
+    "hit": [
+     "size",
+     "xyz"
+    ]
+   },
+   "taken": {
+    "grabbed": {
+     "handle": "size",
+     "axis": "xyz"
+    },
+    "dragging": true,
+    "ring": null,
+    "nav": "dolly",
+    "sets": [
+     [
+      false,
+      1,
+      "",
+      ""
+     ],
+     [
+      false,
+      1,
+      "",
+      ""
+     ],
+     [
+      true,
+      1,
+      "xyz",
+      ""
+     ]
+    ],
+    "stand": [
+     881,
+     338,
+     2.82
+    ]
+   }
+  },
+  {
+   "at": [
+    955,
+    338
+   ],
+   "pre": [
+    [
+     "move",
+     "x"
+    ],
+    [
+     "move",
+     "x"
+    ]
+   ],
+   "before": {
+    "grabbed": null,
+    "dragging": false,
+    "ring": null,
+    "nav": "dolly",
+    "sets": [
+     [
+      true,
+      1,
+      "",
+      "x"
+     ],
+     [
+      true,
+      1,
+      "",
+      ""
+     ],
+     [
+      true,
+      1,
+      "",
+      ""
+     ]
+    ],
+    "stand": [
+     881,
+     338,
+     2.82
+    ]
+   },
+   "down": {
+    "client": [
+     955,
+     338
+    ],
+    "offset": [
+     955,
+     338
+    ],
+    "hit": [
+     "move",
+     "x"
+    ]
+   },
+   "taken": {
+    "grabbed": {
+     "handle": "move",
+     "axis": "x"
+    },
+    "dragging": true,
+    "ring": null,
+    "nav": "dolly",
+    "sets": [
+     [
+      true,
+      1,
+      "x",
+      ""
+     ],
+     [
+      false,
+      1,
+      "",
+      ""
+     ],
+     [
+      false,
+      1,
+      "",
+      ""
+     ]
+    ],
+    "stand": [
+     897,
+     338,
+     2.83
+    ]
+   }
+  },
+  {
+   "at": [
+    955,
+    338
+   ],
+   "pre": [
+    [
+     "move",
+     "x"
+    ],
+    [
+     "move",
+     "x"
+    ]
+   ],
+   "before": {
+    "grabbed": null,
+    "dragging": false,
+    "ring": null,
+    "nav": "dolly",
+    "sets": [
+     [
+      true,
+      1,
+      "",
+      "x"
+     ],
+     [
+      true,
+      1,
+      "",
+      ""
+     ],
+     [
+      true,
+      1,
+      "",
+      ""
+     ]
+    ],
+    "stand": [
+     881,
+     338,
+     2.82
+    ]
+   },
+   "down": {
+    "client": [
+     955,
+     338
+    ],
+    "offset": [
+     955,
+     338
+    ],
+    "hit": [
+     "move",
+     "x"
+    ]
+   },
+   "taken": {
+    "grabbed": {
+     "handle": "move",
+     "axis": "x"
+    },
+    "dragging": true,
+    "ring": null,
+    "nav": "dolly",
+    "sets": [
+     [
+      true,
+      1,
+      "x",
+      ""
+     ],
+     [
+      false,
+      1,
+      "",
+      ""
+     ],
+     [
+      false,
+      1,
+      "",
+      ""
+     ]
+    ],
+    "stand": [
+     897,
+     338,
+     2.83
+    ]
+   }
+  },
+  {
+   "at": [
+    955,
+    338
+   ],
+   "pre": [
+    [
+     "move",
+     "x"
+    ],
+    [
+     "move",
+     "x"
+    ]
+   ],
+   "before": {
+    "grabbed": null,
+    "dragging": false,
+    "ring": null,
+    "nav": "dolly",
+    "sets": [
+     [
+      true,
+      1,
+      "",
+      "x"
+     ],
+     [
+      true,
+      1,
+      "",
+      ""
+     ],
+     [
+      true,
+      1,
+      "",
+      ""
+     ]
+    ],
+    "stand": [
+     881,
+     338,
+     2.82
+    ]
+   },
+   "down": {
+    "client": [
+     955,
+     338
+    ],
+    "offset": [
+     955,
+     338
+    ],
+    "hit": [
+     "move",
+     "x"
+    ]
+   },
+   "taken": {
+    "grabbed": {
+     "handle": "move",
+     "axis": "x"
+    },
+    "dragging": true,
+    "ring": null,
+    "nav": "dolly",
+    "sets": [
+     [
+      true,
+      1,
+      "x",
+      ""
+     ],
+     [
+      false,
+      1,
+      "",
+      ""
+     ],
+     [
+      false,
+      1,
+      "",
+      ""
+     ]
+    ],
+    "stand": [
+     897,
+     338,
+     2.83
+    ]
+   }
+  },
+  {
+   "at": [
+    897,
+    479
+   ],
+   "pre": [
+    [
+     "move",
+     "x"
+    ],
+    [
+     "move",
+     "x"
+    ]
+   ],
+   "before": {
+    "grabbed": null,
+    "dragging": false,
+    "ring": null,
+    "nav": "frame-all",
+    "sets": [
+     [
+      true,
+      1,
+      "",
+      "x"
+     ],
+     [
+      true,
+      1,
+      "",
+      ""
+     ],
+     [
+      true,
+      1,
+      "",
+      ""
+     ]
+    ],
+    "stand": [
+     826,
+     492,
+     62.84
+    ]
+   },
+   "down": {
+    "client": [
+     897,
+     479
+    ],
+    "offset": [
+     897,
+     479
+    ],
+    "hit": [
+     "move",
+     "x"
+    ]
+   },
+   "taken": {
+    "grabbed": {
+     "handle": "move",
+     "axis": "x"
+    },
+    "dragging": true,
+    "ring": null,
+    "nav": "frame-all",
+    "sets": [
+     [
+      true,
+      1,
+      "x",
+      ""
+     ],
+     [
+      false,
+      1,
+      "",
+      ""
+     ],
+     [
+      false,
+      1,
+      "",
+      ""
+     ]
+    ],
+    "stand": [
+     846,
+     489,
+     63.34
+    ]
+   }
+  }
+ ],
+ "parts": {
+  "centre": [
+   768,
+   365
+  ],
+  "box": {
+   "at": [
+    772,
+    365
+   ],
+   "r": 4,
+   "a": 0,
+   "part": [
+    "size",
+    "xyz"
+   ]
+  },
+  "ringY": {
+   "at": [
+    763,
+    354
+   ],
+   "r": 12,
+   "a": 245,
+   "part": [
+    "turn",
+    "ring:y"
+   ]
+  },
+  "arrowX": {
+   "at": [
+    824,
+    350
+   ],
+   "r": 58,
+   "a": 345,
+   "part": [
+    "move",
+    "x"
+   ]
+  },
+  "seen": {
+   "size/xyz": 142,
+   "turn/ring:y": 685,
+   "turn/y": 7,
+   "size/x": 22,
+   "turn/ring:x": 522,
+   "turn/x": 2,
+   "turn/ring:z": 451,
+   "move/z": 32,
+   "move/x": 24,
+   "move/y": 22
+  },
+  "tries": 1
+ },
+ "tried11": [
+  [
+   0,
+   true,
+   false
+  ],
+  [
+   1,
+   true,
+   true
+  ]
+ ],
+ "hit11": [
+  [
+   "move",
+   "x"
+  ],
+  [
+   "move",
+   "x"
+  ]
+ ],
+ "mid11": {
+  "dragging": true,
+  "grabbed": {
+   "handle": "move",
+   "axis": "x"
+  },
+  "sets": [
+   [
+    true,
+    1,
+    "x",
+    ""
+   ],
+   [
+    false,
+    1,
+    "",
+    ""
+   ],
+   [
+    false,
+    1,
+    "",
+    ""
+   ]
+  ],
+  "nav": {
+   "kind": "frame-all",
+   "at": [
+    5.600000000000001,
+    3.1,
+    26.400000000000002
+   ]
+  },
+  "muted": 2,
+  "lock": false
+ },
+ "parts11": {
+  "centre": [
+   826,
+   492
+  ],
+  "box": {
+   "at": [
+    829,
+    494
+   ],
+   "r": 4,
+   "a": 30,
+   "part": [
+    "size",
+    "xyz"
+   ]
+  },
+  "ringY": {
+   "at": [
+    847,
+    463
+   ],
+   "r": 36,
+   "a": 305,
+   "part": [
+    "turn",
+    "ring:y"
+   ]
+  },
+  "arrowX": {
+   "at": [
+    897,
+    479
+   ],
+   "r": 72,
+   "a": 350,
+   "part": [
+    "move",
+    "x"
+   ]
+  },
+  "seen": {
+   "size/xyz": 136,
+   "turn/x": 17,
+   "turn/ring:x": 838,
+   "turn/ring:z": 464,
+   "size/x": 18,
+   "turn/ring:y": 445,
+   "turn/y": 6,
+   "move/y": 32,
+   "move/z": 37,
+   "move/x": 19
+  },
+  "tries": 1
+ },
+ "final": {
+  "open": true,
+  "selected": 2,
+  "said": "Selected. Gate 3 of 34: cube, 1.2 m",
+  "courseGates": 34,
+  "courseOn": true,
+  "mode": "edit",
+  "eye": [
+   21.048776421709498,
+   53.07854433305784,
+   -43.28484022104381
+  ],
+  "yaw": 3.3597590737690672,
+  "pitch": -0.6108652381980153,
+  "nav": {
+   "kind": "frame-all",
+   "at": [
+    5.600000000000001,
+    3.1,
+    26.400000000000002
+   ]
+  },
+  "hover": [
+   "move",
+   "x"
+  ],
+  "cancels": 3,
+  "dragging": false,
+  "stand": {
+   "pos": [
+    17.200000762939453,
+    2.9000000953674316,
+    16.799999237060547
+   ],
+   "quat": [
+    -0.1950901882927788,
+    0,
+    0.9807853070024489,
+    0
+   ],
+   "scale": 1,
+   "opening": 1.2,
+   "screen": [
+    390,
+    219,
+    77.5
+   ]
+  },
+  "axes": {
+   "x": [
+    0.9230769230769231,
+    -0.38461538461538464
+   ],
+   "y": [
+    -0.09053574604251853,
+    -0.9958932064677039
+   ],
+   "z": [
+    -0.7071067811865476,
+    -0.7071067811865476
+   ]
+  },
+  "handles": true,
+  "lock": false,
+  "topLine": "Click a gate to change it. Arm your controller to fly the course at once, disarm to edit again",
+  "hoverTag": "Move along X",
+  "cursor": "grab"
+ },
+ "fails": [
+  "13.laptop"
+ ],
+ "log": [
+  "console: Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "console: Failed to load resource: the server responded with a status of 403 ()",
+  "console: Failed to load resource: the server responded with a status of 403 ()",
+  "console: Failed to load resource: the server responded with a status of 403 ()",
+  "console: Failed to load resource: the server responded with a status of 403 ()",
+  "console: Failed to load resource: the server responded with a status of 403 ()",
+  "console: Failed to load resource: the server responded with a status of 403 ()"
+ ]
+}

@@ -4,15 +4,22 @@
 // It follows the gate on the screen; it needs the cursor, as the editor's window ('.course-editor' in CURSOR_WINDOWS).
 import { t } from '../../i18n';
 import type { KeyPress } from './keys';
-import { BAR_BUTTONS, TOOLS, barAnchor, barPlace, type Tool } from './bar-place';
+import { BAR_BUTTONS, barAnchor, barPlace, type BarRect } from './bar-place';
+
+/** lane edit4a A3: the boxes the gate bar keeps clear of: the editor's top bar and its window, where they are shown */
+const KEEP_CLEAR = '.ce-topbar, .course-editor';
+
+function keepClear(): BarRect[] {
+    return [...document.querySelectorAll<HTMLElement>(KEEP_CLEAR)]
+        .map((e) => e.getBoundingClientRect())
+        .filter((b) => b.width > 0 && b.height > 0)
+        .map((b) => [b.left, b.top, b.width, b.height] as const);
+}
 
 export interface GateBarHost {
     key(press: KeyPress): void;
     /** the selected gate on the canvas, CSS px of the page, and whether it is in front of the camera; null: none */
     where(): readonly [number, number, number] | null;
-    /** lane editor3 H1: the set of handles shown on the gate, and a press on Move, Turn or Size */
-    tool(): Tool;
-    setTool(tool: Tool): void;
     /** G2: a handle drags right now (only then the bar hides; it is back at once after the pointerup) */
     dragging(): boolean;
 }
@@ -23,26 +30,13 @@ export class GateBar {
     readonly root: HTMLElement;
     private frame = 0;
     private hidden = false;
-    private readonly toolBtns: HTMLButtonElement[] = [];
-    private shownTool: Tool | null = null;
 
     constructor(ui: HTMLElement, private readonly host: GateBarHost) {
         const root = document.createElement('div');
         root.className = 'ce-gatebar interactive';
         root.setAttribute('role', 'toolbar');
         root.setAttribute('aria-label', t('course.edit.keys'));
-        // lane editor3 H1: Move, Turn, Size first (one set of handles at a time), then the gate's own buttons
-        for (const tl of TOOLS) {
-            const btn = this.button(t(tl.labelKey) + ' (' + tl.caps + ')', tl.path);
-            btn.classList.add('ce-tool');
-            btn.dataset.bar = tl.id;
-            btn.addEventListener('click', () => {
-                btn.blur();
-                host.setTool(tl.id);
-            });
-            this.toolBtns.push(btn);
-            root.append(btn);
-        }
+        // lane edit4a A2: no Move, Turn and Size buttons: the one gizmo on the gate has the arrows, rings and boxes at once
         for (const b of BAR_BUTTONS) {
             const btn = document.createElement('button');
             btn.type = 'button';
@@ -70,22 +64,6 @@ export class GateBar {
         this.tick();
     }
 
-    private button(label: string, path: string): HTMLButtonElement {
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'ce-gb';
-        btn.title = label;
-        btn.setAttribute('aria-label', label);
-        const svg = document.createElementNS(SVG, 'svg');
-        svg.setAttribute('viewBox', '0 0 20 20');
-        svg.setAttribute('aria-hidden', 'true');
-        const p = document.createElementNS(SVG, 'path');
-        p.setAttribute('d', path);
-        svg.append(p);
-        btn.append(svg);
-        return btn;
-    }
-
     /** the drone flies in the mode: no bar (a drag hides it by host.dragging(), not by this flag) */
     hide(on: boolean): void {
         this.hidden = on;
@@ -97,13 +75,8 @@ export class GateBar {
     }
 
     private tick = (): void => {
-        const tool = this.host.tool();
-        if (tool !== this.shownTool) {
-            this.shownTool = tool;
-            this.toolBtns.forEach((b, i) => b.setAttribute('aria-pressed', TOOLS[i]!.id === tool ? 'true' : 'false'));
-        }
         const at = barAnchor(this.hidden, this.host.dragging(), this.host.where());
-        const pos = barPlace(at, window.innerWidth, window.innerHeight, this.root.offsetWidth || 300, this.root.offsetHeight || 36);
+        const pos = barPlace(at, window.innerWidth, window.innerHeight, this.root.offsetWidth || 300, this.root.offsetHeight || 36, at ? keepClear() : []);
         if (!pos) this.root.style.visibility = 'hidden';
         else {
             this.root.style.visibility = 'visible';

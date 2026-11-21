@@ -25,6 +25,23 @@ const BASE: Record<Exclude<VoxelStyle, 'height'>, RGB> = { solid: [0.66, 0.86, 0
 // height ramp, low to high: indigo, blue, cyan, green, yellow, orange
 const RAMP: RGB[] = [[0.3, 0.22, 0.8], [0.1, 0.45, 1], [0, 0.85, 0.92], [0.35, 0.95, 0.4], [1, 0.86, 0.2], [1, 0.4, 0.15]];
 
+/**
+ * The glow (emissive, times the vertex colour) of the lit styles. Over the scan ('over') the voxels glow so they read on any scan;
+ * alone (the voxels-only view, voxux4 V3) the glow is low, so the layer's two lights shade the three face directions of a cube apart.
+ */
+export const VOXEL_GLOW: Record<'over' | 'alone', Record<VoxelStyle, number>> = {
+    over: { solid: 0.12, wire: 1, height: 1, floaters: 0.3 },
+    alone: { solid: 0.05, wire: 1, height: 0.12, floaters: 0.12 }
+};
+
+/** The voxels-only view's fog (linear, into the background colour): from FOG_NEAR_M, or half the reach when that is shorter, to the reach. */
+export const FOG_NEAR_M = 30;
+export interface VoxelFog { start: number; end: number }
+export function voxelFog(reachM: number): VoxelFog {
+    const end = reachM > 0 && Number.isFinite(reachM) ? reachM : 200;
+    return { start: Math.min(FOG_NEAR_M, end / 2), end };
+}
+
 /** The ramp's colour at t in [0, 1] (clamped). */
 export function heightColor(t: number): RGB {
     const x = Math.max(0, Math.min(1, t)) * (RAMP.length - 1);
@@ -45,8 +62,14 @@ export function voxelColor(style: VoxelStyle, y: number, cls: boolean | number, 
     return BASE[style];
 }
 
-/** Write the colour bytes of every vertex of an interleaved buffer (heights read from its positions); `floater`: the class per quad. */
-export function writeColors(buf: ArrayBuffer, L: VoxelLayout, nv: number, style: VoxelStyle, floater: Uint8Array, lo: number, hi: number): void {
+/** Light left at a vertex by its ambient occlusion level 0..3 (apps/fly voxel-ao.ts): an open corner keeps all, a closed one half. */
+export const AO_SHADE: readonly number[] = [1, 0.82, 0.66, 0.5];
+
+/**
+ * Write the colour bytes of every vertex of an interleaved buffer (heights read from its positions); `floater`: the class per quad;
+ * `ao`: the occlusion level per vertex (AO_SHADE), none = all open.
+ */
+export function writeColors(buf: ArrayBuffer, L: VoxelLayout, nv: number, style: VoxelStyle, floater: Uint8Array, lo: number, hi: number, ao?: Uint8Array): void {
     const f = new Float32Array(buf);
     const u8 = new Uint8Array(buf);
     const fs = L.stride / 4, py = L.pos / 4 + 1;
@@ -62,6 +85,10 @@ export function writeColors(buf: ArrayBuffer, L: VoxelLayout, nv: number, style:
             const c = heightColor((f[v * fs + py] - lo) / span);
             r = Math.round(c[0] * 255); g = Math.round(c[1] * 255); b = Math.round(c[2] * 255);
         }
+        if (ao && ao[v]) {
+            const k = AO_SHADE[ao[v]];
+            r = Math.round(r * k); g = Math.round(g * k); b = Math.round(b * k);
+        }
         const o = v * L.stride + L.col;
         u8[o] = r; u8[o + 1] = g; u8[o + 2] = b; u8[o + 3] = 255;
     }
@@ -73,6 +100,8 @@ export interface PackedChunk {
     indices: Uint16Array | Uint32Array;
     /** per quad, its class (kept for recolouring): 1 = part of a floating piece, 2 = above the collision ceiling */
     floater: Uint8Array;
+    /** per vertex, its ambient occlusion level (kept for recolouring); absent on the coarse levels */
+    ao?: Uint8Array;
     quads: number;
     /** min x, y, z, max x, y, z */
     aabb: [number, number, number, number, number, number];
@@ -82,8 +111,8 @@ export interface PackedChunk {
     hi: number;
 }
 
-/** Interleave one chunk (4 vertices and 6 indices per quad) into `L`, coloured for `style`. */
-export function packChunk(c: { positions: Float32Array; normals: ArrayLike<number>; uvs: Float32Array; indices: Uint32Array; floater: Uint8Array; quads: number }, L: VoxelLayout, style: VoxelStyle, lo: number, hi: number): PackedChunk {
+/** Interleave one chunk (4 vertices and 6 indices per quad) into `L`, coloured for `style` and shaded by `ao` (one level per vertex). */
+export function packChunk(c: { positions: Float32Array; normals: ArrayLike<number>; uvs: Float32Array; indices: Uint32Array; floater: Uint8Array; quads: number }, L: VoxelLayout, style: VoxelStyle, lo: number, hi: number, ao?: Uint8Array): PackedChunk {
     if (L.stride % 4 || L.pos % 4 || L.nrm % 4 || L.uv % 4) throw new Error('vertex layout is not float aligned');
     const nv = c.quads * 4;
     const buf = new ArrayBuffer(nv * L.stride);
@@ -101,11 +130,13 @@ export function packChunk(c: { positions: Float32Array; normals: ArrayLike<numbe
         if (y < y0) y0 = y; if (y > y1) y1 = y;
         if (z < z0) z0 = z; if (z > z1) z1 = z;
     }
-    writeColors(buf, L, nv, style, c.floater, lo, hi);
+    if (ao && ao.length !== nv) throw new Error(`ambient occlusion holds ${ao.length} vertices, the chunk ${nv}`);
+    writeColors(buf, L, nv, style, c.floater, lo, hi, ao);
     return {
         vertices: buf,
         indices: nv <= 65535 ? Uint16Array.from(c.indices) : c.indices,
         floater: c.floater,
+        ...(ao ? { ao } : {}),
         quads: c.quads,
         aabb: nv ? [x0, y0, z0, x1, y1, z1] : [0, 0, 0, 0, 0, 0],
         style, lo, hi

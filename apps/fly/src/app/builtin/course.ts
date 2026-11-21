@@ -16,6 +16,8 @@
 // saved one, or a new version of the pilot's own with the token kept in this tab), the scene's courses with marks and votes.
 import type { SonicObject, TrackFile } from '@shramko/sonic-fpv';
 import { t } from '../../i18n';
+import { tell } from '../../ui/messages';
+import { refusal } from '../../messages-logic';
 import { liveSearch, q as pageQuery } from '../env';
 import type { Feature, FlightContext } from '../context';
 import { withWalls } from '../../walls-first';
@@ -35,16 +37,22 @@ import { sayVia } from '../say-via';
 import type { CueEvent } from '@shramko/sonic-fpv';
 import { soundCourseSeed } from './sonic-flight';
 import { S } from '@gsfpv/sim-core';
-import { MAX_GATES_EDIT, canSave, checkTrack, edit, flownCollision, flownStart, marginOf, nearestWall, openEditor, toTrackV1, upgradeTrack, wallsCheck } from '@gsfpv/tracks';
+import { MAX_GATES_EDIT, canSave, checkTrack, edit, flownCollision, flownStart, marginOf, nearestWall, openEditor, pieceSpec, toTrackV1, upgradeTrack, wallsCheck } from '@gsfpv/tracks';
 import { CheckQueue, checkOnPage } from '../../course/editor/check-core';
 import type { FromCheckWorker } from '../../course/editor/check-core';
 import { aimAt, gateCamera, type GateView } from '../../course/editor/camera';
-import { frameGate, reframeOnDragEnd } from '../../course/editor/frame';
+import { FRAME_GLIDE_MS, frameGate } from '../../course/editor/frame';
+import { FIX_SHOW_MS, OFFER_KEYS, confirmFixes, courseOverview, foundWords, proposeFixes, type FixResult } from '../../course/editor/fixes';
 import type { RayFn } from '../../course/editor/camera';
 import { EditView } from '../../course/editor/view-mouse';
 import { GateBar } from '../../course/editor/gate-bar';
+import { WarnBar } from '../../course/editor/warn-bar';
+import { LiveWarnings } from '../../course/editor/warn-live';
+import { addClosesQuestion, escTarget } from '../../course/editor/warn';
+import { ADD_CHOICE_KEYS, KEPT_KEY, PIECE_ADDED_KEY, PIECE_HINT_KEY, type AddChoice } from '../../course/editor/pieces-texts';
+import { AddChooser } from '../../course/editor/piece-menu';
 import { TopBar } from '../../course/editor/top-bar';
-import { ADD_RAY_M, addAction, addFacing, addLift, addPoint, facingFrom } from '../../course/editor/add-place';
+import { ADD_RAY_M, addAction, addLift, facingFrom, hitPastEye, pieceAction, pieceLift, placeFor } from '../../course/editor/add-place';
 import { flyShows, modeStep, openStep, type EditMode } from '../../course/editor/fly-mode';
 import { setKeyboardArm, stopKeyboardArm } from '../../devices/keyboard';
 import { SeamBus, type ChangeBy, type EditorSeam, type MenuItem } from '../../course/editor/seam';
@@ -56,9 +64,14 @@ import type { EditAction, EditOutcome } from '@gsfpv/tracks';
 import type { Ray } from '../../course/editor/pick';
 import { camFrom } from '../../course/editor/fly-cam';
 import { gateFlownPose, placeGate, placeInState, type FlownPose } from '../../course/editor/drag';
-import type { CourseCheck, EditorState } from '@gsfpv/tracks';
+import type { Handle } from '../../course/editor/handle-look';
+import type { CourseCheck, EditorState, PieceKind } from '@gsfpv/tracks';
 import { myTokens, myVotes, rememberToken, rememberVote, voterId } from '../../course/store';
+import { NETWORK_PROBLEM, answerProblem, type SaveProblem } from '../../course/store';
+import { saveProblemWords, type SaveAgain } from '../../course/editor/save-words';
 import { EditorPanel } from '../../course/editor/panel';
+import { DraftKeeper } from '../../course/editor/parts/keep';
+import { restoredState } from '../../course/editor/drafts';
 import { editorKey, forwardOf, keyOffLine, keyRoute } from '../../course/editor/keys';
 import type { EditorCommand, KeyPress } from '../../course/editor/keys';
 import { ACTION_KEYS, actionKey, gateLine, problemsLine, refusalText } from '../../course/editor/words';
@@ -72,6 +85,8 @@ import { TracksAdminClient } from '../../admin/tracks/api';
 
 /** Lane quiet (Q3): the course is ready, said with the narrator off by the short chime (sonic/quiet-cues.ts, the walls ready alike). */
 const COURSE_READY_CUE: CueEvent = Object.freeze({ kind: 'checkpoint' });
+/** Lane ux4a: the key of the course's one line in the message service (ui/messages.ts): progress, then ready or the problem, in place. */
+export const COURSE_LINE = 'course.progress';
 
 /** lane edit4b: how long Fly the course waits for the drone to arm before it says the controller's switch decides */
 const FLY_ANSWER_MS = 900;
@@ -160,27 +175,35 @@ export const course: Feature = {
         let bar: GateBar | null = null;
         /** lane editor3 E3: the top bar (Add gate, Undo, Redo, Exit) and whether the drone flies inside the mode */
         let top: TopBar | null = null;
+        /** lane edit4c C1w (E11): the warning box at the gate and the live warnings' state (kept gates stay orange) */
+        let warnBar: WarnBar | null = null;
+        let warns: LiveWarnings | null = null;
+        /** lane edit4c C2 (E12): the list of what Add puts while it is armed, and the chosen thing */
+        let chooser: AddChooser | null = null;
+        let addWhat: AddChoice = 'gate';
+        /** the course the open question is about (any other course on screen closes it) */
+        let askedCourse: unknown = null;
         let mode: EditMode = 'edit';
         /** review ED-3: a crash in flight holds the edit view until the drone is seen disarmed (fly-mode.ts modeStep) */
         let crashHold = false;
         /** the editor's state when a handle drag began (the drag is one undo step on it) */
         let dragBase: EditorState | null = null;
-        let dragBox: readonly [number, number, number, number] | null = null;
         let dragFrame = 0;
         /** G2 measurement: the last Add gate click (ray, wall hit, the point, the selected gate, the flown transform) */
         let lastPlace: Record<string, unknown> | null = null;
         let camTaken = { n: 0, override: true, crash: false, t: 0 };
         let crashCleared = 0;
-        /** a key selected a gate: the edit camera glides to see it (stage K2's view of the gate, now as the free camera's start) */
-        // train 3 I1 (D1): the framing of the selected gate (course/editor/frame.ts) replaced the K2 aim from the paused drone
-        const aim = (): void => {
-            frameSel();
-        };
-        /** the gate the edit view was last framed on (a new selection frames again, the same one does not) */
-        let framedId: string | number | null = null;
+        // lane edit4a A1 (E1, brief 543 and 547: "why move my view when I move an obstacle? No 3D editor does that"): the view
+        // moves only when the pilot moves it. frameSel runs only on his own F, Numpad . or double click (view-mouse.ts onFrame)
         /** I1 (D1): the edit view glides to the selected gate, a third of the view high, 35 degrees aside, 20 above */
         // review EI-7: true when the framing is done for this selection (a glide started, or no place is free: D1 keeps the
         // view); false when it was skipped (flying, a drag, the view suspended), so a later repaint frames it
+        /** the tangent of half the view's vertical angle (the framing's and the overview's distance) */
+        const viewTanHalfV = (): number => {
+            const cc = ctx.renderer.camera.camera;
+            const tf = Math.tan(((cc?.fov ?? 115) * Math.PI) / 360);
+            return cc && cc.horizontalFov ? (tf * Math.max(1, window.innerHeight)) / Math.max(1, window.innerWidth) : tf;
+        };
         const frameSel = (): boolean => {
             if (!ed || !view || mode === 'fly') return false;
             const eg = ed.course.gates[ed.selected];
@@ -189,16 +212,27 @@ export const course: Feature = {
             // the axis through the opening: the gate's local z turned by its pose (quat w, x, y, z)
             const [w, x, y, z] = p.quat;
             const axis: [number, number, number] = [2 * (x * z + w * y), 2 * (y * z - w * x), 1 - 2 * (x * x + y * y)];
-            const cc = ctx.renderer.camera.camera;
-            const tf = Math.tan(((cc?.fov ?? 115) * Math.PI) / 360);
-            const tanHalfV = cc && cc.horizontalFov ? (tf * Math.max(1, window.innerHeight)) / Math.max(1, window.innerWidth) : tf;
-            const f = frameGate({ centre: p.pos, axis, size: p.opening, tanHalfV, from: view.cam.pos }, camRay);
+            const f = frameGate({ centre: p.pos, axis, size: p.opening, tanHalfV: viewTanHalfV(), from: view.cam.pos }, camRay);
             (edHook as { frame?: unknown }).frame = f ? { side: f.sideDeg, dist: Math.round(f.dist * 100) / 100, skipped: f.skipped } : { blocked: true };
             return f ? view.glideTo(camFrom(f.eye, f.at, view.cam.speed)) : true;
         };
         /** the course the editing started from or was last saved as (the base of a fork or of a new version) */
         let edSource: TrackFile | null = null;
         let edChanged = false;
+        /** lane edit4s (E6): the drafts of the edited course in this browser (course/editor/parts/keep.ts) */
+        let keeper: DraftKeeper | null = null;
+        let keepHook: Record<string, unknown> = {};
+        /** lane edit4s (E9): the last failed save, its words and its Save again, for the probes */
+        let saveHook: { problem: SaveProblem | null; key: string | null; again: SaveAgain | null } = { problem: null, key: null, again: null };
+        /** the problem of the last 'Save for everyone' (save()), for saveAll's words */
+        let lastSaveProblem: SaveProblem | null = null;
+        /** one accepted change of the gates: unsaved, and a draft follows (lane edit4s) */
+        const markChanged = (by: string): void => {
+            edChanged = true;
+            keeper?.changed(by);
+            // lane edit4s (E7): an offer of corrections made for the course before this change is taken away
+            if (by !== 'fix') panel?.offerFixes(null);
+        };
         /** the step that dropping unsaved changes was asked for ('exit', 'regen', 'row:<id>'); doing it again goes on */
         let askedFor: string | null = null;
         let reopenAfter = false;
@@ -331,7 +365,8 @@ export const course: Feature = {
             if (!prog) return;
             const v = prog.view();
             hook.progress = progressLine(v, t);
-            ctx.hud.flash(hook.progress, PROGRESS_TICK_MS * 2);
+            // lane ux4a: one line under the key course.progress, rewritten in place every tick (it used to push a problem off)
+            tell({ text: hook.progress, kind: 'progress', key: COURSE_LINE });
             if (pacer.due(v)) sayLine(spokenLine(v, t));
         };
         const startProgress = (): void => {
@@ -357,7 +392,8 @@ export const course: Feature = {
             stopProgress();
             hook.problem = problem;
             reopenAfter = false; // review TK-4: a failed load or generation does not open the editor later
-            ctx.hud.flash(text, 4000);
+            // lane ux4a: a problem stays until the pilot closes it (or the next Shift+G's progress takes its place)
+            tell({ text, kind: 'problem', key: COURSE_LINE, from: 'course' });
             // lane onecourse fixes (review OC-1): a pilot by sound hears why no course came and what to press (the text names Shift+G)
             // lane quiet2 (review QW-2): with the narrator off one short falling sound says no course came (no gate is there to miss)
             sayLine(text, { kind: 'wrong-side' });
@@ -419,7 +455,7 @@ export const course: Feature = {
                 }
                 setTrack(tr, 'server', tr.generator?.seed ?? null);
                 dropLink();
-                ctx.hud.flash(t('course.server.loaded', { n: tr.gates.length }), 4000);
+                tell({ text: t('course.server.loaded', { n: tr.gates.length }), kind: 'done', key: COURSE_LINE });
                 return;
             }
             if (!m.track) {
@@ -440,7 +476,7 @@ export const course: Feature = {
                 hook.progress = null;
                 setTrack(tr, 'generated', tr.generator?.seed ?? pending);
                 history.replaceState(history.state, '', withCourse(location.href, tr.id));
-                ctx.hud.flash(t('course.ready', { n: tr.gates.length }), 4000);
+                tell({ text: t('course.ready', { n: tr.gates.length }), kind: 'done', key: COURSE_LINE });
                 // lead's decision P2: the spoken line names the chord in words ("Shift and key T"), the written one keeps Shift+T
                 sayLine(t('course.readySpoken', { n: tr.gates.length }), COURSE_READY_CUE);
             };
@@ -448,7 +484,7 @@ export const course: Feature = {
             if (isParked(ctx.session.runner.sim.s, ctx.session.spawn)) return show();
             const soon = t('progress.course.soon', { n: tr.gates.length, s: Math.round(COURSE_WARN_MS / 1000) });
             hook.progress = soon;
-            ctx.hud.flash(soon, COURSE_WARN_MS);
+            tell({ text: soon, kind: 'progress', key: COURSE_LINE });
             sayLine(soon);
             window.setTimeout(show, COURSE_WARN_MS);
         };
@@ -459,6 +495,11 @@ export const course: Feature = {
                 worker.onmessage = onWorker;
                 worker.onerror = (e) => {
                     disarm();
+                    // lane ux4a: a worker whose script did not load never answers: the next Shift+G starts a new one
+                    // (it waited for the 150 s watchdog before, the line saying "Shift+G builds another one")
+                    worker?.terminate();
+                    worker = null;
+                    job++;
                     busy = false;
                     checking = null;
                     fail(e.message || 'worker error', t('course.failed'));
@@ -673,7 +714,13 @@ export const course: Feature = {
             const tr = run.track;
             const r = await store.save(tr);
             saving = false;
-            if (!r.ok) return fail(`save: ${r.problem}`, t('course.save.failed'));
+            if (!r.ok) {
+                // lane edit4s (E9): the words say what happened and what to do (save-words.ts), not 'try again'
+                lastSaveProblem = r.problem;
+                const w = saveProblemWords(r.problem, Date.now(), tr.gates.length);
+                return fail(`save: ${r.problem.detail}`, t(w.key, w.args));
+            }
+            lastSaveProblem = null;
             if (run?.track === tr) hook.saved = r.id;
             hook.problem = null;
             ctx.hud.flash(t('course.save.done'), 4000);
@@ -809,12 +856,15 @@ export const course: Feature = {
         });
         // ---------------- the editor (T3-editor-ui)
         const scale = (): number => ctx.session.transform.s;
-        const say = (text: string, refused = false): void => {
+        /** refused: true for a refusal or a failure (a problem line), 'key' for a key that does not work in the edit mode */
+        const say = (text: string, refused: boolean | 'key' = false): void => {
             edHook.said = text;
-            panel?.say(text, refused);
+            panel?.say(text, refused !== false);
             // lane editor3 H1: the window opens closed: the top bar's line says it, a refusal also on the HUD
-            top?.tell(text, refused);
-            if (refused) ctx.hud.flash(text, 5000);
+            top?.tell(text, refused !== false);
+            // review of ux4a: a refused key says what to press, it is no fault to send to the author (messages-logic.ts refusal)
+            if (refused === 'key') tell(refusal(text, 'course-editor'));
+            else if (refused) tell({ text, kind: 'problem', from: 'course-editor' });
         };
         /** train 3 H1: the gate a floor add put in, until the check's answer on it came */
         let addedId: string | null = null;
@@ -835,7 +885,8 @@ export const course: Feature = {
             say(t(lead, { fix: t(w.key, w.args) }), true);
             return true;
         };
-        const refusedSave = (): void => {
+        /** the old refusal: the first wrong gate selected and named, or the problems in one line */
+        const pointAtWrong = (): void => {
             // lane edit4b (E4): an empty course says what to do and Add gate is on
             if (ed && ed.course.gates.length === 0) {
                 emptyWaits();
@@ -844,15 +895,79 @@ export const course: Feature = {
             if (!ed || showWrong(SAVE_FIX_KEY)) return;
             say(t('course.edit.saveRefused', { why: problemsLine(ed) }), true);
         };
+        /**
+         * Lane edit4s (E7): a refused Save first looks for small corrections (fixes.ts) and offers them in the window: yes ->
+         * the overview of the whole course, the gates corrected in front of the pilot as one undo step, the change listed, and
+         * the save `retry` made when nothing is left; Show me -> the first wrong gate; the cross -> the refusal as before.
+         */
+        const refusedSave = async (retry: () => void): Promise<void> => {
+            const col = ctx.session.collision;
+            // an empty course has nothing to correct: pointAtWrong says what to do (lane edit4b E4)
+            if (!ed || !col || !panel || ed.course.gates.length === 0) return pointAtWrong();
+            const from = ed.course;
+            const problems = [...ed.problems];
+            say(t(OFFER_KEYS.looking));
+            // the line is painted before the whole course's check (seconds on a big scan) holds the page
+            await new Promise<void>((done) => requestAnimationFrame(() => setTimeout(done, 0)));
+            if (!ed || ed.course !== from) return;
+            const w = { col, transform: flownTransform(), margin: edMargin };
+            const r = confirmFixes(from, problems, proposeFixes(from, problems, w), (c) => checkOnPage(col, w.transform, w.margin, c));
+            fixHook = { offered: r.fixes.map((f) => ({ kind: f.kind, gates: f.gates.map((g) => g.index + 1) })), answer: null, left: r.problems.length };
+            if (r.fixes.length === 0) return pointAtWrong();
+            const all = r.problems.length === 0;
+            const what = r.fixes.map((f) => foundWords(from, f.problem)).filter((x) => x !== null).map((x) => t(x.key, x.args)).join('; ');
+            say(t(all ? OFFER_KEYS.all : OFFER_KEYS.some, { what }), true);
+            panel.offerFixes({ text: t(all ? OFFER_KEYS.all : OFFER_KEYS.some, { what }), yes: t(all ? OFFER_KEYS.yes : OFFER_KEYS.yesOnly) }, (a) => {
+                fixHook = { ...fixHook, answer: a };
+                if (!ed || ed.course !== from) return;
+                if (a === 'show') return pointAtWrong();
+                if (a === 'close') return say(t('course.edit.saveRefused', { why: problemsLine(ed) }), true);
+                void applyFixes(r, all ? retry : null);
+            });
+        };
+        /** the probes' record of the last offer (gates from 1) and its answer */
+        let fixHook: { offered: { kind: string; gates: number[] }[]; answer: string | null; left: number; done?: string } = { offered: [], answer: null, left: 0 };
+        /** the corrections made where the pilot sees them: the overview first, then the gates change, then the save */
+        const applyFixes = async (r: FixResult, then: (() => void) | null): Promise<void> => {
+            if (!ed) return;
+            const at = ed.course;
+            keeper?.beforeLoss('fix');
+            const tr = flownTransform();
+            const o = view ? courseOverview(ed.course.gates.map((g) => gateFlownPose(g, tr).pos), viewTanHalfV(), camRay) : null;
+            if (o && view) {
+                view.glideTo(camFrom(o.eye, o.at, view.cam.speed));
+                // the course before, seen whole for a moment, then the corrections
+                await new Promise((done) => setTimeout(done, FRAME_GLIDE_MS + FIX_SHOW_MS));
+            }
+            if (!ed || ed.course !== at) return;
+            const fixed = r.problems;
+            ed = { ...restoredState(ed, r.course, () => [...fixed]), selected: r.fixes[0]!.gates[0]!.index };
+            okCourse = ed.course;
+            markChanged('fix');
+            askedFor = null;
+            showEd();
+            const list = r.fixes.map((f) => t(f.words.key, f.words.args)).join('; ');
+            fixHook = { ...fixHook, done: list };
+            say(t(OFFER_KEYS.done, { list }));
+            if (!then) {
+                // what is left has no small correction: its gate is selected and named after the list
+                pointAtWrong();
+                return say(`${t(OFFER_KEYS.done, { list })} ${edHook.said ?? ''}`.trim(), true);
+            }
+            await new Promise((done) => setTimeout(done, FIX_SHOW_MS));
+            if (ed && ed.course === r.course) then();
+        };
         const renderList = (): void => {
             edHook.votes = myVotes();
             const lapped = lappedIds(readBests());
             edHook.lapped = [...lapped];
             panel?.list(rows, edHook.votes, hook.saved ?? hook.track?.id ?? null, lapped);
         };
-        /** the edited gates on the source's identity (after a save: the saved id, version, author, title) */
-        const trackNow = (): TrackFile => {
-            const v1 = toTrackV1(ed!.course);
+        /** the edited course as a file: review TK-6, the edited gates on the source's identity (after a save: the saved id,
+         *  version, author, title); null when the editor is closed */
+        const trackNow = (): TrackFile | null => {
+            if (!ed) return null;
+            const v1 = toTrackV1(ed.course);
             return edSource
                 ? { ...v1, id: edSource.id, version: edSource.version, parent: edSource.parent, author: edSource.author, title: edSource.title, generator: edSource.generator }
                 : v1;
@@ -860,8 +975,8 @@ export const course: Feature = {
         const showEd = (): void => {
             // lane editor3 E3: while the drone flies the course stays as it was armed; the edit view comes back on disarm
             if (!ed || !panel || mode === 'fly') return;
-            // review TK-6: the edited gates on the source's identity (after a save: the saved id, version, author, title)
             const track = trackNow();
+            if (!track) return;
             run = new CourseRun(track, ctx.session.transform, null);
             provenOn = ctx.session.collision;
             hook.on = true;
@@ -870,7 +985,14 @@ export const course: Feature = {
             stage.show(run.gates, gateRoles(run.gates.length, track.laps > 1), (role) => t(`course.gate.${role}`), (x, y, z) => col?.queryRay(x, y, z, 0, -1, 0, 80)?.y ?? null);
             stage.setNext(ed.selected, run.path, track.laps > 1, false);
             // stage F1-finish: the selected gate magenta, a failing gate red (tracks-plan 2.11)
-            const paints = editPaints(ed.course.gates.map((g) => g.id), ed.selected, ed.problems);
+            // lane edit4c C1w: another edit (the undo key too) or another gate selected while 'Keep it here?' is open closes the
+            // question; the gate counts as kept, so it stays orange while it still warns (an undo that put it back: it does not)
+            const askedGate = warnBar?.asking() ?? null;
+            if (askedGate !== null && (ed.course !== askedCourse || ed.course.gates[ed.selected]?.id !== askedGate)) {
+                warnBar?.close();
+                warns?.keep(askedGate);
+            }
+            const paints = editPaints(ed.course.gates.map((g) => g.id), ed.selected, ed.problems, warns?.painted(ed.course, !!dragBase));
             stage.paintEdit(paints);
             edHook.paints = paints;
             shownNext = ed.selected;
@@ -889,8 +1011,6 @@ export const course: Feature = {
             view?.put(egPose, eg ? eg.id : null, eg ? eg.shape.kind : null);
             // integration E (brief seam d): the selected gate's own pose from the course state, read by the editor's probe
             edHook.pose = egPose ? { pos: [...egPose.pos], quat: [...egPose.quat] } : null;
-            // I1 (D1): a new selection (a click, Tab, the bar, a gate added, a refused Save) frames that gate
-            if (eg && eg.id !== framedId && frameSel()) framedId = eg.id;
             edHook.open = true;
             (edHook as { flying?: boolean }).flying = false;
             edHook.selected = ed.selected;
@@ -941,9 +1061,9 @@ export const course: Feature = {
             // review 1: Shift+B (this editor's own key) repeats the editor's line instead (course/editor/keys.ts keyOffLine)
             unblock = ctx.keys.block(() => ed !== null && mode === 'edit', (a, e) => {
                 const l = keyOffLine(a, keyName(e));
-                say(t(l.key, l.vars), true);
+                say(t(l.key, l.vars), 'key');
             });
-            panel = new EditorPanel(ctx.ui, { key: (p) => applyKey(p), saveMine: (n, ti) => void saveMine(n, ti), saveAll: () => void saveAll(), saveAdmin: (ti) => void saveAdmin(ti), vote: (id, v) => void vote(id, v), open: (id) => openRow(id) });
+            panel = new EditorPanel(ctx.ui, { key: (p) => applyKey(p), saveMine: (n, ti) => void saveMine(n, ti), saveAll: () => void saveAll(), saveAdmin: (ti) => void saveAdmin(ti), vote: (id, v) => void vote(id, v), open: (id) => openRow(id), back: (i) => keeper?.back(i) });
             panel.defaults('', run.track.title);
             panel.adminOn(adminLive);
             // lane editor3 E2: the edit camera starts where the flight camera is, looking its way
@@ -962,15 +1082,19 @@ export const course: Feature = {
                 },
                 onPick: (i) => pickAt(i),
                 onPlace: (ray) => placeAt(ray),
-                onDrag: (p, end) => dragTo(p, end),
+                // lane edit4a A2: a cancelled drag (Esc, right click) puts the course back as the press found it
+                onDrag: (e) => (e.phase === 'cancel' ? dragCancel() : dragTo(e.pose, e.phase === 'end', e.handle)),
+                text: (k, v) => t(k, v),
                 onSpeed: (s) => ctx.hud.flash(t('course.edit.camSpeed', { v: s.toFixed(1) }), 1200),
                 typing: (target) => panel?.typing(target) ?? false,
                 sizeText: (m) => t('course.edit.sizeTag', { m: m.toFixed(1) }),
                 moveText: (m) => t('course.edit.moveTag', { m: m.toFixed(1) }),
                 turnText: (d) => t('course.edit.turnTag', { d: Math.round(d) }),
-                onFrame: () => frameSel()
+                onFrame: () => frameSel(),
+                ray: (o, d, max) => (camRay ? camRay(o, d, max) : null)
             }, camFrom([ep.x, ep.y, ep.z], [ep.x + ef.x, ep.y + ef.y, ep.z + ef.z]));
-            bar = new GateBar(ctx.ui, { key: (p) => applyKey(p), where: () => view?.standScreen() ?? null, tool: () => view?.tool ?? 'move', setTool: (tl) => view?.setTool(tl), dragging: () => view?.isDragging() ?? false });
+            // lane edit4a A2: no tool switch on the gate bar (the one gizmo has move, turn and size at once)
+            bar = new GateBar(ctx.ui, { key: (p) => applyKey(p), where: () => view?.standScreen() ?? null, dragging: () => view?.isDragging() ?? false });
             top = new TopBar(ctx.ui, {
                 key: (p) => applyKey(p),
                 add: () => toggleAdd(),
@@ -987,8 +1111,32 @@ export const course: Feature = {
             bus.provide('testFlight', (on) => testFlight(on));
             bus.provide('saveFlow', async () => command('save-mine'));
             partsOff = installParts(makeSeam(bus));
-            // read only, for the page probes (tools/bench/src/editor3-smoke.ts)
-            (window as unknown as { __gsfpvEditView?: () => unknown }).__gsfpvEditView = () => (view ? { ...view.debug(), mode, bar: bar?.debug() ?? null, place: lastPlace, wrong: lastWrong, course: ed ? { gates: ed.course.gates, start: (ed.course as { start?: unknown }).start ?? null, problems: ed.problems } : null, camTaken, crashCleared, crashActive: ctx.crash.active, drone: [S.px, S.py, S.pz].map((i) => Math.round((ctx.session.runner.sim.s[i] ?? 0) * 100) / 100), override: ctx.session.cameraOverride, edit4: edit4Hook } : null);
+            chooser = new AddChooser(ctx.ui, {
+                choose: (what) => chooseAdd(what),
+                close: () => {
+                    if (view) view.adding = false;
+                    showAdding(false);
+                },
+                anchor: () => {
+                    const b = top?.root.querySelector('[data-top="add"]')?.getBoundingClientRect();
+                    return { top: top?.root.getBoundingClientRect().bottom ?? 0, left: b?.left ?? 8 };
+                }
+            });
+            warns = new LiveWarnings({ flown: () => flownTransform(), walls: () => ctx.session.collision ?? null, margin: () => edMargin });
+            warnBar = new WarnBar(ctx.ui, {
+                where: () => view?.standScreen() ?? null,
+                topClear: () => top?.root.getBoundingClientRect().bottom ?? 0,
+                // Put back is the undo key's row: one action, one key
+                putBack: () => applyKey({ code: 'KeyZ', ctrlKey: true }),
+                kept: (id) => {
+                    warns?.keep(id);
+                    const i = ed ? ed.course.gates.findIndex((g) => g.id === id) : -1;
+                    showEd();
+                    if (i >= 0) say(t(KEPT_KEY, { gate: i + 1 }));
+                }
+            });
+            // read only, for the page probes (tools/bench/src/editor3-smoke.ts); lane edit4c: the warning box and the kept gates
+            (window as unknown as { __gsfpvEditView?: () => unknown }).__gsfpvEditView = () => (view ? { ...view.debug(), mode, bar: bar?.debug() ?? null, warn: warnBar ? { ...warnBar.debug(), kept: warns?.keptIds() ?? [] } : null, add: chooser?.debug() ?? null, place: lastPlace, wrong: lastWrong, course: ed ? { gates: ed.course.gates, start: (ed.course as { start?: unknown }).start ?? null, problems: ed.problems } : null, camTaken, crashCleared, crashActive: ctx.crash.active, drone: [S.px, S.py, S.pz].map((i) => Math.round((ctx.session.runner.sim.s[i] ?? 0) * 100) / 100), override: ctx.session.cameraOverride, edit4: { ...edit4Hook, s: { ...(edit4Hook.s ?? {}), ...keepHook, save: saveHook, fix: fixHook } } } : null);
             // lane editor3 H1, read only: the shown handles' shape under a page point (the probe finds the ring it presses)
             (window as unknown as { __gsfpvEditHit?: (x: number, y: number, own?: boolean) => unknown }).__gsfpvEditHit = (x, y, own) => view?.hitAt(x, y, own === true) ?? null;
             // I1, read only: the eye's distance, the gate's height, the rings' minor axes and the handle parts' rectangles
@@ -1002,7 +1150,7 @@ export const course: Feature = {
                 const f = forwardOf(s[S.qw] ?? 1, s[S.qx] ?? 0, s[S.qy] ?? 0, s[S.qz] ?? 0);
                 const n = Math.hypot(f[0], f[1]) || 1;
                 const at: [number, number, number] = [eye[0] + (f[0] / n) * m, eye[1] + up, eye[2] + (f[1] / n) * m];
-                dragTo({ pos: at, quat: facingFrom(eye, at), opening: open }, true);
+                dragTo({ pos: at, quat: facingFrom(eye, at), opening: open }, true, 'move');
                 return { drone: eye, gate: at };
             };
             if (!adminLive && adminHinted()) {
@@ -1015,12 +1163,34 @@ export const course: Feature = {
             showEd();
             say(t('course.edit.opened'));
             bus.emit('opened', { course: ed.course, source: hook.source === 'server' ? 'server' : 'generated' });
+            // lane edit4s (E6): drafts from the first change on; an unsaved draft newer than this course comes back at once
+            keeper = new DraftKeeper({
+                sceneId: () => ctx.session.scene.id,
+                trackNow,
+                sourceId: () => hook.saved ?? (hook.source === 'server' ? edSource?.id ?? null : null),
+                restore: (tr) => {
+                    if (!ed) return;
+                    ed = restoredState(ed, upgradeTrack(tr), keepProblems);
+                    edChanged = true;
+                    askedFor = null;
+                    checks?.ask(ed.course, flownTransform(), edMargin);
+                    showEd();
+                    bus?.emit('changed', { course: ed.course, by: 'restore' });
+                },
+                say: (text, level) => say(text, level !== 'did'),
+                hook: (data) => { keepHook = data; },
+                versions: (list) => panel?.versions(list),
+            });
+            keeper.opened({ source: hook.source === 'server' ? 'server' : 'generated', track: edSource, madeAt: hook.source === 'server' ? Date.parse(edSource.created) || null : null });
             renderList();
             void refresh(true).then(renderList);
         };
         /** `quiet`: the course is replaced right after (no redraw for flight) */
         function closeEdit(quiet = false): void {
             if (!ed) return;
+            // lane edit4s: a waiting draft is written before the editor's course goes
+            keeper?.dispose();
+            keeper = null;
             bus?.emit('closed', {});
             partsOff?.();
             partsOff = null;
@@ -1036,11 +1206,15 @@ export const course: Feature = {
             edHook.view = null;
             camForward = null;
             camView = null;
-            framedId = null;
             view?.dispose();
             view = null;
             bar?.destroy();
             bar = null;
+            warnBar?.destroy();
+            warnBar = null;
+            warns = null;
+            chooser?.destroy();
+            chooser = null;
             top?.destroy();
             top = null;
             mode = 'edit';
@@ -1073,23 +1247,47 @@ export const course: Feature = {
             // lane editor3 H1, the owner's rule: no refusal with a number; a full course says in words what to delete
             if (!view.adding && ed && ed.course.gates.length >= MAX_GATES_EDIT) return say(t('course.edit.r.maxGates'), true);
             view.adding = !view.adding;
-            top?.adding(view.adding);
+            showAdding(view.adding);
             if (view.adding) say(t('course.edit.bar.addHint'));
+        };
+        /** lane edit4c C2 (E12): Add is armed or no more: the top bar's Add button and the list of what it puts (a plain gate first) */
+        const showAdding = (on: boolean): void => {
+            // review of edit4c: an open 'Keep it here?' is answered Keep first, so the box never lies over the Add list
+            if (addClosesQuestion(on, (warnBar?.asking() ?? null) !== null)) warnBar?.dismiss();
+            addWhat = 'gate';
+            top?.adding(on);
+            chooser?.show(on, addWhat);
+        };
+        /** C2: a press in the Add list: the next click puts that (a full course says so first, as Add does) */
+        const chooseAdd = (what: AddChoice): void => {
+            if (!view || !ed) return;
+            const need = what === 'gate' ? 1 : pieceSpec(what).count;
+            if (ed.course.gates.length + need > MAX_GATES_EDIT) return say(t('course.edit.r.maxGates'), true);
+            view.adding = true;
+            addWhat = what;
+            top?.adding(true);
+            say(what === 'gate' ? t('course.edit.bar.addHint') : t(PIECE_HINT_KEY, { piece: t(ADD_CHOICE_KEYS[what]) }));
         };
         /** lane editor3 E3: a click with Add gate armed: a gate at the wall that ray hits (or ahead), after the selected one */
         const placeAt = (ray: Ray): void => {
-            top?.adding(false);
+            const what = addWhat;
+            showAdding(false);
             if (!ed) return;
-            const hit = camRay ? camRay(ray.o, ray.d, ADD_RAY_M) : null;
-            const at = addPoint(ray.o, ray.d, hit, addLift(ed, flownTransform(), edMargin));
-            // G1: lane course3's EditAction add (after the selected gate, its kind and opening, one undo step)
-            // G2: facing along the course, from the selected gate (course frame -> flown: s * pos + offset)
+            // int4: a hit that wraps the eye (an overview's eye in a tree) is passed, so the gate stands where the pilot pointed
+            const cast = camRay;
+            const hit = cast
+                ? hitPastEye((from) => cast([ray.o[0] + ray.d[0] * from, ray.o[1] + ray.d[1] * from, ray.o[2] + ray.d[2] * from], ray.d, ADD_RAY_M - from))
+                : null;
+            if (what !== 'gate') return placePiece(ray, hit, what);
+            // G1: lane course3's EditAction add (its kind and opening, one undo step). Lane edit4c C1 (E11): placeFor puts it
+            // after the gate whose leg passes nearest to the click, facing the course's line there (add-place.ts)
             const tr = flownTransform();
-            const sel = ed.course.gates[ed.selected];
-            const prev: [number, number, number] | null = sel ? [sel.pos[0] * tr[0] + tr[1], sel.pos[1] * tr[0] + tr[2], sel.pos[2] * tr[0] + tr[3]] : null;
-            const out = edit(ed, addAction(at, addFacing(ray.o, at, prev), tr), keepProblems);
+            const { pos: at, quat, after } = placeFor(ed, tr, { o: ray.o, d: ray.d, hit }, addLift(ed, flownTransform(), edMargin));
+            const out = edit(ed, addAction(at, quat, tr, after), keepProblems);
+            const pg = ed.course.gates[after];
+            const prev: [number, number, number] | null = pg ? [pg.pos[0] * tr[0] + tr[1], pg.pos[1] * tr[0] + tr[2], pg.pos[2] * tr[0] + tr[3]] : null;
             // G2 measurement: what the floor click gave (read by the probe through __gsfpvEditView().place)
-            lastPlace = { o: ray.o, d: ray.d, hit, at, prev, tr: [tr[0], tr[1], tr[2], tr[3]], camEye: camView ? [...camView.eye] : null };
+            lastPlace = { o: ray.o, d: ray.d, hit, at, prev, after, quat, tr: [tr[0], tr[1], tr[2], tr[3]], camEye: camView ? [...camView.eye] : null };
             if (!out.ok) {
                 ed = out.state;
                 edHook.refused = out.reason.code;
@@ -1098,7 +1296,7 @@ export const course: Feature = {
             }
             const st = out.state;
             ed = st;
-            edChanged = true;
+            markChanged('add');
             askedFor = null;
             edHook.refused = null;
             addedId = st.course.gates[st.selected]?.id ?? null;
@@ -1109,6 +1307,31 @@ export const course: Feature = {
             // measured the eye 2 m from the drone on the floor (Tunis viewAfter [1.53, 0.45, 0.87]): the drone's view, no gate.
             say(t('course.edit.did', { what: t('course.edit.bar.add'), gate: gateLine(st, scale()) }));
             bus?.emit('changed', { course: st.course, by: 'add' });
+        };
+        /** lane edit4c C2 (E12): a click with a piece chosen: its first gate where placeFor puts a gate, facing the course's
+         *  line, the rest stacked or in a row from it (packages/tracks pieces.ts), all one undo step */
+        const placePiece = (ray: Ray, hit: number | null, what: PieceKind): void => {
+            if (!ed) return;
+            const tr = flownTransform();
+            const { pos: at, quat, after } = placeFor(ed, tr, { o: ray.o, d: ray.d, hit }, pieceLift(edMargin));
+            const out = edit(ed, pieceAction(what, at, quat, tr, after), keepProblems);
+            lastPlace = { o: ray.o, d: ray.d, hit, at, prev: null, after, quat, tr: [tr[0], tr[1], tr[2], tr[3]], camEye: camView ? [...camView.eye] : null, piece: what };
+            if (!out.ok) {
+                ed = out.state;
+                edHook.refused = out.reason.code;
+                showEd();
+                return say(refusalText(ed.course, out.reason), true);
+            }
+            const st = out.state;
+            ed = st;
+            markChanged('piece');
+            askedFor = null;
+            edHook.refused = null;
+            addedId = st.course.gates[st.selected]?.id ?? null;
+            checks?.ask(st.course, flownTransform(), edMargin);
+            showEd();
+            say(t(PIECE_ADDED_KEY, { piece: t(ADD_CHOICE_KEYS[what]), from: after + 2, to: st.selected + 1 }));
+            bus?.emit('changed', { course: st.course, by: 'piece' });
         };
         /** lane editor3 E3: armed flies (the drone's camera, the course from gate 1), disarmed or crashed edits again */
         const editFrame = (): void => {
@@ -1139,6 +1362,7 @@ export const course: Feature = {
                 panel?.root.classList.add('ce-flying');
                 dragBase = null;
                 view?.suspend(true);
+                showAdding(false);
                 bar?.hide(true);
                 top?.flying(true);
                 if (panel) panel.root.style.display = 'none';
@@ -1166,10 +1390,8 @@ export const course: Feature = {
             else if (view && !view.isSuspended()) bus?.emit('frame', { w: window.innerWidth, h: window.innerHeight });
         };
         /** lane editor3 E2: a handle drag; the gate follows live, the release is one undo step and asks the walls check */
-        const dragTo = (p: FlownPose, end: boolean): void => {
+        const dragTo = (p: FlownPose, end: boolean, handle: Handle): void => {
             if (!ed) return;
-            // review EJ-2: the gate's drawn box when the drag began (E1 frames again only a gate that left the middle)
-            if (!dragBase) dragBox = view?.gateBox()?.box ?? null;
             const base = dragBase ?? ed;
             dragBase = base;
             const old = base.course.gates[base.selected];
@@ -1179,6 +1401,9 @@ export const course: Feature = {
                 const gates = [...base.course.gates];
                 gates[base.selected] = g;
                 ed = { ...base, course: { ...base.course, gates } };
+                // lane edit4c C1w (E11): what the gate breaks where it is now, at most 10 times a second, in a tag beside it
+                const ws = warns?.during(ed.course, base.selected, gateFlownPose(g, flownTransform()), performance.now());
+                if (ws) warnBar?.live(g.id, ws);
                 // one redraw per frame however fast the pointer moves
                 if (!dragFrame) dragFrame = requestAnimationFrame(() => { dragFrame = 0; if (ed && dragBase) showEd(); });
                 return;
@@ -1190,24 +1415,33 @@ export const course: Feature = {
             ed = st ?? base;
             askedFor = null;
             if (st) {
-                edChanged = true;
+                markChanged('drag');
                 checks?.ask(st.course, flownTransform(), edMargin);
             }
+            // lane edit4c C1w: a release into a place that warns asks 'Keep it here?' (no answer in 8 s keeps it)
+            warns?.endDrag();
+            const ws = st && warns ? warns.released(st.course, st.selected) : [];
+            askedCourse = st ? st.course : null;
+            if (ws.length > 0) warnBar?.ask(g.id, ws);
+            else warnBar?.close();
             showEd();
-            // J1 (E1): a drag that left the gate outside the middle 80 % of the view (a size change, a long move) frames it
-            // again; never during the drag (this is its end). Review EJ-2: only a drag that changed the gate and took its box
-            // out of the middle (a gate the pilot flew close to stays as he set the view)
-            const gb = view?.gateBox();
-            const before = dragBox;
-            dragBox = null;
-            const re = !!(st && gb && reframeOnDragEnd(before, gb.box, gb.w, gb.h));
-            // fixes3 pass 2 (left a): the boxes the decision saw, for the page probes
-            (edHook as { reframe?: unknown }).reframe = { before, after: gb?.box ?? null, w: gb?.w ?? 0, h: gb?.h ?? 0, changed: !!st, framed: re };
-            if (re) frameSel();
+            // lane edit4a A1 (E1): the view stays where the pilot set it after a drag too (train 3 J1's reframe is gone)
             // H2-look: the top bar says what the drag did; after a Size drag the gate line carries the new opening in metres
-            const did = view?.tool === 'size' ? ACTION_KEYS.size : view?.tool === 'turn' ? ACTION_KEYS.turn : ACTION_KEYS.move;
+            const did = handle === 'size' ? ACTION_KEYS.size : handle === 'turn' ? ACTION_KEYS.turn : ACTION_KEYS.move;
             if (st) say(t('course.edit.did', { what: t(did), gate: gateLine(st, scale()) }));
             if (st) bus?.emit('changed', { course: st.course, by: 'drag' });
+        };
+        /** lane edit4a A2: a drag cancelled by Esc or a right click: the course as the press found it, no undo step */
+        const dragCancel = (): void => {
+            cancelAnimationFrame(dragFrame);
+            dragFrame = 0;
+            if (dragBase) ed = dragBase;
+            dragBase = null;
+            // int4 (the seam of edit4a's cancel and edit4c's live tag): the gate is back where it was, so the tag that
+            // described the place under the pointer goes with the drag (no 'Keep it here?' either: nothing moved)
+            warns?.endDrag();
+            warnBar?.close();
+            showEd();
         };
         const viewForward = (): [number, number] => {
             // lane editor3 E2: the arrows follow the free edit camera
@@ -1223,19 +1457,16 @@ export const course: Feature = {
             if (!k) return;
             if ('cmd' in k) return command(k.cmd);
             askedFor = null;
-            const count = ed.course.gates.length;
             const out = edit(ed, k.edit, keepProblems);
             ed = out.state;
             if (out.ok) {
                 if (k.edit.kind !== 'select' && k.edit.kind !== 'select-step') {
-                    edChanged = true;
+                    markChanged(k.edit.kind);
                     checks?.ask(ed.course, flownTransform(), edMargin);
                 }
                 edHook.refused = null;
                 showEd();
-                // lane editor3 E2: a key that selects a gate takes the view to it; the mouse and the other keys leave the view
-                // review ED-1: a delete or a duplicate selects another gate too, so the view goes to it
-                if (k.edit.kind === 'select' || k.edit.kind === 'select-step' || ed.course.gates.length !== count) aim();
+                // lane edit4a A1 (E1): Tab, Delete and a duplicate select a gate and leave the view as the pilot set it
                 // lane edit4b (E4): the last gate deleted (or undone away): Add gate is on for the first one
                 if (ed.course.gates.length === 0) emptyWaits();
                 say(t('course.edit.did', { what: t(actionKey(k.edit)), gate: gateLine(ed, scale()) }));
@@ -1300,6 +1531,8 @@ export const course: Feature = {
         /** E4: a new empty course of the pilot's own (a new identity: not saved, changed) */
         const startNew = (file: TrackFile): void => {
             if (!ed) return;
+            // lane edit4s: the course as it stands is kept as a draft before the new one replaces it
+            keeper?.beforeLoss('new');
             edSource = { ...file, id: freshId(file.id), version: 1 };
             hook.saved = null;
             hook.source = 'new';
@@ -1308,7 +1541,6 @@ export const course: Feature = {
             edChanged = true;
             askedFor = null;
             edHook.refused = null;
-            framedId = null;
             panel?.defaults('', edSource.title);
             showEd();
             emptyWaits();
@@ -1330,11 +1562,11 @@ export const course: Feature = {
             edHook.refused = null;
             const sel = a.kind === 'select' || a.kind === 'select-step';
             if (!sel) {
-                edChanged = true;
+                // lane edit4s: one path for a change (the draft keeper and the fixes offer hear it)
+                markChanged(by);
                 checks?.ask(ed.course, flownTransform(), edMargin);
             }
-            // the seam never moves the camera: the new selection counts as framed
-            framedId = ed.course.gates[ed.selected]?.id ?? null;
+            // the seam never moves the camera (lane edit4a A1: no selection moves it)
             showEd();
             emptyWaits();
             say(t('course.edit.did', { what: t(actionKey(a)), gate: gateLine(ed, scale()) }));
@@ -1395,9 +1627,9 @@ export const course: Feature = {
             select: (index, by) => {
                 if (!ed || index === ed.selected || index < -1 || index >= ed.course.gates.length) return;
                 ed = { ...ed, selected: index };
-                framedId = ed.course.gates[index]?.id ?? null;
+                const id = ed.course.gates[index]?.id ?? null;
                 showEd();
-                b.emit('selected', { index, id: framedId === null ? null : String(framedId), by });
+                b.emit('selected', { index, id: id === null ? null : String(id), by });
             },
             flashGate: (index, on) => stage.flashEdit(index, on),
             startNew: (file) => startNew(file),
@@ -1407,9 +1639,15 @@ export const course: Feature = {
                     ? { ok: true, id: hook.saved, version: edSource?.version ?? 1 }
                     : { ok: false, problem: { status: null, code: 'not-saved', detail: edHook.said ?? '', retryAfterS: null } };
             },
-            trackNow: () => trackNow(),
+            trackNow: () => {
+                const tr = trackNow();
+                if (!tr) throw new Error('editor seam: the editor is closed');
+                return tr;
+            },
             generate: (seed) => {
                 if (busy) return;
+                // lane edit4s: the course as it stands is kept as a draft before the new one replaces it
+                keeper?.beforeLoss('generate');
                 reopenAfter = true;
                 generate(seed ?? randomSeed());
             },
@@ -1442,13 +1680,29 @@ export const course: Feature = {
                 showEd();
             }
         };
+        /**
+         * Lane edit4s (E9): a failed save says what happened, that the course is kept (a draft is written now, changed or
+         * not) and what to do: the field is outlined, the gate is pointed at, Save again waits for the time it names.
+         */
+        const saveFailed = (p: SaveProblem, what: 'save' | 'admin save'): void => {
+            hook.problem = `${what}: ${p.detail}`;
+            keeper?.saveFailed();
+            const w = saveProblemWords(p, Date.now(), ed?.course.gates.length ?? 0);
+            saveHook = { problem: p, key: w.key, again: w.again };
+            if (w.field) panel?.markField(w.field);
+            // lane edit4b (E8), edit4a A1: the gate is selected where it stands and pointed at; the view stays
+            if (w.gate !== null && ed && w.gate <= ed.course.gates.length) bus?.call('pointAt', w.gate - 1, 'problem');
+            panel?.offerAgain(w.again);
+            say(t(w.key, w.args), true);
+        };
         const saveMine = async (nameIn: string, titleIn: string): Promise<void> => {
             if (!ed || !edSource || saving) return;
             await checked();
             if (!ed || !edSource) return;
-            if (!canSave(ed)) return refusedSave();
+            if (!canSave(ed)) return refusedSave(() => void saveMine(nameIn, titleIn));
             const name = nameIn.trim().normalize('NFC');
-            const title = titleIn.trim().normalize('NFC');
+            // lane edit4s (E9): an emptied title keeps the course's own (as the admin's save does), it is no refusal
+            const title = titleIn.trim().normalize('NFC') || edSource.title;
             const edited = toTrackV1(ed.course);
             const serverId = hook.saved ?? (hook.source === 'server' ? edSource.id : null);
             // review TK-10: an unchanged course already on the server is not posted again (a new title is a change)
@@ -1463,11 +1717,13 @@ export const course: Feature = {
             saving = true;
             const r = await store.saveMine(body, token);
             saving = false;
-            if (!r.ok) {
-                hook.problem = `save: ${r.problem}`;
-                return say(t('course.save.failed', { msg: r.problem.slice(0, 120) }), true);
-            }
+            if (!r.ok) return saveFailed(r.problem, 'save');
             if (r.token) rememberToken(r.id, r.token);
+            saveHook = { problem: null, key: null, again: null };
+            panel?.offerAgain(null);
+            keeper?.saved(body);
+            // int4 (the seam of edit4b and edit4s): the parts hear the save too (life.ts: a later loss question no longer says 'unsaved')
+            bus?.emit('saved', { id: r.id, version: r.version });
             hook.saved = r.id;
             hook.source = 'server';
             hook.track = { id: r.id, version: r.version };
@@ -1488,14 +1744,14 @@ export const course: Feature = {
                 say(t('course.save.done'));
                 showEd();
                 renderList();
-            } else say(t('course.save.failed', { msg: hook.problem ?? '' }), true);
+            } else if (lastSaveProblem) saveFailed(lastSaveProblem, 'save');
         };
         /** stage F1-finish (R6/R8): the admin's edit of the gates as a new version of the served course, marked edited by the admin */
         const saveAdmin = async (titleIn: string): Promise<void> => {
             if (!ed || !edSource || saving || !adminLive) return;
             await checked();
             if (!ed || !edSource) return;
-            if (!canSave(ed)) return refusedSave();
+            if (!canSave(ed)) return refusedSave(() => void saveAdmin(titleIn));
             const serverId = hook.saved ?? (hook.source === 'server' ? edSource.id : null);
             if (serverId === null) return say(t('course.edit.adminFirst'), true);
             const title = titleIn.trim().normalize('NFC') || edSource.title;
@@ -1507,12 +1763,13 @@ export const course: Feature = {
             try {
                 r = await new TracksAdminClient(adminClient).version(serverId, body as unknown as Record<string, unknown>);
             } catch (e) {
-                const msg = e instanceof ApiError ? e.reason || `HTTP ${e.status}` : String(e);
-                hook.problem = `admin save: ${msg}`;
-                return say(t('course.save.failed', { msg: msg.slice(0, 120) }), true);
+                saving = false;
+                return saveFailed(e instanceof ApiError && e.status > 0 ? answerProblem(e.status, { error: e.reason }, null) : NETWORK_PROBLEM(e), 'admin save');
             } finally {
                 saving = false;
             }
+            keeper?.saved(body as unknown as TrackFile);
+            bus?.emit('saved', { id: serverId, version: r.version });
             hook.saved = serverId;
             hook.source = 'server';
             hook.track = { id: serverId, version: r.version };
@@ -1548,6 +1805,7 @@ export const course: Feature = {
             if (i < 0 || busy) return;
             // review TK-4: a row's Edit drops unsaved changes only when clicked twice; the clicked course or none (only)
             if (ask(`row:${id}`, t('course.edit.unsavedAgain'))) return;
+            keeper?.beforeLoss('open-other');
             reopenAfter = true;
             void loadServer(i, true);
         };
@@ -1556,17 +1814,28 @@ export const course: Feature = {
         addEventListener('keydown', (e: KeyboardEvent) => {
             // lane editor3 E3: while the drone flies the keys belong to the flight
             if (!ed || !panel || mode === 'fly') return;
+            // review of lane edit4a: Esc during a handle drag belongs to the edit view (view-mouse.ts onKey cancels the drag
+            // and stops the key); this listener runs first, and its Esc would ask 'leave without saving' or leave the editor
+            if (e.code === 'Escape' && view?.isDragging()) return;
             const target = e.target;
             const inWindow = target instanceof Node && panel.root.contains(target);
             // review of lane edit4b: an open question or Course menu takes its own keys (Esc closes it first)
             const overlay = askOpen() || top?.menuOpen() === true;
             const route = keyRoute(e, { typing: panel.typing(target), inWindow, onButton: target instanceof HTMLButtonElement, overlay });
             if (route === 'pass') return;
-            if (e.code === 'Escape' && view?.adding) {
+            // the order key Esc closes things in (course/editor/warn.ts escTarget): the open question, armed adding, the editor
+            const escAt = e.code === 'Escape' ? escTarget((warnBar?.asking() ?? null) !== null, !!view?.adding) : null;
+            if (escAt === 'question') {
+                e.preventDefault();
+                e.stopPropagation();
+                warnBar?.dismiss();
+                return;
+            }
+            if (escAt === 'adding' && view) {
                 e.preventDefault();
                 e.stopPropagation();
                 view.adding = false;
-                top?.adding(false);
+                showAdding(false);
                 return;
             }
             e.preventDefault();

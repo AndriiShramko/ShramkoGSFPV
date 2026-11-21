@@ -1,0 +1,13 @@
+{
+  "messages.send": "Send to the author",
+  "messages.close": "Close this message",
+  "messages.fix.default": "If it comes again, send it to the author: the button below.",
+  "messages.more": "+{n} more in Messages",
+  "messages.title": "Messages",
+  "messages.empty": "No messages yet.",
+  "messages.unread": "problems not read: {n}",
+  "messages.kind.info": "Note",
+  "messages.kind.done": "Done",
+  "messages.kind.problem": "Problem",
+  "messages.kind.progress": "At work"
+}

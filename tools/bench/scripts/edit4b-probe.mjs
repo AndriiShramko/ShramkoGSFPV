@@ -141,11 +141,20 @@ try {
 
     // 1 open: numbers in the hook and the same on screen
     let s = await until(snap, (x) => x.open && x.mode === 'edit' && (x.b?.numbers?.labels?.length ?? 0) > 0, 4000);
+    // int4 car 2: the editor opens at the flight camera (editor3 E2) and since edit4a nothing frames gate 1 on open (the
+    // owner's rule E1: the view never moves by itself), so a drone that looked away from the course leaves no gate in view
+    // (13 gates, no label: one run of three on 030d11d1). The pilot's way to the course is Home (edit4a frameAll).
+    let home = false;
+    if (!s.ok && s.v.open && s.v.mode === 'edit' && (s.v.ids?.length ?? 0) > 0) {
+        home = true;
+        await page.keyboard.press('Home'); // a key without text (key() sends text)
+        s = await until(snap, (x) => x.open && x.mode === 'edit' && (x.b?.numbers?.labels?.length ?? 0) > 0, 4000);
+    }
     const N = s.v.ids ? s.v.ids.length : 0;
     const labels = s.v.b?.numbers?.labels ?? [];
     const onScreen = s.v.nums.map(Number).sort((a, b) => a - b);
     judge('1-open-numbers', s.ok && N > 0 && labels.every((n) => n >= 1 && n <= N) && JSON.stringify([...labels].sort((a, b) => a - b)) === JSON.stringify(onScreen),
-        { gates: N, labels, onScreen, mode: s.v.mode });
+        { gates: N, labels, onScreen, mode: s.v.mode, home, numbers: s.v.b?.numbers ?? null });
     if (!s.v.open) throw new Error('edit view did not open');
     if (env.SHOT !== '0') {
         mkdirSync(SHOTS, { recursive: true });
@@ -206,7 +215,18 @@ try {
         let prevEye = null;
         return until(async () => { const a = (await snap()).eye; const d = dist(a, prevEye); prevEye = a; return d; }, (d) => d >= 0 && d < 0.001, 6000, 400);
     };
-    const rest = await eyeRest();
+    let rest = await eyeRest();
+    // int4 (car 1's live run failed here): on the live site Save is never pressed, so a course that already has a problem
+    // (gate 1 of step 6 in a wall) left this step nothing to judge. There Undo takes gates back until no gate has a problem,
+    // then the add below makes the sentence that names a gate.
+    const undone = [];
+    for (let i = 0; LIVE && i < 4 && (await snap()).problems > 0; i++) {
+        await press('[data-top="undo"]', 300);
+        rest = await eyeRest();
+        const u = await snap();
+        undone.push({ gates: u.ids?.length ?? null, problems: u.problems });
+    }
+    if (undone.length > 0) res.log.push(`live: ${undone.length} undo before step 10 (a gate in a wall)`);
     const before = await snap();
     const e10 = before.eye;
     // a floor gate the check refuses (gate 1 of step 6 stood in a wall there); an accepted one is undone and the next spot tried
@@ -248,7 +268,13 @@ try {
         await eyeRest();
         const b = await snap();
         await press('.ce-save-mine', 0);
-        const got = await until(snap, (v) => v.said !== b.said && v.flash.length > 0, 3000, 100);
+        let got = await until(async () => ({ v: await snap(), offer: await boxOf('.course-editor .ce-fix-offer .ce-fix-show') }), (x) => (x.v.said !== b.said && x.v.flash.length > 0) || !!x.offer, 8000, 100);
+        // int4: since edit4s (E7) a Save whose problems have small corrections first offers them; its 'Show me' is the
+        // pilot's way to the named gate (course.ts refusedSave -> pointAtWrong), so the probe presses it there
+        const offered = !!got.v.offer && got.v.v.flash.length === 0;
+        if (offered) await press('.course-editor .ce-fix-offer .ce-fix-show', 0);
+        got = await until(snap, (v) => v.said !== b.said && v.flash.length > 0, 3000, 100);
+        if (offered) res.log.push('save offered corrections: Show me pressed');
         await sleep(1500);
         const later = await snap();
         save = { said: got.v.said, flash: got.v.flash, pointed: got.v.b?.pointed ?? null, selected: got.v.selected, wrong: got.v.wrong, eyeMoved: Math.round(dist(later.eye, b.eye) * 1000) / 1000, nameAsked: later.windows };

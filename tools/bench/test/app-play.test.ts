@@ -28,6 +28,7 @@ import { GAME_KEYS, GAME_START_CODES, MODE2_KEYS, MODE2_TILT_STICK, MODE2_YAW_ST
 import { PadGrab, SCREEN_EDGE_PX, UNBOUNDED, absoluteRead, padTravel, reachOf } from '../../../apps/fly/src/play/touch-map';
 import { GOAL_S, SCHOOL_STEPS, SchoolProgress, settingsOf, stepOf } from '../../../apps/fly/src/play/school';
 import { EasyPilot } from '../../../apps/fly/src/play/easy';
+import { GamePilot } from '../../../apps/fly/src/play/game-pilot';
 import type { Controls } from '../../../apps/fly/src/controls';
 import type { FlightSession } from '../../../apps/fly/src/session';
 
@@ -509,5 +510,21 @@ describe('easy play during an in-page scene switch (v0.9 lane A)', () => {
         pilot.send(ask, 33);
         expect(sent.length).toBe(1);
         expect(sent[0][0]).toBeCloseTo(0.2);
+    });
+
+    // ux4b: a cancelled load leaves the scene list open with no model for as long as the pilot likes; the keyboard
+    // game pilot threw the same "reading 'armed'" on every frame meanwhile (ux4b-cancel-probe step 8: 248 in 3 s)
+    it('the keyboard game pilot: no model, nothing sent and nothing thrown; with a model the frame goes', () => {
+        const sent: number[][] = [];
+        const controls = { channels: (ch: ArrayLike<number>) => { sent.push(Array.from(ch)); }, flyingMode: () => 'angle' as FlightMode } as unknown as Controls;
+        let sim: Sim | undefined;
+        const pilot = new GamePilot(controls, { session: () => ({ sim, paused: false }) as unknown as FlightSession, speed: () => 'normal' });
+        const keys = { forward: 1, strafe: 0, turn: 0, lift: 0 };
+        expect(() => pilot.send(keys, 0)).not.toThrow();
+        expect(() => pilot.send(keys, 16)).not.toThrow();
+        expect(sent.length).toBe(0);
+        sim = new Sim(params(), null);
+        pilot.send(keys, 33);
+        expect(sent.length).toBe(1);
     });
 });

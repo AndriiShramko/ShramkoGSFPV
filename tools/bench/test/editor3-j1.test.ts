@@ -4,7 +4,6 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { reframeAfterDrag, REFRAME_SHARE } from '../../../apps/fly/src/course/editor/frame';
 import { EDIT_ARROW_SHARE, sizeAxes } from '../../../apps/fly/src/course/editor/handle-look';
 import { minorAxis, pickRing, ringDeg, type P2 } from '../../../apps/fly/src/course/editor/ring-pick';
 import { editPaints } from '../../../apps/fly/src/course/editor/rules';
@@ -13,24 +12,14 @@ import { shareArrows, type ScaleNode } from '../../../apps/fly/src/course/editor
 const ROOT = join(__dirname, '..', '..', '..');
 const src = (p: string): string => readFileSync(join(ROOT, p), 'utf8');
 
-describe('E1: the view frames the gate again when a drag ends with the gate outside the middle 80 %', () => {
-    it('a box inside the middle stays, one past its edge or behind the eye is framed again', () => {
-        expect(REFRAME_SHARE).toBe(0.8);
-        // 1920 x 1080: the middle 80 % is x 192..1728, y 108..972
-        expect(reframeAfterDrag([700, 300, 1220, 780], 1920, 1080)).toBe(false);
-        // the gate at 1.2 m framed, then sized to 2.4 m: its box twice as large round the same centre leaves the view
-        expect(reframeAfterDrag([440, 60, 1480, 1020], 1920, 1080)).toBe(true);
-        expect(reframeAfterDrag([100, 300, 600, 700], 1920, 1080)).toBe(true);
-        expect(reframeAfterDrag(null, 1920, 1080)).toBe(true);
-    });
-    it('course.ts asks it at the drag end only, with the view own box of the gate', () => {
+// Train 4 lane edit4a A1 replaced this J1 E1 (the view framed the gate again after a drag): the owner, brief 547, "when I move
+// an obstacle, why move my view? No 3D editor does that". tools/bench/test/edit4a-camera.test.ts holds the new rule.
+describe('E1 (train 4 edit4a): a drag never moves the view', () => {
+    it('course.ts and frame.ts have no reframe after a drag', () => {
         const c = src('apps/fly/src/app/builtin/course.ts');
-        // review EJ-2: the box before the drag decides too (frame.ts reframeOnDragEnd, test editor3-fixes3)
-        // fixes3 pass 2: the decision is kept in `re` for the probes' edit hook, then framed
-        expect(c).toMatch(/const gb = view\?\.gateBox\(\);[\s\S]{0,80}const re = !!\(st && gb && reframeOnDragEnd\(before, gb\.box, gb\.w, gb\.h\)\);[\s\S]{0,300}if \(re\) frameSel\(\);/);
-        // after the drag's last redraw, not in the live branch (that one returns before)
-        const at = c.indexOf('reframeOnDragEnd(before, gb.box');
-        expect(c.lastIndexOf('dragBase = null;', at)).toBeGreaterThan(c.lastIndexOf('if (!dragFrame) dragFrame', at));
+        const f = src('apps/fly/src/course/editor/frame.ts');
+        expect(c).not.toMatch(/reframeOnDragEnd\(|if \(re\) frameSel\(\);/);
+        expect(f).not.toMatch(/export function reframe/);
     });
 });
 

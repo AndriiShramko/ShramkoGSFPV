@@ -58,6 +58,18 @@ export interface SonicAudioOptions {
     readonly speech?: SpeechOut | null;
 }
 
+/**
+ * Why the sound did not come up (lane sound6 S4): 'no-web-audio', the browser has no Web Audio at all; 'engine-failed', it has
+ * one but the engine threw while starting on it (Firefox did before the package's placeListener). 'none': it came up, or no
+ * start was tried yet.
+ */
+export type AudioFailure = 'none' | 'no-web-audio' | 'engine-failed';
+
+/** The line the start screen shows for a failure (a way on in each: another browser, or a reload), null when there is none. */
+export function audioProblemKey(f: AudioFailure): 'sonic.start.noAudio' | 'sonic.start.engineFailed' | null {
+    return f === 'no-web-audio' ? 'sonic.start.noAudio' : f === 'engine-failed' ? 'sonic.start.engineFailed' : null;
+}
+
 export class SonicAudio {
     readonly engine: PageEngine;
     private readonly deps: AudioDeps;
@@ -66,7 +78,7 @@ export class SonicAudio {
     private prefsValue: SonicPrefs;
     private themeValue: ThemeDef;
     private localeValue: Locale;
-    private noAudio = false;
+    private failureValue: AudioFailure = 'none';
 
     constructor(o: SonicAudioOptions) {
         this.deps = o.deps ?? browserDeps;
@@ -101,7 +113,12 @@ export class SonicAudio {
 
     /** Web Audio exists in this browser (false after a start that found none). */
     get available(): boolean {
-        return !this.noAudio;
+        return this.failureValue === 'none';
+    }
+
+    /** Why the sound did not come up ('none' while it runs or before a start). */
+    get failure(): AudioFailure {
+        return this.failureValue;
     }
 
     /** The engine runs: the context exists and the graph is built. */
@@ -119,14 +136,14 @@ export class SonicAudio {
         this.deps.unlockSpeech();
         const ac = this.deps.makeContext();
         if (!ac) {
-            this.noAudio = true;
+            this.failureValue = 'no-web-audio';
             this.starting = Promise.resolve();
             return this.starting;
         }
         this.context = ac;
         this.starting = this.engine.start(ac).catch((e: unknown) => {
             console.warn('fly by sound: the engine did not start', e);
-            this.noAudio = true;
+            this.failureValue = 'engine-failed';
         });
         return this.starting;
     }

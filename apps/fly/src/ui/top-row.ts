@@ -104,7 +104,12 @@ export function watchTopRow(ui: HTMLElement): void {
         queued = true;
         requestAnimationFrame(() => { queued = false; layoutTopRow(ui); });
     };
-    const sizes = new ResizeObserver(again);
+    // A size change is laid out at once, in the observer's callback: it runs after layout and before paint, so the frame that
+    // first shows a new message already has it under the row. Through again() the move waited for the next frame, and on a
+    // slow frame (a heavy scan, a weak GPU) the line lay over the top-row buttons that long: ux4a-messages step 6 at 1536x730,
+    // two runs of three, 2.9 s (int4 car 2). Nothing laid out here changes an observed size (fly.css moves only tops), so
+    // the observer does not loop.
+    const sizes = new ResizeObserver(() => layoutTopRow(ui));
     const observe = (): void => {
         for (const el of ui.querySelectorAll(':scope > .top-actions, :scope > .bake-box, :scope > .hud-note')) sizes.observe(el);
     };

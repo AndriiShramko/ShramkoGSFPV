@@ -156,7 +156,9 @@ try {
         const n = (await said(page)).length;
         await page.locator('label[for="sonic-head"]').click();
         const onAgain = await page.waitForFunction(([k, x]) => window.__said.slice(k).some((s) => s.text === x), [n, LINE('on')], { timeout: 60_000 }).then(() => true, () => false);
-        await page.locator('[data-testid="sonic-start-beginning"]').click();
+        // int4: sound6 replaced 'Start the course from the beginning' with Quick start and Full course (sonic-start-screen.test.ts
+        // expects no sonic-start-beginning); Quick start is the first lesson by the mouse, as the step meant
+        await page.locator('[data-testid="sonic-start-quick"]').click();
         await page.waitForTimeout(4000);
         await page.mouse.click(768, 365);
         await page.waitForTimeout(500);

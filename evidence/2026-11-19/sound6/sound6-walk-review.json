@@ -1,0 +1,167 @@
+{
+  "probe": "sonic-quick-walk",
+  "target": "http://127.0.0.1:6162",
+  "at": "2026-11-19T17:45:26.170Z",
+  "pass": true,
+  "failed": [],
+  "steps": [
+    {
+      "browser": "chromium",
+      "n": 1,
+      "name": "the start screen fits at 1536x730 (scale 1.25)",
+      "pass": true,
+      "value": {
+        "overflowX": 0,
+        "buttons": 45,
+        "small": [],
+        "outside": [],
+        "overlaps": []
+      }
+    },
+    {
+      "browser": "chromium",
+      "n": 2,
+      "name": "\"Quick start\" is the first button of Start and visible",
+      "pass": true,
+      "value": {
+        "order": [
+          "sonic-start-quick",
+          "sonic-start-full"
+        ],
+        "visible": true
+      }
+    },
+    {
+      "browser": "chromium",
+      "n": 3,
+      "name": "a mouse click on it: sound running within 2 s, no sound problem shown",
+      "pass": true,
+      "value": {
+        "states": [
+          "running"
+        ],
+        "problem": null,
+        "clicked": "[data-testid=\"sonic-start-quick\"]"
+      }
+    },
+    {
+      "browser": "chromium",
+      "n": 4,
+      "name": "the first wall cue within 12 s of the click",
+      "pass": true,
+      "value": {
+        "seconds": 7.8,
+        "hook": true,
+        "speech": [
+          {
+            "text": "",
+            "voice": null,
+            "called": 1,
+            "started": 246,
+            "ended": 246
+          },
+          {
+            "text": "Headphone check",
+            "voice": "Microsoft David - English (United States)",
+            "called": 526,
+            "started": 629,
+            "ended": 2359
+          },
+          {
+            "text": "Headphones on, L on your left ear.",
+            "voice": "Microsoft David - English (United States)",
+            "called": 530,
+            "started": 2422,
+            "ended": 5703
+          },
+          {
+            "text": "Sound 1 of 3.",
+            "voice": "Microsoft David - English (United States)",
+            "called": 5703,
+            "started": 5776,
+            "ended": 7754
+          }
+        ]
+      }
+    },
+    {
+      "browser": "chromium",
+      "n": 5,
+      "name": "the headphone check answered on its three questions -> passed",
+      "pass": true,
+      "value": {
+        "lesson": "ears-headphones"
+      }
+    },
+    {
+      "browser": "chromium",
+      "n": 6,
+      "name": "ears-walls names left, right, up, down and never front or behind",
+      "pass": true,
+      "value": {
+        "passed": true,
+        "dirs": [
+          "dir.left",
+          "dir.right",
+          "dir.up",
+          "dir.down"
+        ],
+        "banned": []
+      }
+    },
+    {
+      "browser": "chromium",
+      "n": 7,
+      "name": "walls-hall opens after it",
+      "pass": true,
+      "value": {
+        "lesson": "walls-hall",
+        "phase": "intro",
+        "seconds": 112
+      }
+    },
+    {
+      "browser": "chromium",
+      "n": 8,
+      "name": "back at Start: Continue, Quick start, Full course",
+      "pass": true,
+      "value": {
+        "order": [
+          "sonic-start-continue",
+          "sonic-start-quick",
+          "sonic-start-full"
+        ]
+      }
+    },
+    {
+      "browser": "chromium",
+      "n": 9,
+      "name": "at 844x390 the start screen fits and keeps that order",
+      "pass": true,
+      "value": {
+        "overflowX": 0,
+        "buttons": 46,
+        "small": [],
+        "outside": [],
+        "overlaps": [],
+        "order": [
+          "sonic-start-continue",
+          "sonic-start-quick",
+          "sonic-start-full"
+        ]
+      }
+    },
+    {
+      "browser": "chromium",
+      "n": 11,
+      "name": "Full course, back, then Quick start by Tab and Enter: path full, then fast, the headphone check opens",
+      "pass": true,
+      "value": {
+        "afterFull": "full",
+        "tabs": 6,
+        "afterQuick": "fast",
+        "lesson": "ears-headphones"
+      }
+    }
+  ]
+}

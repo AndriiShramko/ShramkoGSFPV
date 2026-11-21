@@ -1,0 +1,15 @@
+/* lane edit4a A2: the tag at the cursor over a part of the gizmo ('Move along X', 'Turn around Y', 'Size') and the
+   word after a cancelled drag. It never takes the mouse, so it lies over nothing the pilot can press. */
+.ce-hover-tag {
+    position: fixed;
+    z-index: 6;
+    pointer-events: none;
+    padding: 3px 9px;
+    background: rgb(12, 16, 22);
+    color: #fff;
+    border: 1px solid #ffdb14;
+    border-radius: 6px;
+    font: 600 0.95rem/1.4 system-ui, sans-serif;
+    white-space: nowrap;
+}
+.ce-hover-tag[hidden] { display: none; }

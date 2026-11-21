@@ -6,5 +6,9 @@
   "load.view.loading": "files on their way: {n}",
   "load.view.soon": "shown in {s} s at most",
   "load.reveal.pilot": "You chose Fly now: the rest of the scan keeps loading while you fly.",
-  "load.reveal.stall": "Nothing arrived for 30 s, so you see what is here; the rest keeps loading while you fly."
+  "load.reveal.stall": "Nothing arrived for 30 s, so you see what is here; the rest keeps loading while you fly.",
+  "load.cancel": "Cancel",
+  "load.cancel.key": "key Esc",
+  "load.cancel.done": "Loading stopped. Pick another scene, or close the list to go back.",
+  "load.cancel.back": "Back to {title}"
 }

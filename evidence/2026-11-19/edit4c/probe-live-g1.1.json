@@ -1,0 +1,295 @@
+{
+ "address": "https://gsfpv.flyreelstudio.eu/en",
+ "scene": "70b50d42",
+ "size": [
+  1536,
+  730
+ ],
+ "dsf": 1.25,
+ "live": true,
+ "date": "2026-11-19T16:43:52.326Z",
+ "steps": {
+  "s1.open": {
+   "verdict": "PASS",
+   "mode": "edit",
+   "gates": 39,
+   "onPage": 39,
+   "under": [
+    "CANVAS.#view",
+    "CANVAS.#view",
+    "CANVAS.#view",
+    "BUTTON.ce-gb"
+   ],
+   "screen": [
+    [
+     1005,
+     398,
+     10.12
+    ],
+    [
+     1147,
+     378,
+     17.1
+    ],
+    [
+     1222,
+     373,
+     24.13
+    ],
+    [
+     1255,
+     362,
+     29.13
+    ],
+    [
+     1254,
+     362,
+     29.88
+    ],
+    [
+     1252,
+     362,
+     30.63
+    ],
+    [
+     1251,
+     362,
+     31.39
+    ],
+    [
+     1288,
+     359,
+     36.05
+    ],
+    [
+     1293,
+     359,
+     36.49
+    ],
+    [
+     1299,
+     359,
+     36.94
+    ],
+    [
+     1299,
+     360,
+     41.71
+    ],
+    [
+     1215,
+     359,
+     51.45
+    ]
+   ],
+   "selected": 0,
+   "stand": [
+    1005,
+    398,
+    10.12
+   ],
+   "lock": null
+  },
+  "s2.add": {
+   "verdict": "FAIL",
+   "judged": {
+    "leg": 13,
+    "clickedAt": [
+     646,
+     170
+    ],
+    "armed": true,
+    "grew": true,
+    "newIndex": 1,
+    "wantIndex": 14,
+    "hitM": 75.72980242131881,
+    "offDeg": 89.1,
+    "neighbours": [
+     "g1",
+     "g2"
+    ],
+    "wasLeg": [
+     "g14",
+     "g15"
+    ],
+    "between": false,
+    "legDepth": 70.82,
+    "hidden": false
+   },
+   "tries": [
+    {
+     "leg": 13,
+     "clickedAt": [
+      646,
+      170
+     ],
+     "armed": true,
+     "grew": true,
+     "newIndex": 1,
+     "wantIndex": 14,
+     "hitM": 75.72980242131881,
+     "offDeg": 89.1,
+     "neighbours": [
+      "g1",
+      "g2"
+     ],
+     "wasLeg": [
+      "g14",
+      "g15"
+     ],
+     "between": false,
+     "legDepth": 70.82,
+     "hidden": false
+    }
+   ]
+  },
+  "s3.piece": {
+   "verdict": "FAIL",
+   "choice": "double-vertical",
+   "armed": true,
+   "chose": false,
+   "covered": null,
+   "added": 0,
+   "gaps": [],
+   "refused": null,
+   "said": "Click the place for the new gate (Esc: no new gate)"
+  },
+  "s3.undo": {
+   "verdict": "FAIL",
+   "why": "no piece to undo"
+  },
+  "s4.piece": {
+   "verdict": "FAIL",
+   "choice": "triple-horizontal",
+   "armed": true,
+   "chose": false,
+   "covered": null,
+   "added": 0,
+   "gaps": [],
+   "refused": null,
+   "said": "Click the place for the new gate (Esc: no new gate)"
+  },
+  "s4.undo": {
+   "verdict": "FAIL",
+   "why": "no piece to undo"
+  },
+  "s5.tag": {
+   "verdict": "FAIL",
+   "gate": 1,
+   "axis": "z",
+   "px": 904,
+   "tag": null,
+   "why": null
+  },
+  "s6.putBack": {
+   "verdict": "FAIL",
+   "asked": false,
+   "ask": null,
+   "moved": [
+    13.244,
+    2.4,
+    -4.886
+   ],
+   "back": null,
+   "before": [
+    -2,
+    2.4,
+    -11.2
+   ],
+   "barAfter": null
+  },
+  "s7.keep": {
+   "verdict": "FAIL",
+   "asked": false,
+   "stayed": false,
+   "moved": true,
+   "kept": null,
+   "id": "g1",
+   "barAfter": null,
+   "why": null,
+   "px": 904
+  },
+  "s8.small": {
+   "verdict": "FAIL",
+   "fits": false,
+   "clear": false,
+   "cross44": false,
+   "closed": false,
+   "list": null
+  }
+ },
+ "ready": {
+  "status": "ready",
+  "s": 8
+ },
+ "lockAfterClick": "CANVAS",
+ "course": {
+  "ok": true,
+  "s": 26,
+  "gates": 39
+ },
+ "backOffs": [
+  {
+   "onPage": 1,
+   "mode": "edit",
+   "open": true
+  },
+  {
+   "onPage": 1,
+   "mode": "edit",
+   "open": true
+  },
+  {
+   "onPage": 1,
+   "mode": "edit",
+   "open": true
+  },
+  {
+   "onPage": 1,
+   "mode": "edit",
+   "open": true
+  },
+  {
+   "onPage": 1,
+   "mode": "edit",
+   "open": true
+  },
+  {
+   "onPage": 1,
+   "mode": "edit",
+   "open": true
+  }
+ ],
+ "tags": [
+  {
+   "label": "first",
+   "axis": "z",
+   "px": 904,
+   "tag": null
+  },
+  {
+   "label": "second",
+   "axis": "z",
+   "px": 904,
+   "tag": null
+  },
+  {
+   "label": "second-again",
+   "axis": "x",
+   "px": 904,
+   "tag": null
+  }
+ ],
+ "fails": [
+  "s2.add",
+  "s3.piece",
+  "s3.undo",
+  "s4.piece",
+  "s4.undo",
+  "s5.tag",
+  "s6.putBack",
+  "s7.keep",
+  "s8.small"
+ ],
+ "log": []
+}

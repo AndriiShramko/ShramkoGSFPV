@@ -24,6 +24,7 @@ import { applyDrawing, DEFAULT_BUDGET_M } from './drawing';
 import { AccumDrawing, accumMissing, worldLayer } from './accum';
 import type { AccumStats } from './accum';
 import { DEFAULT_STOCHASTIC_IMPL, applyStochastic, holdOnUnload } from './accum-policy';
+import { SplatLoadCancelled, SplatLoadGuard } from './splat-load-guard';
 import type { DrawPlan, StochasticImpl } from './accum-policy';
 import type { GpuInfo } from './device-class';
 import { BrokenFileError, lodMetaProblem, lodMode } from './lod';
@@ -267,6 +268,10 @@ export class SplatRenderer {
     private wantStochastic = false;
     /** between unloadSplat() and the next scan's first complete view the accumulating renderer waits (accum-policy.ts PlanInput.hold) */
     private accumHeld = false;
+    /** setSplatVisible(false) (the voxels-only view): kept for the next scan's entity and given to the plan (accum-policy.ts PlanInput.hidden) */
+    private splatHidden = false;
+    /** which loadSplat() still counts: unloadSplat() makes a load under way stale (splat-load-guard.ts, the cancel of a scene load) */
+    private loadGuard = new SplatLoadGuard();
     /** what the last setStochastic decided (the test hook, F3) */
     plan: DrawPlan = { draw: 'sorted', why: 'not-asked' };
     /** the frame's priority in the choice of detail of a streamed scan (view-lod.ts), wanted, and at work in the last frame */
@@ -515,15 +520,34 @@ export class SplatRenderer {
             c.listed = true;
             return data;
         };
+        // unloadSplat() or a newer loadSplat() while this one runs: it ends with SplatLoadCancelled and leaves nothing behind
+        const ticket = this.loadGuard.begin();
+        const cancelled = (): SplatLoadCancelled => new SplatLoadCancelled(filename);
         return start().then((data) => new Promise<Entity>((resolve, reject) => {
+            if (this.loadGuard.isStale(ticket)) {
+                reject(cancelled());
+                return;
+            }
             const asset = new Asset(filename, 'gsplat', { url, filename }, data as object | undefined);
             this.splatAsset = asset;
+            /** a stale load's asset is freed here, never shown over the next scan */
+            const dropStale = (): boolean => {
+                if (!this.loadGuard.isStale(ticket)) return false;
+                asset.unload();
+                this.app.assets.remove(asset);
+                if (this.splatAsset === asset) this.splatAsset = null;
+                reject(cancelled());
+                return true;
+            };
             asset.on('load', () => {
+                if (dropStale()) return;
                 const e = new Entity('gsplat', this.app);
                 e.setLocalEulerAngles(0, 0, 180); // SuperSplat scenes are stored upside down
                 e.setLocalPosition(this.sceneT[0], this.sceneT[1], this.sceneT[2]);
                 e.setLocalScale(this.sceneS, this.sceneS, this.sceneS);
                 e.addComponent('gsplat', { asset }); // unified rendering is the engine default
+                // hidden only when setSplatVisible(false) came during this load (unloadSplat shows the next scan)
+                e.enabled = !this.splatHidden;
                 this.app.root.addChild(e);
                 this.splat = e;
                 this.splatMadeAt = this.frameNumber;
@@ -538,10 +562,16 @@ export class SplatRenderer {
                 resolve(e);
             });
             asset.on('progress', (rec: number, len: number) => onProgress?.(Math.min(100, (rec / Math.max(1, len)) * 100)));
-            asset.on('error', (err: unknown) => reject(err instanceof Error ? err : new Error(String(err))));
+            asset.on('error', (err: unknown) => {
+                if (dropStale()) return;
+                reject(err instanceof Error ? err : new Error(String(err)));
+            });
             this.app.assets.add(asset);
             this.app.assets.load(asset);
-        }));
+        }), (err: unknown) => {
+            // the scene's file could not be read, but the load was cancelled meanwhile: that is the answer, not the failure
+            throw this.loadGuard.isStale(ticket) ? cancelled() : err;
+        });
     }
 
     /** The coarse level's files (splat counts from lod-meta) and the environment are the first view. */
@@ -795,12 +825,18 @@ export class SplatRenderer {
      * the latency guard and the device stay. Lead contract step before wave 3.
      */
     unloadSplat(): void {
+        // a load under way ends with SplatLoadCancelled (splat-load-guard.ts): its asset never becomes an entity over the next scan
+        this.loadGuard.invalidate();
         // the engine resets its work buffer while the scene changes; the accumulating renderer stays out of it until the next scan is ready.
         // Held whether or not it draws now (accum-policy.ts holdOnUnload): a drawing asked for while the scan loads waits as well
         if (holdOnUnload(this.stochasticImpl, this.accum?.failed != null)) {
             this.accumHeld = true;
             if (this.accum?.active) this.setStochastic(this.wantStochastic);
         }
+        // the next scan starts shown: the loading's reveal (apps/fly session/reveal.ts) waits for drawn splats, so a scan kept hidden
+        // through a scene switch in voxels only was shown only by the 30 s stall bound. The voxel view hides it again at the hand-over
+        // (apps/fly voxels.ts setSession -> apply).
+        if (this.splatHidden) this.setSplatVisible(true);
         if (this.splat) {
             this.splat.destroy();
             this.splat = null;
@@ -852,13 +888,20 @@ export class SplatRenderer {
         this.app.renderNextFrame = true;
     }
 
-    /** Show or hide the scan (the voxel overlay's "voxels only"): the splats stop drawing, nothing is unloaded. */
+    /**
+     * Show or hide the scan (the voxel overlay's "voxels only"): the splats stop drawing, nothing is unloaded. Hidden also switches the
+     * accumulating renderer off (accum-policy.ts PlanInput.hidden): its compose would keep painting the last scan frame behind the voxels.
+     * Shown again, the pilot's drawing (the last setStochastic request) comes back.
+     */
     setSplatVisible(on: boolean): void {
+        const was = this.splatHidden;
+        this.splatHidden = !on;
         if (this.splat) this.splat.enabled = on;
+        if (was !== this.splatHidden) this.setStochastic(this.wantStochastic);
     }
 
     get splatVisible(): boolean {
-        return !!this.splat?.enabled;
+        return !this.splatHidden && !!this.splat?.enabled;
     }
 
     /** Upper bound of splats drawn per frame, in millions (the quality governor moves it). */
@@ -884,9 +927,9 @@ export class SplatRenderer {
         const g = this.app.scene.gsplat;
         const gpuSort = this.currentRenderer === GSPLAT_RENDERER_RASTER_GPU_SORT;
         const failed = this.accum?.failed != null;
-        const wantsAccum = on && gpuSort && this.stochasticImpl === 'accum' && !failed;
+        const wantsAccum = on && gpuSort && this.stochasticImpl === 'accum' && !failed && !this.splatHidden;
         const missing = wantsAccum ? this.accumMissing() : [];
-        const r = applyStochastic({ on, gpuSort, impl: this.stochasticImpl, missing, failed, hold: this.accumHeld }, () => this.accumDrawing(), this.accum, g);
+        const r = applyStochastic({ on, gpuSort, impl: this.stochasticImpl, missing, failed, hold: this.accumHeld, hidden: this.splatHidden }, () => this.accumDrawing(), this.accum, g);
         this.plan = r.plan;
         return r.on;
     }

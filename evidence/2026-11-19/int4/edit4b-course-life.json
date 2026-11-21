@@ -1,0 +1,307 @@
+{
+ "address": "http://localhost:6180/en",
+ "scan": "70b50d42",
+ "size": [
+  1536,
+  730
+ ],
+ "dsf": 1.25,
+ "name": "int4",
+ "query": "&render=off",
+ "live": false,
+ "date": "2026-11-20T12:15:32.453Z",
+ "steps": {
+  "1-open-numbers": {
+   "ok": true,
+   "gates": 30,
+   "labels": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    9,
+    26,
+    28,
+    29
+   ],
+   "onScreen": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    9,
+    26,
+    28,
+    29
+   ],
+   "mode": "edit",
+   "home": false,
+   "numbers": {
+    "mode": "edit",
+    "labels": [
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     9,
+     26,
+     28,
+     29
+    ],
+    "spots": [
+     [
+      1,
+      1035,
+      701
+     ],
+     [
+      2,
+      1187,
+      550
+     ],
+     [
+      3,
+      1208,
+      476
+     ],
+     [
+      4,
+      1245,
+      524
+     ],
+     [
+      5,
+      1287,
+      469
+     ],
+     [
+      6,
+      1316,
+      437
+     ],
+     [
+      9,
+      1380,
+      429
+     ],
+     [
+      26,
+      1492,
+      441
+     ],
+     [
+      28,
+      1223,
+      416
+     ],
+     [
+      29,
+      1255,
+      415
+     ]
+    ],
+    "gates": 30,
+    "arrow": null
+   }
+  },
+  "2-clear-no": {
+   "ok": true,
+   "menu": true,
+   "item": true,
+   "asked": true,
+   "answered": true,
+   "gates": 30
+  },
+  "3-clear-yes": {
+   "ok": true,
+   "menu": true,
+   "item": true,
+   "asked": true,
+   "answered": true,
+   "gates": 0,
+   "said": "all gates deleted (Ctrl+Z brings them back). "
+  },
+  "4-undo": {
+   "ok": true,
+   "gates": 30
+  },
+  "5-new-empty": {
+   "ok": true,
+   "menu": true,
+   "item": true,
+   "asked": true,
+   "answered": true,
+   "gates": 0,
+   "addOn": "true",
+   "said": "Empty course. Add gate is on: click where the first gate stands"
+  },
+  "6-two-gates": {
+   "ok": true,
+   "gates": 2,
+   "labels": [
+    1,
+    2
+   ],
+   "onScreen": [
+    "1",
+    "2"
+   ],
+   "tried": [
+    [
+     645,
+     526,
+     true
+    ],
+    [
+     891,
+     526,
+     true
+    ]
+   ]
+  },
+  "7-fly": {
+   "ok": true,
+   "ms": 114,
+   "mode": "fly",
+   "button": "Back to editing"
+  },
+  "8-back": {
+   "ok": true,
+   "ms": 113,
+   "mode": "edit",
+   "top": true,
+   "button": "Fly the course"
+  },
+  "9-generate-no": {
+   "ok": true,
+   "menu": true,
+   "item": true,
+   "asked": true,
+   "answered": true,
+   "gates": 2
+  },
+  "10-pointed": {
+   "ok": true,
+   "how": [],
+   "eyeRest": true,
+   "wrong": {
+    "index": 1,
+    "key": "course.edit.fix.legWall",
+    "lead": "course.edit.addFix"
+   },
+   "pointed": {
+    "index": 1,
+    "n": 2,
+    "reason": "problem",
+    "reduced": false
+   },
+   "selected": 1,
+   "flash": [],
+   "problems": 3,
+   "said": "Nothing changed: your gates stay",
+   "save": {
+    "said": "Not saved. Gate 1 stands in a wall. Pull its arrows to move it out into the open, or delete it with the cross on its bar.",
+    "flash": [
+     "1"
+    ],
+    "pointed": {
+     "index": 0,
+     "n": 1,
+     "reason": "problem",
+     "reduced": false
+    },
+    "selected": 0,
+    "wrong": {
+     "index": 0,
+     "key": "course.edit.fix.gateWall",
+     "lead": "course.edit.saveFix"
+    },
+    "eyeMoved": 0,
+    "nameAsked": 0,
+    "ok": true
+   }
+  },
+  "12-esc-closes-first": {
+   "ok": true,
+   "menuOpen": true,
+   "menuEsc": {
+    "menu": 0,
+    "open": true,
+    "said": "Not saved. Gate 1 stands in a wall. Pull its arrows to move it out into the open, or delete it with the cross on its bar."
+   },
+   "asked": true,
+   "askEsc": {
+    "ask": 0,
+    "open": true,
+    "gates": 2,
+    "said": "Nothing changed: your gates stay"
+   },
+   "gates0": 2
+  },
+  "11-small-view": {
+   "ok": true,
+   "menuBox": {
+    "x": 441,
+    "y": 220,
+    "l": 326,
+    "t": 58,
+    "r": 556,
+    "b": 382,
+    "w": 230,
+    "h": 324
+   },
+   "menuX": {
+    "x": 528,
+    "y": 86,
+    "l": 506,
+    "t": 64,
+    "r": 550,
+    "b": 108,
+    "w": 44,
+    "h": 44
+   },
+   "askBox": {
+    "x": 422,
+    "y": 194.9921875,
+    "l": 202,
+    "t": 96.109375,
+    "r": 642,
+    "b": 293.875,
+    "w": 440,
+    "h": 197.765625
+   },
+   "askX": {
+    "x": 612,
+    "y": 126.109375,
+    "l": 590,
+    "t": 104.109375,
+    "r": 634,
+    "b": 148.109375,
+    "w": 44,
+    "h": 44
+   },
+   "closed": true
+  }
+ },
+ "log": [
+  "no label before Save"
+ ],
+ "ready": {
+  "status": "ready",
+  "ms": 3068
+ },
+ "lock": true,
+ "course": {
+  "ok": true,
+  "ms": 12170,
+  "gates": 30
+ },
+ "fails": [],
+ "verdict": "PASS"
+}
