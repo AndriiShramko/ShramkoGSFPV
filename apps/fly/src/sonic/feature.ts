@@ -320,7 +320,7 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
     const cueNames = createTranslator(locale, DICTS);
     const card = new MomentCard(document, document.body, (cue) => cueNames.text({ key: `cue.${cue}.name` }));
     offs.push(moments.onView((v) => card.show(v)));
-    offs.push(ctx.events.on('sonicEvent', (e) => { if (e.kind === 'speech' && e.key !== SPEECH_END_KEY) card.said(e.text); }));
+    offs.push(ctx.events.on('sonicEvent', (e) => { if (e.kind === 'speech') { if (e.key === SPEECH_END_KEY) card.ended(); else card.said(e.text); } }));
     offs.push(() => card.remove());
     // G (lane tutor-air S3): "What is this sound?" in any flight by sound (sound-tour.ts): the pause reason 'tour' holds the craft and
     // the lesson's clocks while the engine keeps sounding (bridge.ts soundsOnPause), one sound at a time; any other pause ends it

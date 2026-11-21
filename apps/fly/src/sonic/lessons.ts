@@ -165,11 +165,20 @@ export interface RunnerPlace {
  * waited for when no end of speech comes), the names of his keys (the lines say "Press N"), and the lesson G left: the glossary
  * opened from a lesson is a detour whose ways out lead back there, and leaving it forward does not mark it skipped (review R3).
  */
+/**
+ * Train 4 (lane tutor-air): whether this page teaches by moments: it can freeze the flight (a MomentHost) and the narrator is on (the
+ * narrator off is the guide off). Such a page names the keys once, in the first moment (sonic.say.momentKeys), then on K only (plan
+ * Part C 3): no line of keys at a lesson's start, so nothing but the headphone check comes before the first movement (decision 2).
+ */
+export function teachesByMoments(page: Pick<LessonPage, 'narratorOff' | 'moments'>): boolean {
+    return page.moments !== undefined && page.narratorOff?.() !== true;
+}
+
 export function runnerOptions(page: Pick<LessonPage, 'locale' | 'store' | 'path' | 'keyNames' | 'speechRate' | 'narratorOff' | 'moments'>, lessonId: string, place: RunnerPlace, sessionStartMs: number): RunnerOptions {
     // train 4 (lane tutor-air): the page teaches by moments (RunnerOptions.known: the sounds the pilot learned already, [] for a new
     // one) at his guide level; the narrator off is the guide off (the lead's decision, Part D): known absent, no moment runs
     // only a page that can freeze the flight (a MomentHost) teaches by moments: a host without one runs every lesson as before
-    const teach = page.moments !== undefined && page.narratorOff?.() !== true;
+    const teach = teachesByMoments(page);
     return {
         ...(teach ? { known: knownSounds(page.store), guide: guideLevel(page.store) } : {}),
         locale: page.locale,
@@ -817,6 +826,8 @@ export class LessonHost {
     private keysDue(): boolean {
         if (this.p.keyHints?.() === false) return false;
         if (this.said.named(this.keysId())) return false;
+        // train 4 (lane tutor-air): a page that teaches by moments names the keys in the first moment, then on K only
+        if (this.lesson?.id !== SCAN_FREE_ID && teachesByMoments(this.p)) return false;
         if (this.lesson?.world.kind !== 'none') return true;
         return this.soundHeard;
     }

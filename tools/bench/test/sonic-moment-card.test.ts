@@ -34,6 +34,7 @@ describe('the moment card (decision 9)', () => {
         expect(el.getAttribute('aria-hidden')).toBe('true');
         card.said('a line outside a moment');
         expect(el.textContent).toBe('');
+        card.ended();
 
         card.show(view('safety.wall' as CueId, 'what'));
         expect(card.shown).toBe(true);
@@ -53,6 +54,7 @@ describe('the moment card (decision 9)', () => {
         // the next phase of the same moment keeps the line; a new sound starts with an empty line
         card.show(view('safety.wall' as CueId, 'do'));
         expect(line.textContent).toBe('This is the wall. It sounds when a wall is near.');
+        card.ended();
         card.show(view('target.hum' as CueId, 'what'));
         expect(line.textContent).toBe('');
         expect(sound.textContent).toBe(DICTS.en['cue.target.hum.name']);
@@ -64,6 +66,19 @@ describe('the moment card (decision 9)', () => {
         expect(line.textContent).toBe('');
         card.remove();
         expect(doc.body.querySelector('[data-testid="sonic-moment"]')).toBeNull();
+    });
+
+    it('a moment opened over its own first sentence shows it at once (the package says, then sends the moment)', () => {
+        const { card, el } = rig();
+        const line = el.querySelector('[data-testid="sonic-moment-line"]')!;
+        card.said('This is the wall. It sounds when a wall is near.');
+        card.show(view('safety.wall' as CueId, 'what'));
+        expect(line.textContent).toBe('This is the wall. It sounds when a wall is near.');
+        card.show(null);
+        card.ended();
+        card.show(view('target.hum' as CueId, 'what'));
+        expect(line.textContent).toBe('');
+        card.remove();
     });
 
     it('every moment\'s sound has a name in en, es, pl and ru (the package\'s cue.<id>.name)', () => {

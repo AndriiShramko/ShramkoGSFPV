@@ -3,7 +3,9 @@
 // sentence being spoken, and the sound's name (the package's `cue.<id>.name`, never typed here), nothing else: the panels and the
 // captions are faded out under it (body class MOMENT_BODY_CLASS, sonic.css), not removed, so a screen reader keeps the captions.
 // The card is aria-hidden: the line is announced once, through the captions (captions.ts), never a second live region.
-// moment-host.ts says when (onView); the mode's speech events say what is spoken (said()).
+// moment-host.ts says when (onView); the mode's speech events say what is spoken (said(), ended()). The package says a moment's first
+// sentence before it sends the moment (moments.ts freeze(): say, then act): the card keeps the sentence being spoken while it is
+// hidden, so a moment that opens over it shows it at once.
 import type { CueId, MomentView } from '@shramko/sonic-fpv';
 
 /** On <body> while a moment holds the flight: sonic.css fades the panels and the captions out under the card. */
@@ -14,6 +16,8 @@ export class MomentCard {
     private readonly line: HTMLElement;
     private readonly sound: HTMLElement;
     private cue: CueId | null = null;
+    /** the sentence being spoken now ('' after the speech queue ran empty), shown or not */
+    private speaking = '';
 
     /** `name`: the sound's name in the pilot's language (the package's `cue.<id>.name`). */
     constructor(
@@ -41,7 +45,8 @@ export class MomentCard {
         return !this.el.hidden;
     }
 
-    /** A moment's view (moment-host.ts onView): shown with the sound's name; a new moment starts with an empty line; null hides it. */
+    /** A moment's view (moment-host.ts onView): shown with the sound's name; a new moment starts with the sentence being spoken
+     *  ('' when none); null hides it. */
     show(view: MomentView | null): void {
         this.showCue(view === null ? null : view.cue);
     }
@@ -58,7 +63,7 @@ export class MomentCard {
         if (this.cue !== cue) {
             this.cue = cue;
             this.sound.textContent = this.name(cue);
-            this.line.textContent = '';
+            this.line.textContent = this.speaking;
         }
         this.el.hidden = false;
         this.doc.body.classList.add(MOMENT_BODY_CLASS);
@@ -66,8 +71,14 @@ export class MomentCard {
 
     /** A line was spoken: while the card is shown it is the card's line (the last sentence spoken stays over the sound). */
     said(text: string): void {
-        if (this.el.hidden || text.trim() === '') return;
-        this.line.textContent = text;
+        if (text.trim() === '') return;
+        this.speaking = text;
+        if (!this.el.hidden) this.line.textContent = text;
+    }
+
+    /** The speech queue ran empty (the speech.end marker): a card opened after it starts with an empty line. */
+    ended(): void {
+        this.speaking = '';
     }
 
     remove(): void {

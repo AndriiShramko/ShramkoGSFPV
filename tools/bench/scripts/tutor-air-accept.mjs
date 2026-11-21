@@ -104,6 +104,14 @@ const look = (page) =>
         .catch(() => null);
 const momentEvents = (page) => page.evaluate(() => (window.__gsfpv?.sonic?.(true)?.events ?? []).filter((e) => e.kind === 'moment' || e.kind === 'lesson').map((e) => ({ kind: e.kind, id: e.id ?? e.lessonId, what: e.what }))).catch(() => []);
 const saidSince = (page, t) => page.evaluate((k) => window.__ax.said.filter((x) => x.t >= k && x.text.trim() !== '').map((x) => ({ t: x.t, text: x.text })), t).catch(() => []);
+/** the speech queue empty, at least `min` ms after the call */
+async function quiet(page, min = 1000, max = 30000) {
+    await sleep(min);
+    for (let t = min; t < max; t += 150) {
+        if (await page.evaluate(() => window.__ax.idle()).catch(() => true)) return;
+        await sleep(150);
+    }
+}
 const dist = (a, b) => (a && b ? Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]) : Infinity);
 const words = (s) => s.split(/\s+/).filter((x) => /[\p{L}\p{N}]/u.test(x)).length;
 
@@ -169,7 +177,9 @@ async function moment(page, first, inFlight) {
         if (s.speechQueue === 0 && (await page.evaluate(() => window.__ax.idle()).catch(() => true)) && Date.now() - t0 > 6000) break;
         await sleep(100);
     }
-    const said = (await saidSince(page, t0)).map((x) => x.text.trim());
+    // the package says a moment's first sentence just before it freezes the flight (moments.ts freeze: say, then the moment)
+    const said = (await saidSince(page, t0 - 1500)).map((x) => x.text.trim());
+    const tail = await page.evaluate(() => (window.__gsfpv?.sonic?.(true)?.events ?? []).slice(-30).map((e) => [e.t, e.kind, e.key ?? e.what ?? '', e.id ?? e.action ?? ''].join(' '))).catch(() => []);
     let presses = 0;
     let gone = false;
     for (; presses < 3 && !gone; ) {
@@ -183,11 +193,12 @@ async function moment(page, first, inFlight) {
             }
         }
     }
-    const all = new Set(cueSets.flat());
+    // a cue's voices carry their sector ('safety.wall:front'): the cue is the id before the colon
+    const all = new Set(cueSets.flat().map((c) => c.split(':')[0]));
     const lines = [...new Set(cards.map((c) => c.line).filter((x) => x !== ''))];
     const names = [...new Set(cards.map((c) => c.name).filter((x) => x !== ''))];
     const kids = [...new Set(cards.flatMap((c) => c.kids))];
-    return { inFlight, moved: Number(moved.toFixed(3)), cueIds: [...all], samples: cueSets.length, exact: all.size === 1 && cueSets.every((c) => c.length === 1), names, lines, kids, spokenLines: lines.filter((l) => said.some((x) => x === l || x.includes(l))), said: said.slice(0, 8), presses, gone };
+    return { tail, inFlight, moved: Number(moved.toFixed(3)), cueIds: [...all], samples: cueSets.length, exact: all.size === 1 && cueSets.every((c) => c.length >= 1 && c.every((x) => x.split(':')[0] === [...all][0])), names, lines, kids, spokenLines: lines.filter((l) => said.some((x) => x === l || x.includes(l))), said: said.slice(0, 8), presses, gone };
 }
 
 async function firstFlight(page) {
@@ -294,15 +305,23 @@ async function tour(page) {
 
 async function guideOff(page) {
     await page.goto(`${base}/en/fly/?scene=39e63ce9${Q}`, { waitUntil: 'load' });
-    for (let i = 0; i < 300 && !(await page.evaluate(() => !!window.__gsfpv?.session?.sim).catch(() => false)); i++) await sleep(100);
+    for (let i = 0; i < 1200 && (await page.evaluate(() => window.__gsfpv?.status ?? null).catch(() => null)) !== 'ready'; i++) await sleep(100);
+    // the Controls screen: the keyboard
+    await page.waitForSelector('.screen.radio [data-action="radio-keyboard"]', { timeout: 20000 }).catch(() => undefined);
+    await clickCentre(page, '.screen.radio [data-action="radio-keyboard"]');
     await sleep(1500);
     await clickScene(page);
     await sleep(500);
     await page.keyboard.press('Backslash');
-    await sleep(2500);
-    const on = await look(page);
+    let on = null;
+    for (let i = 0; i < 100 && !on?.lesson; i++) {
+        await sleep(100);
+        on = await look(page);
+    }
+    // the sound-on lines said to their end, then the narrator off (Shift+V) and its own answer said
+    await quiet(page);
     await page.keyboard.press('Shift+KeyV');
-    await sleep(2500);
+    await quiet(page);
     const t0 = Date.now();
     let cards = 0;
     await page.keyboard.press('Space');
@@ -319,6 +338,10 @@ async function guideOff(page) {
     const free = { soundOn: on?.lesson ?? null, cards, said, maxSpeed: Number(maxSpeed.toFixed(2)) };
     // the same profile (narrator off saved): walls-hall flown to its front wall
     await page.goto(`${base}/en/fly/?sonic=walls-hall${Q}`, { waitUntil: 'load' });
+    await page.waitForSelector('[data-testid="sonic-start-asked"]', { timeout: 60000 }).catch(() => undefined);
+    await clickCentre(page, '[data-testid="sonic-start-asked"]');
+    await sleep(1500);
+    await clickScene(page);
     let s = null;
     const t1 = Date.now();
     let lessonCards = 0;
