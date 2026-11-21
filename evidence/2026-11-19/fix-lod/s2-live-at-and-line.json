@@ -1,0 +1,47 @@
+{
+  "lane": "fix-lod",
+  "stage": "S2",
+  "date": "2026-11-21",
+  "question": "pause-rise-lublin failed twice on the live site (852821e5): does a pilot lose detail, or is the check wrong?",
+  "liveRunWithPinnedPlace": {
+    "site": "https://gsfpv.flyreelstudio.eu (read only: page opened, P pressed, Continue pressed; nothing saved or sent)",
+    "command": "sh U:/Temp/gsfpv-train4/fix-lod/live.sh (the pauserise function of this branch, under C:/dev/.gpu-lock)",
+    "log": "U:/Temp/gsfpv-train4/fix-lod/live/pause-rise-lublin.log",
+    "hold": { "pos": [146.5, 202, -97], "yawDeg": -86.6, "pitchDeg": -35, "start": [92.4, 13.7, -104] },
+    "revealS": 44.1,
+    "pausedAt": 25.62,
+    "moveAt": 45.5,
+    "flightDrawn": 489748,
+    "pauseDrawn": 806647,
+    "drawnAfter": [806647, 806647, 806647],
+    "files": { "asked": 981, "loaded": 965, "failed": 0, "MB": 27.38 },
+    "scanMBperSBest5s": 0.61,
+    "exit": 1,
+    "verdict": "FAIL, not judged: the line was too slow to load the scan"
+  },
+  "lineSpeedNow": {
+    "cloudflareSpeedTest20MB": { "bytesPerS": 548217, "seconds": 36.5 },
+    "lodMetaJson2f1ddf5f": { "bytes": 1188652, "bytesPerS": 598154, "ttfbS": 0.21 }
+  },
+  "bestScanMBperS5sByRun": {
+    "live 2026-11-16 7af2aad5 (passing run, U:/Temp/gsfpv-train3/live-7af2aad5)": 14.05,
+    "live 2026-11-21 12:35 852821e5 (ship-car0 live-r2, failed)": 0.69,
+    "local B1 267923c3 (S1, failed)": 0.71,
+    "local C2 852821e5 (S1, failed)": 0.7,
+    "live 2026-11-21 852821e5, pinned place (this stage, failed)": 0.61
+  },
+  "samePlaceOld": {
+    "source": "U:/Temp/gsfpv-train3/live-7af2aad5/loadq/live-pause-lublin.json",
+    "revealS": 26,
+    "secondsFromRevealTo75MB": 4.3,
+    "flightDrawn": 2446023,
+    "areaLevel": 6.82
+  },
+  "samePlaceNow": {
+    "MBat10sAfterReveal": 5.16,
+    "MBat55sAfterReveal": 27.38,
+    "areaLevelEnd": 8.06,
+    "drawnEnd": 979486
+  },
+  "answer": "No loss for pilots measured: the page, old engine (267923c3) or new (852821e5), draws what the line delivers; every failing run had a scan download rate of 0.6-0.7 MB/s (this PC's line while train 4 ran; a Cloudflare test gave 0.55 MB/s), the passing run 14 MB/s. The check also held a moved place since car 1. Repair: the check holds the passing run's place (AT, YAW) and its line names the download rate and says 'not judged' under 3 MB/s; the pass rule is unchanged."
+}

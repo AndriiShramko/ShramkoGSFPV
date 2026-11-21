@@ -278,7 +278,9 @@ process.exit(lines.length > 0 ? 0 : 1);' "$OUT/loadq/live-detail-wroclaw.json"
 }
 # pause-rise-lublin holds an absolute place (AT, YAW; loadq-hold.mjs): the pose of the passing run of 2026-11-16, 140 m over
 # the start of that time. Since car 1 (placeStart) "140 m over the start" is another place, low in detail, where the pause never
-# needs more than the flight budget (docs/wip/fix-lod.md). The judge is unchanged.
+# needs more than the flight budget (docs/wip/fix-lod.md). The pass rule is unchanged; the line names the best 5 s download rate
+# of the scan (MB/s) and, on a failure under 3 MB/s, that the line was too slow to judge (the passing run had 14 MB/s; this
+# PC had 0.6 on 2026-11-21 while train 4 ran: Lublin then cannot load the pause's detail within its 20 s).
 pauserise() {
   env OUT="$OUT/loadq" SCENE=2f1ddf5f CLASS=desktop-weak AT=146.5,202,-97 YAW=-86.6 PAUSEAT=25 MOVEAT=45 SECS=55 REVEALMAX=300 node scripts/loadq-probe.mjs "$SITE/en" live-pause-lublin || return 1
   node -e '
@@ -292,8 +294,11 @@ const pf = m.perFrame || [];
 const back = pf.find((f) => f[3] <= m.base + 1e-6);
 const da = (m.drawnAfter || []).filter((v) => v !== null);
 const falls = da.length > 1 && da[da.length - 1] < da[0];
-console.log("reveal at s", r0, "paused at", p, "move at", m.at, "flight drawn", flight, "pause drawn", paused, "budget back at ms", back ? back[0] : null, "drawn after", JSON.stringify(da));
-process.exit(p > 0 && m.at > p && flight > 0 && paused > 1.5 * flight && back && back[0] <= 2000 && falls ? 0 : 1);' "$OUT/loadq/live-pause-lublin.json"
+const mbps = Math.max(0, ...s.map((x, i) => { const y = s[i - 5]; return y && x.MB !== undefined && x.s > y.s ? (x.MB - y.MB) / (x.s - y.s) : 0; }));
+const ok = p > 0 && m.at > p && flight > 0 && paused > 1.5 * flight && back && back[0] <= 2000 && falls;
+console.log("reveal at s", r0, "paused at", p, "move at", m.at, "flight drawn", flight, "pause drawn", paused, "budget back at ms", back ? back[0] : null, "drawn after", JSON.stringify(da), "scan MB/s best 5 s", Math.round(mbps * 100) / 100);
+if (!ok && mbps < 3) console.log("FAIL, not judged: the line was too slow to load the scan (under 3 MB/s); run again on a faster line");
+process.exit(ok ? 0 : 1);' "$OUT/loadq/live-pause-lublin.json"
 }
 run detail-line-wroclaw locked detailline
 run pause-rise-lublin locked pauserise
