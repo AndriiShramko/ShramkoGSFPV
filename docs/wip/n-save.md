@@ -47,12 +47,7 @@ Temp: U:/Temp/gsfpv-train4/n-save. Evidence: evidence/2026-11-20/n-save/.
   automatically / Save as it is / Show me, the cross); n-save-ghosts.png shows gates 1 and 2 moved with their old places
   dashed and the line "Gates moved to free places: 2 (gates 1, 2) ... Left as it is: A wall on the way to the gate" + Undo.
   LEFT, exactly:
-  1. n-save-ghosts.png: the top bar's message, wrapped to two lines (16 px), makes the bar 1-2 lines taller and it covers the
-     top edge of the HUD row under it (sound, fullscreen, mail, Share, settings; at 1536x730 the bar ends about 15 CSS px
-     below that row's top; with one line, n-save-dialog.png, about 5 px already, so the base may overlap a little too).
-     Fix in the owned message rule (editor.css): e.g. keep the line's width so the bar ends left of the HUD row
-     (max-width of the message by the bar's free room), or put the HUD row below the bar's height if that is in reach; a
-     fake-DOM/CSS test + NEG. If the cause is the HUD row's place (not owned), write it under For the lead.
+  1. [x] The top bar over the HUD row: the cause is the bar's place, not the message rule (written under For the lead).
   2. Gates once: `gates.py --only typecheck,vitest,architecture,i18n,b18,leaks` (stage files first; no apps/api change).
   3. Claims 7 (the mouse acceptance, command `node tools/bench/scripts/n-save-accept.mjs dist 70b50d42 <out>`, PASS) and 8
      (the live control FAILS dialog + asIs.saved); Not verified: same spot by mouse; "What the owner does"; Cost notes; delete
@@ -115,6 +110,13 @@ applyFixes :1065, saveMine :1833, saveAdmin :~1885 (the design named :893-1754);
   it Save as it is was a dead end (the course never opened again). Lane n-level and anyone touching loadServer: keep it.
 - S4: tools/bench/scripts/serve-csp.mjs passes X-Track-Token to the local API (as nginx does); before, a course's new
   version after a reload was refused 403 'token' in every local probe.
+- S4, not fixed (the bar's place is not mine): at 1536x730 (scale 1.25) the editor's top bar, centred at top 8 px, reaches
+  from about x 312 to 1224 CSS px; its message line (x 808-1224, a fixed 420 px since editfix E4.2, the same on the base)
+  lies over the page's top row (sound, fullscreen, mail, Share, settings), which starts at about x 968 and y 38. On the base
+  the one-line bar already covers that row's top 5-10 px; the 16 px message wrapped to two lines (n-save-ghosts.png) covers
+  about 15-20 px. No width of the message alone can clear it (the buttons alone end at x 798, the centred bar cannot end
+  left of x 968 with a 420 px line). The fix belongs to the bar's place (.ce-topbar / top-bar.ts place()): on a wide view,
+  when the bar's rect meets the top row, put the bar under --top-row-bottom as the narrow-view rule already does.
 - Deploy order: page only (no API file changed so far).
 
 ## Cost notes
