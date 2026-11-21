@@ -34,6 +34,15 @@ splat-transform 3.12.0, probe tools/bench/scripts/hot-sog3-scans.mjs, live check
   - Left for S4: the PLY drawn (a5d25fb4, c67edb74) and the zero-splat failure on a real engine are unit-tested only; a
     streamed scan whose chunks all fail to draw still says "ready" (only a single file is judged by holdsNoSplats).
 - [ ] S4 the acceptance: n-scan-accept.mjs by mouse at 1536x730 x1.25 on the local build (a39abad1 first) and against the live site (must FAIL a39abad1); one drawn picture; scans-open extended; gates once; "What the owner should try"; dist deleted.
+  - [x] tools/bench/scripts/n-scan-accept.mjs (every id of superspl-kinds.json, a39abad1 first; Keyboard on the Controls
+    screen by mouse, a click into the scene, sim.tick grows = the first flown frame; or the expected named line).
+    RENDER=off on the local build 224f8c20: 11/11 PASS (evidence n-scan-accept-off-local.json). The same on the live
+    site 72d4babf: 8 PASS, 3 FAIL (a5d25fb4, c67edb74 "older PLY format"; 5012e205 "does not exist"): the lane's
+    negative control (n-scan-accept-off-live.json). Code differs from the prompt: the live site already holds hot-sog3
+    (72d4babf contains d432c2d9), so a39abad1 opens there; the a39abad1 failures this lane repairs (gone, huge, newer
+    version) FAIL on live in n-scan-errors.mjs (S3).
+  - [x] deploy/live-checks.sh scans-open: hot-sog3-scans.mjs also draws a5d25fb4, c67edb74; then n-scan-accept.mjs render off.
+  - [ ] the drawn run on the local build (GPU lock, all ids, picture of a39abad1); gates; owner parts; dist deleted.
 
 ## Diagnosis (S1)
 
