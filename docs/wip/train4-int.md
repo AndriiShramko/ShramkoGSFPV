@@ -85,7 +85,7 @@ aa18f1e4 of origin/main; the lead's change of 17:50 UTC: car 2 takes the lanes w
       Gates once on the final head 89b2203f: all PASS rc 0 (typecheck, vitest 441 files / 5628 tests, api-unittest,
       architecture, i18n, catalog, b18, leaks; U:/Temp/gsfpv-gates-20261120-224507, int4/gates4.log). S2 is done: the
       tree handed over in S3 is this one plus status notes; S3 starts with `git fetch origin` and the MAIN MOVES rule.
-- [ ] S3 the hand-over (Car 2 parts, U:/Temp/gsfpv-train4/int4.json). 2026-11-20 run: `git fetch origin`: origin/main
+- [x] S3 the hand-over (Car 2 parts, U:/Temp/gsfpv-train4/int4.json). 2026-11-20 run: `git fetch origin`: origin/main
       has no commit that is not in HEAD (nothing to merge, the S2 gates stand for the code). Seven new read-only live
       checks committed (ee0f5348); their negative control against the live site (car 1's release) runs in the background:
       U:/Temp/gsfpv-train4/int4/live-neg2/summary.txt. Deploy order, Live checks, What the owner should try, Not
@@ -101,8 +101,10 @@ aa18f1e4 of origin/main; the lead's change of 17:50 UTC: car 2 takes the lanes w
       edit4b-probe step 1 does (recorded as home). Runs on the release build: probes12.sh, logs12/summary.txt (three
       plain runs, one with the Home path forced by a temporary copy). origin/main 9b4cbd87 (one lead note, docs only)
       is merged after that (the gates are enough). logs12: all four PASS (forced run: home true). Merge of 9b4cbd87
-      done (docs/wip/train4-lead.md only). Gates on this head run next (int4/gates5.log). Left: the gates, int4.json,
-      then write U:/Temp/gsfpv-train4/int4.json with sha = the new HEAD, api
+      done (docs/wip/train4-lead.md only). Gates on 78a8b2bd (the code handed over): all PASS rc 0 (typecheck, vitest
+      441 files / 5628 tests, api-unittest, architecture, i18n, catalog, b18, leaks; U:/Temp/gsfpv-gates-20261121-033946,
+      int4/gates5.log); a6-reference alone PASS (its hash holds). S3 done: int4.json written with the head of the
+      commit that ticks this box. Written: U:/Temp/gsfpv-train4/int4.json with sha = the new HEAD, api
       ["server.py", "tracks.py"], rooms false, nginx false, package_sha 53a567591f2b273fd9d80cbea4e509a4a7447843,
       held ["gen4a", "gen4b"], live_only ux4a-messages,ux4b-cancel,vox4-voxels-only,edit4a-gizmo,edit4c-warnings,
       edit4s-drafts,sound6-quick-walk,edit4b-course-life,edit-mouse-wroclaw,accept-fly,head4-accept,edit-mode-wroclaw,
@@ -457,3 +459,6 @@ Car 2
 - S2 (car 2, run of 2026-11-20 evening): 20 calls; the most went to B15 failing twice at an absolute tick that a slow
   start on a loaded machine moved into idle throttle. Cheaper: checks that tamper or judge at a moment of the flight
   (relative to an event they record) instead of an absolute tick.
+- S3 (car 2, run of 2026-11-21): about 25 calls; most went to a live check that failed on a view (no gate on screen)
+  and its proof on the release build. Cheaper: probes that click something in the 3D view first bring it into view the
+  pilot's way (Home), in one shared helper, so a new framing rule does not break them one by one.
