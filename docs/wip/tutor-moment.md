@@ -54,6 +54,19 @@ Package branch: tutor-moment in packages/sonic-fpv of this copy (on no remote).
 - [ ] S4 the scripted pilot: test/first-set.test.ts in en, es, pl, ru (moving within 60 s, under 60 words before it, no
   prompt over two sentences, one new sound a moment, the set within 420 s, guide 'new' says only names); NEG on 719aaf5;
   host gates once; done marker; "What the owner should try".
+  DONE so far (package commits a1524a0, a017e447ef9c8593c74eb316adc3fd9960090376; pin moved to a017e44):
+  test/first-set.test.ts, 20 of 20 (the numbers: evidence/2026-11-20/tutor-moment/first-set.json). Moving at en 38.8 s,
+  es 40.9, pl 40.5, ru 46.0 (base: 114 s en); words before it 57 / 58 / 52 / 50; at most 2 sentences a line; 8 moments,
+  each adds its one cue; the set (headphones to rings-course passed) 298 / 302 / 308 / 327 s; guide 'new': only
+  `cue.<id>.name` in the flying lessons, 223-230 s. NEG OK on 719aaf5 (19 of 20 fail there). What it took (runner, for a
+  host that teaches, i.e. RunnerOptions.known given; absent known: as before): the second headphone trial asks with no
+  words (the keys come with the waiting sound after 7 s), plays the first side twice and the second once; no "Taken: n."
+  (the answer's sound says it); no "Lesson passed. Next..." (the next lesson says its title); no "Go." when a start
+  moment freezes the first frame; guide 'new' gates every line but the names (Runner.sayLines and takeActions). The room
+  (walls-hall, still v5, unreleased) says its goal line, the pilot flies at once, wall-ahead first, the height tone at
+  the start of the next attempt. test/helpers/pilot.ts: the test pilot is a host that does not teach (absent known).
+  Package: typecheck 0, full run 1471 passed, 4 skipped. Host: the four count tests 89 of 89.
+  LEFT: host gates once (typecheck,vitest,architecture,i18n,b18,leaks); the done marker.
 
 ### Where the code differs from the plan (one line each)
 
@@ -81,12 +94,25 @@ Package branch: tutor-moment in packages/sonic-fpv of this copy (on no remote).
   wired by tutor-air would run moments it cannot hold and record cues its replay could not derive (10 host tests).
 - S3: the recorder keeps the sample a moment froze on (test/helpers/record.ts): the held frames after it would hide a
   speed trigger from the replay. A host's recorder must do the same (For the lead).
+- S4: the room teaches the wall first and the height tone second (table rows 1 and 2 swapped): a 'start' moment
+  before the first movement kept a ru pilot still until 84 s; now the pilot flies after the room's goal line.
 - test/named-sounds.test.ts exists already on the base (the rule "a sound with no words is named in the first lesson of
   its path"); S3 extends it rather than creating it.
 
 ## What the owner does
 
-Nothing yet: S1 is the contract only; no pilot hears a change.
+Nothing yet: the package carries the moments, and the simulator turns them on only when lane tutor-air's page passes
+`known` (until then a pilot hears the lessons as before, apart from the room saying its goal line before the flight).
+
+### What the owner should try (after the release with lane tutor-air's page)
+
+1. Press Start flying. The headphone check: knocks on the left, press key 1; knocks on the right, press key 2 (the
+   second time nothing is asked aloud; after 7 s the keys are said again). "Good. Your headphones work well."
+2. "A small room. Fly to each wall and stop close to it without touching it." Push forward: you move within a minute.
+3. Near the front wall the flight stops: "Wall: a wooden knock from a wall near you, faster as you get closer.", then
+   the knock alone, far and then near, then "Fly on slowly until the knocks come fast, then stop."
+4. Fly until it knocks fast and stop: a short success sound, "That's it." The next sound (the height tone) comes only
+   at the start of the next run, when it is needed; every later sound comes the same way, one at a time.
 
 ## Claims
 
@@ -97,10 +123,23 @@ Nothing yet: S1 is the contract only; no pilot hears a change.
    the flight goes on, the task, praise); the hint once; again / on / know; guide 'new' says the name only; the moment
    events are recorded and the recording replays with no difference.
    Proof: `cd packages/sonic-fpv && npx vitest run test/moments.test.ts` - 8 passed; NEG OK on 12acc11 (the S1 stub).
+3. The first set, flown by a scripted pilot with the measured voices in en, es, pl, ru: moving within 60 s of the
+   press (38.8-46.0 s; 114 s on the base), under 60 words before it (50-58), no line over two sentences, 8 moments each
+   bringing exactly one new sound never audible before it, the set within 420 s (298-327 s), guide 'new' says only the
+   sounds' names; the headphone question's keys once, no "Taken: n.", no "next lesson" line, "they work" once.
+   Proof: `cd packages/sonic-fpv && npx vitest run test/first-set.test.ts` - 20 passed; NEG OK on 719aaf5 (19 of 20
+   fail there). Numbers: evidence/2026-11-20/tutor-moment/first-set.json.
+4. Every one of the 28 sounds has one name and a definition (`cue.<id>.what`, `cue.<id>.do`) in four languages.
+   Proof: `cd packages/sonic-fpv && npx vitest run test/named-sounds.test.ts test/locales.test.ts` - passed in the full
+   package run (1471 passed, 4 skipped).
 
 ## Not verified
 
-- No person, phone or real controller took part. Nothing is heard yet: S1 changes no lesson.
+- No person, phone or real controller took part; no browser ran (the page is lane tutor-air's). The times are of a
+  scripted pilot with the measured Windows voices; lines with a parameter (the `what` lines name their sound) use the
+  package's estimate, which is faster than Irina (ru): a real ru first movement may come a few seconds later than 46 s.
+- `pnpm listen` (the virtual listener, GPU) was not re-run for S4: no sound, theme or engine changed, only the order and
+  the words of lessons; the words check was run in S3 and no line was reworded in S4.
 
 ## For the lead
 
@@ -115,7 +154,16 @@ Nothing yet: S1 is the contract only; no pilot hears a change.
   tools/listen-words.ts (sample for {sound}), evidence/listen/VL-4-words.json (rerun), test/fixtures/tts-*.json
   (measured), and the tests named in Status; host tools/bench/test/sonic-lesson-keys.test.ts (Z and B5 open lessons
   that still name sounds) and sonic-int-replay.test.ts (control frame indices within the shorter flight).
-- The package head of branch tutor-moment is on no remote; it must reach the package's main before the page ships.
+- S4 changed outside the owned list: package src/lesson/schedule.ts (a question with no words is read out at once),
+  test/helpers/pilot.ts (the test pilot does not teach), test/helpers/record.ts (a measured voice), test/world-scale.test.ts
+  (the room's intro); src/lesson/moments.ts (`startsFrozen`) is owned.
+- For lane tutor-air: with RunnerOptions.known given the runner itself leaves out "Taken: n.", the second headphone
+  question's words and the "Lesson passed. Next..." line: the page must open the next lesson on its own after a pass
+  (it says its title), and must not add those lines back.
+- Deploy order: the sound package first (its branch tutor-moment merged into its main), then the page; no API, rooms or
+  nginx change. Live checks after the deploy: the first-set path by hand (What the owner should try).
+- The package head of branch tutor-moment, a017e447ef9c8593c74eb316adc3fd9960090376, is on no remote; it must reach the
+  package's main before the page ships.
 
 ## Cost notes
 
