@@ -39,6 +39,8 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const KEYLIST = /\bkey [A-Z]\b.*\bkey [A-Z]\b/i;
 const COUNTER = /\b\d+ (of|\/) \d+\b|\bStep \d|\bItem \d/i;
 const BUTTONS = /Start flying|All lessons|Quick start|Full course/i;
+/** the sound package's headphone trial line (packages/sonic-fpv headphones.trial; not this lane's: 'For the lead') */
+const PACKAGE_PLACE = /^Sound \d+ of \d+\.$/;
 
 // in the page, before its scripts: speech said at an estimated length (so the queue behaves), and the live-region log
 function spy() {
@@ -177,7 +179,7 @@ async function startScreen(page) {
     let m = await mark(page);
     await page.keyboard.press('ArrowDown');
     await quiet(page, 800);
-    const open = (await since(page, m)).said;
+    const open = (await since(page, m)).said.filter((x) => x.trim() !== ''); // an empty utterance primes the voice
     const first = open[0] ?? '';
     const rest = open.slice(1);
     step('open', /^Fly by Sound\b/.test(first) && /Start flying/.test(first) && !COUNTER.test(first) && !KEYLIST.test(first) && first.split(/[.!?]\s/).length <= 3 && rest.length <= 1 && rest.every((x) => /All lessons/.test(x) && !COUNTER.test(x) && !KEYLIST.test(x)), { spoken: open, focus: await focusOf(page) });
@@ -207,7 +209,9 @@ async function lesson(page, cdp) {
     const locked = await page.evaluate(() => !!document.pointerLockElement).catch(() => false);
     step('start', clicked && !!s?.lesson, { clicked, lesson: s?.lesson ?? null, pointerLock: locked });
     const changes = [];
+    let keysHeard = (await since(page, m0)).said.some((x) => KEYLIST.test(x));
     for (let i = 0; i < 3; i++) {
+        let firstKeys = false;
         const before = await axTree(cdp);
         const f0 = await focusOf(page);
         const m = await mark(page);
@@ -223,8 +227,16 @@ async function lesson(page, cdp) {
         const got = await since(page, m);
         const announced = got.live.flatMap((x) => x.added.map((a) => `${x.region}: ${a}`));
         const liveButtons = got.live.reduce((a, x) => a + x.buttons, 0);
-        const texts = [...got.live.flatMap((x) => x.added), ...got.said];
-        const bad = texts.filter((x) => KEYLIST.test(x) || COUNTER.test(x) || BUTTONS.test(x));
+        // the line of keys is said once in the session, when keys first matter (decision 1): that first time it is no repeat (step
+        // 'once' counts it); the sound package's headphone trial line ("Sound n of total.") is the package's, listed apart
+        const texts = [...got.live.flatMap((x) => x.added), ...got.said].filter((x) => {
+            if (!KEYLIST.test(x) || keysHeard) return true;
+            firstKeys = true;
+            return false;
+        });
+        if (firstKeys) keysHeard = true;
+        const pkg = texts.filter((x) => PACKAGE_PLACE.test(x));
+        const bad = texts.filter((x) => !PACKAGE_PLACE.test(x) && (KEYLIST.test(x) || COUNTER.test(x) || BUTTONS.test(x)));
         const shown = await page.evaluate(() => ({
             line: (document.querySelector('[data-testid="sonic-instruction"]')?.textContent ?? '').replace(/\s+/g, ' ').trim(),
             panel: (document.querySelector('[data-testid="sonic-progress"]')?.textContent ?? '').replace(/\s+/g, ' ').trim()
@@ -233,14 +245,15 @@ async function lesson(page, cdp) {
         const focusOk = f0 === f1 || (f0 === 'body' && f1 === 'div[sonic-flight]');
         const screenOk = shown.line !== '' && !COUNTER.test(shown.panel) && (h1?.panel ?? '') === shown.line;
         const pass = bad.length === 0 && liveButtons === 0 && focusOk && screenOk;
-        changes.push({ to: h1?.panel ?? '', pass, bad, liveButtons, focus: [f0, f1], screen: shown, spoken: got.said, announced: announced.slice(0, 30), axAdded: diff(before, after).slice(0, 30) });
+        changes.push({ to: h1?.panel ?? '', pass, bad, firstKeys, packagePlace: pkg, liveButtons, focus: [f0, f1], screen: shown, spoken: got.said, announced: announced.slice(0, 30), axAdded: diff(before, after).slice(0, 30) });
         log('step', i, pass ? 'PASS' : 'FAIL', JSON.stringify({ bad, shown }).slice(0, 300));
     }
     if (shots) await page.screenshot({ path: `${shots}-instruction.png` }).catch(() => undefined);
     step('steps', changes.length === 3 && changes.every((c) => c.pass), { lesson: (await hook(page))?.lesson ?? null, changes });
     const all = (await since(page, m0)).said;
     const keyLines = all.filter((x) => KEYLIST.test(x));
-    const buttons = all.filter((x) => BUTTONS.test(x));
+    // the clicked Start flying says its own name as it takes the focus (a focused button may speak); any later one is a repeat
+    const buttons = all.filter((x) => x.trim() !== '').filter((x, i) => BUTTONS.test(x) && !(i === 0 && /Start flying|Quick start/i.test(x)));
     step('once', keyLines.length <= 1 && buttons.length === 0, { keyLines, buttons, spokenCount: all.length });
     const mk = await mark(page);
     await page.keyboard.press('KeyK');

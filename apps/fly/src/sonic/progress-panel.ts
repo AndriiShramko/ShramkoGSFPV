@@ -22,7 +22,13 @@ import type { LessonHold } from './live-quiet';
 export const START_CALLS: ReadonlySet<string> = new Set(['fly.go', 'fly.go-on']);
 
 /**
- * The instruction each runner is on: the first line the host said in a step that is neither the lesson's title nor a start call;
+ * The runner's place lines (runner.ts: a headphone trial opens with "Sound n of total."): a counter, not a task, so it never becomes
+ * the line on the screen (decision 9: no counters on the screen); the step's next line does.
+ */
+export const PLACE_LINES: ReadonlySet<string> = new Set(['headphones.trial']);
+
+/**
+ * The instruction each runner is on: the first line the host said in a step that is neither the lesson's title nor a start call nor a place line;
  * it stays until a later step says one of its own. lessons.ts `act` case 'say' gives it every lesson line (heard). Keyed by the
  * runner, so a lesson closed or opened again starts empty.
  */
@@ -32,7 +38,7 @@ export class StepInstructions {
 
     /** A lesson line said in `step` of the runner (`title`: the lesson's title key). */
     heard(runner: object, step: number, line: SpeechLine, title: string): void {
-        if (line.key === title || START_CALLS.has(line.key) || this.book.get(runner)?.step === step) return;
+        if (line.key === title || START_CALLS.has(line.key) || PLACE_LINES.has(line.key) || this.book.get(runner)?.step === step) return;
         this.book.set(runner, { step, line });
         for (const fn of [...this.watchers]) fn();
     }

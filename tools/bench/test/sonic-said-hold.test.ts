@@ -175,4 +175,15 @@ describe('(d) the instruction kept: a flying step that says only "Go." keeps the
         expect(draws).toBe(2);
         expect(book.get({})).toBeNull();
     });
+
+    it('S4: a place line ("Sound 2 of 2.", headphones.trial) is no instruction: the step\'s next line is, and no counter reaches the screen', () => {
+        const book = new StepInstructions();
+        const run = {};
+        const title = 'lesson.ears-headphones.title';
+        book.heard(run, 1, { key: 'lesson.ears-headphones.task' }, title);
+        book.heard(run, 2, { key: 'headphones.trial', params: { n: 2, total: 2 } }, title);
+        expect(book.get(run)).toEqual({ key: 'lesson.ears-headphones.task' });
+        book.heard(run, 2, { key: 'headphones.side' }, title);
+        expect(book.get(run)).toEqual({ key: 'headphones.side' });
+    });
 });
