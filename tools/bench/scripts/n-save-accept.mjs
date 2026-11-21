@@ -176,6 +176,48 @@ try {
         const s = await snap();
         return { ok: !!s.problems?.some((p) => p.gate === i && WALL.includes(p.code)), tries };
     }
+    /**
+     * the selected gate pulled by its gizmo arrows onto `target` (scene units): each arrow first dragged 40 px to learn which
+     * way and how far it moves the gate, then by the share of the gap along that way; a drag that misses the arrow circles
+     * the view (the arrows are read again before every drag)
+     */
+    async function pullOnto(i, target, near = 0.15) {
+        const tries = [];
+        const learnt = {};
+        for (let n = 0; n < 24; n++) {
+            const s = await snap();
+            const p = s.egates?.[i];
+            if (!p || s.selected !== i || !s.stand || !s.axes) { tries.push({ n, lost: true }); break; }
+            const gap = [target[0] - p[0], target[1] - p[1], target[2] - p[2]];
+            if (Math.hypot(...gap) < near) return { ok: true, tries, apart: Math.hypot(...gap) };
+            const ax = ['x', 'z', 'y'][n % 3];
+            const a = s.axes[ax];
+            if (!a || Math.hypot(a[0], a[1]) < 0.2) continue;
+            const L = learnt[ax];
+            let px = 40;
+            if (L) {
+                const along = gap[0] * L.u[0] + gap[1] * L.u[1] + gap[2] * L.u[2];
+                px = Math.max(-220, Math.min(220, along / L.perPx));
+                if (Math.abs(px) < 3) continue;
+            }
+            const r = [45, 65, 30, 85][Math.floor(n / 3) % 4];
+            const x0 = s.stand[0] + a[0] * r, y0 = s.stand[1] + a[1] * r;
+            await page.mouse.move(x0, y0, { steps: 3 });
+            await sleep(120);
+            await page.mouse.down();
+            await page.mouse.move(Math.max(5, Math.min(W - 5, x0 + a[0] * px)), Math.max(5, Math.min(H - 5, y0 + a[1] * px)), { steps: 12 });
+            await page.mouse.up();
+            await sleep(500);
+            const q = (await snap()).egates?.[i];
+            const d = q ? [q[0] - p[0], q[1] - p[1], q[2] - p[2]] : [0, 0, 0];
+            const m = Math.hypot(...d);
+            if (m > 1e-3) learnt[ax] = { u: d.map((x) => x / m * Math.sign(px)), perPx: m / Math.abs(px) };
+            tries.push({ n, ax, px: Math.round(px), moved: Math.round(m * 1000) / 1000 });
+        }
+        const p = (await snap()).egates?.[i];
+        const apart = p ? dist3(p, target) : -1;
+        return { ok: apart >= 0 && apart < near, tries, apart };
+    }
     /** the name and title typed into the editor's window, then the top bar's Save */
     async function pressSave(title) {
         const opened = await page.evaluate(() => document.querySelector('.course-editor')?.classList.contains('ce-open') ?? false);
@@ -201,6 +243,35 @@ try {
         return { ...p, dialog: d.v, line: (await snap()).topLine };
     }
     const postsSince = (t0) => res.posts.filter((p) => p.at >= t0).map((p) => p.status);
+    /** the top bar's Course menu, Courses, then Open on the row with this title (the wheel over the list until it shows) */
+    async function openRow(title) {
+        await clickSel('.ce-topbar [data-top="course"]', 500);
+        const item = await clickSel('.ce-menu [data-item="courses"]', 800);
+        const rid = await until(() => page.evaluate((ti) => [...document.querySelectorAll('.ce-list .ce-row')].find((li) => li.querySelector('.ce-row-head b')?.textContent === ti)?.dataset.id ?? null, title), (v) => !!v, 10000, 400);
+        if (!rid.v) return { title, item: !!item, row: false };
+        const sel = `.ce-list .ce-row[data-id="${rid.v}"] button.ce-open`;
+        let pressed = false;
+        for (let n = 0; n < 20 && !pressed; n++) {
+            const [bb, win] = [await boxOf(sel), await boxOf('.course-editor')];
+            if (bb && win && bb.y > win.y - win.h / 2 + 8 && bb.y < Math.min(H, win.y + win.h / 2) - 8) {
+                const was = JSON.stringify((await snap()).egates);
+                await click(bb.x, bb.y, 600);
+                pressed = true;
+                // a course with unsaved changes asks first (the line says so): Open pressed again drops them (review TK-4)
+                if (!(await until(snap, (x) => JSON.stringify(x.egates) !== was, 2500, 300)).ok && (await boxOf(sel))) await clickSel(sel, 600);
+                break;
+            }
+            const list = await boxOf('.course-editor .ce-list');
+            if (!list) break;
+            await page.mouse.move(list.x, Math.max(10, Math.min(H - 10, list.y)));
+            await page.mouse.wheel(0, bb && win && bb.y < win.y ? -200 : 200);
+            await sleep(250);
+        }
+        for (let i = 0; i < 2; i++) { const y = await boxOf('.life-ask [data-ask="yes"]'); if (!y) break; await click(y.x, y.y, 800); }
+        const w = await until(snap, (x) => x.open && x.egates?.length === 3, 20000, 400);
+        await sleep(1000);
+        return { title, id: rid.v, row: true, pressed, ms: w.ms };
+    }
 
     // ---- open
     const o = await openPage(`${base}/fly/?scene=${scan}&render=off&nowarn=1`);
@@ -212,14 +283,31 @@ try {
     await clickSel('.ce-menu [data-item="new"]', 800);
     for (let i = 0; i < 2; i++) { const y = await boxOf('.life-ask [data-ask="yes"]'); if (!y) break; await click(y.x, y.y, 800); }
     await until(snap, (s) => (s.egates?.length ?? -1) === 0, 10000, 300);
-    const pair = [await addAt(W * 0.5, H * 0.5), await addAt(W * 0.5, H * 0.5)];
-    const low = await addAt(W * 0.5, H * 0.72);
-    const bury = low !== null ? await buryByGizmo(low) : { ok: false, tries: [] };
+    // gate A on a point, gate B elsewhere pulled into the floor by its gizmo, then gate C on A's point (the selected gate's
+    // gizmo stands on it, so C is added once B holds the selection)
+    // gate A, gate B elsewhere, gate C by a click on A's place (the course's leg takes it 2 m along), then C pulled onto A
+    const added = [await addAt(W * 0.5, H * 0.5)];
+    const aPos = (await snap()).egates?.[0] ?? null;
+    added.push(await addAt(W * 0.25, H * 0.68));
+    added.push(await addAt(W * 0.5, H * 0.5));
+    const pull = aPos && added[2] !== null ? await pullOnto(added[2], aPos) : { ok: false };
+    // gate B selected by a click on it (its place on the page), then pulled down (a drag that misses the arrow circles the view)
     let s = await snap();
+    const bAt = s.egates ? s.egates.findIndex((p, i) => s.egates.every((q, j) => j === i || dist3(p, q) > 0.5)) : -1;
+    const bScr = bAt >= 0 ? s.gates?.[bAt] : null;
+    if (bScr && s.selected !== bAt) await click(bScr[0], bScr[1], 700);
+    const bury = bAt >= 0 && (await snap()).selected === bAt ? await buryByGizmo(bAt) : { ok: false, tries: [], bAt, selected: (await snap()).selected };
+    s = await snap();
     const built = s.egates;
-    const pairM = pair[0] !== null && pair[1] !== null ? dist3(built[pair[0]], built[pair[1]]) : -1;
-    const bad = [pair[0], pair[1], low].filter((x) => x !== null);
-    judge('build', built?.length === 3 && pairM >= 0 && pairM < 0.05 && bury.ok, { gates: built?.length ?? null, pair, pairApart: Math.round(pairM * 1000) / 1000, low, bury, problems: s.problems, line: s.topLine });
+    // the gates by their places (an added gate goes after the nearest leg, so the indices shift): the nearest two are the pair
+    let pair = [null, null], pairM = -1;
+    for (let i = 0; i < (built?.length ?? 0); i++) for (let j = i + 1; j < built.length; j++) {
+        const m = dist3(built[i], built[j]);
+        if (pairM < 0 || m < pairM) { pairM = m; pair = [i, j]; }
+    }
+    const lowNow = s.problems?.find((p) => WALL.includes(p.code) && p.gate !== null && !pair.includes(p.gate))?.gate ?? null;
+    const bad = [pair[0], pair[1], lowNow].filter((x) => x !== null);
+    judge('build', built?.length === 3 && pairM >= 0 && pairM < 0.3 && bury.ok && lowNow !== null, { gates: built?.length ?? null, added, pull, pair, pairApart: Math.round(pairM * 1000) / 1000, low: lowNow, bury, problems: s.problems, line: s.topLine });
 
     // ---- the dialog and Save as it is
     const d1 = await saveToDialog('n-save as is');
@@ -238,10 +326,10 @@ try {
     const stored1 = id ? await storedPlaces(id) : null;
     judge('asIs.saved', !!asIsB && sv.ok && samePlaces(stored1?.places, built), { pressed: !!asIsB, posts: postsSince(d1.t0), id, stored: stored1 ? { version: stored1.version, same: samePlaces(stored1.places, built) } : null, line: s.topLine });
     // the page loaded again on the stored course (the link the save left), the course as it was
-    const href = s.href;
-    const o2 = await openPage(/[?&]course=/.test(href) ? href : `${base}/fly/?scene=${scan}&course=${id}&render=off&nowarn=1`);
+    const o2 = await openPage(`${base}/fly/?scene=${scan}&render=off&nowarn=1`);
+    const row2 = await openRow('n-save as is');
     s = await snap();
-    judge('asIs.reload', o2.open && samePlaces(s.egates, built), { open: o2, url: s.href.slice(0, 160), gates: s.egates?.length ?? null, same: samePlaces(s.egates, built), line: s.topLine });
+    judge('asIs.reload', o2.open && row2.pressed && samePlaces(s.egates, built), { open: o2, row: row2, gates: s.egates?.length ?? null, same: samePlaces(s.egates, built), line: s.topLine });
 
     // ---- Show me (a new title: a change; Show me posts nothing)
     const d2 = await saveToDialog('n-save show me');
@@ -268,10 +356,12 @@ try {
     judge('fixAll.undo', !!undoB && samePlaces(s.egates, beforeFix) && s.fix?.undone === true, { pressed: !!undoB, back: samePlaces(s.egates, beforeFix), undone: s.fix?.undone ?? null, line: s.topLine });
 
     // ---- the page loaded again: the course saved (the fixed places, the API's newest version)
-    const o3 = await openPage(`${base}/fly/?scene=${scan}&course=${s.saved ?? id}&render=off&nowarn=1`);
+    const fixedId = s.saved ?? id;
+    const o3 = await openPage(`${base}/fly/?scene=${scan}&render=off&nowarn=1`);
+    const row3 = await openRow('n-save fixed');
     s = await snap();
-    const stored4 = await storedPlaces(s.saved ?? id);
-    judge('reload', o3.open && s.egates?.length === 3 && samePlaces(stored4?.places, fixed), { open: o3, gates: s.egates?.length ?? null, pageSameAsFixed: samePlaces(s.egates, fixed), stored: stored4 ? { version: stored4.version, same: samePlaces(stored4.places, fixed) } : null, line: s.topLine });
+    const stored4 = await storedPlaces(fixedId);
+    judge('reload', o3.open && row3.pressed && samePlaces(s.egates, fixed) && samePlaces(stored4?.places, fixed), { open: o3, row: row3, gates: s.egates?.length ?? null, pageSameAsFixed: samePlaces(s.egates, fixed), stored: stored4 ? { version: stored4.version, same: samePlaces(stored4.places, fixed) } : null, line: s.topLine });
 } catch (e) {
     res.error = String(e).slice(0, 400);
     if (!(LIVE && /stopped before any save/.test(res.error))) fails.push('error');

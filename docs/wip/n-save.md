@@ -26,6 +26,19 @@ Temp: U:/Temp/gsfpv-train4/n-save. Evidence: evidence/2026-11-20/n-save/.
   probe never presses Save mine (its top-bar Save only opens the name field), so it does not meet the dialog. Commit d74ab9f9.
 - [ ] S4 the acceptance by mouse: tools/bench/scripts/n-save-accept.mjs on the local build + local API, and against the live site
   (must FAIL "Save as it is", read only); gates typecheck,vitest,architecture,i18n,b18,leaks; "What the owner should try".
+  Done so far (commit 7cbf4e3b + the next): the probe exists; dist/ is built at 373cd684 with the walls copied in (no rebuild
+  needed while only the probe changes). Run 4 (U:/Temp/gsfpv-train4/n-save/accept4.json, local, port 6902/6903): open, dialog
+  (Warnings: 8, ids in order), asIs.saved (201, the API holds the places), showMe, fixAll (2 moved, 201, stored), fixAll.undo PASS.
+  LEFT, exactly:
+  1. build: "two gates on one spot" by mouse. A click on gate A's place cannot do it (course-line.ts legOnRay puts the new gate
+     ON_LEG_END_M 2 m along the leg; with A alone its gizmo takes the click). pullOnto drags the third gate onto A with the gizmo
+     arrows, but with ?render=off most drags miss the arrow and circle the view (accept4: 3 of 24 drags moved). Try: hover
+     the arrow and wait for the hook's hover before mouse.down, or take the arrow's tip from the gizmo itself; else note it.
+  2. asIs.reload / reload: openRow now presses Open twice when the first press only asks (unsaved draft); rerun to confirm.
+  3. the live negative control: `node tools/bench/scripts/n-save-accept.mjs https://gsfpv.flyreelstudio.eu/en 70b50d42 <out>`
+     (POSTs aborted, stops at the dialog; must FAIL asIs.saved).
+  4. look once at U:/Temp/gsfpv-train4/shots/n-save-dialog.png and n-save-ghosts.png; evidence JSON under
+     evidence/2026-11-20/n-save/; gates once; "What the owner does"; delete dist/ at the end.
 
 Code against the design: the Save path of apps/fly/src/app/builtin/course.ts now sits at pointAtWrong :1023, refusedSave :1037,
 applyFixes :1065, saveMine :1833, saveAdmin :~1885 (the design named :893-1754); the names are the same.
@@ -85,3 +98,6 @@ applyFixes :1065, saveMine :1833, saveAdmin :~1885 (the design named :893-1754);
   step); a note on yawQuatStep and TURN_PAIR_M in the scan-worlds header would save three replies.
 - S3: most replies went to finding the old offer's users (three tests and two probes assert its code by regex) and the fake
   DOM's limits (no childElementCount); a list of source-regex tests per file in docs/agent-map.md would save four replies.
+- S4 (run 1): most replies went to building a bad course by mouse (the add rules: legOnRay, the gizmo over the selected gate,
+  flaky gizmo drags with render=off); a probe helper "drag the selected gate's arrow by N m" shared by the editor probes would
+  save ten replies.
