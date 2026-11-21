@@ -56,7 +56,9 @@ describe('H1: the keys of the moment at the start of every step, once a step; th
         }
     }, 120000);
 
-    it('a new step says it again (N, then B back to the task); inside a step it is not said again (Z, the lines after the first)', async () => {
+    // train 4, lane tutor-say (the first outside feedback, 2026-11-20, decision 1 "say only what is new"): the keys are said once a
+    // visit, no longer at every step: N and B do not say them again, K does
+    it('said once a visit: not again at a new step (N, then B back to the task) nor inside a step (Z)', async () => {
         const r = await open('rings-first');
         expect(keyLines(r)).toHaveLength(1);
         await r.run(1500, null);
@@ -65,19 +67,19 @@ describe('H1: the keys of the moment at the start of every step, once a step; th
         await r.run(1500, null);
         expect(r.host.runner!.view().step).toBe(1);
         expect(keyLines(r)).toHaveLength(1);
-        // N: the flight, step 2: its first line, then the keys
+        // N: the flight, step 2: its own lines, the keys not
         expect(r.press('scene.next')).toBe(true);
         await r.run(1500, null);
         expect(r.host.runner!.view().step).toBe(2);
-        expect(keyLines(r)).toHaveLength(2);
-        // B: back to the task, step 1 again
+        expect(keyLines(r)).toHaveLength(1);
+        // B: back to the task, step 1 again: the keys not
         expect(r.press('feedback.open')).toBe(true);
         await r.run(1500, null);
         expect(r.host.runner!.view().step).toBe(1);
-        expect(keyLines(r)).toHaveLength(3);
-        // each follows a line of its step and no two of them are said one after the other
+        expect(keyLines(r)).toHaveLength(1);
+        // the one line of keys follows the first line of the lesson
         const said = r.engine.said.map((s) => s.line.key);
-        said.forEach((k, i) => { if (k === 'sonic.say.lessonKeys') expect(said[i - 1]).not.toBe('sonic.say.lessonKeys'); });
+        expect(said.indexOf('sonic.say.lessonKeys')).toBeGreaterThan(0);
     }, 120000);
 
     // lane sound6 (the owner's words of 2026-11-19: the sound at once, short explanations): a listening lesson (no world) says the

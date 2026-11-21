@@ -3,10 +3,10 @@
 // it first matters; after that only when the pilot asks (key K) or moves the focus onto it, and those two paths do not ask here.
 // One instance lives for the page's visit (the lesson host's): a new lesson does not name again what an earlier one named.
 //
-// Ids: 'keys.lesson' (the line of a lesson's keys), 'key.<action id>' (one key, e.g. 'key.sonic.repeat'), 'button.<data-testid>'
+// Ids: 'keys.lesson' (the line of a lesson's keys), 'keys.free' (the free flight's line of keys), 'key.<action id>' (one key, e.g. 'key.sonic.repeat'), 'button.<data-testid>'
 // (a button of the sound pages, e.g. 'button.sonic-start-quick').
 
-export type SaidId = 'keys.lesson' | `key.${string}` | `button.${string}`;
+export type SaidId = 'keys.lesson' | 'keys.free' | `key.${string}` | `button.${string}`;
 
 export class SaidOnce {
     private readonly said = new Set<string>();
