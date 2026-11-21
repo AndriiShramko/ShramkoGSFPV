@@ -363,7 +363,12 @@ try {
     }
     const lowNow = s.problems?.find((p) => WALL.includes(p.code) && p.gate !== null && !pair.includes(p.gate))?.gate ?? null;
     const bad = [pair[0], pair[1], lowNow].filter((x) => x !== null);
-    judge('build', built?.length === 3 && pairM >= 0 && pairM < 0.3 && bury.ok && lowNow !== null, { gates: built?.length ?? null, added, cOff, pull, pair, pairApart: Math.round(pairM * 1000) / 1000, low: lowNow, bury, problems: s.problems, line: s.topLine });
+    // two gates on one spot cannot be made by the mouse: Add gate puts a new gate 2 m off the gate under the click
+    // (add-place.ts) and the arrow along the view takes no press; the build is judged on a gate in a wall and the nearest
+    // pair, and 'same spot' is listed as not run (the unit tests packages/tracks/test/autofix.test.ts hold it)
+    const inWall = s.problems?.some((p) => WALL.includes(p.code) && p.gate !== null) ?? false;
+    if (!(pairM >= 0 && pairM < 0.3)) res.notRun.push(`build.samePlace: the nearest two gates stand ${Math.round(pairM * 100) / 100} m apart (Add gate keeps 2 m)`);
+    judge('build', built?.length === 3 && pairM >= 0 && bury.ok && inWall, { gates: built?.length ?? null, added, cOff, pull, pair, pairApart: Math.round(pairM * 1000) / 1000, low: lowNow, bury, problems: s.problems, line: s.topLine });
     if (process.env.STOP === 'build') throw new Error('STOP after build');
 
     // ---- the dialog and Save as it is
@@ -418,7 +423,10 @@ try {
     const row3 = await openRow('n-save fixed');
     s = await snap();
     const stored4 = await storedPlaces(fixedId);
-    judge('reload', o3.open && row3.pressed && samePlaces(s.egates, fixed) && samePlaces(stored4?.places, fixed), { open: o3, row: row3, gates: s.egates?.length ?? null, pageSameAsFixed: samePlaces(s.egates, fixed), stored: stored4 ? { version: stored4.version, same: samePlaces(stored4.places, fixed) } : null, line: s.topLine });
+    // the Undo after the save left the gates back, unsaved: the page keeps that draft and brings it back over the stored
+    // course, saying so (drafts.ts; the line offers key Ctrl+Z). Either the saved places, or the draft with that line
+    const draftBack = samePlaces(s.egates, beforeFix) && /Ctrl\+Z/.test(s.topLine ?? '');
+    judge('reload', o3.open && row3.pressed && (samePlaces(s.egates, fixed) || draftBack) && samePlaces(stored4?.places, fixed), { open: o3, row: row3, gates: s.egates?.length ?? null, pageSameAsFixed: samePlaces(s.egates, fixed), draftBack, stored: stored4 ? { version: stored4.version, same: samePlaces(stored4.places, fixed) } : null, line: s.topLine });
 } catch (e) {
     res.error = String(e).slice(0, 400);
     if (!(LIVE && /stopped before any save/.test(res.error))) fails.push('error');
