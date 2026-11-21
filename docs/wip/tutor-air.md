@@ -42,7 +42,22 @@ Base (OLD of every diff and negative control): 03624451b8deb79d179cc9a5d07adf22f
   - [x] Start flying = sonic-start-quick -> firstOf('fast') = ears-headphones (the headphone check), then walls-hall whose
         first moment is height.tone at the start (safety.wall when near comes next and names the keys): nothing more
         from the page; proven in the page in S4
-- [ ] S3 "What is this sound?" (G)
+- [x] S3 "What is this sound?" (G) (this commit)
+  - [x] sound-tour.ts SoundTour: G freezes the flight (pause reason 'tour'), the engine's last plan (activeCues) gives the cues
+        heard now, each once (sectors folded), safety first; per cue: the card names it, `sonic.say.tourName` ("Sound n of m:
+        name", the package's cue.<id>.name) with every cue gated out, then the cue alone (setAudible([cue]) + a 'repeat-cue' of
+        2.5 s from its direction) and 0.4 s quiet; then `sonic.say.helpCut` ("Back to the flight.") and the lesson's own gate back;
+        nothing audible: `sonic.say.tourNone` (one line with the key), no freeze; G again or any other pause ends it at once
+  - [x] bridge.ts soundsOnPause (the tour's pause is the mode's: runner paused, 'session' pause written, but not silenced),
+        audibleNow, activeCues (BridgeEngine.activeCues?); context.ts PauseReason gains 'tour'; moment-card.ts showCue
+  - [x] feature.ts: G = sonic.whatSound (in a moment G hears the moment's sound again, as Z); the tour stops on teardown
+  - [x] keymap sonic.glossary -> sonic.whatSound (G, keys.sonic.whatSound); mode-keys help row sonic.say.helpWhatSound; tests
+        renamed (keymap, catalog, app-keys, sonic-optin-page probe); sonic-optin.test K list gains S2's Shift+K (missed in S2)
+  - [x] locale keys sonic.say.tourName, tourNone, helpWhatSound (fly/sonic), keys.sonic.whatSound (fly/sonickeys, replaces
+        keys.sonic.glossary), four languages
+  - [x] tools/bench/test/sonic-tour.test.ts 4/4 (real CuePlanner in walls-hall); NEG OK on 03624451 (and with bridge.ts alone);
+        nearby tests 26 files 367 (10 skipped) pass; fly + bench typecheck rc 0; architecture ok
+  - lesson-menu.ts: no change needed, the glossary is a lesson of the lesson list there (ears-glossary), not its own item
 - [ ] S4 the page acceptance (tutor-moment head already merged in S2; mouse probe local + live; one drawn run;
       accept-fly B6-B16; gates once with catalog; "What the owner should try"; delete dist)
 
@@ -51,6 +66,8 @@ Differences from the plan (the code wins):
   moment the engine is fed the held craft's frame, gated to the moment's cue by setAudible.
 - PauseReason lives in apps/fly/src/app/context.ts (not an owned file): 'moment' added to the union (one word).
 - The known sounds need a field in the saved collection: packages/prefs/src/doc.ts SonicState.known (not an owned file).
+- S3: the tour's lines are `sonic.say.tour*` (the engine speaks only that prefix), not `sonic.tour.*`; each sound plays as a
+  'repeat-cue' from its last direction under a one-cue gate (no demo frame), and the tour pauses with its own reason 'tour'.
 - bridge.ts gains momentKey (the key events the replay needs, tutor-moment's For the lead), beyond the pause and setAudible.
 
 ## What the owner does
@@ -67,13 +84,18 @@ Differences from the plan (the code wins):
    it; the known sounds are kept with the progress and given to the runner (with the guide level) only when the page can freeze
    and the narrator is on. `npx vitest run tools/bench/test/sonic-moment-keys.test.ts`: 6 passed; NEG OK on 03624451.
 
+4. G ("What is this sound?") freezes the craft, names each sound heard now (safety first) and plays it alone, nothing sounding
+   while a name is said; nothing heard: one line; G again ends it and gives the lesson its gate back; G is no longer the glossary.
+   `npx vitest run tools/bench/test/sonic-tour.test.ts`: 4 passed; NEG OK on 03624451.
+
 ## Not verified
 
 (S4)
 
 ## For the lead
 
-- Files changed outside the owned list: apps/fly/src/app/context.ts (PauseReason gains 'moment'); packages/prefs/src/doc.ts
+- Files changed outside the owned list: apps/fly/src/app/context.ts (PauseReason gains 'moment' and 'tour'); tools/bench/src/
+  sonic-optin-page.ts and tools/bench/test/sonic-optin.test.ts (G's action id and K's help line; Shift+K in K's list); packages/prefs/src/doc.ts
   (SonicState.known, S2); tools/bench/test/sonic-fake-dom.ts (a classList, test helper); packages/prefs/test/catalog.test.ts
   (the mode's key list gains Shift+K).
 - The moment's spoken lines are `sonic.say.*` keys (the engine's prefix), not `sonic.moment.*` as the plan's Part C 6 wrote.
@@ -86,3 +108,5 @@ Differences from the plan (the code wins):
   key-names, doc.ts); a map line per host hook in docs/agent-map.md for the sound mode would have saved about six reads.
 - S2 run 2: finding test seams (no DOM env, the bridge's `on` gate, real cue ids, the engine's `sonic.say.` prefix) took the
   most replies; a short "how to test a sound-mode host piece" note beside sonic-fake-dom.ts would have saved about five.
+- S3: learning whether the engine sounds a cue while the flight is paused (layers, previews, the planner's gate) took the most
+  replies; reusing S1's freeze-test harness made the test cheap. neg_control needs `npx.cmd` on this shell, not `npx`.

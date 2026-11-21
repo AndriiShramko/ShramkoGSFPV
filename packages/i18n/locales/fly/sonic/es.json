@@ -130,5 +130,8 @@
   "sonic.start.all": "Todas las lecciones",
   "sonic.say.momentKeys": "Oír otra vez, tecla {again}, seguir, tecla {on}. Ya conozco este sonido, tecla {know}.",
   "sonic.say.momentKnowOutside": "La tecla {key} dice al juego que ya conoces un sonido nuevo. Sirve cuando el juego se para para mostrar uno.",
-  "sonic.say.helpKnow": "Pulsa la tecla {key} cuando el juego se pare por un sonido nuevo que ya conoces."
+  "sonic.say.helpKnow": "Pulsa la tecla {key} cuando el juego se pare por un sonido nuevo que ya conoces.",
+  "sonic.say.helpWhatSound": "Pulsa la tecla {key} para saber qué es cada sonido que suena ahora.",
+  "sonic.say.tourName": "Sonido {n} de {of}: {name}.",
+  "sonic.say.tourNone": "Ahora no suena nada. Vuela cerca de una pared o cambia de altura y pulsa otra vez la tecla {key}."
 }

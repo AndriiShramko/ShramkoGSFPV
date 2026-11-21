@@ -12,8 +12,8 @@
 //
 // Keys the mode takes: R short and long, N, B, Z and [ ] (mode.ts: N the next step, B the step before, Z the step's task again,
 // each through the lesson runner and recorded for the replay, v0.13 W5); the digits answer a question asked (0 skips it), I says
-// where the pilot is (and, through the page's status board, app/sonic-status.ts, what the recorder adds), G opens the sound
-// glossary and comes back (lessons.ts); T and U belong to the recorder (lane v12-feedback, feature sonic-session). The pause menu
+// where the pilot is (and, through the page's status board, app/sonic-status.ts, what the recorder adds), G says "What is this sound?" (sound-tour.ts;
+// the sounds heard now, each named and played alone); T and U belong to the recorder (lane v12-feedback, feature sonic-session). The pause menu
 // gains "Fly by Sound: lessons and settings", the start screen over the flight. T U I Z G exist only on this page (keymap `when:
 // 'sonic'`, v12-optin). Keys of every page do the mode's own thing here: L copies a link that opens this lesson in the mode, instead
 // of the share panel's picture (so do the top bar's and the pause menu's Share: ctx.sonicShare, review R3), K says the keys
@@ -64,6 +64,7 @@ import { setLessonView } from '../app/sonic-view';
 import { liveSearch } from '../app/env';
 import { MOMENT_PAUSE, MomentHost } from './moment-host';
 import { MomentCard } from './moment-card';
+import { SoundTour, TOUR_PAUSE } from './sound-tour';
 
 // window.__gsfpv.sonic: what the lesson is doing, for the acceptance runs (tools/bench/src/sonic-*.ts)
 declare module '../app/test-hook' {
@@ -321,6 +322,29 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
     offs.push(moments.onView((v) => card.show(v)));
     offs.push(ctx.events.on('sonicEvent', (e) => { if (e.kind === 'speech' && e.key !== SPEECH_END_KEY) card.said(e.text); }));
     offs.push(() => card.remove());
+    // G (lane tutor-air S3): "What is this sound?" in any flight by sound (sound-tour.ts): the pause reason 'tour' holds the craft and
+    // the lesson's clocks while the engine keeps sounding (bridge.ts soundsOnPause), one sound at a time; any other pause ends it
+    const tour = new SoundTour(
+        ctx,
+        {
+            activeCues: () => mode.bridge.activeCues(),
+            get audibleNow() {
+                return mode.bridge.audibleNow;
+            },
+            setAudible: (cues) => mode.bridge.setAudible(cues),
+            cue: (e) => mode.bridge.engine?.cue(e),
+            say: (line, interrupt) => mode.bridge.say(line, interrupt, { asked: true })
+        },
+        card,
+        {
+            name: (cue) => (cueNames.has(`cue.${cue}.name`) ? cueNames.text({ key: `cue.${cue}.name` }) : null),
+            key: () => names.of('sonic.whatSound'),
+            wait: (ms) => new Promise((r) => setTimeout(r, ms))
+        }
+    );
+    mode.bridge.soundsOnPause = () => tour.running && pauseReasons.every((r) => r === TOUR_PAUSE || r === MOMENT_PAUSE);
+    offs.push(ctx.events.on('pause', ({ reasons }) => { if (tour.running && reasons.some((r) => r !== TOUR_PAUSE && r !== MOMENT_PAUSE)) tour.stop(); }));
+    offs.push(() => tour.stop());
     const quietLive = (): boolean => quietFlight(entry.setup.prefs, flightLesson(host?.lesson?.id ?? null), liveRegionPaused(mode.bridge.paused, pauseReasons));
     const liveQuiet = quietLiveRegion(document.getElementById('ui'), quietLive);
     liveQuiet.sync();
@@ -494,8 +518,15 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
         }
     });
     offs.push(() => setLessonView(ctx, null));
-    // G: a key of the mode, ignored while no lesson runs (Z, N and B are the mode's own while a lesson runs: mode.ts)
-    offs.push(ctx.keys.on('sonic.glossary', (e) => { if (!e.repeat && mode.active) void h.glossary(); }));
+    // G (lane tutor-air S3): "What is this sound?" (sound-tour.ts), in a lesson or the free flight; in a moment the moment's sound is
+    // named already: G hears it again, as Z does. The glossary of every sound stays a lesson of the lesson menu.
+    offs.push(
+        ctx.keys.on('sonic.whatSound', (e) => {
+            if (e.repeat || !mode.active) return;
+            if (moments.frozen) mode.bridge.momentKey('KeyG', 'again');
+            else void tour.start();
+        })
+    );
     // Shift+K (lane tutor-air): "I know this sound" in a moment (it ends, the sound is kept as known); outside one, one line on what it does
     offs.push(
         ctx.keys.on('sonic.know', (e) => {

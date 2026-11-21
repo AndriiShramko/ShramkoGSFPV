@@ -91,7 +91,7 @@ describe('buildCatalogue (I.6)', () => {
     it('the sound mode\'s keys (T U I Z G) are neither listed nor counted, in any language; control: as always keys (8ce53fb) they were', () => {
         const c = build();
         const sonic = KEYMAP.filter((b) => b.when === 'sonic');
-        expect(sonic.map((b) => b.action)).toEqual(['sonic.record', 'sonic.send', 'sonic.status', 'sonic.repeat', 'sonic.glossary', 'sonic.know', 'sonic.home', 'sonic.narrator', 'sonic.headCentre']);
+        expect(sonic.map((b) => b.action)).toEqual(['sonic.record', 'sonic.send', 'sonic.status', 'sonic.repeat', 'sonic.whatSound', 'sonic.know', 'sonic.home', 'sonic.narrator', 'sonic.headCentre']);
         for (const l of ['en', 'es', 'pl', 'ru']) expect(c.locales[l].keys.filter((k) => k.action.startsWith('sonic.'))).toEqual([]);
         const caps = new Set(c.locales.en.keys.flatMap((k) => k.keys));
         for (const cap of ['T', 'U', 'I', 'Z', 'G', 'Shift+K', 'X', 'Shift+V', 'Shift+H']) expect(caps.has(cap), cap).toBe(false);

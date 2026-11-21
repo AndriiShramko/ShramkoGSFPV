@@ -43,16 +43,21 @@ export class MomentCard {
 
     /** A moment's view (moment-host.ts onView): shown with the sound's name; a new moment starts with an empty line; null hides it. */
     show(view: MomentView | null): void {
-        if (view === null) {
+        this.showCue(view === null ? null : view.cue);
+    }
+
+    /** The sound being named (a moment's, or one of "What is this sound?", sound-tour.ts), or null to hide the card. */
+    showCue(cue: CueId | null): void {
+        if (cue === null) {
             this.el.hidden = true;
             this.cue = null;
             this.line.textContent = '';
             this.doc.body.classList.remove(MOMENT_BODY_CLASS);
             return;
         }
-        if (this.cue !== view.cue) {
-            this.cue = view.cue;
-            this.sound.textContent = this.name(view.cue);
+        if (this.cue !== cue) {
+            this.cue = cue;
+            this.sound.textContent = this.name(cue);
             this.line.textContent = '';
         }
         this.el.hidden = false;

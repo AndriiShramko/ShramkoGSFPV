@@ -32,7 +32,7 @@ import { S, attitude } from '@gsfpv/sim-core';
 import type { Sim, SimEvent } from '@gsfpv/sim-core';
 import { REPLAY_KEY_ACTIONS, SPEECH_END_KEY } from '@shramko/sonic-fpv';
 import { quietCue } from './quiet-cues';
-import type { CueEvent, CueId, FlightSample, LessonLayers, LessonSession, MaterialClass, MomentKey, Pose, SessionEvent, SonicFrameInput, SonicWorld, SpeechLine, Vec3 } from '@shramko/sonic-fpv';
+import type { ActiveCue, CueEvent, CueId, FlightSample, LessonLayers, LessonSession, MaterialClass, MomentKey, Pose, SessionEvent, SonicFrameInput, SonicWorld, SpeechLine, Vec3 } from '@shramko/sonic-fpv';
 
 /** Contacts closer together than this are one touch: a touch begins after this much quiet, ticks (0.5 s). */
 export const TOUCH_QUIET_TICKS = 500;
@@ -78,6 +78,8 @@ export interface BridgeEngine {
     reset?(): void;
     /** Train 4 (lane tutor-air): the cues the engine may sound (a moment's gate; the package's SonicEngine.setAudible); null: all. */
     setAudible?(cues: readonly CueId[] | null): void;
+    /** The cues of the engine's last plan (SonicEngine.activeCues): what "What is this sound?" names (sound-tour.ts). */
+    activeCues?(): readonly ActiveCue[];
 }
 
 /**
@@ -197,6 +199,12 @@ export class SonicBridge {
      * the craft holds), nothing is silenced and no 'session' pause is written. Set by the page; null: every pause is the mode's.
      */
     momentOnly: (() => boolean) | null = null;
+    /**
+     * Lane tutor-air S3 (sound-tour.ts): the flight is paused for "What is this sound?" alone. The pause is the mode's (the lesson's
+     * clocks stand, a 'session' pause is written), but the engine keeps its layers and is fed the held craft's frame, so each sound
+     * plays alone from its direction under the tour's gate. Set by the page; null: a pause silences, as before.
+     */
+    soundsOnPause: (() => boolean) | null = null;
     /** the cues the engine may sound (setAudible), or null for all */
     private audible: readonly CueId[] | null = null;
 
@@ -267,6 +275,21 @@ export class SonicBridge {
     setAudible(cues: readonly CueId[] | null): void {
         this.audible = cues === null ? null : [...cues];
         this.engine?.setAudible?.(this.audible);
+    }
+
+    /** The engine's gate now (setAudible), or null for every cue. */
+    get audibleNow(): readonly CueId[] | null {
+        return this.audible;
+    }
+
+    /** The cues of the engine's last plan (none without an engine that tells). */
+    activeCues(): readonly ActiveCue[] {
+        return this.engine?.activeCues?.() ?? [];
+    }
+
+    /** A pause that silences: not one the page keeps sounding (soundsOnPause). */
+    private mutedBy(paused: boolean): boolean {
+        return paused && this.soundsOnPause?.() !== true;
     }
 
     /** The flight waits for the mode: the session paused for anything but a moment alone, or a replay drives the view. */
@@ -341,7 +364,7 @@ export class SonicBridge {
         const t = this.now();
         const paused = this.pausedFor(ses);
         this.pauseState(paused, t);
-        if (paused) this.silence();
+        if (this.mutedBy(paused)) this.silence();
         else this.sound();
         const s = sim.s;
         const a = attitude(s);
@@ -432,7 +455,7 @@ export class SonicBridge {
         if (!this.on || this.inPlayback || !ses) return;
         const paused = this.pausedFor(ses);
         this.pauseState(paused, this.now());
-        if (paused) this.silence();
+        if (this.mutedBy(paused)) this.silence();
     }
 
     /** The flight is paused for the mode (the runner waits with it). */

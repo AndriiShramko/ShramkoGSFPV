@@ -117,7 +117,8 @@ export const KEY_HELP: readonly (readonly [line: string, action: ActionId, aria?
     // lane head4 (int4, the seam with the mode's key help): Shift+H centres head tracking (with it off, the key says how to turn it on)
     ['sonic.say.helpHead', 'sonic.headCentre'],
     ['help.status', 'sonic.status'],
-    ['help.glossary', 'sonic.glossary'],
+    // lane tutor-air S3: G, "What is this sound?" (sound-tour.ts)
+    ['sonic.say.helpWhatSound', 'sonic.whatSound'],
     ['help.reset', 'respawn.start'],
     ['help.record', 'sonic.record'],
     ['help.send', 'sonic.send'],

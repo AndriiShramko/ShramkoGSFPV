@@ -109,7 +109,7 @@ export const KEYMAP: readonly KeyBinding[] = [
     { action: 'fullscreen.toggle', keys: [letter('F')], when: 'always', labelKey: 'keys.fullscreen.toggle', status: 'shipped' },
     // v0.12 Fly by Sound (docs/wip/v12-plan.md sections 1 and 3; the handlers are in sonic/feature.ts and
     // sonic-session/session.ts). All five letters were free: T records the flight and the pilot's voice, U sends the
-    // recording to the author, I says the status (lesson, attempt, recording), Z repeats the last spoken line, G opens the
+    // recording to the author, I says the status (lesson, attempt, recording), Z repeats the last spoken line, G opened the
     // sound glossary. Keys of the mode only (v12-optin, the owner's message 40: the sound mode is not pressed on pilots who
     // did not choose it): routed and listed on a page entered through ?sonic=, nowhere else, and not in the catalogue
     // lane center-throttle (app/builtin/throttle-style.ts): a radio's or gamepad's throttle style, stick in the centre <-> from zero
@@ -125,7 +125,9 @@ export const KEYMAP: readonly KeyBinding[] = [
     { action: 'sonic.send', keys: [letter('U')], when: 'sonic', labelKey: 'keys.sonic.send', status: 'shipped' },
     { action: 'sonic.status', keys: [letter('I')], when: 'sonic', labelKey: 'keys.sonic.status', status: 'shipped' },
     { action: 'sonic.repeat', keys: [letter('Z')], when: 'sonic', labelKey: 'keys.sonic.repeat', status: 'shipped' },
-    { action: 'sonic.glossary', keys: [letter('G')], when: 'sonic', labelKey: 'keys.sonic.glossary', status: 'shipped' },
+    // train 4, lane tutor-air S3 (decision 5 of the brief): G is "What is this sound?", the sounds heard now, each named and played alone;
+    // the glossary of every sound stays a lesson of the lesson menu
+    { action: 'sonic.whatSound', keys: [letter('G')], when: 'sonic', labelKey: 'keys.sonic.whatSound', status: 'shipped' },
     // train 4, lane tutor-air (the first outside feedback, point 2: the game stops for a new sound): "I know this sound" in a moment
     // (its moment ends, the sound is kept as known). K is the key help; Shift+K is bound nowhere and K stands in the same place on
     // QWERTY, QWERTZ, AZERTY and the Polish and Spanish layouts. Outside a moment it says in one line what it does
