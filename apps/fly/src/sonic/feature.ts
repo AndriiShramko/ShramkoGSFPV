@@ -61,6 +61,7 @@ import type { ScanLesson } from './scan-lesson';
 import { allProgress, narratorTipSaid, setNarratorTipSaid } from './store';
 import { STATUS_ORDER, sayStatus, statusBoard } from '../app/sonic-status';
 import { setLessonView } from '../app/sonic-view';
+import { liveSearch } from '../app/env';
 
 // window.__gsfpv.sonic: what the lesson is doing, for the acceptance runs (tools/bench/src/sonic-*.ts)
 declare module '../app/test-hook' {
@@ -508,7 +509,7 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
     ctx.sonicShare = (via) => {
         const lesson = h.lesson;
         // lane n-share: the scan, the course flown there and the way of flying (share/flight-link.ts, the one writer of a flight's address)
-        const url = flightLink(soundPlace(lesson, entry.setup.prefs, courseOfFlight(ctx.hook.course, location.search)), { origin: location.origin, locale: '' });
+        const url = flightLink(soundPlace(lesson, entry.setup.prefs, courseOfFlight(ctx.hook.course, liveSearch())), { origin: location.origin, locale: '' });
         const keys = copyKeys();
         ctx.hook.sonicLink = { url, copied: null };
         void shareLesson({

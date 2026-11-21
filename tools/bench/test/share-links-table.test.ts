@@ -144,9 +144,9 @@ describe('share links table: every place, read as a fresh profile reads it', () 
 
     it('every Share writes through flightLink: the sound mode share and the flight share pass the course', () => {
         const feature = readFileSync(join(REPO, 'apps/fly/src/sonic/feature.ts'), 'utf8');
-        expect(feature).toMatch(/flightLink\(soundPlace\(lesson, entry\.setup\.prefs, courseOfFlight\(ctx\.hook\.course, location\.search\)\)/);
+        expect(feature).toMatch(/flightLink\(soundPlace\(lesson, entry\.setup\.prefs, courseOfFlight\(ctx\.hook\.course, liveSearch\(\)\)\)/);
         const share = readFileSync(join(REPO, 'apps/fly/src/app/builtin/share.ts'), 'utf8');
-        expect(share).toMatch(/course: courseOfFlight\(ctx\.hook\.course, location\.search\)/);
+        expect(share).toMatch(/course: courseOfFlight\(ctx\.hook\.course, liveSearch\(\)\)/);
         const panel = readFileSync(join(REPO, 'apps/fly/src/share/panel.ts'), 'utf8');
         expect(panel).toMatch(/course: req\.course/);
     });

@@ -43,7 +43,7 @@ const T0 = Date.now();
 const log = (...a) => console.error(`[${((Date.now() - T0) / 1000).toFixed(0).padStart(4)}s]`, ...a);
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const pick = pickBrowser({ expected: chromium.executablePath() });
-const launch = { ...pick.launch, headless: true, args: ['--autoplay-policy=no-user-gesture-required'] };
+const ARGS = ['--autoplay-policy=no-user-gesture-required'];
 
 const steps = {};
 const facts = {};
@@ -175,7 +175,7 @@ async function friend(row, url, sharer) {
     const dir = `${TEMP}/profile-${tag}-${row}`;
     rmSync(dir, { recursive: true, force: true });
     mkdirSync(dir, { recursive: true });
-    const ctx = await chromium.launchPersistentContext(dir, { ...launch, ...VIEW, permissions: ['clipboard-read', 'clipboard-write'] });
+    const ctx = await chromium.launchPersistentContext(dir, { ...pick.launch, args: ARGS, ...VIEW, permissions: ['clipboard-read', 'clipboard-write'] });
     try {
         await guard(ctx);
         const page = ctx.pages()[0] ?? (await ctx.newPage());
@@ -274,7 +274,7 @@ async function row(browser, name) {
     await friend(name, url, expect);
 }
 
-const browser = await chromium.launch(launch);
+const browser = await chromium.launch({ ...pick.launch, args: ARGS });
 try {
     for (const r of ROWS) {
         try {

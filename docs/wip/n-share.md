@@ -67,6 +67,16 @@ sound where the owner, who turned sound on in place over a laid course, had 36 (
    course), the lessons are a small second link; a course never saved is not sent and the Share says so in one line:
    `npx vitest run tools/bench/test/share-links-landing.test.ts tools/bench/test/sonic-start-screen.test.ts` (6 + 40 passed; NEG OK).
 
+3. By the mouse at 1536 x 730 @ 1.25, a new browser profile opening the address copied from the pause menu's Share flies the
+   sharer's scene, course and way of flying after one press (sound and normal rows):
+   `node tools/bench/scripts/n-share-accept.mjs http://localhost:6921 <out.json> local` on the release build: all six steps PASS
+   (evidence/2026-11-20/n-share/accept-local-run1.json + accept-local-sound.json); the same probe on the live site, sound row:
+   three FAIL (accept-live.json), the negative control. Gates once (typecheck, vitest, architecture, i18n, b18, leaks): five PASS,
+   vitest FAILed on two of this lane's lines (share.ts/feature.ts read `location.search` where app/env.ts liveSearch() is the one
+   reader; the probe's launch did not spread pick.launch in the call); both repaired, then
+   `npx vitest run packages/prefs/test/main-audit.test.ts tools/bench/test/chrome.test.ts tools/bench/test/share-links-*.test.ts
+   tools/bench/test/sonic-optin.test.ts` 67 passed and `pnpm --filter ./apps/fly typecheck` PASS (the full gates not run again).
+
 ## Not verified
 
 - No person, phone or real controller took part; the pilot was a headless Chrome driven by the mouse at 1536 x 730 @ 1.25 with
@@ -104,3 +114,12 @@ sound where the owner, who turned sound on in place over a laid course, had 36 (
 - S2: about 30 calls; the most went to a test template written through `node -e` (the shell ate its backticks) and to finding the
   served course id format; write test edits with the Write/Edit tools, never inside a shell string.
 - S3 run 1: about 45 calls; the most went to finding how the owner turns sound on with gates (Escape is the lesson menu in a lesson; in place it is the pause menu) and why the same g1 link lays 24 or 36 gates (courseElements); a line in docs/agent-map.md on "Escape in the sound mode" and "what a course link does not carry" would save it.
+- S3 run 2: about 30 calls; the most went to the gates' two failures (the one-query-reader audit and the headless-launch scan):
+  running main-audit.test.ts and chrome.test.ts beside the lane's own tests before the gates would have caught both.
+
+## What the owner should try
+
+1. Fly a scene with gates, key Escape, "Fly by Sound here", key Escape, "Share scene": the address now ends in `sonic=fly&scene=...&course=...`.
+2. Open it in a private window: one green button "Fly this scan by sound"; one click flies that scene by sound with its gates.
+3. The lessons are the small link under that button, never the first screen.
+4. A course laid in a normal flight shows fewer gates by sound (single upright gates); say which you want (For the lead).
