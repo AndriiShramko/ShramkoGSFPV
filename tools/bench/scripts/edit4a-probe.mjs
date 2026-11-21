@@ -9,12 +9,13 @@
 //   gate goes along its x only, the eye still; 9 drag the y ring: the gate turns; 10 drag a size box: the opening changes;
 //   cancel: drag the arrow, key Esc before the release: the gate is back; 11 click another gate from the same eye and drag
 //   its arrow: the eye still; 12 double click a third gate: it is framed (its centre in the middle third); 13 the window at
-//   844x390 device scale 2 (a laptop, no touch): top bar, gate bar, hover tag and panels do not lie over each other.
+//   844x390 device scale 2 (a laptop, no touch): another gate a pilot can click (the view turned or backed until one is on
+//   screen) is clicked and becomes the selected one; top bar, gate bar, hover tag and panels do not lie over each other.
 // Each step PASS or FAIL in one JSON; exit 1 on a FAIL. Never presses Save, Send, Vote or Create (nothing is stored, so the
 // same run on the live site is read-only: it is this lane's negative control).
 //   node tools/bench/scripts/edit4a-probe.mjs <address with /en> <scan> <WxH> <device scale> <name> <out.json>
 // env: QUERY (more query, e.g. &render=off), COURSE_MS (wait for the course, default 480000), SHOT (a PNG path: the hover
-// picture), GATE11 (the gate step 11 takes when it is on screen, default 7). Headless (tools/bench/src/chrome.mjs pickBrowser); takes no GPU lock itself (wrap a drawn run in it).
+// picture), SHOT13 (a PNG path: the 844x390 window of step 13), GATE11 (the gate step 11 takes when it is on screen, default 7). Headless (tools/bench/src/chrome.mjs pickBrowser); takes no GPU lock itself (wrap a drawn run in it).
 import { createRequire } from 'node:module';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
@@ -412,11 +413,30 @@ try {
         await page.mouse.move(w * 0.5, h * 0.95);
         await key('Home');
         await sleep(1200);
-        const a = await snap();
+        let a = await snap();
         res.gates13 = { selected: a.selected, stand: a.stand && a.stand.screen, gates: (a.gates || []).map((g) => g.map((n) => Math.round(n))) };
         if (env.SHOT13) { mkdirSync(dirname(env.SHOT13), { recursive: true }); writeFileSync(env.SHOT13, await page.screenshot()); }
-        // the gizmo's arrows end 115 px out (handle-look.ts handleBands): a press further away is on the scene
-        const c = await pickable(onScreen(a, w, h, [], 125));
+        // fix-gizmo13: what a pilot clicks. The old rule (more than 125 px from the gizmo's centre) found no gate on live run
+        // r2, where Home drew the whole random course as a small cluster round the selected gate. A gate a pilot can click
+        // has its centre in front, in the window, the scene (the canvas) under it, no handle of the gizmo there (the view's
+        // own hit test, as step 11) and no other gate's centre within 24 px (that click may rightly take the nearer gate).
+        // When there is none the pilot moves the view: an orbit drag on empty scene, the wheel back, again, the wheel in.
+        const free13 = async (s) => {
+            const cs = await pickable(onScreen(s, w, h, [], 0).filter(({ g, i }) => g[0] > 10 && g[0] < w - 10 && g[1] > 10 && g[1] < h - 10 && !s.gates.some((o, j) => j !== i && o[2] > 0 && Math.hypot(o[0] - g[0], o[1] - g[1]) < 24)));
+            const hit = await page.evaluate((pts) => pts.map(([x, y]) => !!(window.__gsfpvEditHit && window.__gsfpvEditHit(x, y))), cs.map((c) => c.g));
+            return cs.filter((_, k) => !hit[k]);
+        };
+        let c = await free13(a);
+        res.moves13 = [];
+        for (const move of ['orbit', 'back', 'orbit', 'in']) {
+            if (c.length) break;
+            const [x, y] = await emptyAt(w, h);
+            if (move === 'orbit') await drag(x, y, 160, 0);
+            else { await page.mouse.move(x, y, { steps: 3 }); for (let n = 0; n < 2; n++) { await page.mouse.wheel(0, move === 'back' ? 100 : -100); await sleep(250); } await sleep(600); }
+            a = await snap();
+            c = await free13(a);
+            res.moves13.push([move, [x, y], c.length]);
+        }
         const tried = [];
         for (const { g, i } of c.slice(0, 3)) {
             await click(g[0], g[1], 1200);
