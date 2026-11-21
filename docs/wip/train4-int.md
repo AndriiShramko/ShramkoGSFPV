@@ -137,6 +137,14 @@ t7-base 03624451 of job base7: gap-gen (gen4a, gen4b), gap-save, gap-sound and t
       out of date for the t7-base join, repaired 3240c9c0). Then the final build of 3240c9c0 and probes-car3c.sh
       (gap-save-accept, edit4b-course-life, ux4a-messages, gap-gen-accept, accept-fly; summary '--- final build').
       Left: read probes-car3c's results, the gates once on the final tree, a6-reference.
+      Run of 2026-11-21 ~06:20 UTC (stopped by the subscription's reserve hook, 97 % of the five-hour window; this note is
+      not committed: commit it first). ux4a-messages-3 on the build of 3240c9c0: 16/16 PASS. Final build of d26847d9
+      (1978 files) and probes-car3c.sh with suffix -4 started in the background, server :6180 (kill its node by PID when
+      done): gap-save-accept-4 all PASS but s100.emptySaved (expected, gap-save's own Not verified: nothing fits at x100);
+      edit4b-course-life-4, ux4a-messages-4, gap-gen-accept-4, accept-fly-4 were still running (logs-car3/summary.txt,
+      ALLDONE-C at the end). The gates were NOT started (the hook stopped them). Code tree to gate: d26847d9 (082c1c79 and
+      this note are docs only). Left: commit this note; read the four '-4' results (repair what fails); the gates once
+      (gates.py, all), a6-reference in its log; evidence 2026-11-19/int4-car3 committed; then S2 is done.
 - [ ] S3 the hand-over (Car 3 parts, U:/Temp/gsfpv-train4/int4-car3.json)
 
 ## Progress
