@@ -4,8 +4,8 @@
 // pause.share), the copied address read from the clipboard; then a NEW profile (an empty user-data dir under the temp folder)
 // opens that address and presses the one main button it is offered: the scene, the course's gate count and the way of flying
 // must be the sharer's.
-//   sound   the sharer flies the scan by sound with a generated course (?sonic=scan-free&scene=S&course=g1.<seed>, the start
-//           screen's "Fly this scan by sound" pressed by the mouse)
+//   sound   the sharer flies the scan with a generated course (?scene=S&course=g1.<seed>), Escape, the pause menu's "Fly by Sound
+//           here" (pause.flyBySound) by the mouse: the flight goes on by sound in place (there Escape opens the pause menu)
 //   normal  the sharer flies the scan normally with the same generated course (?scene=S&course=g1.<seed>)
 // Steps per row (PASS or FAIL in one JSON):
 //   <row>.shareCarries   the copied address names the scene, the course and (sound) the way of flying
@@ -91,13 +91,16 @@ const READ = () => {
 const LANDING = () => {
     const vis = (el) => { const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0 && getComputedStyle(el).visibility !== 'hidden' && !el.closest('[hidden]'); };
     const id = (el) => el.getAttribute('data-testid') || el.getAttribute('data-action') || el.textContent.replace(/\s+/g, ' ').trim().slice(0, 40);
-    const prim = [...document.querySelectorAll('button.primary, a.primary')].filter(vis);
+    // the site's consent bar (its own question, on every page of a new profile) is listed apart, not as the flight's main button
+    const consent = [...document.querySelectorAll('[data-action^="consent-"]')].filter(vis).map(id);
+    const prim = [...document.querySelectorAll('button.primary, a.primary')].filter(vis).filter((el) => !(el.getAttribute('data-action') || '').startsWith('consent-'));
     const start = document.querySelector('[data-testid="sonic-start"]');
     const startButtons = start ? [...start.querySelectorAll('.sonic-actions button, .sonic-actions a')].filter(vis).map(id) : [];
     const lessons = document.querySelector('[data-testid="sonic-start-lessons"]');
     const lb = lessons && vis(lessons) ? lessons.getBoundingClientRect() : null;
     return {
         primaries: prim.map(id),
+        consent,
         startButtons,
         lessonsLink: lb ? { text: lessons.textContent.replace(/\s+/g, ' ').trim(), h: Math.round(lb.height), primary: lessons.classList.contains('primary') } : null,
         focused: document.activeElement ? id(document.activeElement) : null,
@@ -201,7 +204,7 @@ async function friend(row, url, sharer) {
         // the one press: the main button by the mouse (and, in a normal flight, the click into the scene that takes the pointer)
         const clicks = [];
         if (main) {
-            const sel = sound ? `[data-testid="${main}"]` : 'button.primary';
+            const sel = sound && main === 'sonic-start-scan' ? `[data-testid="${main}"]` : 'button.primary:not([data-action^="consent-"])';
             if (await clickCentre(page, sel)) clicks.push(main);
         }
         let v = await until(page, (x) => (sound ? x.sonic?.lesson != null : x.scene === SCENE && x.status !== 'loading'), 120000, 400);
@@ -223,20 +226,32 @@ async function row(browser, name) {
     await guard(ctx);
     const page = await ctx.newPage();
     page.on('pageerror', (e) => errors.push(`${name} sharer: ${String(e.message).slice(0, 200)}`));
-    const at = sound ? `${base}/en/fly/?sonic=scan-free&scene=${SCENE}&course=${COURSE}&render=off&nowarn=1` : `${base}/en/fly/?scene=${SCENE}&course=${COURSE}&render=off&nowarn=1`;
+    const at = `${base}/en/fly/?scene=${SCENE}&course=${COURSE}&render=off&nowarn=1`;
     await page.goto(at, { waitUntil: 'load', timeout: 120000 });
-    if (sound) {
-        for (let i = 0; i < 300 && !(await page.evaluate(() => !!document.querySelector('[data-testid="sonic-start-scan"]'))); i++) await sleep(150);
-        await sleep(800);
-        await clickCentre(page, '[data-testid="sonic-start-scan"]');
-    }
-    let v = await until(page, (x) => x.scene === SCENE && (!sound || x.sonic?.lesson === 'scan-free'), 120000, 400);
+    let v = await until(page, (x) => x.scene === SCENE && x.status !== 'loading', 120000, 400);
     await clickScene(page);
     v = await until(page, (x) => (x.gates ?? 0) > 0, COURSE_MS, 500);
+    let soundBy = null;
+    if (sound) {
+        // the owner's way: in the flight with gates, Escape, the pause menu's "Fly by Sound here" (key Backslash where the menu
+        // does not show it), the flight goes on by sound in place
+        await page.keyboard.press('Escape');
+        await until(page, (x) => x.pause, 3000);
+        if (await clickCentre(page, '[data-action="pause.flyBySound"]')) soundBy = 'pause.flyBySound';
+        else {
+            await page.keyboard.press('Escape');
+            await sleep(500);
+            await page.keyboard.press('Backslash');
+            soundBy = 'key Backslash';
+        }
+        v = await until(page, (x) => x.sonic?.lesson != null, 120000, 400);
+        await sleep(1000);
+        await clickScene(page);
+    }
     await sleep(1500);
     v = await page.evaluate(READ);
     const sharer = { scene: v.scene, gates: v.gates, course: v.courseParam, sonic: v.sonic, locked: v.locked };
-    facts[`${name}.sharer`] = { opened: at, ...sharer };
+    facts[`${name}.sharer`] = { opened: at, soundBy, ...sharer };
     log(name, 'sharer', JSON.stringify(sharer));
     const url = await shareFromPause(page, ctx, name);
     await ctx.close();

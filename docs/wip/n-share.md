@@ -20,6 +20,25 @@ the sound lessons, not the scene.
       (start-model, start-screen, start.ts) and on S1 (start-model, flight-link). Commit 11210118.
 - [ ] S3 the acceptance by mouse: tools/bench/scripts/n-share-accept.mjs (local build and live site, read only), at most three
       pictures, gates once (typecheck,vitest,architecture,i18n,b18,leaks), "What the owner should try", delete dist.
+      DONE in run 1 of S3: the probe written and committed (8cfa3df7 + this commit); the release built (dist/, sha 8cfa3df7 + the
+      nine walls folders) and run locally on port 6921 (U:/Temp/gsfpv-train4/n-share/accept-local.json): sound.shareCarries PASS
+      (`/fly/?sonic=fly&scene=887f27aa&sz=1&course=g1.1`), sound.landsOnScene PASS (one main button sonic-start-scan, focused; the
+      lessons link 44 px, not primary), normal.shareCarries PASS (`/en/fly/?scene=887f27aa&course=g1.1`), normal.landsOnScene PASS
+      (the first-visit question's first answer; the site's consent bar is listed apart), normal.fliesSame PASS (36 gates, g1.1),
+      sound.fliesSame FAIL: the friend flies scan-free in 887f27aa with course=g1.1 and the same gate 1, but 24 gates where the
+      sharer had 36. Cause (found, same walls 0.05 m, size 1, seed 1): the sharer laid the course in the normal flight (with the
+      competition elements) and then switched Fly by Sound on in place (pause.flyBySound); a sound page lays the same seed without
+      elements (course/finish.ts courseElements(ctx.sonic), app/builtin/course.ts:762, lane onecourse/course4 CU-1: the ear pilot
+      flies single upright gates). Pictures taken (not yet looked at): shots/n-share-local-sound.png, n-share-local-normal.png.
+      LEFT (exact): 1. decide the sound row: either the link of an in-place sound flight whose course carries elements must name
+      that (course/link.ts is owned; the reading side is course.ts, not ours: For the lead), or the probe compares against the
+      same link laid in a sound page and the difference goes to For the lead; recommended: the second, with the cause written
+      under For the lead and the owner's line kept honest in "What the owner does". 2. look at the two pictures once (one sentence
+      each). 3. the live run, read only: serve not needed; `SHOT_ROWS=sound node tools/bench/scripts/n-share-accept.mjs
+      https://gsfpv.flyreelstudio.eu U:/Temp/gsfpv-train4/n-share/accept-live.json live` (expect sound FAILs: lessons first, no
+      course), look at its one picture. 4. copy both JSONs to evidence/2026-11-20/n-share/. 5. gates once. 6. "What the owner
+      does", Claims 3, Not verified, For the lead (+ panel.ts still uploads a picture to /api/share before a course flight's
+      link, which then does not use it), Cost notes. 7. rm -rf dist; delete U:/Temp/gsfpv-train4/n-share/profile-*.
 
 Findings of S1 (the code wins over the plan where they differ):
 - The plain flight's Share (share/links.ts shareLink) dropped the course too: in a flight it gives the picture page /s/<id>, whose
@@ -71,3 +90,4 @@ Findings of S1 (the code wins over the plan where they differ):
   "who writes which link" in docs/agent-map.md would save that. neg_control.py needs the test command as ONE quoted string on Windows.
 - S2: about 30 calls; the most went to a test template written through `node -e` (the shell ate its backticks) and to finding the
   served course id format; write test edits with the Write/Edit tools, never inside a shell string.
+- S3 run 1: about 45 calls; the most went to finding how the owner turns sound on with gates (Escape is the lesson menu in a lesson; in place it is the pause menu) and why the same g1 link lays 24 or 36 gates (courseElements); a line in docs/agent-map.md on "Escape in the sound mode" and "what a course link does not carry" would save it.
