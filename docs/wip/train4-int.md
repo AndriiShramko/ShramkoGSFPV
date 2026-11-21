@@ -300,7 +300,10 @@ against car 1 and car 2 lanes:
   emptyCourse spread the course before, so the empty course kept the asked course's start (gap-gen S3 puts it on gate
   1's approach, far from where the pilot looks) and its scale (gap-save's own 'For the lead' need). Repaired (05a28a53):
   the empty course takes the scale flown now (seam.flown()) and the scene's own spawn (start null); int4-seams and
-  edit4b-life tests, NEG OK.
+  edit4b-life tests, NEG OK. On the build the editor then refused it ('This course has no start. Press G for a new
+  course.'): its checks need a pose, so the page's startNew writes the spawn as one (startAtSpawn, life-texts.ts,
+  d26847d9; test: flown back to the spawn, NEG OK). For the lead: that fix line names key G, which does nothing in the
+  editor since edit4b (the Course menu's Generate is the way): a text for the editor's owners in four languages.
 - Not seams of this car, the lanes' own needs for the lead (not changed here): gap-gen's course.ts hook.adopt line for
   race rooms (RACE_ON is false: nothing on the page uses it yet) and 'the drone stands at the course start' at x15;
   gap-save's startNew transform and the editor at x100 when nothing fits; gap-sound's keysDue once a lesson.
