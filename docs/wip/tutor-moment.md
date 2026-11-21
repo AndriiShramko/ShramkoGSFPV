@@ -51,7 +51,7 @@ Package branch: tutor-moment in packages/sonic-fpv of this copy (on no remote).
   begun at that end (rings-first's "Go." follows its one task line at once). The four host count tests: 89 of 89
   (sonic-start, sonic-lesson-keys, sonic-lessons, sonic-int-replay; B7, a file scan, timed out at 5 s once under the
   load of the four files together and passed alone: 3 of 3).
-- [ ] S4 the scripted pilot: test/first-set.test.ts in en, es, pl, ru (moving within 60 s, under 60 words before it, no
+- [x] S4 the scripted pilot: test/first-set.test.ts in en, es, pl, ru (moving within 60 s, under 60 words before it, no
   prompt over two sentences, one new sound a moment, the set within 420 s, guide 'new' says only names); NEG on 719aaf5;
   host gates once; done marker; "What the owner should try".
   DONE so far (package commits a1524a0, a017e447ef9c8593c74eb316adc3fd9960090376; pin moved to a017e44):
@@ -66,7 +66,11 @@ Package branch: tutor-moment in packages/sonic-fpv of this copy (on no remote).
   (walls-hall, still v5, unreleased) says its goal line, the pilot flies at once, wall-ahead first, the height tone at
   the start of the next attempt. test/helpers/pilot.ts: the test pilot is a host that does not teach (absent known).
   Package: typecheck 0, full run 1471 passed, 4 skipped. Host: the four count tests 89 of 89.
-  LEFT: host gates once (typecheck,vitest,architecture,i18n,b18,leaks); the done marker.
+  Host gates once (logs U:/Temp/gsfpv-gates-20261121-142649): typecheck, architecture, i18n, b18, leaks PASS; vitest
+  FAIL on one test only, tools/bench/test/sonicrec-replay.test.ts:501 (from S3: the old rings-first and room recordings
+  derive no cue now that the intro cue plays are gone); fixed to "the player's cues = what the replay core derives", as
+  the same file does at line 288; that file 28 of 28. The gates were not run a second time (one test file changed).
+  Done marker U:/Temp/gsfpv-train4/tutor-moment-done.txt.
 
 ### Where the code differs from the plan (one line each)
 
@@ -154,6 +158,7 @@ Nothing yet: the package carries the moments, and the simulator turns them on on
   tools/listen-words.ts (sample for {sound}), evidence/listen/VL-4-words.json (rerun), test/fixtures/tts-*.json
   (measured), and the tests named in Status; host tools/bench/test/sonic-lesson-keys.test.ts (Z and B5 open lessons
   that still name sounds) and sonic-int-replay.test.ts (control frame indices within the shorter flight).
+- S4 changed outside the owned list, host: tools/bench/test/sonicrec-replay.test.ts (the v012 recordings' cue count).
 - S4 changed outside the owned list: package src/lesson/schedule.ts (a question with no words is read out at once),
   test/helpers/pilot.ts (the test pilot does not teach), test/helpers/record.ts (a measured voice), test/world-scale.test.ts
   (the room's intro); src/lesson/moments.ts (`startsFrozen`) is owned.
@@ -178,3 +183,4 @@ Nothing yet: the package carries the moments, and the simulator turns them on on
 - S3 (part 2): the run overran (about 90 calls): the words check needs the listen venv (U:/venvs/shramko-listen) and a
   copy of the Whisper model in the lane's cache, and host tests that fly a changed lesson's task timing. Cheaper: name
   the listen environment and the "absent = as before" default for new runner options in the common prompt.
+- S4: most replies went to fitting the 60 s bound (three runs: the headphone check's repeated question and three plays, then the room's start moment); a schedule print of the first minute per language at the stage start would have shown both at once. One gate test from S3 (a v012 replay) surfaced only in the full host run: run tools/bench sonic*-replay tests with the count tests when lesson intros change.
