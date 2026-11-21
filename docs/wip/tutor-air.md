@@ -58,7 +58,7 @@ Base (OLD of every diff and negative control): 03624451b8deb79d179cc9a5d07adf22f
   - [x] tools/bench/test/sonic-tour.test.ts 4/4 (real CuePlanner in walls-hall); NEG OK on 03624451 (and with bridge.ts alone);
         nearby tests 26 files 367 (10 skipped) pass; fly + bench typecheck rc 0; architecture ok
   - lesson-menu.ts: no change needed, the glossary is a lesson of the lesson list there (ears-glossary), not its own item
-- [ ] S4 the page acceptance
+- [x] S4 the page acceptance (b04b9b96, 89af1ad2, 42af505c, this commit)
   - [x] tutor-moment-done.txt = 1c804864 / package 9ac7876: both already merged in S2 (`git merge-base --is-ancestor` true
         for tutor-say 21f94ebc and 1c804864; `git submodule status` 9ac7876 with no '+'); nothing to merge again
   - [x] tools/bench/scripts/tutor-air-accept.mjs (b04b9b96): fresh profile, 1536x730 @1.25, ?render=off, mouse on Start flying
@@ -69,9 +69,13 @@ Base (OLD of every diff and negative control): 03624451b8deb79d179cc9a5d07adf22f
         teachesByMoments, keysDue). Tests sonic-moment-keysline 3/3, sonic-moment-card 4/4; NEG OK on b04b9b96 and the base
   - [x] local 9/9 PASS (moving 31.6 s after the click, 51 words before it); live 6 FAIL (move60, words60, freeze, card, onN,
         tour); evidence/2026-11-20/tutor-air/accept-local.json, accept-live.json
-  - [x] the drawn run (two pictures of the card, looked at); accept-fly B6-B12 PASS
-  - [ ] accept-fly B13-B16 (the first run timed out at 590 s after B12; rerun in progress)
-  - [ ] gates once (typecheck,vitest,architecture,i18n,b18,leaks,catalog); delete dist
+  - [x] the drawn run (two pictures of the card, looked at); accept-fly B6-B12 PASS. tutor-air-moment-1536.png: a black
+        screen with the yellow word "Wall" and under it one sentence in large white letters, nothing else but the
+        recorder's small "Recording" chip in the corner; tutor-air-moment-844.png: the same, smaller, in two lines, fitting
+  - [x] accept-fly B13 B14 B16 PASS; B15 FAIL twice on its LSB control only (see Not verified and For the lead); records
+        in evidence/2026-11-20/tutor-air/accept-fly/
+  - [x] gates once: typecheck, vitest, architecture, i18n, catalog, b18, leaks all PASS (staged tree of this commit); dist
+        deleted
 
 Differences from the plan (the code wins):
 - The runner plays a moment's sound as 'cue' actions (repeat-cue, with the form's direction), not through demoFrame: during a
@@ -143,6 +147,11 @@ Differences from the plan (the code wins):
 - During a moment the recorder's small "Recording" chip (bottom right) stays visible above the card: it is the recorder's
   privacy state, left on purpose; everything else is faded.
 - How the moment feels and sounds (a 2-3 s sound, far then near) is for human ears.
+- accept-fly B15 (replay from inputs) FAILs on this build, twice, on its LSB control only: the replay hash matches, the
+  x4 CPU throttle holds 1005 steps a second, the twitch control fires, but the record at tick 10000 has the throttle at -1
+  (its rail), so a one-bit flip is clamped and the hash cannot change (tamperedValue -1, maxDivergenceM 0). No flight,
+  input or sim-core file differs from the base (`git diff 03624451 --stat -- packages/sim-core packages/input
+  apps/fly/src/play apps/fly/src/devices` is empty); not run on a base build here.
 
 ## For the lead
 
@@ -158,6 +167,9 @@ Differences from the plan (the code wins):
 - The package head the pin stands on: packages/sonic-fpv 9ac7876dee42b8a874e51e6d46eb7cf8d70c3a48 (tutor-moment's head
   1c804864, branch tutor-moment of the package); deploy the sound package with the page.
 - Deploy order: the page only (apps/fly; no API file, no room, no nginx change), built with the package at 9ac7876.
+- accept-fly B15's LSB control picks a record whose throttle is on its rail (-1 at tick 10000 of the scenario flight): the
+  control cannot fire there. It is not this lane's (no flight file changed); check it on t7-base, and pick a record off
+  the rail (accept-fly.ts B15_TICK) if it fails there too.
 - Live checks after the deploy: `node tools/bench/scripts/tutor-air-accept.mjs https://gsfpv.flyreelstudio.eu <out>` must
   then PASS 9/9 (read only); accept-fly B6-B16.
 
@@ -171,3 +183,6 @@ Differences from the plan (the code wins):
   most replies; a short "how to test a sound-mode host piece" note beside sonic-fake-dom.ts would have saved about five.
 - S3: learning whether the engine sounds a cue while the flight is paused (layers, previews, the planner's gate) took the most
   replies; reusing S1's freeze-test harness made the test cheap. neg_control needs `npx.cmd` on this shell, not `npx`.
+- S4: the page found two defects the unit tests could not (the package says before it sends the moment; the host's line of
+  keys in the headphone check), so a second build and a second drawn run (the first took its pictures after N) were
+  needed; accept-fly needs more than 590 s for B6-B16 on a shared machine: run it in the background from the start.
