@@ -62,6 +62,7 @@ import { allProgress, narratorTipSaid, setNarratorTipSaid } from './store';
 import { STATUS_ORDER, sayStatus, statusBoard } from '../app/sonic-status';
 import { setLessonView } from '../app/sonic-view';
 import { liveSearch } from '../app/env';
+import { MOMENT_PAUSE, MomentHost } from './moment-host';
 
 // window.__gsfpv.sonic: what the lesson is doing, for the acceptance runs (tools/bench/src/sonic-*.ts)
 declare module '../app/test-hook' {
@@ -208,8 +209,9 @@ function courseOf(ctx: FlightContext, names: KeyNames): NonNullable<LessonPage['
 }
 
 /** The page as the lesson host sees it. */
-function pageOf(ctx: FlightContext, mode: SonicMode, entry: SonicEntry, stage: PrimitiveStage, tracks: TrackCache, showMenu: () => void, names: KeyNames): LessonPage {
+function pageOf(ctx: FlightContext, mode: SonicMode, entry: SonicEntry, stage: PrimitiveStage, tracks: TrackCache, showMenu: () => void, names: KeyNames, moments: MomentHost): LessonPage {
     return {
+        moments,
         course: courseOf(ctx, names),
         // walls lane: a free flight over a scan without walls gets them built (progress in the walls box) and goes on with them
         walls: { build: () => wallsThen(ctx, () => {}).then((r) => r === 'now' || r === 'built') },
@@ -305,6 +307,10 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
     // the answer is looked at every frame (tick, after the HUD wrote) as well as every 250 ms (sync: live regions added inside later)
     let pauseReasons: readonly string[] = [];
     offs.push(ctx.events.on('pause', ({ reasons }) => { pauseReasons = reasons; }));
+    // train 4 (lane tutor-air): a moment freezes the flight with the pause reason 'moment' (moment-host.ts); a pause held for a moment
+    // alone is not the mode's pause: the lesson and the engine go on (bridge.ts momentOnly)
+    const moments = new MomentHost(ctx, mode.bridge);
+    mode.bridge.momentOnly = () => pauseReasons.length > 0 && pauseReasons.every((r) => r === MOMENT_PAUSE);
     const quietLive = (): boolean => quietFlight(entry.setup.prefs, flightLesson(host?.lesson?.id ?? null), liveRegionPaused(mode.bridge.paused, pauseReasons));
     const liveQuiet = quietLiveRegion(document.getElementById('ui'), quietLive);
     liveQuiet.sync();
@@ -386,7 +392,7 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
     const onFocus = (): void => void names.refresh();
     addEventListener('focus', onFocus);
     offs.push(() => removeEventListener('focus', onFocus));
-    const h = new LessonHost(pageOf(ctx, mode, entry, stage, new Map(), showMenu, names));
+    const h = new LessonHost(pageOf(ctx, mode, entry, stage, new Map(), showMenu, names, moments));
     host = h;
     hosts.set(ctx, h);
     screen?.bind({
@@ -737,6 +743,7 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
     addEventListener('blur', onBlur);
     document.addEventListener('visibilitychange', onVisibility);
     return () => {
+        moments.release();
         host?.close();
         mode.leave();
         for (const off of offs) off();

@@ -47,6 +47,7 @@ import type { LessonStartKeys, RunnerKeys } from './key-names';
 import { SaidOnce } from './said-once';
 import type { SaidId } from './said-once';
 import { stepInstructions } from './progress-panel';
+import type { MomentHost } from './moment-host';
 
 /** After a pass the next lesson opens when the speech queue has been empty this long, ms. */
 export const NEXT_AFTER_MS = 1500;
@@ -131,6 +132,8 @@ export interface LessonPage {
      * Absent: on.
      */
     narratorOff?(): boolean;
+    /** Train 4 (lane tutor-air): carries out the runner's 'moment' and 'audible' (moment-host.ts). Absent: neither is carried out. */
+    readonly moments?: MomentHost;
 }
 
 /** Where a lesson is opened from and with what: its start and floor (a scan lesson's own), a scan's gates, the way back of G. */
@@ -755,6 +758,11 @@ export class LessonHost {
             case 'scene':
                 if (a.scene) this.soundHeard = true;
                 this.demo = a.scene;
+                break;
+            case 'moment':
+            case 'audible':
+                // train 4 (lane tutor-air): the flight freezes for a moment and goes on; the engine's gate of cues
+                this.p.moments?.act(a);
                 break;
         }
     }
