@@ -48,3 +48,14 @@ Nothing: this lane changes a check, the pilot's page is not touched (answer (b))
 
 - S1: one live drawn run (about 4 minutes) did it; it passed by chance of the random course, the saved gates' screen points explained the failure of r2. Cheaper: the probe should always keep its candidates' inputs in the JSON.
 - S2: the most replies went to the first repair failing on live (a rule written from one passing course); reading the saved gate points of that failure gave the second at once. Cheaper: before writing a candidate rule, compute it offline on the saved `gates13` of every earlier run.
+- Review: the most turns went to a release build started twice at once (one with a shell `&`), which left dist empty and a queued probe to stop. Cheaper: one build with run_in_background only, and chain the server, the local run and the negative control in one locked command.
+
+## Review
+
+Verdict: SHIP (independent check, head 411ebfbe; full notes U:/Temp/gsfpv-train4/reviews/fix-gizmo13.md).
+
+- The answer (b) the probe follows from the evidence: in every run where the probe clicked a gate the page selected it with one click; the failed runs never clicked (tried [], candidates 0).
+- The judge line of 13.laptop is unchanged from the base; the gate search uses only the mouse, the wheel and an orbit drag.
+- Own runs: live (deploy/live-checks.sh arguments, read only, drawn) all 15 steps PASS; local release of 411ebfbe all 15 PASS; negative control (a scratch copy in the temp folder with the step-13 click 200 px off the gate) 13.laptop FAIL only, no click selected its gate.
+- DOUBT, not held: step 12.double keeps the old 170 px rule and failed once on live (lane live-run1), so edit4a-gizmo may still be flaky at step 12.
+- Nothing repaired; no code changed by the review. No person, phone or real controller took part.
