@@ -127,4 +127,20 @@ downloads run on the PC (`LIVE_ONLY=pause-rise-lublin bash deploy/live-checks.sh
 - S2: about 35 replies; the S1 hypothesis (the place alone) failed on the live run, and the line speed was found only
   then. Cheaper: measure the line (one curl of a 20 MB file) before any drawn run, and compare MB per second of the
   scan with the last passing run first.
+- Review: about 20 replies; the most went to finding which 2026-11-16 file was the passing run (two runs, one without a
+  Continue record). Cheaper: name the exact passing result file in the lane prompt.
+
+## Review
+
+Verdict: SHIP (independent check, 2026-11-21; U:/Temp/gsfpv-train4/reviews/fix-lod.md).
+- The answer is carried: B and C alike at the same class and budget, samples after the reveal, two runs each, the two
+  pictures alike; the line measured 0.55-0.7 MB/s.
+- The judge is as strict as before: base and head judges agree on the real passing file (pass) and on four mutations
+  (no pause rise, no Continue, budget not back, drawn not falling: all fail). NEG OK re-run for loadq-hold.test.ts.
+- My live run (read only, head's pauserise): reveal 40.9 s, flight 241 164, pause 537 164, scan 0.56 MB/s, "FAIL, not
+  judged", as the lane claims.
+- Correction (no pilot impact): the passing run of 2026-11-16 is U:/Temp/gsfpv-train3/live-7af2aad5-r2 (reveal 56.5 s,
+  best 5 s scan rate 29.28 MB/s); the 26 s reveal and the 14.05 MB/s above come from the first run of that day, which has
+  no Continue record. The conclusion stands: the passing line was faster still, and it revealed later than today.
+- DOUBT (not holding): no B/C comparison on a fast line.
 
