@@ -282,7 +282,7 @@ describe('B3 (W5, M41-6): N, B and Z call the runner, each recorded first as a k
     }, 120000);
 
     it('Z while flying: the whole task again, its title, every line and its named sound REPEAT_PLAYS times, the attempt waiting; then "Go on." (not the last line)', async () => {
-        const r = await open('rings-first');
+        const r = await open('rings-heights'); // lane tutor-moment: rings-first teaches its sounds by moments; rings-heights still names one before the flight
         r.press('scene.next');
         await r.run(1500, null);
         expect(r.host.runner!.phase).toBe('flying');
@@ -290,7 +290,7 @@ describe('B3 (W5, M41-6): N, B and Z call the runner, each recorded first as a k
         const cues0 = r.engine.cues.length;
         r.press('sonic.repeat');
         await r.run(60000, null, () => r.engine.said.slice(said0).some((s) => s.line.key === 'fly.go-on'));
-        const lesson = getLesson('rings-first');
+        const lesson = getLesson('rings-heights');
         const keys = r.engine.said.slice(said0).map((s) => s.line.key);
         expect(keys[0]).toBe(lesson.title.key);
         for (const l of lesson.intro) expect(keys, l.key).toContain(l.key);
@@ -502,7 +502,7 @@ describe('B5 (W8): the runner pauses and resumes where the session\'s pause and 
     }, 300000);
 
     it('no speech.end and no runner.spoken while paused (the menu\'s lines); after the resume the task\'s part the menu cut is said again (v13-int review F1) and the end of speech comes when it ends; the task\'s sound waits for it', async () => {
-        const r = await open('rings-first');
+        const r = await open('hover-height'); // lane tutor-moment: rings-first teaches its sounds by moments; hover-height still plays them in its task
         // the task's first part is being said; the flight pauses and a line of the menu cuts it
         await r.run(500, null);
         expect(r.engine.speaking).toBe(true);
@@ -540,7 +540,13 @@ describe('B5 (W8): the runner pauses and resumes where the session\'s pause and 
         expect(ends(r)).toHaveLength(ends0);
         await r.run(20000, null, () => ends(r).length > ends0);
         expect(ends(r)).toHaveLength(ends0 + 1);
-        expect(r.engine.speaking).toBe(false);
+        // every line begun before the end of speech was said through by it (lane tutor-moment: rings-first's task is one line
+        // now and the lesson's "Go." follows its end at once, so the voice may be speaking again: only a line begun at the end)
+        const end = ends(r).at(-1)!;
+        const before = r.engine.said.filter((s) => s.at < end.t && s.quiet !== true).length;
+        expect(before).toBeGreaterThan(0);
+        expect(r.engine.ends.filter((e) => e.at <= end.t)).toHaveLength(before);
+        expect(r.engine.said.filter((s) => s.at >= end.t).length > 0 || !r.engine.speaking).toBe(true);
     }, 120000);
 
     it('a lesson opened while the flight is paused waits from its start: the pause written after its open, the runner paused, nothing goes on until the resume', async () => {
