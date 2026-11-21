@@ -24,6 +24,37 @@ Package branch: tutor-moment in packages/sonic-fpv of this copy (on no remote).
 - [ ] S3 the first set: the moments of the table in the fast lessons; their intro cue lines go; headphones.good once;
   cue.<id>.what and cue.<id>.do for all 28 sounds in four languages; test/named-sounds.test.ts; lesson versions bumped;
   host count tests updated.
+  DONE so far (package branch tutor-moment, commits 0a205e6 and 4ebeba934d05c9c2e0e616fb9975abfbf8c6d2e5; the host
+  pin is deliberately still fbe50d0 until the package tests are green again, so `git status` in the host shows
+  packages/sonic-fpv as new commits: that is expected):
+  catalog MOMENT_IDS + momentKeys() + cue.<id>.what|do in requiredKeys; the texts in four languages (source:
+  U:/Temp/gsfpv-train4/tutor-moment/texts.json, merged by merge-texts.cjs there); `lesson.ears-headphones.pass` is now
+  "Now let's fly." (headphones.good is the only "they work" line); validate: intro may be empty when `moments` exist;
+  lessons (edit-lessons.cjs there, then `node tools/run-tool.mjs canon-lessons ...`): walls-hall v5 intro [] moments
+  height (height.tone, start, hold-height 2-2.6 m) and wall-ahead (safety.wall, near front 3 m, approach-stop 1.5 m);
+  corridor v5 intro [goal.1] moments target (target.hum, start, fly-distance 5 m) and way-through (safety.free, free,
+  no task); tunnel-gaps v5 intro [goal.1]; rings-first v4 intro [goal.1] moments gate-height (height.target, start) and
+  gate-passed (target.note, passed); rings-course v4 intro [goal.1], layer `speed` added, moments speed (speed.tick,
+  above 2 m/s) and brake (speed.brake, above 3 m/s); test/helpers/pilot.ts defaults `known: CUE_IDS`.
+  Full package run after that: 40 failed of 434 in the 19 files below (log U:/Temp/gsfpv-train4/tutor-moment/s3-test2.log,
+  list s3-left.txt). LEFT, in order:
+  1. tools/listen-words.ts sampleParams: a sample value for the argument `sound` (words.test.ts, 4 tests);
+     test/locales.test.ts ARGUMENTS: `cue.<id>.what` takes ['sound'] (add it by a loop over CUE_IDS).
+  2. Tests that build a runner directly on a changed lesson and test the flight, not the teaching: pass
+     `known: CUE_IDS` there (runner.test.ts 8, respawn 1, brake-planner 2, gate-aim 1, world-tunnels 1, budget-wired 1,
+     line 2, beacon-listen 1, beacon-target 1, world-scale 1, progress via runner.test.ts); lesson-schedule.test.ts 1
+     (`runner: { known: CUE_IDS }` where it flies a changed lesson).
+  3. Tests whose expectation is the old content, rewritten to the new: quick-path (c) room and (c) later lessons;
+     lessons.test.ts (versions; walls-hall goal line; the speak-the-catalogue test must allow an empty intro);
+     moments-contract "a lesson without moments" (pick a lesson with none, e.g. hover-height); named-sounds: namedBy()
+     counts `lesson.moments` cues, the corridor/tunnel-gaps intro tests become "the corridor teaches target.hum and
+     safety.free by moments", the checkpoint-sound test (target.stage / safety.reset are not introduced any more:
+     glossary only, note it under "differs"); add the S3 named-sounds checks: every cue has what|do in four locales,
+     `what` holds {sound}, the en do|hint lines of a moment never type their sound's own name, every shipped moment id
+     is in MOMENT_IDS.
+  4. replay.test.ts 3 and report.test.ts 2: recordings of changed lessons are now another lesson version (by design:
+     re-record the fixture through test/helpers/record.ts, or point the test at an unchanged lesson).
+  5. Then: the whole package run, typecheck, host count tests (tools/bench/test/sonic-*.test.ts), commit, move the pin.
 - [ ] S4 the scripted pilot: test/first-set.test.ts in en, es, pl, ru (moving within 60 s, under 60 words before it, no
   prompt over two sentences, one new sound a moment, the set within 420 s, guide 'new' says only names); NEG on 719aaf5;
   host gates once; done marker; "What the owner should try".
@@ -43,6 +74,13 @@ Package branch: tutor-moment in packages/sonic-fpv of this copy (on no remote).
   then and leaves the frozen time out of the attempt's clock. A moment's key is recorded as a `key` event with action
   `moment.again|on|know` (REPLAY_KEY_ACTIONS); ReplayInput gained `known` and `guide` (src/replay, for the marker).
 - test/helpers/record.ts (the test host) handles 'audible' and 'moment' and the moment keys.
+- S3: the hum moment `target` is in the corridor, not rings-first: the hum already leads the corridor's way (the beacon),
+  so it must be taught where it first sounds. The eighth moment is `gate-height` (height.target, rings-first), not floor
+  or ceiling: the target note sounds once a second at every gate and would otherwise come unnamed.
+- S3: `brake` waits for speed above 3 m/s only (a MomentWhen has one condition, no "and gate within 6 m"); rings-course
+  gains the `speed` layer, without which speed.tick and speed.brake never sound on the fast path.
+- S3: floor, ceiling, target.stage and safety.reset are no longer played before a flight; they stay audible and in the
+  glossary (key G): the first set has room for eight moments only.
 - test/named-sounds.test.ts exists already on the base (the rule "a sound with no words is named in the first lesson of
   its path"); S3 extends it rather than creating it.
 
@@ -80,3 +118,5 @@ Nothing yet: S1 is the contract only; no pilot hears a change.
 - S2: most replies went to the test flights (the hall lesson's own stop goal misses when the craft halts mid-room, and
   approach-stop needs 2 m of path in the attempt); a note of each goal's hidden thresholds beside the test host would
   save three runs. Editing through a Python one-liner wrote CRLF on Windows: use the Edit tool.
+- S3 (part 1): the moments in shared lessons broke 65 older tests that fly those lessons; a test helper default (`known`)
+  took 25 of them. Cheaper: decide in the plan that flight tests run with every sound known, before adding moments.
