@@ -5,6 +5,7 @@
 // feature (app/builtin/course.ts, lane tracks) is read through its public classes and never changed. Like the course timer,
 // nothing here writes into the sim, the input log or the runner. Without a race nothing here runs per frame.
 import type { TrackFile } from '@shramko/sonic-fpv';
+import type { CourseRequest } from '@gsfpv/tracks/request';
 import type { FlightContext } from '../app/context';
 import { CourseRun } from '../course/run';
 import { CourseStore } from '../course/store';
@@ -125,6 +126,9 @@ export class RacePage {
             else this.h.problem = got.problem;
         } else if (ref?.kind === 'seed') {
             track = await this.generate(ref.seed);
+        } else if (ref?.kind === 'request') {
+            // lane gap-gen S2: the asker's level and spread from the g2 link, never this pilot's own dialog choice
+            track = await this.generate(ref.request.seed, ref.request);
         } else this.h.problem = 'course';
         if (mine !== this.job || this.h.course !== course) return;
         // a page that cannot build the course says so once and keeps everyone's table (review RM-3); the service starts
@@ -146,8 +150,9 @@ export class RacePage {
         this.sock.ready();
     }
 
-    /** The course of a seed on the flown walls, built in the course worker as the course feature builds it. */
-    private generate(seed: number): Promise<TrackFile | null> {
+    /** The course of a seed on the flown walls, built in the course worker as the course feature builds it. `request`: the
+     *  asked course of a g2 link (planCourse lays it with the level's elements and the flown craft's size). */
+    private generate(seed: number, request?: CourseRequest): Promise<TrackFile | null> {
         const s = this.ctx.session;
         const col = s.collision;
         if (!col) {
@@ -161,7 +166,8 @@ export class RacePage {
         const job = ++this.wjob;
         const msg: CourseJob = {
             t: 'generate', job, grid, nodes, leaf, spawn: [s.spawn[0], s.spawn[1], s.spawn[2]], seed,
-            scene: { id: s.scene.id, version: s.scene.version }, transform: [tr.s, tr.t[0] ?? 0, tr.t[1] ?? 0, tr.t[2] ?? 0], created: new Date().toISOString()
+            scene: { id: s.scene.id, version: s.scene.version }, transform: [tr.s, tr.t[0] ?? 0, tr.t[1] ?? 0, tr.t[2] ?? 0], created: new Date().toISOString(),
+            ...(request ? { request: { ...request }, elements: true, craftRadiusM: s.params?.boundRadius } : {})
         };
         this.worker ??= new Worker(new URL('../course/worker.ts', import.meta.url), { type: 'module' });
         const w = this.worker;

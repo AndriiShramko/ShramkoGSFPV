@@ -38,7 +38,8 @@ import { RoomSocket } from '../../rooms/socket';
 import { RoomBoard, type CourseLook } from '../../rooms/board';
 import { BoardView, leadBlip } from '../../rooms/board-view';
 import { LeadBanner, boardShown, leadChange, leadLine, viewRows } from '../../rooms/lead';
-import { parseCourse } from '../../rooms/race';
+import { adoptOf, parseCourse } from '../../rooms/race';
+import type { AdoptRef } from '../../rooms/race';
 import { roomKeys, welcomeLine } from '../../rooms/keys';
 import { dialogOpen } from '../../devices/keyboard';
 import { NameTags } from '../../rooms/tags';
@@ -342,13 +343,14 @@ export const rooms: Feature = {
                 }
                 if (inRoom) race?.frame(now);
                 if (sock.state === 'joined') {
-                    const look = ctx.hook.course as (CourseLook & { adopt?: (c: { seed: number } | { id: string; version: number }) => void }) | undefined;
-                    // the room's course is built here once the course feature is there to build it
+                    const look = ctx.hook.course as (CourseLook & { adopt?: (c: AdoptRef) => void }) | undefined;
+                    // the room's course is built here once the course feature is there to build it; lane gap-gen S2: a g2
+                    // course hands the asker's level and spread (adoptOf), never this pilot's own
                     const want = board.adopting;
                     if (want && asked !== want && look?.adopt) {
                         asked = want;
                         const ref = parseCourse(want);
-                        if (ref) look.adopt(ref.kind === 'seed' ? { seed: ref.seed } : { id: ref.id, version: ref.version });
+                        if (ref) look.adopt(adoptOf(ref));
                     }
                     const wanted = board.adopting;
                     const step = board.look(look);

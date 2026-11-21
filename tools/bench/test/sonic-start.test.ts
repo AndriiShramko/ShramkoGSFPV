@@ -36,10 +36,10 @@ describe('the lessons on the screen', () => {
         }
     });
 
-    it('the ladder is in order and the fast path marks its lessons (8; lane sound6 S2: the headphones, the walls by ear, the small room, corridor, a tunnel, two of rings, free flight)', () => {
+    it('the ladder is in order and the fast path marks its lessons (7; lane gap-sound S2: the headphones, the small room with the wall sounds in it, corridor, a tunnel, two of rings, free flight)', () => {
         expect(ladder().map((l) => l.order)).toEqual([...Array(SHIPPED_LESSON_IDS.length).keys()]);
         const fast = buildModel({}, null, 'fast').modules.flatMap((x) => x.lessons).filter((l) => l.fastPath).map((l) => l.id);
-        expect(lessonPaths().fast).toHaveLength(8);
+        expect(lessonPaths().fast).toHaveLength(7);
         // in the path's own order too: the screen lists them by order, which is the full path's
         expect(fast).toEqual(lessonPaths().fast);
         expect(fast.sort()).toEqual([...lessonPaths().fast].sort());
@@ -72,8 +72,8 @@ describe('where the pilot stands', () => {
         expect(continueLesson(progress, 'hover-height', 'full')).toBe('hover-height');
         // the lesson left off on is passed: the first of the path not passed
         expect(continueLesson(progress, 'walls-hall', 'full')).toBe('ears-glossary');
-        // lane sound6 S2: the fast path's second lesson is ears-walls (hover-height left it)
-        expect(continueLesson(progress, null, 'fast')).toBe('ears-walls');
+        // lane gap-sound S2: the fast path's second lesson is walls-hall (the wall sounds moved into its room); passed here, so the third
+        expect(continueLesson(progress, null, 'fast')).toBe('corridor');
         // everything on the path passed: the last lesson, not nothing
         const all = Object.fromEntries(lessonPaths().fast.map((id) => [id, done()]));
         expect(continueLesson(all, null, 'fast')).toBe('free-garden');

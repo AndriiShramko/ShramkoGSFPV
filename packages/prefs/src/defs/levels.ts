@@ -47,6 +47,10 @@ export const LEVEL_TABLE: Readonly<Record<string, MenuLevel>> = {
     'display.units': 'sim',
     // newer than the plan: the lap time on screen is a course taste (lane course4)
     'course.lapSplash': 'sim',
+    // newer than the plan: the asked course's level and spread, a course taste like the lap time (lane gen4b; planned:
+    // the Generate dialog sets them, the Settings list does not show them yet)
+    'course.level': 'sim',
+    'course.spread': 'sim',
     // expert
     'level.angleLimitDeg': 'expert',
     'level.strength': 'expert',

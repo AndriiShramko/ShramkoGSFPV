@@ -6,10 +6,8 @@
   "sonic.flight.label": "Lot na słuch: sterowanie lotem. Każdy klawisz trafia do symulatora.",
   "sonic.footer.about": "O trybie „Lot na słuch” i jego kodzie źródłowym",
   "sonic.footer.leave": "Wyjdź z trybu „Lot na słuch” i otwórz symulator",
-  "sonic.hp.behind": "Odtwórz dźwięk zza pleców",
   "sonic.hp.heading": "Sprawdź słuchawki",
   "sonic.hp.left": "Odtwórz dźwięk z lewej",
-  "sonic.hp.playing.behind": "Gra dźwięk za tobą.",
   "sonic.hp.playing.left": "Gra dźwięk po twojej lewej stronie.",
   "sonic.hp.playing.right": "Gra dźwięk po twojej prawej stronie.",
   "sonic.hp.right": "Odtwórz dźwięk z prawej",
@@ -125,5 +123,6 @@
   "sonic.say.inPlaceOn": "Lot na słuch jest włączony, dokładnie tam, gdzie jesteś.",
   "sonic.say.inPlaceIntro": "Słyszysz ściany, gdy się do nich zbliżasz, i swoją wysokość. {off} wyłącza lot na słuch, {course} tworzy tutaj trasę z bramkami, {keys} mówi wszystkie klawisze. Aby uczyć się krok po kroku, naciśnij {menu} i wybierz lekcje.",
   "sonic.say.inPlaceIntroCourse": "Słyszysz ściany, gdy się do nich zbliżasz, i swoją wysokość. Buczenie prowadzi cię do następnej bramki trasy. {off} wyłącza lot na słuch, {keys} mówi wszystkie klawisze. Aby uczyć się krok po kroku, naciśnij {menu} i wybierz lekcje.",
-  "sonic.say.gateBehind": "Bramka jest za tobą."
+  "sonic.say.gateBehind": "Bramka jest za tobą.",
+  "sonic.settings.showAll": "Pokaż wszystkie ustawienia (jeszcze {n})"
 }

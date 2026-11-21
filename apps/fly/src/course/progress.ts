@@ -89,6 +89,22 @@ export function courseSteps(tryMs: number | null): Step[] {
     ];
 }
 
+/** ESTIMATE (gen4 design risk 'Time': analyzeScan on Lublin must stay under about 5 s in the worker): the scan analysis */
+export const ANALYSE_MS = 3_000;
+
+/** Lane gen4b B2: the steps of a course the pilot asked for in the dialog (planCourse): the analysis first. */
+export function planSteps(tryMs: number | null): Step[] {
+    return [{ key: 'analyse', estMs: ANALYSE_MS }, ...courseSteps(tryMs)];
+}
+
+/** The estimate the worker sends for a step of planCourse: its own when it has one (> 0), else the rates above. */
+export function planStepMs(step: 'analyse' | 'free' | 'lay', estMs: number, cellM: number): number {
+    if (estMs > 0) return Math.round(estMs);
+    if (step === 'analyse') return ANALYSE_MS;
+    if (step === 'free') return FREE_SPACE_MS;
+    return courseTryMs(cellM, COURSE_FULL_M3);
+}
+
 export interface Step {
     readonly key: string;
     readonly estMs: number;
@@ -157,8 +173,19 @@ export class ProgressClock {
         if (what) this.what = what;
     }
 
+    /** Lane gen4b B2: the answer came: the view says 100 % and nothing left from now on. */
+    finish(): void {
+        this.done = true;
+    }
+    private done = false;
+
     view(): ProgressView {
         const now = this.now();
+        if (this.done) {
+            this.shown = 100;
+            const last = this.steps[this.steps.length - 1] ?? { key: '', estMs: 0 };
+            return { what: this.what, key: last.key, n: this.steps.length, m: this.steps.length, attempt: this.tries, elapsedS: Math.floor((now - this.t0) / 1000), leftS: 0, pct: 100 };
+        }
         const step = this.steps[this.i] ?? { key: '', estMs: 0 };
         const inStep = Math.max(0, now - this.ti);
         const later = this.steps.slice(this.i + 1).reduce((a, s) => a + s.estMs, 0);
@@ -196,7 +223,8 @@ export function roundLeft(s: number): number {
     return Math.ceil(s / 30) * 30;
 }
 
-function stepText(v: ProgressView, t: T): string {
+/** the running step in plain words (the line, the spoken line and gen4b's progress box) */
+export function stepText(v: ProgressView, t: T): string {
     if (v.key === 'lay' && v.attempt > 1) return t('progress.step.layAgain', { k: v.attempt });
     return t(`progress.step.${v.key}`);
 }

@@ -1,0 +1,17 @@
+{
+  "_about": "Lane gen4a: the hand label of each audited scan (what a person sees in it), read by scan-kind-audit.ts. Source of each 'why': the owner's words in the brief (lines 537-582) or the catalogue notes in docs/wip/fix3a.md (course4 C2).",
+  "scenes": {
+    "5dfeb49b": { "label": "object", "why": "the owner: the scene's most detailed centre is the skull; a small scene" },
+    "7a475d38": { "label": "room", "why": "Winter Garden, Poland: a glass house, scanned well inside (the owner)" },
+    "39e63ce9": { "label": "room", "why": "Modlinek Villa red room and bathroom (fix3a catalogue notes)" },
+    "ab5efa0e": { "label": "plants", "why": "Forest Floor Scenery: the owner's micro-greens scan, a 6 cm plot of plants (fix3a)" },
+    "d10c5638": { "label": "object", "why": "Housefly, a macro object scan (fix3a)" },
+    "2f1ddf5f": { "label": "cityAbove", "why": "Lublin: filmed by a drone, poor near the ground, roofs well scanned (the owner)" },
+    "70b50d42": { "label": "street", "why": "Wroclaw Cathedral and streets (fix3a)" },
+    "ba7aa29d": { "label": "street", "why": "Opole Cathedral and Old Town (fix3a)" },
+    "9baef54b": { "label": "street", "why": "University of Opole, a campus (fix3a)" },
+    "0230d903": { "label": "street", "why": "Muster Truck Show Opole, an outdoor field of objects (fix3a)" },
+    "eb5f51dc": { "label": "street", "why": "Laval castle, a castle yard (fix3a)" },
+    "1994c65c": { "label": "street", "why": "Osada Slavotovo, an outdoor village (fix3a)" }
+  }
+}

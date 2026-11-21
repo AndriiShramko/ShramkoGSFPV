@@ -171,7 +171,7 @@ const RINGS: Flight = { a: 'rings-first', b: 'rings-line', pilot: listenThenFly,
  * every touched sample, the task and the time between attempts included) is not derived by the replay at all (11 frames;
  * "Needs from the package" in docs/wip/v13-host.md).
  */
-function beyondSafety(frames: readonly FlightFrame[], derived: readonly (readonly string[])[]): number[] {
+function beyondSafety(frames: readonly FlightFrame[], derived: readonly (readonly string[])[], eventShiftFrames = 0): number[] {
     const key = (ids: readonly string[]): string => [...new Set(ids.filter((id) => !id.startsWith('safety.')))].sort().join('|');
     const rec = frames.map((f) => key(f.c));
     const der = derived.map(key);
@@ -181,9 +181,53 @@ function beyondSafety(frames: readonly FlightFrame[], derived: readonly (readonl
     for (let i = 0; i < n; i++) {
         let ok = false;
         for (let k = Math.max(0, i - slack); k <= Math.min(n - 1, i + slack) && !ok; k++) ok = rec[k] === der[i];
+        // a gate re-derived earlier: only its one-shot cues may differ, by that many frames more (gateShiftFrames)
+        if (!ok && eventShiftFrames > 0) ok = gateCuesOnly((rec[i] as string).split('|'), (der[i] as string).split('|')) && withinShift(rec, der[i] as string, i, slack + eventShiftFrames);
         if (!ok) out.push(i);
     }
     return out;
+}
+
+/** The one-shot cues of a gate passed (the gate note, the lap, the praise of a counted attempt). */
+const GATE_CUE = /^target\.(note|lap|praise)(:|$)/;
+/** Do the two frames' cue sets differ only by a gate's one-shot cues? */
+function gateCuesOnly(a: readonly string[], b: readonly string[]): boolean {
+    const x = new Set(a.filter((id) => id !== ''));
+    const y = new Set(b.filter((id) => id !== ''));
+    const differ = [...new Set([...x, ...y])].filter((id) => x.has(id) !== y.has(id));
+    return differ.length > 0 && differ.every((id) => GATE_CUE.test(id));
+}
+function withinShift(rec: readonly string[], d: string, i: number, slack: number): boolean {
+    for (let k = Math.max(0, i - slack); k <= Math.min(rec.length - 1, i + slack); k++) if (rec[k] === d) return true;
+    return false;
+}
+
+/**
+ * How many frames the replay found the lesson's gates away from the live run (0 when it found each on the recorded time). The replay
+ * finds a gate on the recorded samples (a frame every 32 ms), the live host on its own 16 ms render, so a gate may be re-derived up to
+ * a frame earlier (the comparer matches it within timeMs). Its one-shot cues (the gate note, the lap, the praise) start and end that
+ * much earlier, so the lesson's own cues are compared with that many frames more slack, never more. Measured (lane gap-sound S2):
+ * rings-first's second counted gate live at 45936 ms, re-derived at 45920 ms: 1 frame; the praise's last note ended 2 frames early.
+ */
+function gateShiftFrames(frames: readonly FlightFrame[], recorded: readonly SessionEvent[], derived: readonly SessionEvent[]): number {
+    const gates = (evs: readonly SessionEvent[]): SessionEvent[] => evs.filter((e) => e.kind === 'gate');
+    const der = gates(derived);
+    const used = new Set<number>();
+    let shiftMs = 0;
+    for (const r of gates(recorded)) {
+        const id = (r as { gateId: string }).gateId;
+        let best = -1;
+        for (let k = 0; k < der.length; k++) {
+            if (used.has(k) || (der[k] as { gateId: string }).gateId !== id) continue;
+            if (best < 0 || Math.abs(der[k]!.t - r.t) < Math.abs(der[best]!.t - r.t)) best = k;
+        }
+        if (best < 0) continue;
+        used.add(best);
+        shiftMs = Math.max(shiftMs, Math.abs(der[best]!.t - r.t));
+    }
+    if (shiftMs === 0 || frames.length < 2) return 0;
+    const frameMs = (frames.at(-1)!.t - frames[0]!.t) / (frames.length - 1);
+    return Math.ceil(shiftMs / frameMs);
 }
 
 /**
@@ -191,10 +235,11 @@ function beyondSafety(frames: readonly FlightFrame[], derived: readonly (readonl
  * differ there and the cause W19 names for them: the host's touch ping ('safety.touch', which the replay never derives), the open-way
  * chime's hold ('safety.free', held on from a sample the recording does not keep), a hazard voice taken for another kind at a corner
  * or an edge (the floor, a wall, the ceiling, an object: the sampler fed at another rate), or none of these ('other': a cause not
- * pinned down, a play's edge among them).
+ * pinned down, a play's edge among them). 'gate': only a gate's one-shot cues differ and they agree within eventShiftFrames more
+ * frames (the replay found the gate that much earlier: gateShiftFrames; lane gap-sound S2).
  */
-export type KindCause = 'touch' | 'free' | 'hazard' | 'other';
-function kindDifferences(frames: readonly FlightFrame[], derived: readonly (readonly string[])[]): { index: number; kinds: string[]; cause: KindCause }[] {
+export type KindCause = 'touch' | 'free' | 'hazard' | 'gate' | 'other';
+function kindDifferences(frames: readonly FlightFrame[], derived: readonly (readonly string[])[], eventShiftFrames = 0): { index: number; kinds: string[]; cause: KindCause }[] {
     const classes = (ids: readonly string[]): string[] => [...new Set(ids.map((id) => id.split(':')[0] as string))].sort();
     const rec = frames.map((f) => classes(f.c));
     const der = derived.map(classes);
@@ -210,7 +255,9 @@ function kindDifferences(frames: readonly FlightFrame[], derived: readonly (read
         const b = new Set(der[i]);
         const kinds = [...new Set([...a, ...b])].filter((x) => a.has(x) !== b.has(x)).sort();
         const hazard = (x: string): boolean => /^safety\.(wall|floor|ceiling|object|obstacle)/.test(x);
-        const cause: KindCause = kinds.includes('safety.touch') ? 'touch' : kinds.includes('safety.free') ? 'free' : kinds.length > 0 && kinds.every(hazard) ? 'hazard' : 'other';
+        const joined = rec.map((r) => r.join('|'));
+        const gate = eventShiftFrames > 0 && kinds.length > 0 && kinds.every((x) => GATE_CUE.test(x)) && withinShift(joined, d, i, slack + eventShiftFrames);
+        const cause: KindCause = kinds.includes('safety.touch') ? 'touch' : kinds.includes('safety.free') ? 'free' : kinds.length > 0 && kinds.every(hazard) ? 'hazard' : gate ? 'gate' : 'other';
         out.push({ index: i, kinds, cause });
     }
     return out;
@@ -327,6 +374,7 @@ describe('two lessons flown through the host and recorded as one package replay 
         expect(out.error).toBeNull();
         expect(out.segments.map((s) => s.segment.lessonId)).toEqual(['rings-first', 'rings-line']);
         const derived: (readonly (readonly string[])[])[] = [];
+        const shifts: number[] = [];
         for (const s of out.segments) {
             const c = s.check!;
             const cues = { frames: c.cues.frames, share: c.cues.share, classShare: c.cues.classShare };
@@ -334,9 +382,11 @@ describe('two lessons flown through the host and recorded as one package replay 
             expect(c.events.matched).toBe(c.events.recorded);
             // the lesson's own sounds agree on every frame (beyondSafety says how the safety layer differs, and why)
             const seg = s.segment;
-            const d = checkSession({ manifest: seg.manifest, frames: seg.frames, events: seg.events }).result.cues;
+            const replayed = checkSession({ manifest: seg.manifest, frames: seg.frames, events: seg.events });
+            const d = replayed.result.cues;
             derived.push(d);
-            expect(beyondSafety(seg.frames, d), seg.lessonId ?? '').toEqual([]);
+            shifts.push(gateShiftFrames(seg.frames, seg.events, replayed.result.derivedEvents));
+            expect(beyondSafety(seg.frames, d, shifts.at(-1)), seg.lessonId ?? '').toEqual([]);
             // From each lesson's first frame (v13-int step 1; the settle window of holdMs + 100 ms is gone): the host resets the engine
             // when it opens a lesson, so the live engine no longer holds the hazard sectors of the lesson before (at 16c01a1, without a
             // reset, rings-line's first 9 frames voiced the ceiling with the craft at rest 2.2 m under it) and the safety layer's hazard
@@ -357,8 +407,8 @@ describe('two lessons flown through the host and recorded as one package replay 
             // named sound among them, agree on every frame: beyondSafety above). rings-first with stage C's flight: 16 frames, the host's
             // touch ping 5 and the open-way chime's hold 11; W9 changes none of them (it is what the player says, not what the replay
             // derives). rings-line: none.
-            const differ = kindDifferences(seg.frames, d);
-            const causes: Record<KindCause, number> = { touch: 0, free: 0, hazard: 0, other: 0 };
+            const differ = kindDifferences(seg.frames, d, shifts.at(-1));
+            const causes: Record<KindCause, number> = { touch: 0, free: 0, hazard: 0, gate: 0, other: 0 };
             for (const x of differ) causes[x.cause]++;
             console.log(`sonic-int-replay: ${seg.lessonId} ${seg.frames.length} frames, by kind ${(100 * all.classShare).toFixed(1)} %, by sector ${(100 * all.share).toFixed(1)} %, differing by kind ${JSON.stringify(causes)}`);
             expect(differ.length, `${s.segment.lessonId}: ${JSON.stringify(causes)}`).toBe(Math.round((1 - all.classShare) * seg.frames.length));
@@ -366,12 +416,16 @@ describe('two lessons flown through the host and recorded as one package replay 
         }
         // control of W19's causes: a lesson cue a frame short (a play's edge) and a reset cue a frame early are causes of none of them
         const edge = derived[0]!.map((ids, i) => (i === 1000 ? ids.filter((id) => !id.startsWith('height.')) : i === 1500 ? [...ids, 'safety.reset'] : ids));
-        const planted = kindDifferences(out.segments[0]!.segment.frames, edge).filter((x) => x.cause === 'other').map((x) => x.index);
+        const planted = kindDifferences(out.segments[0]!.segment.frames, edge, shifts[0]).filter((x) => x.cause === 'other').map((x) => x.index);
         expect(planted).toEqual([1000, 1500]);
         // control: a lesson sound missing from the replay in one frame of fifty is caught by the check above
         const a = out.segments[0]!.segment;
         const missing = derived[0]!.map((ids, i) => (i % 50 === 0 ? ids.filter((id) => !id.startsWith('height.')) : ids));
         expect(beyondSafety(a.frames, missing).length).toBeGreaterThan(0);
+        // control of the gate's slack: never more than a frame, and a praise the replay never played is still caught with it
+        expect(Math.max(...shifts)).toBeLessThanOrEqual(1);
+        const noPraise = derived[0]!.map((ids) => ids.filter((id) => !id.startsWith('target.praise')));
+        expect(beyondSafety(a.frames, noPraise, shifts[0]).length).toBeGreaterThan(0);
         expect(out.check!.events.recorded).toBe(out.segments.reduce((a, s) => a + s.check!.events.recorded, 0));
         expect(out.check!.events.diffs).toEqual([]);
         expect(out.check!.cues.frames).toBe(pkg.frames.length);

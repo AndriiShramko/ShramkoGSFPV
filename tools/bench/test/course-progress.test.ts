@@ -6,8 +6,11 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import {
     COURSE_TRY_MIN_MS, COURSE_TRY_MS_5CM, FREEZE_NOTE_S, PROGRESS_TICK_MS, mayFreeze, SPEAK_EVERY_MS, SPEAK_GAP_MS, ProgressClock, SpeechPacer, clock,
-    courseSteps, courseTryMs, isParked, layTries, progressLine, roundLeft, spokenLine, wallsSteps
+    courseSteps, courseTryMs, isParked, layTries, progressLine, roundLeft, spokenLine, wallsSteps, ANALYSE_MS, planStepMs, planSteps
 } from '../../../apps/fly/src/course/progress';
+import { fakeDocument } from './helpers/fake-dom';
+import { courseOfLink } from '../../../apps/fly/src/course/link';
+import { courseLinkId } from '@gsfpv/tracks';
 import { BASE_VOXEL_M, LADDER_S_PER_MILLION, bakeBase } from '../../../apps/fly/src/bake';
 import type { BakeResult, SceneSize } from '../../../apps/fly/src/bake';
 import { S } from '@gsfpv/sim-core';
@@ -180,7 +183,8 @@ describe('words', () => {
     it('every progress line exists in en, es, pl, ru with the same placeholders', () => {
         const en = lines('en');
         const keys = Object.keys(en).filter((k) => k.startsWith('progress.'));
-        expect(keys.length).toBe(18);
+        // 18 + gen4b B2's progress.step.analyse
+        expect(keys.length).toBe(19);
         for (const lang of ['es', 'pl', 'ru']) {
             const d = lines(lang);
             for (const k of keys) {
@@ -202,5 +206,131 @@ describe('a course that arrives in flight', () => {
         s[S.hold] = 1;
         s[S.px] = 1.5;
         expect(isParked(s, [1, 2, 3])).toBe(false);
+    });
+});
+
+// Lane gen4b B2 (gen4 design G9 and the end of G3): the asked course's steps (analyse, free, lay), its box that stays until
+// the answer, the no-room box with one press on, the start line. NEG: on the old tree the progress was a HUD note of 13 px
+// flashed for 2 ticks (course.ts showProgress), with no step 'analyse', no box and no end at 100.
+describe('gen4b B2: the course box', () => {
+    /** progress-box.ts draws through ui/dom.ts, whose i18n.ts reads the page's path on load: a page for the import */
+    const withPage = async <R>(go: (pb: typeof import('../../../apps/fly/src/course/progress-box'), doc: ReturnType<typeof fakeDocument>) => R): Promise<R> => {
+        const g = globalThis as Record<string, unknown>;
+        const keep = { document: g.document, location: g.location };
+        const doc = fakeDocument();
+        g.document = doc;
+        g.location = { pathname: '/en/', search: '', href: 'http://localhost/en/' };
+        try {
+            return go(await import('../../../apps/fly/src/course/progress-box'), doc);
+        } finally {
+            Object.assign(g, keep);
+        }
+    };
+
+    it('steps analyse, free, lay with the rates; the share never goes back and ends at 100 on the answer', () => {
+        expect(planSteps(null).map((s) => s.key)).toEqual(['analyse', 'free', 'lay']);
+        expect(planStepMs('analyse', 0, 0.1)).toBe(ANALYSE_MS);
+        expect(planStepMs('free', 0, 0.1)).toBe(courseSteps(null)[0]!.estMs);
+        expect(planStepMs('lay', 0, 0.05)).toBe(courseTryMs(0.05, 15_000));
+        expect(planStepMs('lay', 1234.4, 0.05)).toBe(1234);
+        const c = fakeNow();
+        const p = new ProgressClock('course', planSteps(null), c.now);
+        const seen: number[] = [];
+        const tick = (ms: number): void => {
+            c.go(ms);
+            seen.push(p.view().pct);
+        };
+        p.enter('analyse', planStepMs('analyse', 0, 0.1));
+        tick(2000);
+        tick(4000); // past its estimate
+        p.enter('free', planStepMs('free', 0, 0.1));
+        tick(3000);
+        p.enter('lay', 2000);
+        tick(1500);
+        p.enter('lay', 2000); // the second try
+        tick(500);
+        tick(9000);
+        expect(p.view().key).toBe('lay');
+        expect(p.view().attempt).toBe(2);
+        for (let i = 1; i < seen.length; i++) expect(seen[i]).toBeGreaterThanOrEqual(seen[i - 1]!);
+        expect(Math.max(...seen)).toBeLessThan(100);
+        p.finish();
+        c.go(1000);
+        expect(p.view()).toMatchObject({ pct: 100, leftS: 0, n: 3, m: 3 });
+    });
+
+    it('the box stays through late ticks until the answer, says the step, the percent and the time left, and Cancel cancels', async () => {
+        await withPage((pb, doc) => {
+            const parent = doc.createElement('div') as unknown as HTMLElement;
+            const q = (sel: string) => (parent as unknown as { querySelector: (s: string) => { textContent: string; click: () => void } | null }).querySelector(sel);
+            let cancels = 0;
+            const box = new pb.CourseBox(parent, { cancel: () => cancels++, grow: () => undefined });
+            const c = fakeNow();
+            const p = new ProgressClock('course', planSteps(null), c.now);
+            p.enter('analyse', 3000);
+            box.show(pb.progressBoxModel(p.view(), EN));
+            const first = q('[data-testid=gen-progress]');
+            expect(first).not.toBeNull();
+            expect(q('.gen-step')!.textContent).toBe('finding the best scanned part. Step 1 of 3');
+            // the whole plan's time left: 3 + 5.1 + 3.1 s, said by 5 s
+            expect(q('.gen-left')!.textContent).toBe('About 0:15 left');
+            // the old note hid itself 2 ticks after the last line: a worker silent for 10 s left the screen empty
+            c.go(10 * PROGRESS_TICK_MS);
+            box.show(pb.progressBoxModel(p.view(), EN));
+            expect(q('[data-testid=gen-progress]')).toBe(first);
+            expect(q('.gen-left')!.textContent).toBe('Taking longer than expected, 0:10 so far');
+            expect(box.model()).toMatchObject({ kind: 'progress', pct: p.view().pct });
+            q('[data-action=gen-progress-cancel]')!.click();
+            expect(cancels).toBe(1);
+            p.finish();
+            box.show(pb.progressBoxModel(p.view(), EN));
+            expect([q('.gen-pct')!.textContent, q('.gen-left')!.textContent]).toEqual(['100 %', 'Done']);
+            box.close();
+            expect([q('[data-testid=gen-progress]'), box.model()]).toEqual([null, null]);
+        });
+    });
+
+    it('no room: a box with the larger size in one press, another layout when no size helps, a cross and Close', async () => {
+        await withPage((pb, doc) => {
+            const m = pb.noRoomModel(1, 4, EN);
+            expect([m.text, m.action, m.to]).toEqual(['No gate your drone passes fits at Scene size x1.', 'Make the scene x4 and build', 4]);
+            expect(pb.noRoomModel(4, null, EN)).toMatchObject({ action: 'Try another layout', to: null });
+            expect(pb.noRoomModel(4, 2, EN).to).toBeNull();
+            const parent = doc.createElement('div') as unknown as HTMLElement;
+            const q = (sel: string) => (parent as unknown as { querySelector: (s: string) => { click: () => void } | null }).querySelector(sel);
+            const grown: (number | null)[] = [];
+            const box = new pb.CourseBox(parent, { cancel: () => undefined, grow: (to) => grown.push(to) });
+            box.show(m);
+            expect(q('button.panel-x')).not.toBeNull();
+            q('[data-action=gen-noroom-grow]')!.click();
+            expect([grown, box.model()]).toEqual([[4], null]);
+            box.show(m);
+            q('[data-action=gen-noroom-close]')!.click();
+            expect([grown.length, box.model()]).toEqual([1, null]);
+            expect(pb.startLine(45.4, 9, EN)).toBe('Gates: 9. The start gate is 45 m away: follow the arrow. Key Shift+T hides the course');
+            expect(pb.startLine(0.5, 9, EN)).toContain('You are at the start gate');
+            expect(pb.START_LINE_MS).toBeGreaterThanOrEqual(8000);
+        });
+    });
+
+    it('a link names the asked course (g2) and an old link stays the old generator (g1)', () => {
+        expect(courseOfLink('?course=g1.bnhwha')).toEqual({ kind: 'legacy', seed: parseInt('bnhwha', 36) });
+        const r = { seed: 1234567, level: 'pro' as const, spread: 'wide' as const, anyQuality: false };
+        expect(courseOfLink(`?x=1&course=${courseLinkId(r)}`)).toEqual({ kind: 'request', request: r });
+        expect(courseOfLink('?course=g2.zz.bq')).toBeNull();
+        expect(courseOfLink('?scene=abc')).toBeNull();
+    });
+
+    it('every new line is in all four languages', () => {
+        const keys = Object.keys(lines('en')).filter((k) => k.startsWith('course.gen.') || k === 'progress.step.analyse');
+        const en = lines('en');
+        expect(keys.length).toBeGreaterThan(30);
+        for (const lang of ['es', 'pl', 'ru']) {
+            const d = lines(lang);
+            for (const k of keys) {
+                expect(d[k], `${lang} ${k}`).toBeTruthy();
+                expect((d[k]!.match(/\{\w+\}/g) ?? []).sort(), `${lang} ${k}`).toEqual((en[k]!.match(/\{\w+\}/g) ?? []).sort());
+            }
+        }
     });
 });

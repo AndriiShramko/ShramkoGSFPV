@@ -1,0 +1,31 @@
+{
+ "base": "https://gsfpv.flyreelstudio.eu/en",
+ "viewport": "1536x730@1.25",
+ "steps": [
+  {
+   "step": 5,
+   "name": "room guest (own pick medium compact) adopts the host pro wide dialog course: the page lays the host ask",
+   "pass": false,
+   "detail": {
+    "adopt": true,
+    "host": {
+     "seed": 4242,
+     "level": "pro",
+     "spread": "wide",
+     "anyQuality": false
+    },
+    "laidRequest": null,
+    "gates": 40,
+    "ms": 2697,
+    "plan": null
+   }
+  }
+ ],
+ "errors": [],
+ "verdict": {
+  "pass": false,
+  "failed": [
+   5
+  ]
+ }
+}

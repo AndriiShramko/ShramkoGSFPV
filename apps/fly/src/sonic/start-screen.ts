@@ -5,11 +5,11 @@
 // sliders with labels: nothing is a div with a click handler, so Tab, Enter, Space and the arrow keys do what a screen
 // reader user expects. Every lesson is a button, whatever the path (the ladder is a recommendation, not a gate).
 //
-//   Start      Continue: <the lesson the pilot is on>, Start the course from the beginning (lesson 1 of the path; the saved
-//              progress is kept), and, when ?sonic=<lesson> asked for one, Start: <that lesson>; the path (full or fast); each
-//              opens a lesson through `onStart` inside the press, which is the user activation the AudioContext and the speech
-//              need.
-//   Headphones a sound on the left, on the right, behind: made by the engine (its first press makes the AudioContext),
+//   Start      Quick start (first and focused for every pilot, a returning one too: lane gap-sound, the owner's line 531),
+//              Continue: <the lesson the pilot is on>, Full course, and, when ?sonic=<lesson> asked for one, Start: <that
+//              lesson> before them; each opens a lesson through `onStart` inside the press, which is the user activation the
+//              AudioContext and the speech need.
+//   Headphones a sound on the left, on the right (no 'behind': the owner, line 531): made by the engine (its first press makes the AudioContext),
 //              with the package's notes (wired, no surround effects) and the loudness note beside it.
 //   Lessons    every shipped lesson (28 since v0.13) by module with its place ("Lesson N of 28", as the lesson's own view counts
 //              it) and where the pilot stands (passed, skipped, in progress, not started); then "Reset my progress", which asks
@@ -18,7 +18,8 @@
 //              motor sound, the motor's volume and the target height note (v0.13, W13), sound from above and below (v0.13, the
 //              package's heightDirection), the target hum showing the way (lane sonic-beacon, the package's beacon), what the sound turns with, the sound panel and the attitude display (v0.13, the look's
 //              switches, look-prefs.ts), each sound's volume and pitch. Each change applies at once and is saved
-//              (SonicSetup.update; the panels' switches setPanel).
+//              (SonicSetup.update; the panels' switches setPanel). At first only the rows of SONIC_SETTING_LEVELS at level 'first'
+//              (menu4's levels); "Show all settings (n more)" opens the rest for this page, as the simulator's settings do.
 //
 // A spoken list (v0.13, lane v13-host C3, the owner's M41-4; spoken-list.ts): with the mode's voice on (not "my screen reader
 // speaks"), Down and Up move through the screen's stops, Left and Right change a setting, Enter chooses, Escape goes back, and the
@@ -29,6 +30,8 @@
 // simulator's `sonic.*` keys for the rest, in en, es, pl and ru.
 import { BUILTIN_THEME_IDS, DICTS, LAYER_IDS, PREFS_LIMITS, SCAN_FREE_ID, createTranslator } from '@shramko/sonic-fpv';
 import type { FlightSample, LayerId, Locale, SonicPrefs, SpeechLine, Vec3 } from '@shramko/sonic-fpv';
+import { levelShows } from '@gsfpv/prefs';
+import type { MenuLevel } from '@gsfpv/prefs';
 import { h } from '../ui/dom';
 import { t } from '../i18n';
 import type { SonicSetup, VisitPrefs } from './entry';
@@ -43,8 +46,37 @@ import { LOOK_PANELS, LOOK_PANEL_LABELS, panelOn, setPanel } from './look-prefs'
 import type { LookPanel } from './look-prefs';
 import './sonic.css';
 
+/** The sides of the headphone check: left and right only (lane gap-sound; the owner, line 531: behind or in front is not clear). */
+export type HeadphoneSide = 'left' | 'right';
+export const HEADPHONE_SIDES: readonly HeadphoneSide[] = ['left', 'right'];
+
 /** Directions of the headphone check, in the listener's frame (x right, y up, z back). */
-export const HEADPHONE_DIRS: Readonly<Record<'left' | 'right' | 'behind', Vec3>> = { left: [-1, 0, 0], right: [1, 0, 0], behind: [0, 0, 1] };
+export const HEADPHONE_DIRS: Readonly<Record<HeadphoneSide, Vec3>> = { left: [-1, 0, 0], right: [1, 0, 0] };
+
+/**
+ * The menu level of each row of the Settings section by its control's id (lane gap-sound; menu4's levels, app/menu-levels.ts):
+ * a row at 'first' is shown at once, any other (absent: expert) only after "Show all settings (n more)". The first rows are the
+ * ones a new blind pilot needs: how fast and by whom things are said, captions, the key line, and turning the head.
+ */
+export const SONIC_SETTING_LEVELS: Readonly<Record<string, MenuLevel>> = {
+    'sonic-rate': 'first',
+    'sonic-captions': 'first',
+    'sonic-sr': 'first',
+    'sonic-narrator': 'first',
+    'sonic-key-hints': 'first',
+    'sonic-head': 'first'
+};
+
+/** A row's menu level: its entry of SONIC_SETTING_LEVELS, else expert. */
+export function sonicSettingLevel(id: string): MenuLevel {
+    return SONIC_SETTING_LEVELS[id] ?? 'expert';
+}
+
+/** One row of the Settings section: its control's id and how it is drawn (drawing registers its stop, so a hidden row is not drawn). */
+interface SettingRow {
+    readonly id: string;
+    readonly draw: () => HTMLElement;
+}
 
 const NEUTRAL: FlightSample = { t: 0, tick: 0, pos: [0, 1.5, 0], vel: [0, 0, 0], quat: [1, 0, 0, 0], rate: [0, 0, 0], yawDeg: 0, pitchDeg: 0, rollDeg: 0, sticks: [0, 0, 0, 0], armed: false, touched: false, paused: false };
 
@@ -110,6 +142,8 @@ export class StartScreen {
     private woke = false;
     /** the focus is being put back where it was after a part was drawn again: the voice says nothing for it */
     private quiet = false;
+    /** "Show all settings" was pressed on this page: every row of the Settings section is drawn (lane gap-sound) */
+    private allSettings = false;
     private onKeyDown = (e: KeyboardEvent): void => {
         if (this.root.hidden) return;
         const target = e.target as Node | null;
@@ -364,15 +398,9 @@ export class StartScreen {
             buttons.push(lessonButton(req.id, t('sonic.start.lesson', { title: titleOf(req.id) }), this.placeText(lessonPlace(req.id, prefs.path)), true, 'sonic-start-asked'));
             primaryTaken = true;
         }
-        // Continue: <the lesson>, with its place and where the pilot stands in it (M41-2)
-        if (m.continueId) {
-            const row = rowOf(m.continueId);
-            const sub = [this.placeText(lessonPlace(m.continueId, prefs.path)), row ? this.stateWord(row.state) : null].filter((x): x is string => x !== null).join(', ');
-            buttons.push(lessonButton(m.continueId, t('sonic.start.continue', { title: titleOf(m.continueId) }), sub, !primaryTaken, 'sonic-start-continue'));
-            primaryTaken = true;
-        }
         // lane sound6 S2 (the owner: the quick lesson is the default, the long course for those who need it): Quick start, then Full
-        // course; each sets the path and opens its first lesson; the saved progress is kept (Reset is a choice of its own, in the lessons)
+        // course; each sets the path and opens its first lesson; the saved progress is kept (Reset is a choice of its own, in the lessons).
+        // Lane gap-sound (line 531, 'the quick lesson by default'): Quick start comes first for a returning pilot too, Continue second
         const pathButton = (path: 'fast' | 'full', primary: boolean): HTMLElement => {
             const id = firstOf(path);
             const label = t(path === 'fast' ? 'sonic.start.quick' : 'sonic.start.full');
@@ -381,7 +409,14 @@ export class StartScreen {
             this.stop(b, () => `${label}. ${sub.replace(/\.$/, '')}`);
             return b;
         };
-        buttons.push(pathButton('fast', !primaryTaken), pathButton('full', false));
+        buttons.push(pathButton('fast', !primaryTaken));
+        // Continue: <the lesson>, with its place and where the pilot stands in it (M41-2): what it resumes, second
+        if (m.continueId) {
+            const row = rowOf(m.continueId);
+            const sub = [this.placeText(lessonPlace(m.continueId, prefs.path)), row ? this.stateWord(row.state) : null].filter((x): x is string => x !== null).join(', ');
+            buttons.push(lessonButton(m.continueId, t('sonic.start.continue', { title: titleOf(m.continueId) }), sub, false, 'sonic-start-continue'));
+        }
+        buttons.push(pathButton('full', false));
         if (order?.[0] === 'lessons') buttons.push(scanButton(false));
         const back = this.d.onClose ? h('button', { type: 'button', class: 'btn', 'data-testid': 'sonic-back', onclick: () => this.d.onClose?.() }, t('sonic.close')) : null;
         if (back) this.stop(back, () => t('sonic.close'));
@@ -475,8 +510,8 @@ export class StartScreen {
 
     private headphonesSection(): HTMLElement {
         this.begin('headphones');
-        const play = (side: 'left' | 'right' | 'behind'): void => this.headphoneCheck(side);
-        const buttons = (['left', 'right', 'behind'] as const).map((side) => {
+        const play = (side: HeadphoneSide): void => this.headphoneCheck(side);
+        const buttons = HEADPHONE_SIDES.map((side) => {
             const b = h('button', { type: 'button', class: 'btn', 'data-testid': `sonic-hp-${side}`, onclick: () => play(side) }, t(`sonic.hp.${side}`));
             this.stop(b, () => t(`sonic.hp.${side}`));
             return b;
@@ -616,53 +651,69 @@ export class StartScreen {
             return h('div', { class: 'sonic-field' }, label(id, text), el, out);
         };
         const themes: [string, string][] = BUILTIN_THEME_IDS.map((id) => [id, this.key(`theme.${id}.name`)]);
-        // the volume and pitch of each sound sit in a part that opens: its sliders are stops only while it is open
-        const details = h('details', { class: 'sonic-details' });
-        const open = (): boolean => details.hasAttribute('open');
-        const summary = h('summary', {}, t('sonic.settings.layers'));
-        const fields: HTMLElement[] = [
-            select('sonic-theme', this.key('menu.setting.theme'), prefs.theme, themes, (v, said) => this.change({ theme: v }, said)),
-            check('sonic-calm', this.key('menu.setting.calm'), prefs.calm, (v, said) => this.change({ calm: v }, said), this.key('menu.setting.calm-what')),
-            select('sonic-polarity', this.key('menu.setting.polarity'), prefs.heightPolarity, [['up-higher', this.key('menu.value.up-higher')], ['up-lower', this.key('menu.value.up-lower')]], (v, said) => this.change({ heightPolarity: v as SonicPrefs['heightPolarity'] }, said)),
-            range('sonic-rate', this.key('menu.setting.speech-rate'), prefs.speechRate, PREFS_LIMITS.speechRate.min, PREFS_LIMITS.speechRate.max, 0.1, 'x', (v, said) => this.change({ speechRate: Math.round(v * 10) / 10 }, said)),
-            check('sonic-captions', this.key('menu.setting.captions'), prefs.captions, (v, said) => this.change({ captions: v }, said)),
+        const rows: SettingRow[] = [
+            { id: 'sonic-theme', draw: () => select('sonic-theme', this.key('menu.setting.theme'), prefs.theme, themes, (v, said) => this.change({ theme: v }, said)) },
+            { id: 'sonic-calm', draw: () => check('sonic-calm', this.key('menu.setting.calm'), prefs.calm, (v, said) => this.change({ calm: v }, said), this.key('menu.setting.calm-what')) },
+            { id: 'sonic-polarity', draw: () => select('sonic-polarity', this.key('menu.setting.polarity'), prefs.heightPolarity, [['up-higher', this.key('menu.value.up-higher')], ['up-lower', this.key('menu.value.up-lower')]], (v, said) => this.change({ heightPolarity: v as SonicPrefs['heightPolarity'] }, said)) },
+            { id: 'sonic-rate', draw: () => range('sonic-rate', this.key('menu.setting.speech-rate'), prefs.speechRate, PREFS_LIMITS.speechRate.min, PREFS_LIMITS.speechRate.max, 0.1, 'x', (v, said) => this.change({ speechRate: Math.round(v * 10) / 10 }, said)) },
+            { id: 'sonic-captions', draw: () => check('sonic-captions', this.key('menu.setting.captions'), prefs.captions, (v, said) => this.change({ captions: v }, said)) },
             // "my screen reader speaks" is the engine NOT speaking: the box is the opposite of selfVoice
-            check('sonic-sr', this.key('menu.setting.screen-reader'), !prefs.selfVoice, (v, said) => this.change({ selfVoice: !v }, said)),
+            { id: 'sonic-sr', draw: () => check('sonic-sr', this.key('menu.setting.screen-reader'), !prefs.selfVoice, (v, said) => this.change({ selfVoice: !v }, said)) },
             // train 3 (the owner's message 54): the narrator, on unless the pilot turns it off; off is "sounds only" in a flight (no line
             // spoken, none sent to a screen reader, nothing waits); the lessons of the lesson list keep their words
-            check('sonic-narrator', t('sonic.settings.narrator'), prefs.narrator !== false, (v, said) => this.change({ narrator: v }, said), t('sonic.settings.narratorWhat')),
-            check('sonic-motor', this.key('menu.setting.motor'), prefs.motorSound, (v, said) => this.change({ motorSound: v, motorChoice: true }, said)),
+            { id: 'sonic-narrator', draw: () => check('sonic-narrator', t('sonic.settings.narrator'), prefs.narrator !== false, (v, said) => this.change({ narrator: v }, said), t('sonic.settings.narratorWhat')) },
+            { id: 'sonic-motor', draw: () => check('sonic-motor', this.key('menu.setting.motor'), prefs.motorSound, (v, said) => this.change({ motorSound: v, motorChoice: true }, said)) },
             // v0.13 (W13): the motor's own level in the mode (after the engine's leveller), 3 dB a step, and the target height's note
-            range('sonic-motor-level', this.key('menu.setting.motor-level'), prefs.motorGainDb ?? 0, PREFS_LIMITS.motorGainDb.min, PREFS_LIMITS.motorGainDb.max, 3, ' dB', (v, said) => this.change({ motorGainDb: v }, said)),
-            check('sonic-height-target', this.key('menu.setting.height-target'), prefs.heightTarget !== false, (v, said) => this.change({ heightTarget: v }, said)),
+            { id: 'sonic-motor-level', draw: () => range('sonic-motor-level', this.key('menu.setting.motor-level'), prefs.motorGainDb ?? 0, PREFS_LIMITS.motorGainDb.min, PREFS_LIMITS.motorGainDb.max, 3, ' dB', (v, said) => this.change({ motorGainDb: v }, said)) },
+            { id: 'sonic-height-target', draw: () => check('sonic-height-target', this.key('menu.setting.height-target'), prefs.heightTarget !== false, (v, said) => this.change({ heightTarget: v }, said)) },
             // v0.13 (v13-int step 3; the package's lane s13-elev, the owner's message 42): the cues of up and down also from above and
             // below, on unless the pilot turns it off; its description says what off does (the next stop cuts it, as any long line)
-            check('sonic-height-direction', this.key('menu.setting.height-direction'), prefs.heightDirection !== false, (v, said) => this.change({ heightDirection: v }, said), this.key('menu.setting.height-direction-what')),
+            { id: 'sonic-height-direction', draw: () => check('sonic-height-direction', this.key('menu.setting.height-direction'), prefs.heightDirection !== false, (v, said) => this.change({ heightDirection: v }, said), this.key('menu.setting.height-direction-what')) },
             // lane sonic-beacon: the target hum folded to the side of the target and an octave up on course, on unless the pilot turns it
             // off (the package's SonicPrefs.beacon); its description says what off does
-            check('sonic-beacon', this.key('menu.setting.beacon'), prefs.beacon !== false, (v, said) => this.change({ beacon: v }, said), this.key('menu.setting.beacon-what')),
-            select('sonic-frame', this.key('menu.setting.frame'), prefs.listenerFrame, [['heading', this.key('menu.value.heading')], ['body', this.key('menu.value.body')]], (v, said) => this.change({ listenerFrame: v as SonicPrefs['listenerFrame'] }, said)),
+            { id: 'sonic-beacon', draw: () => check('sonic-beacon', this.key('menu.setting.beacon'), prefs.beacon !== false, (v, said) => this.change({ beacon: v }, said), this.key('menu.setting.beacon-what')) },
+            { id: 'sonic-frame', draw: () => select('sonic-frame', this.key('menu.setting.frame'), prefs.listenerFrame, [['heading', this.key('menu.value.heading')], ['body', this.key('menu.value.body')]], (v, said) => this.change({ listenerFrame: v as SonicPrefs['listenerFrame'] }, said)) },
             // v0.13 (v13-int step 3; lane v13-look): the sound panel and the attitude display, each on unless the pilot turns it off; kept in
             // the collection beside the sound settings (look-prefs.ts), and the panels follow a change at once
-            ...LOOK_PANELS.map((which) => check(`sonic-look-${which}`, t(LOOK_PANEL_LABELS[which]), panelOn(this.d.setup.host, which), (v, said) => this.panel(which, v, said))),
+            ...LOOK_PANELS.map((which): SettingRow => ({ id: `sonic-look-${which}`, draw: () => check(`sonic-look-${which}`, t(LOOK_PANEL_LABELS[which]), panelOn(this.d.setup.host, which), (v, said) => this.panel(which, v, said)) })),
             // lane sonic-hints: the line of keys at every lesson step, brief or off (key-hints.ts)
-            select('sonic-key-hints', t('sonic.settings.keyHints'), keyHintsChoice(this.d.setup.host), KEY_HINTS_CHOICES.map((c) => [c, t(`sonic.settings.keyHints.${c}`)]), (v, said) => {
+            { id: 'sonic-key-hints', draw: () => select('sonic-key-hints', t('sonic.settings.keyHints'), keyHintsChoice(this.d.setup.host), KEY_HINTS_CHOICES.map((c) => [c, t(`sonic.settings.keyHints.${c}`)]), (v, said) => {
                 setKeyHints(this.d.setup.host, v as KeyHintsChoice);
                 this.sayValue(said);
-            }),
+            }) },
             // lane head4: "Turn my head to listen", off unless turned on; the switch speaks first, then the browser asks for the camera,
             // and the result is said (head/switch.ts); a refusal draws the row off again. Shown where the page made the switch (head/page.ts)
-            ...(this.d.setup.head ? [((head) => check('sonic-head', t('sonichead.setting'), head.on, (v) => void head.set(v).then((on) => on === v || this.render()), t('sonichead.settingWhat')))(this.d.setup.head)] : [])
+            ...(this.d.setup.head ? [((head): SettingRow => ({ id: 'sonic-head', draw: () => check('sonic-head', t('sonichead.setting'), head.on, (v) => void head.set(v).then((on) => on === v || this.render()), t('sonichead.settingWhat')) }))(this.d.setup.head)] : []),
+            { id: 'sonic-layers', draw: () => {
+                // the volume and pitch of each sound sit in a part that opens: its sliders are stops only while it is open
+                const details = h('details', { class: 'sonic-details' });
+                const open = (): boolean => details.hasAttribute('open');
+                const summary = h('summary', {}, t('sonic.settings.layers'));
+                this.stop(summary, () => t('sonic.settings.layers'));
+                const layerRows = LAYER_IDS.map((id: LayerId) => {
+                    const name = this.key(`layer.${id}.name`);
+                    return h('div', { class: 'sonic-layer' }, h('h4', {}, name),
+                        range(`sonic-gain-${id}`, this.key('menu.setting.volume', { layer: name }), prefs.layerGainDb[id] ?? 0, PREFS_LIMITS.gainDb.min, PREFS_LIMITS.gainDb.max, 1, ' dB', (v, said) => this.change({ layerGainDb: this.layerMap(this.d.setup.prefs.layerGainDb, id, v) }, said), open),
+                        range(`sonic-pitch-${id}`, this.key('menu.setting.pitch', { layer: name }), prefs.layerPitchSteps[id] ?? 0, PREFS_LIMITS.pitchSteps.min, PREFS_LIMITS.pitchSteps.max, 1, '', (v, said) => this.change({ layerPitchSteps: this.layerMap(this.d.setup.prefs.layerPitchSteps, id, v) }, said), open));
+                });
+                details.append(summary, ...layerRows);
+                return details;
+            } }
         ];
-        this.stop(summary, () => t('sonic.settings.layers'));
-        const layerRows = LAYER_IDS.map((id: LayerId) => {
-            const name = this.key(`layer.${id}.name`);
-            return h('div', { class: 'sonic-layer' }, h('h4', {}, name),
-                range(`sonic-gain-${id}`, this.key('menu.setting.volume', { layer: name }), prefs.layerGainDb[id] ?? 0, PREFS_LIMITS.gainDb.min, PREFS_LIMITS.gainDb.max, 1, ' dB', (v, said) => this.change({ layerGainDb: this.layerMap(this.d.setup.prefs.layerGainDb, id, v) }, said), open),
-                range(`sonic-pitch-${id}`, this.key('menu.setting.pitch', { layer: name }), prefs.layerPitchSteps[id] ?? 0, PREFS_LIMITS.pitchSteps.min, PREFS_LIMITS.pitchSteps.max, 1, '', (v, said) => this.change({ layerPitchSteps: this.layerMap(this.d.setup.prefs.layerPitchSteps, id, v) }, said), open));
-        });
-        details.append(summary, ...layerRows);
-        return this.section('settings', this.key('menu.settings.title'), ...fields, details);
+        // lane gap-sound (menu4's levels): the rows of level 'first', the rest after "Show all settings (n more)"; a shared link that set
+        // a sound setting shows them all (its note names rows of the full list)
+        if (Object.keys(this.d.setup.visit).length > 0) this.allSettings = true;
+        const all = this.allSettings;
+        const shown = rows.filter((r) => all || levelShows('first', sonicSettingLevel(r.id)));
+        const fields = shown.map((r) => r.draw());
+        const more = rows.length - shown.length;
+        if (more > 0) {
+            const text = t('sonic.settings.showAll', { n: more });
+            const btn = h('button', { type: 'button', class: 'btn sonic-show-all', 'data-testid': 'sonic-settings-all', onclick: () => this.showAllSettings(rows.find((r) => !shown.includes(r))?.id ?? null) }, text);
+            this.stop(btn, () => text);
+            fields.push(btn);
+        }
+        return this.section('settings', this.key('menu.settings.title'), ...fields);
     }
 
     private footer(): HTMLElement {
@@ -726,6 +777,13 @@ export class StartScreen {
         }
     }
 
+    /** "Show all settings": every row from now on (this page); the focus goes to `first`, the first row that was not shown (said there). */
+    private showAllSettings(first: string | null): void {
+        this.allSettings = true;
+        this.render();
+        (first ? this.root.querySelector<HTMLElement>(`#${first}`) ?? this.root.querySelector<HTMLElement>('.sonic-details summary') : null)?.focus();
+    }
+
     /** "Reset my progress": the screen asks first, the focus on No. */
     private askReset(): void {
         this.confirming = true;
@@ -767,7 +825,7 @@ export class StartScreen {
     }
 
     /** A sound on one side. The first press of any sound button makes the AudioContext (it is a user activation). */
-    private headphoneCheck(side: 'left' | 'right' | 'behind'): void {
+    private headphoneCheck(side: HeadphoneSide): void {
         const audio = this.d.setup.audio;
         const started = audio.start();
         this.woke = true;
@@ -804,7 +862,9 @@ export class StartScreen {
         this.root.hidden = false;
         this.root.removeAttribute('inert');
         this.render();
-        const at = section ? this.sections.get(section)?.querySelector<HTMLElement>('h2') : null;
+        // lane gap-sound (line 531, 'when the lesson starts at once'): without a section the focus is on the first Start button (Quick
+        // start, unless a link asked for a lesson or a scan), so one Enter starts; the h1 only when there is no Start button
+        const at = section ? this.sections.get(section)?.querySelector<HTMLElement>('h2') : this.stops.get('start')?.[0]?.el;
         (at ?? this.root.querySelector<HTMLElement>('#sonic-h1'))?.focus();
     }
 
