@@ -7,10 +7,11 @@
 //   2 "Quick start" is the first button of Start and visible without scrolling;
 //   3 a mouse click on it: an AudioContext running within 2 s, no sound problem shown;
 //   4 the first wall cue (safety.wall in the engine's plan or one-shots) within 12 s of the click;
-//   5 the headphone check's three questions answered (the lesson takes digits: 1 left, 2 right) -> the lesson passes;
-//   6 ears-walls names left, right, up and down and never front or behind (dir.front, dir.back, headphones.q-front-back);
-//   7 walls-hall opens after it;
-//   8 back at the start screen: Continue first, then Quick start, then Full course;
+//   5 the headphone check's questions answered (the lesson takes digits: 1 left, 2 right) -> the lesson passes;
+//   6 (gap-sound) the small room names wall, right, ceiling and floor before its flight, and no line says front or behind
+//     (dir.front, dir.back, headphones.q-front-back);
+//   7 walls-hall opens right after the headphone check;
+//   8 back at the start screen (gap-sound): Quick start first, then Continue, then Full course;
 //   9 the same screen at 844x390 fits (step 1's test) and keeps that order;
 //  11 (the independent review's step) Full course, back to Start, then Quick start by Tab and Enter: the path saved is full,
 //     then fast, and the headphone check opens.
@@ -258,20 +259,23 @@ async function chromeWalk(browser: Browser, origin: string): Promise<void> {
     step(who, 5, 'the headphone check answered on its three questions -> passed', hp, { lesson: (await hook(page))?.lesson ?? null });
     const t0 = Date.now();
     let s = await hook(page);
-    while (Date.now() - t0 < 240000 && s?.lesson !== 'walls-hall') {
+    // gap-sound (car 3): the quick path goes from the headphone check straight to the small room, which names its four wall
+    // sounds before its flight (phase 'flying'); ears-walls is no longer on the way
+    while (Date.now() - t0 < 240000 && !(s?.lesson === 'walls-hall' && s?.phase === 'flying')) {
         await sleep(250);
         s = await hook(page);
     }
     const spoken = (s?.events ?? []).filter((e) => e.kind === 'speech').map((e) => e.key ?? '');
     const dirs = spoken.filter((k) => k.startsWith('dir.'));
     const banned = spoken.filter((k) => k === 'dir.front' || k === 'dir.back' || k === 'headphones.q-front-back');
-    const walls = (s?.events ?? []).some((e) => e.kind === 'lesson' && e.what === 'passed' && e.lessonId === 'ears-walls');
-    step(who, 6, 'ears-walls names left, right, up, down and never front or behind', walls && ['dir.left', 'dir.right', 'dir.up', 'dir.down'].every((d) => dirs.includes(d)) && banned.length === 0, { passed: walls, dirs, banned });
+    const walls = ['cue.safety.wall.name', 'dir.right', 'cue.safety.ceiling.name', 'cue.safety.floor.name'];
+    step(who, 6, 'the small room names wall, right, ceiling, floor before its flight and nothing says front or behind', walls.every((k) => spoken.includes(k)) && banned.length === 0, { said: walls.filter((k) => spoken.includes(k)), dirs, banned });
     step(who, 7, 'walls-hall opens after it', s?.lesson === 'walls-hall', { lesson: s?.lesson ?? null, phase: s?.phase ?? null, seconds: Math.round((Date.now() - t0) / 1000) });
     await openStart(page, origin);
     const back = await look(page);
-    const order = ['sonic-start-continue', 'sonic-start-quick', 'sonic-start-full'];
-    step(who, 8, 'back at Start: Continue, Quick start, Full course', order.every((id, i) => back.startOrder[i] === id), { order: back.startOrder });
+    // gap-sound (car 3): Quick start stays first for a returning pilot, Continue second
+    const order = ['sonic-start-quick', 'sonic-start-continue', 'sonic-start-full'];
+    step(who, 8, 'back at Start: Quick start, Continue, Full course', order.every((id, i) => back.startOrder[i] === id), { order: back.startOrder });
     await page.setViewportSize({ width: 844, height: 390 });
     await sleep(500);
     const small = await look(page);
