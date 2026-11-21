@@ -1,0 +1,425 @@
+{
+  "base": "http://localhost:6940/en",
+  "at": "2026-11-21T16:32:38.112Z",
+  "drawn": true,
+  "browser": {
+    "kind": "system-chrome",
+    "version": "157.0.8103.52"
+  },
+  "maxS": 400,
+  "ids": {
+    "5c0f892e": {
+      "kind": "sog-v2-heavy",
+      "expect": {
+        "flies": true,
+        "lines": [
+          "This scan is too large for this device. Pick a lighter scan, or open this one on a computer."
+        ]
+      },
+      "pass": false,
+      "why": "no flight and no line in 400 s (status loading, null, splats drawn null): an endless loader or an empty screen",
+      "outcome": null,
+      "errors": [],
+      "csp": [],
+      "samples": [
+        {
+          "s": 20,
+          "status": "loading",
+          "stage": "download",
+          "loaded": 10403620,
+          "total": 234831319.00000003,
+          "drawn": null
+        },
+        {
+          "s": 40,
+          "status": "loading",
+          "stage": "download",
+          "loaded": 18815753,
+          "total": 234831319.00000003,
+          "drawn": null
+        },
+        {
+          "s": 60,
+          "status": "loading",
+          "stage": "download",
+          "loaded": 25984052,
+          "total": 234831319.00000003,
+          "drawn": null
+        },
+        {
+          "s": 80,
+          "status": "loading",
+          "stage": "download",
+          "loaded": 37325681,
+          "total": 234831319.00000003,
+          "drawn": null
+        },
+        {
+          "s": 100,
+          "status": "loading",
+          "stage": "download",
+          "loaded": 47439878,
+          "total": 234831319.00000003,
+          "drawn": null
+        },
+        {
+          "s": 120,
+          "status": "loading",
+          "stage": "download",
+          "loaded": 56637534,
+          "total": 234831319.00000003,
+          "drawn": null
+        },
+        {
+          "s": 140,
+          "status": "loading",
+          "stage": "download",
+          "loaded": 66735230,
+          "total": 234831319.00000003,
+          "drawn": null
+        },
+        {
+          "s": 160,
+          "status": "loading",
+          "stage": "download",
+          "loaded": 75671021,
+          "total": 190936688,
+          "drawn": null
+        },
+        {
+          "s": 180,
+          "status": "loading",
+          "stage": "download",
+          "loaded": 85490639,
+          "total": 190936688,
+          "drawn": null
+        },
+        {
+          "s": 200,
+          "status": "loading",
+          "stage": "download",
+          "loaded": 90809589,
+          "total": 190936688,
+          "drawn": null
+        },
+        {
+          "s": 220,
+          "status": "loading",
+          "stage": "download",
+          "loaded": 101594801,
+          "total": 190936688,
+          "drawn": null
+        },
+        {
+          "s": 240,
+          "status": "loading",
+          "stage": "download",
+          "loaded": 107355633,
+          "total": 190936688,
+          "drawn": null
+        },
+        {
+          "s": 260,
+          "status": "loading",
+          "stage": "download",
+          "loaded": 119097035,
+          "total": 190936688,
+          "drawn": null
+        },
+        {
+          "s": 280,
+          "status": "loading",
+          "stage": "download",
+          "loaded": 130041907,
+          "total": 190936688,
+          "drawn": null
+        },
+        {
+          "s": 300,
+          "status": "loading",
+          "stage": "download",
+          "loaded": 138054097,
+          "total": 190936688,
+          "drawn": null
+        },
+        {
+          "s": 320,
+          "status": "loading",
+          "stage": "download",
+          "loaded": 145738036,
+          "total": 190936688,
+          "drawn": null
+        },
+        {
+          "s": 340,
+          "status": "loading",
+          "stage": "download",
+          "loaded": 156338952,
+          "total": 190936688,
+          "drawn": null
+        },
+        {
+          "s": 360,
+          "status": "loading",
+          "stage": "download",
+          "loaded": 165939508,
+          "total": 190936688,
+          "drawn": null
+        },
+        {
+          "s": 380,
+          "status": "loading",
+          "stage": "download",
+          "loaded": 176064640,
+          "total": 190936688,
+          "drawn": null
+        },
+        {
+          "s": 400,
+          "status": "loading",
+          "stage": "download",
+          "loaded": 186590392,
+          "total": 190936688,
+          "drawn": null
+        }
+      ],
+      "seconds": 400,
+      "atOpen": {
+        "status": "loading",
+        "errorCode": null,
+        "error": null,
+        "line": null,
+        "drawn": null,
+        "stage": "download",
+        "loaded": 186590392,
+        "total": 190936688,
+        "tick": null,
+        "paused": null,
+        "locked": false
+      }
+    },
+    "a5d25fb4": {
+      "kind": "compressed-ply",
+      "expect": {
+        "flies": true,
+        "lines": []
+      },
+      "pass": false,
+      "why": "picture empty: 1.3 % of pixels differ from the clear colour",
+      "outcome": "flown",
+      "errors": [],
+      "csp": [],
+      "seconds": 11,
+      "atOpen": {
+        "status": "ready",
+        "errorCode": null,
+        "error": null,
+        "line": null,
+        "drawn": 152746,
+        "stage": "done",
+        "loaded": 2487574,
+        "total": 2487574,
+        "tick": 2764,
+        "paused": true,
+        "locked": false
+      },
+      "flight": {
+        "keyboardClicked": true,
+        "lockedAfterClick": true,
+        "tick0": 4314,
+        "tick1": 5814,
+        "paused": false
+      },
+      "picture": {
+        "clear": [
+          102,
+          102,
+          102
+        ],
+        "w": 1920,
+        "h": 913,
+        "lit": 0.013405896312522819,
+        "shot": "U:\\Temp\\gsfpv-train4\\shots\\n-scan-a5d25fb4.png"
+      }
+    },
+    "c67edb74": {
+      "kind": "compressed-ply-large",
+      "expect": {
+        "flies": true,
+        "lines": []
+      },
+      "pass": true,
+      "why": null,
+      "outcome": "flown",
+      "errors": [],
+      "csp": [],
+      "samples": [
+        {
+          "s": 20,
+          "status": "loading",
+          "stage": "download",
+          "loaded": 10234105,
+          "total": 163591220,
+          "drawn": null
+        },
+        {
+          "s": 40,
+          "status": "loading",
+          "stage": "download",
+          "loaded": 21925981,
+          "total": 163591220,
+          "drawn": null
+        },
+        {
+          "s": 60,
+          "status": "loading",
+          "stage": "download",
+          "loaded": 32641514,
+          "total": 163591220,
+          "drawn": null
+        },
+        {
+          "s": 80,
+          "status": "loading",
+          "stage": "download",
+          "loaded": 42589520,
+          "total": 163591220,
+          "drawn": null
+        },
+        {
+          "s": 100,
+          "status": "loading",
+          "stage": "download",
+          "loaded": 53287909,
+          "total": 163591220,
+          "drawn": null
+        },
+        {
+          "s": 120,
+          "status": "loading",
+          "stage": "download",
+          "loaded": 64099855,
+          "total": 163591220,
+          "drawn": null
+        },
+        {
+          "s": 140,
+          "status": "loading",
+          "stage": "download",
+          "loaded": 78444975,
+          "total": 163591220,
+          "drawn": null
+        },
+        {
+          "s": 160,
+          "status": "loading",
+          "stage": "download",
+          "loaded": 104030159,
+          "total": 163591220,
+          "drawn": null
+        },
+        {
+          "s": 180,
+          "status": "loading",
+          "stage": "download",
+          "loaded": 120949752,
+          "total": 163591220,
+          "drawn": null
+        },
+        {
+          "s": 200,
+          "status": "loading",
+          "stage": "download",
+          "loaded": 143698218,
+          "total": 163591220,
+          "drawn": null
+        },
+        {
+          "s": 220,
+          "status": "loading",
+          "stage": "prepare",
+          "loaded": 166872928,
+          "total": 166872928,
+          "drawn": null
+        },
+        {
+          "s": 240,
+          "status": "loading",
+          "stage": "prepare",
+          "loaded": 186375836,
+          "total": 186375836,
+          "drawn": null
+        },
+        {
+          "s": 260,
+          "status": "loading",
+          "stage": "prepare",
+          "loaded": 206630994,
+          "total": 206630994,
+          "drawn": null
+        },
+        {
+          "s": 280,
+          "status": "loading",
+          "stage": "prepare",
+          "loaded": 227710731,
+          "total": 227710731,
+          "drawn": null
+        },
+        {
+          "s": 300,
+          "status": "loading",
+          "stage": "prepare",
+          "loaded": 247112332,
+          "total": 247112332,
+          "drawn": null
+        },
+        {
+          "s": 320,
+          "status": "loading",
+          "stage": "prepare",
+          "loaded": 260541550,
+          "total": 260541550,
+          "drawn": null
+        }
+      ],
+      "seconds": 334,
+      "atOpen": {
+        "status": "ready",
+        "errorCode": null,
+        "error": null,
+        "line": null,
+        "drawn": 4399819,
+        "stage": "done",
+        "loaded": 270103538,
+        "total": 270103538,
+        "tick": 593,
+        "paused": true,
+        "locked": false
+      },
+      "flight": {
+        "keyboardClicked": true,
+        "lockedAfterClick": true,
+        "tick0": 2040,
+        "tick1": 3573,
+        "paused": false
+      },
+      "picture": {
+        "clear": [
+          102,
+          102,
+          102
+        ],
+        "w": 1920,
+        "h": 913,
+        "lit": 0.9405325848849945
+      }
+    }
+  },
+  "pass": false,
+  "summary": {
+    "5c0f892e": "FAIL no flight and no line in 400 s (status loading, null, splats drawn null): an endless loader or an empty screen",
+    "a5d25fb4": "FAIL picture empty: 1.3 % of pixels differ from the clear colour",
+    "c67edb74": "PASS flown"
+  }
+}

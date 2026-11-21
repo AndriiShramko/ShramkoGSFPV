@@ -42,7 +42,7 @@ import { drawingFor } from './drawing';
 import { noteNextUsed } from './next-used';
 import { pageTour } from './tour';
 import { LoadSlot, abortable, afterCancel, isCancelled } from './scene-load';
-import { failureCode, openMessage } from '../session/open-error';
+import { failureCode, noticeMessage, openMessage } from '../session/open-error';
 import { tell } from '../ui/messages';
 import type { LoadRun } from './scene-load';
 
@@ -326,6 +326,7 @@ export class SceneHost implements SceneSwitcher {
             flyNow,
             // every fetch, await and walls bake of this load stops when it is cancelled
             signal: run.signal,
+            onNotice: (n) => tell(noticeMessage(n, t)),
             onProgress: (p) => {
                 loading.update(p);
                 hook.loading = { stage: p.stage, loaded: p.loaded, total: p.total, fraction: p.fraction, exact: p.exact, elapsedMs: Math.round(performance.now() - t0), view: p.view, reveal: p.reveal, canFlyNow: p.canFlyNow, revealInMs: p.revealInMs };

@@ -7,7 +7,7 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { SceneError } from '../../../packages/scenes/src/index';
 import { NoSplatsError, UnsupportedFormatError, holdsNoSplats } from '../../../packages/render-pc/src/lod';
-import { OPEN_ERROR_KINDS, OpenError, deviceSplatLimit, failureCode, failureText, openCheck, openErrorOf, openMessage } from '../../../apps/fly/src/session/open-error';
+import { HEAVY_BYTES, OPEN_ERROR_KINDS, OpenError, deviceSplatLimit, failureCode, failureText, heavyNotice, noticeMessage, openCheck, openErrorOf, openMessage } from '../../../apps/fly/src/session/open-error';
 
 interface Kind { id: string; kind: string; meta?: { version?: number; count?: number } }
 const KINDS = (JSON.parse(readFileSync(new URL('../../../packages/scenes/test/fixtures/superspl-kinds.json', import.meta.url), 'utf8')) as { kinds: Kind[] }).kinds;
@@ -63,9 +63,33 @@ describe('the four reasons and their lines', () => {
 });
 
 describe('the check before a single SOG loads', () => {
-    it('a39abad1 (SOG v3, 1.0 M splats) and the heavy 5c0f892e (14.1 M) open on a desktop', async () => {
-        await expect(openCheck(single('a39abad1'), answer(200, metaOf('a39abad1')), DESKTOP)).resolves.toBeUndefined();
-        await expect(openCheck(single('5c0f892e'), answer(200, metaOf('5c0f892e')), DESKTOP)).resolves.toBeUndefined();
+    it('a39abad1 (SOG v3, 1.0 M splats) opens on a desktop with nothing to say', async () => {
+        await expect(openCheck(single('a39abad1'), answer(200, metaOf('a39abad1')), DESKTOP)).resolves.toBeNull();
+    });
+
+    it('the heavy 5c0f892e (one SOG, 14.1 M splats, 191 MB) opens on a desktop, and says first why it takes minutes', async () => {
+        const n = await openCheck(single('5c0f892e'), answer(200, metaOf('5c0f892e')), DESKTOP);
+        expect(n).toEqual({ kind: 'heavy', mb: 191 });
+        const m = noticeMessage(n!, say);
+        expect(m).toMatchObject({ kind: 'info', key: 'scene.open', from: 'scene' });
+        expect(m.text).toContain('191 MB');
+        expect(m.text).toContain('Cancel (key Esc)');
+        for (const lang of LANGS) expect(locale(lang)['scene.open.heavy'], lang).toContain('{mb}');
+    });
+
+    it('a compressed PLY: its size is the CDN\'s Content-Length, asked by HEAD; c67edb74 (163 MB) is heavy, a5d25fb4 is not', async () => {
+        const ply = (id: string) => ({ id, contentUrl: `https://d28zzqy0iyovbz.cloudfront.net/${id}/v1/scene.compressed.ply`, contentKind: 'ply' as const });
+        const methods: (string | undefined)[] = [];
+        const sized = (bytes: number) => async (_u: string, init?: { method?: string }): Promise<Response> => {
+            methods.push(init?.method);
+            return new Response(null, { status: 200, headers: { 'content-length': String(bytes) } });
+        };
+        const c67 = KINDS.find((k) => k.id === 'c67edb74') as unknown as { ply: { contentLength: number } };
+        await expect(openCheck(ply('c67edb74'), sized(c67.ply.contentLength), DESKTOP)).resolves.toEqual({ kind: 'heavy', mb: 163 });
+        await expect(openCheck(ply('a5d25fb4'), sized(2_500_000), DESKTOP)).resolves.toBeNull();
+        expect(methods).toEqual(['HEAD', 'HEAD']);
+        await expect(openCheck(ply('a5d25fb4'), answer(404), DESKTOP)).rejects.toMatchObject({ kind: 'gone' });
+        expect(heavyNotice(HEAVY_BYTES)).toBeNull();
     });
 
     it('a scan too large for the device says so before a byte of it loads', async () => {

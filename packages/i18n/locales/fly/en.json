@@ -88,6 +88,7 @@
   "scene.open.gone": "This scan is no longer on SuperSplat (deleted or made private). Pick another scan.",
   "scene.open.unknown-format": "This scan uses a SuperSplat format the simulator cannot read yet. Pick another scan; this one will open after an update.",
   "scene.open.network": "The SuperSplat servers did not answer. Check your connection and try again in a minute.",
+  "scene.open.heavy": "This scan is one large file (about {mb} MB): it takes a few minutes to download. Wait here, or press Cancel (key Esc) and pick a lighter scan.",
   "drone.title": "Your drone",
   "drone.default": "default",
   "drone.twr": "Thrust / weight",

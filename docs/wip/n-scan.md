@@ -49,7 +49,19 @@ splat-transform 3.12.0, probe tools/bench/scripts/hot-sog3-scans.mjs, live check
     (n-scan-accept-drawn-local-part2.json): 5012e205 PASS (the GSAF line); 3 FAIL, found only when drawn:
     5c0f892e (single SOG v2, 191 MB, 14.1 M) still "loading" at 200 s; c67edb74 (compressed PLY 163 MB gzip) still
     "loading" at 200 s; a5d25fb4 (compressed PLY 2.5 MB) flown and splats drawn, but the picture 1.3 % lit (nearly empty).
-  - LEFT (exact list, next run):
+  - [x] step 3, commit "n-scan S4 step 3": the drawn rerun of the 3 ids (GPU lock, MAXS 400; U:/Temp/gsfpv-train4/n-scan/
+    accept-drawn-3.json, copied as evidence n-scan-accept-drawn-local-part3.json): no hang. 5c0f892e downloads at about
+    0.47 MB/s with the bytes growing in every 20 s sample (186.6 of 190.9 MB at 400 s); c67edb74 (163 MB) downloads, prepares
+    and is flown at 334 s (PASS); a5d25fb4 is drawn right: picture n-scan-a5d25fb4.png shows one standing person in a black
+    motorcycle suit holding a helmet, upright, in the middle of the plain grey background (an object scan: 1.3 % lit is
+    correct, the probe's empty-picture threshold MINLIT goes from 5 % to 0.5 %). The heavy single file now says why
+    (diagnosis Repair 5): open-error.ts HEAVY_BYTES (100 MB), heavyNotice, noticeMessage; openCheck returns an OpenNotice for
+    a single SOG over 100 MB (count x 13.5 bytes) or a PLY over 100 MB (HEAD, Content-Length); the session's onNotice
+    tells it through ux4a's tell() (flight.ts first load, scene-host.ts switch); locale scene.open.heavy x4 ("... about
+    {mb} MB: it takes a few minutes to download. Wait here, or press Cancel (key Esc) ..."). scan-open-error.test.ts 12
+    pass, fly typecheck passes, NEG OK against a27cafc7 (3 tests fail). n-scan-accept.mjs: heavy kinds must show that
+    line; a heavy file still downloading at MAXS with the line shown and bytes growing is 'slow-said' (PASS).
+  - LEFT (exact list, next run; items 1 and 2 done in step 3):
     1. Rerun drawn, ONE command under the GPU lock, background timeout 2400000: `MAXS=400 node scripts/n-scan-accept.mjs
        http://localhost:6940/en <out> 5c0f892e,a5d25fb4,c67edb74` (the probe now records loading stage/loaded/total every
        20 s and writes the picture of any empty-picture id). Decide from the samples: slow download with visible progress

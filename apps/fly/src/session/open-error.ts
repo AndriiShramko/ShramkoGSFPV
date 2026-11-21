@@ -9,7 +9,8 @@
 //   'network'        the servers did not answer.
 // Lines of their own stay: an invalid link, a scene removed at its author's request, GSAF ('unsupported'), a
 // damaged file ('broken'). openCheck reads a single SOG's meta.json before anything loads, also with ?render=off,
-// so a scan too large or in a newer version says so at once instead of an endless loader. Pure: no DOM, no engine.
+// so a scan too large or in a newer version says so at once instead of an endless loader; a heavy single file that
+// will open (no lighter level) returns an OpenNotice, said before its download of minutes. Pure: no DOM, no engine.
 import { SceneError } from '@gsfpv/scenes';
 import type { ResolvedScene } from '@gsfpv/scenes';
 import { sogVersionProblem } from '@gsfpv/render-pc/lod';
@@ -92,29 +93,62 @@ export function deviceSplatLimit(d: DeviceRoom): number {
 }
 
 /**
+ * A single file this heavy downloads for minutes (it has no lighter level): the pilot is told why before it starts.
+ * 100 MB is about 3.5 min at the 0.47 MB/s the SuperSplat CDN gave n-scan's acceptance run (2026-11-21).
+ */
+export const HEAVY_BYTES = 100_000_000;
+/** Bytes per splat of a single SOG (5c0f892e: 190 936 688 bytes for 14 128 571 splats, recorded 2026-11-21). */
+export const SOG_BYTES_PER_SPLAT = 13.5;
+
+/** Said before a scan loads that will open, but slowly: one large file, its size in MB. */
+export interface OpenNotice {
+    kind: 'heavy';
+    mb: number;
+}
+
+/** The notice of a single file of `bytes`, or null when it is not heavy. */
+export function heavyNotice(bytes: number): OpenNotice | null {
+    return bytes > HEAVY_BYTES ? { kind: 'heavy', mb: Math.round(bytes / 1_000_000) } : null;
+}
+
+/** The flight view's line of a notice (ui/messages.ts tell): stays to be read, says what to do. */
+export function noticeMessage(n: OpenNotice, say: (key: string, vars?: Record<string, string>) => string): { kind: 'info'; text: string; key: string; from: string } {
+    return { kind: 'info', text: say('scene.open.heavy', { mb: String(n.mb) }), key: 'scene.open', from: 'scene' };
+}
+
+/** How openCheck asks the CDN: a GET for meta.json, a HEAD for a PLY's size. */
+export type OpenGet = (url: string, init?: { method?: 'GET' | 'HEAD' }) => Promise<Response>;
+
+/**
  * Before a scan loads: a single SOG (meta.json) is read and refused at once when its SOG version is one the engine
  * does not read ('unknown-format'), its splat count is above `limit` ('too-large'), or the file is gone (404/410).
- * A streamed scan (lod-meta.json) and a PLY are left to the renderer's own checks: a streamed scan opens at its
- * coarse level whatever the device. A server that does not answer is left to the load itself (it may answer then).
+ * A single SOG or PLY that will open but is heavy (heavyNotice) returns its notice: the caller says it before the
+ * long download. A streamed scan (lod-meta.json) is left to the renderer's own checks: it opens at its coarse level
+ * whatever the device. A server that does not answer is left to the load itself (it may answer then).
  */
-export async function openCheck(scene: Pick<ResolvedScene, 'id' | 'contentUrl' | 'contentKind'>, get: (url: string) => Promise<Response>, limit: number): Promise<void> {
-    if (scene.contentKind !== 'meta') return;
+export async function openCheck(scene: Pick<ResolvedScene, 'id' | 'contentUrl' | 'contentKind'>, get: OpenGet, limit: number): Promise<OpenNotice | null> {
+    if (scene.contentKind !== 'meta' && scene.contentKind !== 'ply') return null;
+    const ply = scene.contentKind === 'ply';
     let r: Response;
     try {
-        r = await get(scene.contentUrl);
+        r = await get(scene.contentUrl, ply ? { method: 'HEAD' } : undefined);
     } catch {
-        return;
+        return null;
     }
     if (r.status === 404 || r.status === 410) throw new OpenError('gone', `scene ${scene.id}: ${scene.contentUrl}: HTTP ${r.status}`);
-    if (!r.ok) return;
+    if (!r.ok) return null;
+    // a PLY's size is its Content-Length (the CDN's gzip length: what crosses the network)
+    if (ply) return heavyNotice(Number(r.headers.get('content-length') ?? 0) || 0);
     let meta: unknown;
     try {
         meta = await r.json();
     } catch {
-        return; // a damaged file: the renderer names it 'broken'
+        return null; // a damaged file: the renderer names it 'broken'
     }
     const version = sogVersionProblem(meta);
     if (version) throw new OpenError('unknown-format', `scene ${scene.id}: meta.json is ${version}`);
     const count = (meta as { count?: unknown } | null)?.count;
-    if (typeof count === 'number' && count > limit) throw new OpenError('too-large', `scene ${scene.id}: ${count} splats, this device holds ${limit}`);
+    if (typeof count !== 'number') return null;
+    if (count > limit) throw new OpenError('too-large', `scene ${scene.id}: ${count} splats, this device holds ${limit}`);
+    return heavyNotice(count * SOG_BYTES_PER_SPLAT);
 }

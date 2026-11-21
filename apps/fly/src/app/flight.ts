@@ -22,7 +22,8 @@ import { Hud } from '../ui/hud';
 import { LoadingScreen } from '../ui/loading';
 import type { ShowcaseScene } from '../ui/scenes';
 import { t, locale } from '../i18n';
-import { failureCode } from '../session/open-error';
+import { failureCode, noticeMessage } from '../session/open-error';
+import { tell } from '../ui/messages';
 import { Bus } from './context';
 import type { AppEvents, FlightContext, PauseReason, SceneRef, SceneSwitcher, WallsHost } from './context';
 import { SceneHost } from './scene-host';
@@ -220,6 +221,8 @@ export async function fly(ui: HTMLElement, canvas: HTMLCanvasElement, link: Scen
             // asked once the renderer's device exists (a WebGL fallback gets the default budget)
             drawing: (webgpu, gpu) => drawingFor(prefs, sceneRef, webgpu, gpu),
             flyNow,
+            // lane n-scan: one heavy file says why its download takes minutes (ux4a's message line)
+            onNotice: (n) => tell(noticeMessage(n, t)),
             onProgress: (p) => {
                 loading?.update(p);
                 hook.loading = { stage: p.stage, loaded: p.loaded, total: p.total, fraction: p.fraction, exact: p.exact, elapsedMs: Math.round(performance.now() - tLoad), view: p.view, reveal: p.reveal, canFlyNow: p.canFlyNow, revealInMs: p.revealInMs };

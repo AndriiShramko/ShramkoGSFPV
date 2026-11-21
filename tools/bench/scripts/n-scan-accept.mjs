@@ -10,7 +10,7 @@
 // (the device decides); every other kind flies. No page error and no CSP violation either way.
 //   node tools/bench/scripts/n-scan-accept.mjs <base with /en> <out.json> [ids, comma separated]
 // env: RENDER=off (logic only, no GPU: the splat count and the picture are not judged; the live negative control),
-// MAXS (240 s per id), SHOTS (U:/Temp/gsfpv-train4/shots), MINLIT (0.05). Drawn mode takes no GPU lock itself: wrap it.
+// MAXS (240 s per id), SHOTS (U:/Temp/gsfpv-train4/shots), MINLIT (0.005: an object scan on the clear colour, a5d25fb4, lights 1.3 %). Drawn mode takes no GPU lock itself: wrap it.
 // Writes the picture of a39abad1 in flight (drawn mode only). Prints one JSON verdict and exits 1 when any id fails.
 import { createRequire } from 'node:module';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -28,7 +28,7 @@ console.log(`n-scan-accept: ${base}`);
 const DRAWN = process.env.RENDER !== 'off';
 const MAXS = Number(process.env.MAXS || 240);
 const SHOTS = process.env.SHOTS || 'U:/Temp/gsfpv-train4/shots';
-const MINLIT = Number(process.env.MINLIT || 0.05);
+const MINLIT = Number(process.env.MINLIT || 0.005);
 const repo = new URL('../../../', import.meta.url);
 const EN = JSON.parse(readFileSync(new URL('packages/i18n/locales/fly/en.json', repo), 'utf8'));
 const KINDS = JSON.parse(readFileSync(new URL('packages/scenes/test/fixtures/superspl-kinds.json', repo), 'utf8')).kinds;
@@ -39,13 +39,16 @@ const expectOf = (kind) =>
     kind === 'gsaf' ? { flies: false, lines: ['scenes.unsupported'] }
     : kind === 'sog-v2-heavy' ? { flies: true, lines: ['scene.open.too-large'] }
     : { flies: true, lines: [] };
+/** a single file over HEAVY_BYTES (open-error.ts) says before its download why it takes minutes: scene.open.heavy */
+const HEAVY_KINDS = new Set(['sog-v2-heavy', 'compressed-ply-large']);
+const HEAVY_RE = new RegExp(EN['scene.open.heavy'].replace(/[.*+?^$()|[\]\\]/g, '\\$&').replace('\\{mb\\}', '\\d+').replace('{mb}', '\\d+'));
 mkdirSync(SHOTS, { recursive: true });
 
 const STATE = `(() => {
     const h = window.__gsfpv || {}; const s = h.session; const r = s && s.renderer; const a = r && r.app;
     const e = document.querySelector('.scene-error');
     return { status: h.status || null, errorCode: h.errorCode || null, error: h.error ? String(h.error).slice(0, 200) : null,
-        line: e ? e.textContent : null, drawn: a ? a.stats.frame.gsplats : null,
+        line: e ? e.textContent : null, notes: [...document.querySelectorAll('.msg-stack')].map((m) => m.textContent).join(' | '), drawn: a ? a.stats.frame.gsplats : null,
         stage: h.loading ? h.loading.stage : null, loaded: h.loading ? h.loading.loaded : null, total: h.loading ? h.loading.total : null,
         tick: s && s.sim ? s.sim.tick : null, paused: s ? !!s.paused : null, locked: !!document.pointerLockElement };
 })()`;
@@ -59,6 +62,12 @@ const LIT = (b64, clear) => `(async () => {
     for (let i = 0; i < d.length; i += 8) { n++; if (Math.abs(d[i] - k[0]) > 24 || Math.abs(d[i + 1] - k[1]) > 24 || Math.abs(d[i + 2] - k[2]) > 24) lit++; }
     return { w: c.width, h: c.height, lit: lit / n };
 })()`;
+
+/** a download in progress: at least 3 samples, the bytes grew between every two of them */
+function slowButMoving(samples = []) {
+    const d = samples.filter((x) => x.status === 'loading' && typeof x.loaded === 'number');
+    return d.length >= 3 && d.every((x, i) => i === 0 || x.loaded > d[i - 1].loaded);
+}
 
 /** the element brought into view by the mouse wheel when needed, then clicked by the mouse at its centre; false when absent */
 async function mouseTo(page, sel) {
@@ -99,6 +108,7 @@ try {
                 await page.waitForTimeout(1000);
                 last = await page.evaluate(STATE).catch(() => null);
                 if (!last) continue;
+                if (!r.notice && last.notes && HEAVY_RE.test(last.notes)) r.notice = { s: Math.round((Date.now() - t0) / 1000), text: last.notes.match(HEAVY_RE)[0] };
                 const s = Math.round((Date.now() - t0) / 1000);
                 if (s % 20 === 0) (r.samples ||= []).push({ s, status: last.status, stage: last.stage, loaded: last.loaded, total: last.total, drawn: last.drawn });
                 if (last.status === 'error' && last.line) break;
@@ -135,12 +145,17 @@ try {
                     if (id === 'a39abad1' || lit.lit < MINLIT) { r.picture.shot = join(SHOTS, `n-scan-${id}.png`); writeFileSync(r.picture.shot, png); }
                     if (lit.lit < MINLIT) r.why = `picture empty: ${(lit.lit * 100).toFixed(1)} % of pixels differ from the clear colour`;
                 }
+            } else if (HEAVY_KINDS.has(kind) && r.notice && slowButMoving(r.samples)) {
+                // a heavy single file still downloading at MAXS: it said why first, and every 20 s more of it arrived
+                r.outcome = 'slow-said';
             } else {
                 r.why = `no flight and no line in ${MAXS} s (status ${last && last.status}, ${last && last.errorCode}, splats drawn ${last && last.drawn}): an endless loader or an empty screen`;
             }
         } catch (e) {
             r.why = `probe: ${String(e.message || e).slice(0, 200)}`;
         }
+        // a heavy single file must say why before its long download, whatever the outcome
+        if (!r.why && HEAVY_KINDS.has(kind) && !r.notice) r.why = `no line "${EN['scene.open.heavy']}" before the download`;
         r.csp = await page.evaluate('window.__csp || []').catch(() => []);
         if (!r.why && r.errors.length) r.why = `page error: ${r.errors[0]}`;
         if (!r.why && r.csp.length) r.why = `CSP: ${r.csp[0]}`;
