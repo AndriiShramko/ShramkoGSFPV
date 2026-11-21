@@ -11,8 +11,8 @@ wrong moment when the scan reveals late?
   - [x] builds: worktrees U:/Temp/gsfpv-train4/fix-lod/wB (267923c3, playcanvas 2.23.2, splat-transform 3.6.4) and wC (852821e5, 2.24.2, 3.12.0), each `node scripts/build-release.mjs` + walls; B and C differ only in the two engine pins (`git diff --stat 267923c3 852821e5 -- packages apps scripts`: 3 files, package.json x2 and lod.test.ts)
   - [x] the four runs B1 C1 B2 C2 (U:/Temp/gsfpv-train4/fix-lod/runs.sh, judge.cjs = the pauserise judge), the two pictures; evidence/2026-11-19/fix-lod/s1-pauserise-b-c.json
 - [ ] S2 the repair of the check and its proof; gates once (--only for what was touched); clean tree. Plan:
-  - [ ] tools/bench/scripts/loadq-probe.mjs: a switch AT=x,y,z (absolute held place; the pose of the passing 2026-11-16 run, [146.5, 202, -97], yaw -86.6, pitch -35) so the check no longer depends on where the page starts the craft; areaWanted null when the engine has no `optimalLod` (2.24 removed it: the field silently repeated areaLevel)
-  - [ ] deploy/live-checks.sh pauserise: use AT, the judge unchanged (as strict)
+  - [x] tools/bench/scripts/loadq-probe.mjs (+ loadq-hold.mjs, test tools/bench/test/loadq-hold.test.ts, NEG OK): a switch AT=x,y,z (absolute held place; the pose of the passing 2026-11-16 run, [146.5, 202, -97], yaw -86.6, pitch -35) so the check no longer depends on where the page starts the craft; areaWanted null when the engine has no `optimalLod` (2.24 removed it: the field silently repeated areaLevel)
+  - [x] deploy/live-checks.sh pauserise: use AT, the judge unchanged (as strict)
   - [ ] proof: one run against the live site (read only) passes; the old arguments failed there twice today (the negative control)
   - [ ] the worktrees wB, wC removed (`git worktree remove`) and their dist folders gone; gates; For the lead
 

@@ -276,8 +276,11 @@ const lines = (j.samples || []).map((s) => s.detail || {}).filter((d) => d.shown
 console.log("samples with the Detail line", lines.length, "last", lines.length ? lines[lines.length - 1].text : "-");
 process.exit(lines.length > 0 ? 0 : 1);' "$OUT/loadq/live-detail-wroclaw.json"
 }
+# pause-rise-lublin holds an absolute place (AT, YAW; loadq-hold.mjs): the pose of the passing run of 2026-11-16, 140 m over
+# the start of that time. Since car 1 (placeStart) "140 m over the start" is another place, low in detail, where the pause never
+# needs more than the flight budget (docs/wip/fix-lod.md). The judge is unchanged.
 pauserise() {
-  env OUT="$OUT/loadq" SCENE=2f1ddf5f CLASS=desktop-weak UP=140 PAUSEAT=25 MOVEAT=45 SECS=55 REVEALMAX=300 node scripts/loadq-probe.mjs "$SITE/en" live-pause-lublin || return 1
+  env OUT="$OUT/loadq" SCENE=2f1ddf5f CLASS=desktop-weak AT=146.5,202,-97 YAW=-86.6 PAUSEAT=25 MOVEAT=45 SECS=55 REVEALMAX=300 node scripts/loadq-probe.mjs "$SITE/en" live-pause-lublin || return 1
   node -e '
 const j = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
 const s = j.samples || [];
