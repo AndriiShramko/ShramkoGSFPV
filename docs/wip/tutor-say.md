@@ -23,7 +23,7 @@ Part B 1, Part C 2, 6, 7; brief t8-tutor-brief.md decisions 1, 7, 8, 9 outside m
         NEG OK on the base), apps/fly/src/sonic/guide.ts, apps/fly/src/sonic/said-once.ts; prefs and fly typecheck rc 0;
         marker U:/Temp/gsfpv-train4/tutor-say-contract.txt
 - [ ] S2 the repair (keys line once a session; only the instruction between steps; #ui quiet in a lesson; progress panel one line)
-  - [x] (a) the line of keys once a visit (lessons.ts keysDue/keysId + LessonHost.said: SaidOnce, ids 'keys.lesson' and
+  - [x] (a) 340e8bca the line of keys once a visit (lessons.ts keysDue/keysId + LessonHost.said: SaidOnce, ids 'keys.lesson' and
         'keys.free'): sonic-said-between-steps 4/4 and sonic-hints (H1 rewritten to the new rule; it asserted keys at every
         step) pass; NEG OK on the base (lessons.ts swapped). Fly typecheck rc 0.
   - [ ] (b) #ui quiet while a lesson runs. The code differs from the plan: the quiet predicate lives in feature.ts:308
