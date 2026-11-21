@@ -33,20 +33,30 @@ Temp: U:/Temp/gsfpv-train4/n-save. Evidence: evidence/2026-11-20/n-save/.
   walls proof was never shown). Now a course the pilot names (a row's Open, a link) is shown with the line
   course.edit.saveOpenedWarned; test tools/bench/test/save-reopen.test.ts (2) NEG OK on 03624451. The probe presses the
   gizmo's arrows at their drawn tips (__gsfpvEditMeasure parts) and orbits with the middle button for the depth.
+  Run 3 of S4 (commits 12fc7a4c..HEAD): the acceptance PASSES on the local build: accept11 (evidence/2026-11-20/n-save/
+  accept-local.json): open, build, dialog, asIs.saved, asIs.reload, showMe, fixAll (2 moved, version 2 stored, 201),
+  fixAll.undo, reload all PASS. The live site (accept-live.json, the code before this train) FAILS dialog and asIs.saved
+  ("Before saving: gate 1 touches a wall ... Make these small corrections and save?"); it stopped before any save (only
+  three /api/e analytics POSTs, aborted). Found on the way: the local proxy serve-csp.mjs dropped X-Track-Token, so every
+  new version after a reload was 403 'token' only locally (nginx passes it); fixed (For the lead). 'Two gates on one spot'
+  cannot be made by mouse: Add gate puts the new gate 2 m off the gate under the click and the arrow along the view takes
+  no press, so the build is judged on a gate in a wall and 'same spot' is listed as not run (unit tests hold it). Reload
+  after Fix all + Undo: the API holds the fixed course; the page brings back the pilot's later unsaved draft (the Undo) and
+  says so with key Ctrl+Z (drafts.ts) - the probe accepts that or the saved places.
+  Pictures looked at once: n-save-dialog.png shows the dialog in the editor's window (Warnings: 4, three kind lines, Fix all
+  automatically / Save as it is / Show me, the cross); n-save-ghosts.png shows gates 1 and 2 moved with their old places
+  dashed and the line "Gates moved to free places: 2 (gates 1, 2) ... Left as it is: A wall on the way to the gate" + Undo.
   LEFT, exactly:
-  1. build: "two gates on one spot" by mouse. Now: A at the centre, C by a click 125 px diagonal off A's gizmo (A alone has
-     no leg; accept7: C landed 2.5 m from A, the wall's depth differs), then pullOnto by the arrows' tips: drags now move
-     (0.8 m per 40 px) but the gap stays 2.39 m: the x drags go back and forth and z is hidden (it points at the eye; the
-     middle-button orbit did not bring it out). Likely cause to check first: editor.ts:476 refuses a step that makes a NEW
-     wall problem (a drag through the wall is put back), so log `s.said` after each drag. If the pair cannot be built by
-     mouse in a few tries, judge `build` on the pair < 1 m ('too-close') or note it in Not verified and go on.
-  2. asIs.reload / reload: rerun on the new dist (the reopen fix: accept7 showed Open pressed on BUTTON.ce-open twice and
-     nothing loaded, the cause fixed in 8bee6439). Probe: `node tools/bench/scripts/n-save-accept.mjs dist 70b50d42
-     U:/Temp/gsfpv-train4/n-save/accept8.json` (about 5 min).
-  3. the live negative control: `node tools/bench/scripts/n-save-accept.mjs https://gsfpv.flyreelstudio.eu/en 70b50d42 <out>`
-     (POSTs aborted, stops at the dialog; must FAIL asIs.saved).
-  4. look once at U:/Temp/gsfpv-train4/shots/n-save-dialog.png and n-save-ghosts.png; evidence JSON under
-     evidence/2026-11-20/n-save/; gates once; "What the owner does"; delete dist/ at the end.
+  1. n-save-ghosts.png: the top bar's message, wrapped to two lines (16 px), makes the bar 1-2 lines taller and it covers the
+     top edge of the HUD row under it (sound, fullscreen, mail, Share, settings; at 1536x730 the bar ends about 15 CSS px
+     below that row's top; with one line, n-save-dialog.png, about 5 px already, so the base may overlap a little too).
+     Fix in the owned message rule (editor.css): e.g. keep the line's width so the bar ends left of the HUD row
+     (max-width of the message by the bar's free room), or put the HUD row below the bar's height if that is in reach; a
+     fake-DOM/CSS test + NEG. If the cause is the HUD row's place (not owned), write it under For the lead.
+  2. Gates once: `gates.py --only typecheck,vitest,architecture,i18n,b18,leaks` (stage files first; no apps/api change).
+  3. Claims 7 (the mouse acceptance, command `node tools/bench/scripts/n-save-accept.mjs dist 70b50d42 <out>`, PASS) and 8
+     (the live control FAILS dialog + asIs.saved); Not verified: same spot by mouse; "What the owner does"; Cost notes; delete
+     dist/ (kill no server: the probe kills its own).
 
 Code against the design: the Save path of apps/fly/src/app/builtin/course.ts now sits at pointAtWrong :1023, refusedSave :1037,
 applyFixes :1065, saveMine :1833, saveAdmin :~1885 (the design named :893-1754); the names are the same.
@@ -103,6 +113,8 @@ applyFixes :1065, saveMine :1833, saveAdmin :~1885 (the design named :893-1754);
 - S4: apps/fly/src/app/builtin/course.ts, the worker's 'checked' answer (outside the named Save functions): a named course
   (a row's Open, a link) that fails the walls proof is shown with course.edit.saveOpenedWarned instead of refused; without
   it Save as it is was a dead end (the course never opened again). Lane n-level and anyone touching loadServer: keep it.
+- S4: tools/bench/scripts/serve-csp.mjs passes X-Track-Token to the local API (as nginx does); before, a course's new
+  version after a reload was refused 403 'token' in every local probe.
 - Deploy order: page only (no API file changed so far).
 
 ## Cost notes
@@ -117,3 +129,4 @@ applyFixes :1065, saveMine :1833, saveAdmin :~1885 (the design named :893-1754);
   flaky gizmo drags with render=off); a probe helper "drag the selected gate's arrow by N m" shared by the editor probes would
   save ten replies.
 - S4 (run 2): most replies went to the gizmo pull (the arrows' press bands, the editor refusing a drag into a wall, the depth axis hidden) and to finding why a saved course did not reopen; a shared probe helper 'move the selected gate to X by its arrows' would save ten replies.
+- S4 (run 3): most replies went to two probe-harness causes (the local proxy dropping X-Track-Token, Add gate keeping 2 m between gates); logging each refused POST's body and the element under each press from the start would have saved five replies.
