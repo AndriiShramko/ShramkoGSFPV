@@ -12,7 +12,8 @@
 //
 // Verdict per step change: `announced` (the live-region texts added), `spoken` (speech), `focus` (before -> after), `axAdded`
 // (AX nodes new by role+name). PASS when every announced and spoken text of a step change is the step's instruction only:
-// no text naming a key list ("key N", "key B"...), no button names, no counters ("of"), the focus unchanged.
+// no text naming a key list ("key N", "key B"...), no button names, no counters ("of"), the focus unchanged (or taken from body by the
+// flight's role=application region, feature.ts R5).
 //
 // Usage: node tools/bench/scripts/tutor-say-ax.mjs <base, e.g. http://localhost:7021> <out.json>
 import { fileURLToPath } from 'node:url';
@@ -193,8 +194,11 @@ async function pilot(browser, sr) {
         const liveButtons = got.live.reduce((a, x) => a + x.buttons, 0);
         const texts = [...got.live.flatMap((x) => x.added), ...got.said];
         const bad = texts.filter((x) => KEYLIST.test(x) || COUNTER.test(x));
-        const pass = bad.length === 0 && liveButtons === 0 && f0 === f1;
-        changes.push({ from: p0.split('\n').filter((x) => /Step/.test(x)).join(' '), to: (h1?.panel ?? '').split('\n').filter((x) => /Step/.test(x)).join(' '), pass, bad, liveButtons, focus: [f0, f1], spoken: got.said, announced: announced.slice(0, 40), axAdded: diff(before, after).slice(0, 40) });
+        // feature.ts R5: when the flight goes on and nothing holds the focus (body), the flight's role=application region takes it so a
+        // screen reader passes the keys on; that is the focus coming to the flight, not a jump away from what the pilot was on
+        const focusOk = f0 === f1 || (f0 === 'body' && f1 === 'div[sonic-flight]');
+        const pass = bad.length === 0 && liveButtons === 0 && focusOk;
+        changes.push({ from: p0, to: h1?.panel ?? '', pass, bad, liveButtons, focus: [f0, f1], spoken: got.said, announced: announced.slice(0, 40), axAdded: diff(before, after).slice(0, 40) });
         log(sr ? 'sr' : 'voice', i, pass ? 'PASS' : 'FAIL', JSON.stringify(bad).slice(0, 200));
     }
     await ctx.close();

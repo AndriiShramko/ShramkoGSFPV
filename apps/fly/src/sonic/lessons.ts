@@ -724,8 +724,8 @@ export class LessonHost {
                 // this visit, never again (keysDue)
                 const v = run.view();
                 const step = `${v.step}/${v.steps}`;
-                // the step's instruction for the eye (progress-panel.ts): its first line that is not the lesson's title
-                if (stepInstructions.get(run, v.step) === null && a.line.key !== v.title.key) stepInstructions.set(run, v.step, a.line);
+                // the instruction for the eye (progress-panel.ts): a step's first line that is not the title or a start call
+                stepInstructions.heard(run, v.step, a.line, v.title.key);
                 if (step !== this.hintStep) {
                     // Q5: the lesson's first line (its title) with the narrator off: the narrator is on for this lesson, said once
                     const first = this.hintStep === null;

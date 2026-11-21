@@ -11,7 +11,7 @@ import type { SpeechLine } from '../../../packages/sonic-fpv/src';
 import { engineDicts } from '../../../apps/fly/src/sonic/host-lines';
 import { LessonHold, quietLiveRegion, relayHeldNews } from '../../../apps/fly/src/sonic/live-quiet';
 import type { LiveElement, PageNews } from '../../../apps/fly/src/sonic/live-quiet';
-import { ProgressPanel, followProgress, progressNow, stepInstructions } from '../../../apps/fly/src/sonic/progress-panel';
+import { ProgressPanel, StepInstructions, followProgress, progressNow, stepInstructions } from '../../../apps/fly/src/sonic/progress-panel';
 import type { LoggedMessage } from '../../../apps/fly/src/messages-logic';
 import { FakeDocument } from './sonic-fake-dom';
 import { Rig } from './sonic-lesson-rig';
@@ -121,7 +121,7 @@ describe('(d) the panel: one line, the step\'s instruction, no counter', () => {
         const off = followProgress(panel, (cb) => r.events.on('sonicEvent', cb), () => progressNow(r.mode, r.host.runner, (l) => tr.text(l)), hold);
         await r.run(3000, null);
         const runner = r.host.runner!;
-        const instruction = stepInstructions.get(runner, runner.view().step);
+        const instruction = stepInstructions.get(runner);
         expect(instruction).not.toBeNull();
         expect(instruction!.key).not.toBe(getLesson('rings-first').title.key);
         expect(said.map((l) => l.key)).toContain(instruction!.key);
@@ -153,5 +153,26 @@ describe('(d) the panel: one line, the step\'s instruction, no counter', () => {
         panel.update('Turn left.');
         expect(writes).toBe(1);
         expect((panel.root as unknown as { children: unknown[] }).children[0]).toBe(node);
+    });
+});
+
+describe('(d) the instruction kept: a flying step that says only "Go." keeps the task said before it', () => {
+    it('the title and the start calls are not instructions; the first line of a step is, the later lines of the step are not', () => {
+        const book = new StepInstructions();
+        const run = {};
+        let draws = 0;
+        book.watch(() => draws++);
+        const title = 'lesson.walls-hall.title';
+        book.heard(run, 1, { key: title }, title);
+        expect(book.get(run)).toBeNull();
+        book.heard(run, 1, { key: 'lesson.walls-hall.task' }, title);
+        book.heard(run, 1, { key: 'lesson.walls-hall.more' }, title);
+        book.heard(run, 2, { key: 'fly.go' }, title);
+        book.heard(run, 2, { key: 'fly.go-on' }, title);
+        expect(book.get(run)).toEqual({ key: 'lesson.walls-hall.task' });
+        book.heard(run, 3, { key: 'lesson.walls-hall.next' }, title);
+        expect(book.get(run)).toEqual({ key: 'lesson.walls-hall.next' });
+        expect(draws).toBe(2);
+        expect(book.get({})).toBeNull();
     });
 });

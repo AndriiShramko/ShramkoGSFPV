@@ -16,14 +16,23 @@ import { lessonHold } from './live-quiet';
 import type { LessonHold } from './live-quiet';
 
 /**
- * The instruction of the step each runner is on: the first line the host said in the step that is not the lesson's title
- * (lessons.ts `act` case 'say' writes it). Keyed by the runner, so a lesson closed or opened again starts empty.
+ * The runner's calls that start the flight (runner.ts: an attempt's start says "Go.", a pass "Go on."): a flying step says only
+ * that, so the task said in the step before stays the instruction on the screen.
+ */
+export const START_CALLS: ReadonlySet<string> = new Set(['fly.go', 'fly.go-on']);
+
+/**
+ * The instruction each runner is on: the first line the host said in a step that is neither the lesson's title nor a start call;
+ * it stays until a later step says one of its own. lessons.ts `act` case 'say' gives it every lesson line (heard). Keyed by the
+ * runner, so a lesson closed or opened again starts empty.
  */
 export class StepInstructions {
     private book = new WeakMap<object, { readonly step: number; readonly line: SpeechLine }>();
     private watchers = new Set<() => void>();
 
-    set(runner: object, step: number, line: SpeechLine): void {
+    /** A lesson line said in `step` of the runner (`title`: the lesson's title key). */
+    heard(runner: object, step: number, line: SpeechLine, title: string): void {
+        if (line.key === title || START_CALLS.has(line.key) || this.book.get(runner)?.step === step) return;
         this.book.set(runner, { step, line });
         for (const fn of [...this.watchers]) fn();
     }
@@ -34,10 +43,9 @@ export class StepInstructions {
         return () => this.watchers.delete(fn);
     }
 
-    /** The instruction of `step` (null: none said in that step yet). */
-    get(runner: object, step: number): SpeechLine | null {
-        const e = this.book.get(runner);
-        return e && e.step === step ? e.line : null;
+    /** The instruction now (null: none said yet in this lesson). */
+    get(runner: object): SpeechLine | null {
+        return this.book.get(runner)?.line ?? null;
     }
 }
 
@@ -118,7 +126,7 @@ export function progressNow(
 ): LessonShown | null {
     if (!mode.active || mode.inPlayback || runner === null) return null;
     const view = runner.view();
-    return { view, line: text(stepInstructions.get(runner, view.step) ?? view.title), held: mode.bridge?.paused !== true };
+    return { view, line: text(stepInstructions.get(runner) ?? view.title), held: mode.bridge?.paused !== true };
 }
 
 /**
