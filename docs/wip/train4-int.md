@@ -213,6 +213,13 @@ car 3's head.)
 - [ ] S2 the seams (start-screen/start-model, lessons.ts, sonic locales, keymap G and Shift+K, doc.ts guide, the #ui
       live region in a lesson), the one full check: gates, a6-reference, the package's tests, one release build,
       tutor-say-accept, tutor-air-accept, n-share-accept, first-set.test.ts, accept-fly B6-B16, pictures
+      Done so far: every lane head still an ancestor of HEAD, every review still SHIP. The four lanes share one base
+      (03624451, t7-base's last repair), so the seams are among themselves (joined on tutor-air's branch) and with what
+      car 3 added after that base (course.ts, life.ts, messages-logic.ts minMs, top-row.ts, playcanvas 2.24.2, probes).
+      Seam tests: tools/bench/test/int4-car5-seams.test.ts (the #ui hold x the real ui/messages.ts service: a crash and a
+      problem with its fix reach the captions once, not held none; G / Shift+K / Shift+G / K in and outside a sound
+      flight) and sonic-start-screen.test.ts 'int4 car 5' (a link's screen says the title and its one main button once,
+      never Start flying): 5/5 PASS, NEG OK on car 3's head 72d4babf. No source change was needed.
 - [ ] S3 the hand-over (fetch and merge origin/main first; int4-car5.json)
 
 ## Progress

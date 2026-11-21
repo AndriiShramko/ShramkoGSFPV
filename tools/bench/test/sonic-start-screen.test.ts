@@ -189,6 +189,19 @@ describe('lane n-share: the start screen of a link with a scene (?sonic=fly|scan
         expect(order()).toEqual(['sonic-start-quick', 'sonic-start-all']);
         s.dispose();
     });
+
+    it('int4 car 5 (n-share x tutor-say): the first key on a link\'s screen says the title and the link\'s one main button once, never Start flying', () => {
+        const { s, engine } = shown({ request: scanReq() });
+        expect(focusedId(doc)).toBe('sonic-start-scan');
+        expect(engine.said).toEqual([]);
+        doc.key('ArrowDown');
+        const first = heard(engine)[0] ?? '';
+        expect(first.startsWith('Fly by Sound. ')).toBe(true);
+        expect(first.startsWith('Fly by Sound. Fly this scan by sound.')).toBe(true);
+        expect(first).not.toContain('Start flying');
+        expect(heard(engine).filter((x) => x.startsWith('Fly by Sound.'))).toHaveLength(1);
+        s.dispose();
+    });
 });
 
 // ------------------------------------------------------------------ C2
