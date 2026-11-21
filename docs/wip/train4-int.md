@@ -100,7 +100,9 @@ aa18f1e4 of origin/main; the lead's change of 17:50 UTC: car 2 takes the lanes w
       nothing frames it by itself (E1). The probe now presses Home (edit4a frameAll) when no gate is a candidate, as
       edit4b-probe step 1 does (recorded as home). Runs on the release build: probes12.sh, logs12/summary.txt (three
       plain runs, one with the Home path forced by a temporary copy). origin/main 9b4cbd87 (one lead note, docs only)
-      is merged after that (the gates are enough). Left: logs12, commit, the gates, int4.json, then write U:/Temp/gsfpv-train4/int4.json with sha = the new HEAD, api
+      is merged after that (the gates are enough). logs12: all four PASS (forced run: home true). Merge of 9b4cbd87
+      done (docs/wip/train4-lead.md only). Gates on this head run next (int4/gates5.log). Left: the gates, int4.json,
+      then write U:/Temp/gsfpv-train4/int4.json with sha = the new HEAD, api
       ["server.py", "tracks.py"], rooms false, nginx false, package_sha 53a567591f2b273fd9d80cbea4e509a4a7447843,
       held ["gen4a", "gen4b"], live_only ux4a-messages,ux4b-cancel,vox4-voxels-only,edit4a-gizmo,edit4c-warnings,
       edit4s-drafts,sound6-quick-walk,edit4b-course-life,edit-mouse-wroclaw,accept-fly,head4-accept,edit-mode-wroclaw,
@@ -325,6 +327,15 @@ and FAILs its line; each passed on the release build of 88ccd89e in S2):
 Car 1's two failed live checks, repaired in the check (the product was right; see Seams, Car 2, the last item):
 edit4b-course-life (step 10-pointed) and edit-mouse-wroclaw (step d.controls); both PASS on the release build of
 88ccd89e in S2 (logs9-final). They run again after the release (in live_only).
+
+The negative control against the live site before the release (release ac11d2c2, car 1 and the sound page texts;
+U:/Temp/gsfpv-train4/int4/live-neg2): the seven new checks FAIL (ux4a-messages, ux4b-cancel, vox4-voxels-only,
+edit4a-gizmo, edit4c-warnings, edit4s-drafts, sound6-quick-walk: car 2's code is not live, so each one fires);
+edit4b-course-life PASS (its repair holds on live); edit-mouse-wroclaw d.controls ok (its repair holds) but b.select
+FAIL: the view after opening showed 1 gate of 12 and backing off found no other gate. The check, not the product: edit4a
+never frames by itself (E1), the pilot's way to the whole course is Home. b.select now presses Home when no gate is a
+candidate (36f69c8b, recorded as home); on the release build three plain runs PASS (home false) and one with the Home
+path forced PASS (home true, gate 28 picked; logs12).
 
 Existing names that cover what changed: accept-fly (B6-B16; B15's tamper now relative to the flip, 3b8bfd96),
 head4-accept (step 5 clicks Quick start since sound6), edit-mode-wroclaw (edit4a's click and arrow), voxels-alone-wroclaw
