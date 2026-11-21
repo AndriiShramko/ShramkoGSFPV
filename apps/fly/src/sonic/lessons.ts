@@ -786,7 +786,7 @@ export class LessonHost {
                     // the moment's keys, once a visit (SaidOnce), after its `do` line (handed just before this view): the runner's
                     // freeze waits for the queue, so they are heard with the craft still held, never over the sound
                     for (const id of MOMENT_KEY_IDS) this.said.mark(id);
-                    void mode.bridge.say({ key: 'sonic.moment.keys', params: { ...(this.p.momentKeys?.() ?? DEFAULT_MOMENT_KEYS) } }, false, { lesson: true });
+                    void mode.bridge.say({ key: 'sonic.say.momentKeys', params: { ...(this.p.momentKeys?.() ?? DEFAULT_MOMENT_KEYS) } }, false, { lesson: true });
                 }
                 break;
         }

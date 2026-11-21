@@ -128,7 +128,7 @@
   "sonic.say.gateBehind": "La puerta está detrás de ti.",
   "sonic.settings.showAll": "Mostrar todos los ajustes ({n} más)",
   "sonic.start.all": "Todas las lecciones",
-  "sonic.moment.keys": "Oír otra vez, tecla {again}. Seguir, tecla {on}. Ya conozco este sonido, tecla {know}.",
-  "sonic.moment.knowOutside": "La tecla {key} dice al juego que ya conoces un sonido nuevo. Sirve cuando el juego se para para mostrar uno.",
-  "sonic.moment.helpKnow": "Pulsa la tecla {key} cuando el juego se pare por un sonido nuevo que ya conoces."
+  "sonic.say.momentKeys": "Oír otra vez, tecla {again}. Seguir, tecla {on}. Ya conozco este sonido, tecla {know}.",
+  "sonic.say.momentKnowOutside": "La tecla {key} dice al juego que ya conoces un sonido nuevo. Sirve cuando el juego se para para mostrar uno.",
+  "sonic.say.helpKnow": "Pulsa la tecla {key} cuando el juego se pare por un sonido nuevo que ya conoces."
 }

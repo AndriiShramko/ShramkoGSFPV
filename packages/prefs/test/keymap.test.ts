@@ -70,7 +70,7 @@ const SHIPPED_IN_V12: readonly string[] = ['sonic.record', 'sonic.send', 'sonic.
 /** Train 3, lane sonic3: Backslash switches Fly by Sound on and off in place, on every page (app/builtin/sonic-flight.ts). */
 const SHIPPED_BY_SONIC3: readonly string[] = ['flyBySound.toggle'];
 /** Lane sonic-hints: X leaves a lesson for the mode's main menu (sonic/feature.ts). Every key of the mode: */
-const MODE_KEYS: readonly string[] = [...SHIPPED_IN_V12, 'sonic.home', 'sonic.narrator', 'sonic.headCentre'];
+const MODE_KEYS: readonly string[] = [...SHIPPED_IN_V12, 'sonic.know', 'sonic.home', 'sonic.narrator', 'sonic.headCentre'];
 
 /** Keys added after the design table, by the agent whose feature handles them. */
 const ADDED_AFTER_DESIGN: Record<string, string[]> = {
@@ -88,6 +88,8 @@ const ADDED_AFTER_DESIGN: Record<string, string[]> = {
     'sonic.status': ['I'],
     'sonic.repeat': ['Z'],
     'sonic.glossary': ['G'],
+    // train 4, lane tutor-air: Shift+K, I know this sound (inside a moment of the first flight)
+    'sonic.know': ['Shift+K'],
     // lane sonic-hints: X, the mode's main menu from a lesson
     'sonic.home': ['X'],
     // train 3, lane quiet2 (N2): Shift+V, the narrator off and on in a flight of the sound mode

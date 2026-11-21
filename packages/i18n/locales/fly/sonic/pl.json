@@ -128,7 +128,7 @@
   "sonic.say.gateBehind": "Bramka jest za tobą.",
   "sonic.settings.showAll": "Pokaż wszystkie ustawienia (jeszcze {n})",
   "sonic.start.all": "Wszystkie lekcje",
-  "sonic.moment.keys": "Jeszcze raz, klawisz {again}. Dalej, klawisz {on}. Znam ten dźwięk, klawisz {know}.",
-  "sonic.moment.knowOutside": "Klawisz {key} mówi grze, że znasz nowy dźwięk. Działa, gdy gra zatrzymuje się, by go pokazać.",
-  "sonic.moment.helpKnow": "Naciśnij klawisz {key}, gdy gra zatrzyma się na nowym dźwięku, który już znasz."
+  "sonic.say.momentKeys": "Jeszcze raz, klawisz {again}. Dalej, klawisz {on}. Znam ten dźwięk, klawisz {know}.",
+  "sonic.say.momentKnowOutside": "Klawisz {key} mówi grze, że znasz nowy dźwięk. Działa, gdy gra zatrzymuje się, by go pokazać.",
+  "sonic.say.helpKnow": "Naciśnij klawisz {key}, gdy gra zatrzyma się na nowym dźwięku, który już znasz."
 }

@@ -501,7 +501,7 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
         ctx.keys.on('sonic.know', (e) => {
             if (e.repeat || !mode.active) return;
             if (moments.frozen) mode.bridge.momentKey('KeyK', 'know');
-            else void mode.bridge.say({ key: 'sonic.moment.knowOutside', params: { key: names.of('sonic.know') } }, false, { asked: true });
+            else void mode.bridge.say({ key: 'sonic.say.momentKnowOutside', params: { key: names.of('sonic.know') } }, false, { asked: true });
         })
     );
     // I: where the pilot is, in one press: the lesson's line (status.lesson, or status.none when none runs), then what the
