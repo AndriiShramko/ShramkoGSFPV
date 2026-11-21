@@ -119,7 +119,7 @@ t7-base 03624451 of job base7: gap-gen (gen4a, gen4b), gap-save, gap-sound and t
       packages/sonic-fpv from C:/dev/gsfpv-t7-base/packages/sonic-fpv branch t7-base (it descends from car 2's pin
       53a56759); `git merge --no-ff 03624451` = 6ef4e3b8, no conflict, the gitlink is 719aaf54; the lock did not change;
       gen-catalog everything up to date (no change); pnpm -r typecheck rc 0.
-- [ ] S2 the seams (base7's open seams against car 2) and the one full check.
+- [x] S2 the seams (base7's open seams against car 2) and the one full check.
       2026-11-21 run: seams repaired with tests (see Seams, Car 3): 47d3c657 (the editor's Generate: no second unsaved
       line in gen4b's dialog), d73cd1b9 (probes press the dialog's Build after Shift+G; edit4b-probe step 13), d100b6fc
       (PilotMessage.minMs: the start line stays START_LINE_MS). Release build of d100b6fc with the nine walls, then
@@ -145,6 +145,13 @@ t7-base 03624451 of job base7: gap-gen (gen4a, gen4b), gap-save, gap-sound and t
       ALLDONE-C at the end). The gates were NOT started (the hook stopped them). Code tree to gate: d26847d9 (082c1c79 and
       this note are docs only). Left: commit this note; read the four '-4' results (repair what fails); the gates once
       (gates.py, all), a6-reference in its log; evidence 2026-11-19/int4-car3 committed; then S2 is done.
+      Run of 2026-11-21 ~08:30 UTC: the note committed (388f19b5). The '-4' results on the build of d26847d9:
+      gap-save-accept-4 all PASS but s100.emptySaved (expected, as above); edit4b-course-life-4, ux4a-messages-4,
+      gap-gen-accept-4 rc 0; accept-fly-4 B6 B7 B9-B16 all PASS (769 s). Evidence committed (1172f868). origin/main
+      f4da99d8 (STATE.md and the lead note, docs only) merged, 17e96753. Gates on 17e96753 (code = d26847d9): all PASS
+      rc 0 (typecheck, vitest 449 files / 5728 tests, api-unittest, architecture, i18n, catalog, b18, leaks;
+      U:/Temp/gsfpv-gates-20261121-084002, int4/gates-car3.log). a6-reference alone PASS (int4/a6-car3.log). No server
+      left on 6180-6199. S2 done.
 - [ ] S3 the hand-over (Car 3 parts, U:/Temp/gsfpv-train4/int4-car3.json)
 
 ## Progress
@@ -534,3 +541,6 @@ Car 2
   pilot's way (Home), in one shared helper, so a new framing rule does not break them one by one.
 - S1 (car 3): about 10 calls; a clean merge since base7 settled the conflicts once on base_of. Cheaper: nothing to
   gain; the one branch per car is the saving.
+- S2 (car 3), last run: about 20 calls; two gate runs were lost because this shell's PATH has neither `python` (only
+  the py launcher) nor Node 22 first (vitest's rolldown needs node:util styleText). Cheaper: gates.py should find
+  Python itself (sys.executable) as it already finds ~/node-v22; run single tests with ~/node-v22 on PATH.
