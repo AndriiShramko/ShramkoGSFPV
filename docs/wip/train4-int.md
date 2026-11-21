@@ -168,6 +168,24 @@ t7-base 03624451 of job base7: gap-gen (gen4a, gen4b), gap-save, gap-sound and t
       gap-sound-start. Left: read logs-car3s3; run live-checks.sh against :6180 with LIVE_ONLY of the repaired and new
       names (their positive side) and against the live site for the new three (the negative side); gates once; the
       hand-over parts and int4-car3.json.
+      Run of 2026-11-21 ~11:00 UTC: logs-car3s3 read. On the build of 8eac608d: every car 3 probe rc 0 but gap-save-accept
+      (only s100.emptySaved, gap-save's own Not verified, as in S2), hot-sog3-scans rc 0, accept-fly B6 B7 B9-B16 all
+      PASS (evidence committed, cb70ee28). live-local (11 names on :6180): 8 PASS (gate-guide, one-course, sonic-eye-course,
+      voxels-alone, voxel-panel and the three new ones); the negative side against the live site (release 852821e5): the
+      three new checks FAIL, and the old mouse-free-probe on the build FAILs at courseKey (the repair's control). Three
+      FAIL on :6180, repaired in the probes (no product change): edit-mode-wroclaw (editor3-smoke: edit4a frames nothing on
+      open, the asked course's gate 1 stood behind the camera and every drag missed; it now presses F when the selected
+      gate is off screen, 89fa2351), course-path-wroclaw (the old generator's eye band 1.2-2.0 m held against gap-gen's
+      asked course, which stands a centre up to EYE_HI + half a gate and loosens its zone by tiers: an asked course is now
+      judged by the planner's own stats outside 0 and underGround 0, in the probe and in the check's cpband, 89fa2351 and
+      4c9b27ed), mouse-free-probe (its rooms step: locally key 9 has no rooms service and Rooms sits under the pause menu's
+      More since menu4; the fallback opens More, 89fa2351). Reruns (logs-car3s3 live-local2, live-local-cp1/2, live-site3):
+      edit-mode-wroclaw PASS on :6180 and live; course-path-wroclaw PASS twice on :6180 (asked, 10 gates, outside 0,
+      underGround 0; the cpband judge tested on those, on the live run and on a copy with outside 1: PASS, PASS, FAIL,
+      FAIL); mouse-free-probe PASS on live, on :6180 still FAIL at its rooms step only (no rooms service on a local
+      release: the panel never opens; car 3 changed nothing in rooms). Found: course-path-wroclaw FAILs on the live site
+      today, before car 3 (release 852821e5, the g1 course: 37 gates, one at 2.2 m against 2.1); after the release Shift+G
+      builds through the dialog and the check takes the asked path.
 
 ## Progress
 
@@ -480,7 +498,10 @@ courseMenu), one-course, voxels-alone-wroclaw, voxel-panel-wroclaw, edit-mode-wr
 sonic-eye-course-wroclaw (sonic-int-review.ts with Z5_COURSE_FIRST). Each now presses the dialog's Build after the key
 (tools/bench/scripts/gen-build.mjs; it waits 4 s for the dialog, so on a page without it, the live site today, the
 probe goes on as before). Checks in the sound mode (sonic-*, narrator-off, onecourse's sound step) are unchanged: there
-Shift+G still builds at once.
+Shift+G still builds at once. Three more repairs after their first run on the build (89fa2351, 4c9b27ed): edit-mode-wroclaw
+presses F when the selected gate is off screen; course-path-wroclaw (probe and cpband) judges an asked course by the
+planner's stats (outside 0, underGround 0) and only prints the eye band; mouse-free-probe opens the pause menu's More
+when Rooms is not shown.
 
 Existing names that cover what changed: edit4b-course-life (step 13: Course > Generate, the dialog, Build), ux4a-messages
 (gen4b's progress box and start line), edit4s-drafts (s9 presses Build), edit4a-gizmo and edit-mouse-wroclaw (genDialog),
@@ -488,7 +509,12 @@ sound6-quick-walk (gap-sound's start order), sonic-in-place-tunis, sonic-course-
 narrator-off (the package moves), accept-fly (B6-B16), scans-open (hot-sog3, merged here).
 
 The positive side on the release build of 8eac608d and the negative side against the live site: Status S3 (Car 3),
-logs-car3s3 live-local and live-neg3.
+logs-car3s3 live-local and live-neg3 (the reruns: live-local2, live-local-cp1, live-local-cp2, live-site3).
+
+live_only (int4-car3.json, one line): gen4-generate-dialog,gap-gen-asked-course,gap-sound-start,edit4b-course-life,
+ux4a-messages,edit4s-drafts,edit4a-gizmo,edit-mouse-wroclaw,sound6-quick-walk,sonic-in-place-tunis,sonic-course-wroclaw,
+sonic-course-wroclaw-n,narrator-off,accept-fly,scans-open,course-path-wroclaw,gate-guide-wroclaw,mouse-free-probe,
+one-course,voxels-alone-wroclaw,voxel-panel-wroclaw,edit-mode-wroclaw,sonic-eye-course-wroclaw
 
 ## What the owner should try
 
@@ -624,7 +650,13 @@ Car 3
 - Race rooms: the room's course adopted with the asker's level and spread is proven in Node and by gap-gen-accept step 5
   in one page; no two browsers raced (RACE_ON is still false).
 - The eight repaired live-check probes were run on the release build of 8eac608d (Status S3), not yet against the live
-  site with car 3's code: that is the release's live check.
+  site with car 3's code: that is the release's live check. mouse-free-probe's rooms step cannot pass on a local release
+  (no rooms service); it passed on the live site with the repaired probe.
+- An asked course is not held to a person's eye band: on Wroclaw two of ten gates stood 2.5-2.9 m over the wall under
+  them in one run, and 4.8 m and over a hole in another (gap-gen's zone loosens by tiers). The live check now judges it by
+  the planner's own stats (nothing outside the scan, nothing under its ground); whether the owner wants street gates
+  kept at eye height in an asked course is for gap-gen's owner.
+- course-path-wroclaw fails on the live site today with the old generator (one gate of 37 at 2.2 m): not car 3's.
 
 ## Cost notes
 
