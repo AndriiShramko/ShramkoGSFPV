@@ -86,6 +86,20 @@ export class FakeElement {
         this.tagName = tag.toUpperCase();
     }
 
+    /** add, remove and contains over className (train 4, lane tutor-air: the moment card's body class). */
+    get classList(): { add(c: string): void; remove(c: string): void; contains(c: string): boolean } {
+        const list = (): string[] => this.className.split(/\s+/).filter((c) => c !== '');
+        return {
+            add: (c) => {
+                if (!list().includes(c)) this.className = [...list(), c].join(' ');
+            },
+            remove: (c) => {
+                this.className = list().filter((x) => x !== c).join(' ');
+            },
+            contains: (c) => list().includes(c)
+        };
+    }
+
     setAttribute(name: string, value: string): void {
         this.attributes.set(name, String(value));
         if (name === 'class') this.className = String(value);
