@@ -252,3 +252,28 @@ before its check of tracked changes and after it brings main to the target.
 The conductor: new runs after a window's reset now start 90 s past it, the moment the cut runs may start again, so
 the priority decides (car3 lost its slot to fresh lanes at 07:30 UTC; int4 lost one the same way at 21:30 UTC).
 Queue at 07:45 UTC: running n-share (S4), tutor-moment (S4), n-scan (S1); car3 (S1 done) takes the next free slot.
+
+## State, 2026-11-21 12:50 UTC: the hot repair is live, two repair lanes (READ THIS FIRST)
+
+Live: `main` 852821e5 (built 07:51 UTC), the hot repair on top of car 2: scans in SOG version 3 open (scans-open PASS on
+seven scans, the owner's a39abad1 among them; walls-published-probe PASS). STATE.md has the entries of car 2 and of
+the hot repair.
+Car 2's three failed live checks, second run (ship-car2/live-r2.log): sonic-course-wroclaw PASS, vox4-voxels-only PASS
+(unsteady, one of two each), edit4a-gizmo FAIL again at 13.laptop (the probe finds no other gate to click in the
+844x390 window; nothing lies over another thing). Lane fix-gizmo13 (prompts/t9-fix-gizmo13.md, copy C:/dev/gsfpv-t7-hot,
+check r-fix-gizmo13) decides page or probe; it runs since 12:30 UTC.
+The hot repair's failed live check, pause-rise-lublin, failed twice the same way: Lublin reveals after 45 s (26 s on
+2026-11-16) and draws 0.43 to 0.54 M splats in the flight, 0.82 to 0.95 M in the pause (2.45 M and 9.85 M then); the
+count does not fall after Continue. Either pilots lost detail and loading speed on big streamed scans (with car 2 or
+with the new engine), or the check samples before the reveal. Lane fix-lod (prompts/t9-fix-lod.md, copy
+C:/dev/gsfpv-t7-n-share, priority 1, check r-fix-lod) builds 267923c3 and 852821e5 and measures both. No rollback was
+made: the loss is not proven, and going back would close the 65 scans again. If the lane proves a loss it cannot
+repair, the lead chooses: keep, the old engine, or another version ('For the lead' of docs/wip/fix-lod.md).
+Neither repair lane has a car yet: when their checks say SHIP, give them a small car of their own in the form of the
+hot lane (C:/dev/.gsfpv-lanes/t7-hot.sh: a hand-over JSON, then ship_handover.py), or let car 4 take them (add them to
+prompts/t6-car4.md and to car4's wait list).
+n-share is done and its check says SHIP; tutor-say runs since 12:30 UTC; tutor-moment is in S3 (run 5).
+The conductor: a run cut by the window is ready at the reset itself (it was 90 s later, and the first tick after the
+reset gave the slots to fresh lanes: car3 lost its slot at 07:30 and again at 12:30 UTC). car3 (S2 done) waits for the
+next free slot; after it ship-car3 goes by itself.
+Watcher: lead_watch.sh, a background task of the lead's chat, as before.
