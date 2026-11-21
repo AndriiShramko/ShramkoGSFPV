@@ -77,6 +77,12 @@ export interface SonicState {
      * name and the sound. Absent means 'short'; kept only when one of the three.
      */
     guide?: SonicGuideLevel;
+    /**
+     * train 4, lane tutor-air (the moments): the sounds the pilot has learned in a moment or marked "I know this" (the sound
+     * package's CueId, e.g. 'safety.wall'), in the order learned; a returning pilot keeps them and their moments are skipped.
+     * Absent means none; kept only as a list of cue ids, at most SONIC_KNOWN_CAP, each once.
+     */
+    known?: string[];
 }
 
 /** The guide's levels (the same union as the sound package's GuideLevel, apps/fly/src/sonic/guide.ts). */
@@ -92,6 +98,10 @@ export const SONIC_LESSON_ID = /^[a-z0-9][a-z0-9-]{0,63}$/;
 export const SONIC_PROGRESS_CAP = 64;
 /** The sound settings document is at most this many characters of JSON (its own is under 1 KB). */
 export const SONIC_PREFS_CAP = 4096;
+/** A sound's id as the sound package names it (CueId): 'safety.wall', 'nav.gate'. */
+export const SONIC_CUE_ID = /^[a-z][a-z0-9-]{0,31}\.[a-z0-9][a-z0-9.:-]{0,47}$/;
+/** Known sounds kept, at most (the package has under 40). */
+export const SONIC_KNOWN_CAP = 64;
 
 export interface PrefsDoc {
     format: typeof PREFS_FORMAT;
@@ -343,6 +353,11 @@ export function validateCollection<K extends CollectionId>(k: K, v: unknown, dro
             if (o.narratorTip === true) sonic.narratorTip = true;
             // train 4, lane tutor-say: the guide's level, kept only when one of the three (absent: short)
             if (typeof o.guide === 'string' && (SONIC_GUIDE_LEVELS as readonly string[]).includes(o.guide)) sonic.guide = o.guide as SonicGuideLevel;
+            // train 4, lane tutor-air: the sounds learned in a moment; only cue ids, each once, at most SONIC_KNOWN_CAP
+            if (Array.isArray(o.known)) {
+                const known = [...new Set(o.known.filter((c): c is string => typeof c === 'string' && SONIC_CUE_ID.test(c)))].slice(0, SONIC_KNOWN_CAP);
+                if (known.length > 0) sonic.known = known;
+            }
             return sonic as Collections[K];
         }
     }

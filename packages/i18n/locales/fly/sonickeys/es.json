@@ -10,5 +10,6 @@
   "keys.sonic.repeat": "Fly by Sound: oír otra vez la tarea",
   "keys.sonic.send": "Fly by Sound: enviar el vuelo al autor",
   "keys.sonic.shareLink": "Fly by Sound: copiar un enlace a esta lección",
-  "keys.sonic.status": "Fly by Sound: oír el estado de la lección y de la grabación"
+  "keys.sonic.status": "Fly by Sound: oír el estado de la lección y de la grabación",
+  "keys.sonic.know": "Fly by Sound: ya conozco este sonido (se salta su momento)"
 }

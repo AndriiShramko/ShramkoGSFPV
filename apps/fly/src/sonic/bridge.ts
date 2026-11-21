@@ -32,7 +32,7 @@ import { S, attitude } from '@gsfpv/sim-core';
 import type { Sim, SimEvent } from '@gsfpv/sim-core';
 import { REPLAY_KEY_ACTIONS, SPEECH_END_KEY } from '@shramko/sonic-fpv';
 import { quietCue } from './quiet-cues';
-import type { CueEvent, CueId, FlightSample, LessonLayers, LessonSession, MaterialClass, Pose, SessionEvent, SonicFrameInput, SonicWorld, SpeechLine, Vec3 } from '@shramko/sonic-fpv';
+import type { CueEvent, CueId, FlightSample, LessonLayers, LessonSession, MaterialClass, MomentKey, Pose, SessionEvent, SonicFrameInput, SonicWorld, SpeechLine, Vec3 } from '@shramko/sonic-fpv';
 
 /** Contacts closer together than this are one touch: a touch begins after this much quiet, ticks (0.5 s). */
 export const TOUCH_QUIET_TICKS = 500;
@@ -528,6 +528,15 @@ export class SonicBridge {
     /** Z (v0.13): the step's whole task again, its named sounds three times (while flying the attempt waits for it). */
     repeatTask(code: string): void {
         this.keyCall(code, REPLAY_KEY_ACTIONS.repeat, (run, t) => run.repeat(t));
+    }
+
+    /**
+     * Train 4 (lane tutor-air): a key of a moment (Z hear it again, N go on, Shift+K I know this), recorded with its REPLAY_KEY_ACTIONS
+     * action before the runner's momentKey (the replay acts on it, tutor-moment's For the lead).
+     */
+    momentKey(code: string, key: MomentKey): void {
+        const action = key === 'again' ? REPLAY_KEY_ACTIONS.momentAgain : key === 'on' ? REPLAY_KEY_ACTIONS.momentOn : REPLAY_KEY_ACTIONS.momentKnow;
+        this.keyCall(code, action, (run, t) => run.momentKey(key, t));
     }
 
     /** The lesson menu's Next lesson: at once, this lesson marked skipped unless it was passed. */

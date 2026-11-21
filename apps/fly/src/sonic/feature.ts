@@ -21,7 +21,7 @@
 // key list says so, and the pause menu keeps the feedback form).
 import { bindingOf } from '@gsfpv/prefs';
 import { S, attitude } from '@gsfpv/sim-core';
-import { DICTS, SCAN_FREE_ID, createSceneSampler, createTranslator } from '@shramko/sonic-fpv';
+import { DICTS, SCAN_FREE_ID, SPEECH_END_KEY, createSceneSampler, createTranslator } from '@shramko/sonic-fpv';
 import { estimateSpeechS } from '@shramko/sonic-fpv/audio';
 import type { AnalyticWorldInfo, FlightSample, LessonDef, LessonWorldRef, SessionEvent, SonicWorld, SpeechLine, TrackFile } from '@shramko/sonic-fpv';
 import { FlightSession } from '../session';
@@ -63,6 +63,7 @@ import { STATUS_ORDER, sayStatus, statusBoard } from '../app/sonic-status';
 import { setLessonView } from '../app/sonic-view';
 import { liveSearch } from '../app/env';
 import { MOMENT_PAUSE, MomentHost } from './moment-host';
+import { MomentCard } from './moment-card';
 
 // window.__gsfpv.sonic: what the lesson is doing, for the acceptance runs (tools/bench/src/sonic-*.ts)
 declare module '../app/test-hook' {
@@ -212,6 +213,7 @@ function courseOf(ctx: FlightContext, names: KeyNames): NonNullable<LessonPage['
 function pageOf(ctx: FlightContext, mode: SonicMode, entry: SonicEntry, stage: PrimitiveStage, tracks: TrackCache, showMenu: () => void, names: KeyNames, moments: MomentHost): LessonPage {
     return {
         moments,
+        momentKeys: () => ({ again: names.of('sonic.repeat'), on: names.of('scene.next'), know: names.of('sonic.know') }),
         course: courseOf(ctx, names),
         // walls lane: a free flight over a scan without walls gets them built (progress in the walls box) and goes on with them
         walls: { build: () => wallsThen(ctx, () => {}).then((r) => r === 'now' || r === 'built') },
@@ -311,6 +313,14 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
     // alone is not the mode's pause: the lesson and the engine go on (bridge.ts momentOnly)
     const moments = new MomentHost(ctx, mode.bridge);
     mode.bridge.momentOnly = () => pauseReasons.length > 0 && pauseReasons.every((r) => r === MOMENT_PAUSE);
+    // the moment's keys: N goes on, Z hears the sound again (mode.ts), Shift+K "I know this" (below); the card shows the line spoken
+    // and the sound's name (moment-card.ts), the name from the package's `cue.<id>.name`
+    mode.inMoment = () => moments.frozen;
+    const cueNames = createTranslator(locale, DICTS);
+    const card = new MomentCard(document, document.body, (cue) => cueNames.text({ key: `cue.${cue}.name` }));
+    offs.push(moments.onView((v) => card.show(v)));
+    offs.push(ctx.events.on('sonicEvent', (e) => { if (e.kind === 'speech' && e.key !== SPEECH_END_KEY) card.said(e.text); }));
+    offs.push(() => card.remove());
     const quietLive = (): boolean => quietFlight(entry.setup.prefs, flightLesson(host?.lesson?.id ?? null), liveRegionPaused(mode.bridge.paused, pauseReasons));
     const liveQuiet = quietLiveRegion(document.getElementById('ui'), quietLive);
     liveQuiet.sync();
@@ -486,6 +496,14 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
     offs.push(() => setLessonView(ctx, null));
     // G: a key of the mode, ignored while no lesson runs (Z, N and B are the mode's own while a lesson runs: mode.ts)
     offs.push(ctx.keys.on('sonic.glossary', (e) => { if (!e.repeat && mode.active) void h.glossary(); }));
+    // Shift+K (lane tutor-air): "I know this sound" in a moment (it ends, the sound is kept as known); outside one, one line on what it does
+    offs.push(
+        ctx.keys.on('sonic.know', (e) => {
+            if (e.repeat || !mode.active) return;
+            if (moments.frozen) mode.bridge.momentKey('KeyK', 'know');
+            else void mode.bridge.say({ key: 'sonic.moment.knowOutside', params: { key: names.of('sonic.know') } }, false, { asked: true });
+        })
+    );
     // I: where the pilot is, in one press: the lesson's line (status.lesson, or status.none when none runs), then what the
     // other features add (the recorder's status.recording-on or -off). The only handler of I: the others add providers to
     // the page's status board (app/sonic-status.ts), because the key router runs only the last handler of an action.

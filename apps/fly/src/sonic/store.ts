@@ -4,7 +4,7 @@
 // (readPrefs: a missing field takes its default, a bad one is replaced), the collection only bounds it. Since v0.13 a lesson's
 // progress keeps `skipped` (packages/prefs doc.ts validSonicProgress, W7), and the start screen can reset the progress.
 import { defaultPrefs, readPrefs } from '@shramko/sonic-fpv';
-import type { LessonProgress, SonicPrefs } from '@shramko/sonic-fpv';
+import type { CueId, LessonProgress, SonicPrefs } from '@shramko/sonic-fpv';
 import type { PrefsStore } from '@gsfpv/prefs';
 
 /** What the sonic store needs of the page's PrefsStore (a fake in tests). */
@@ -70,10 +70,29 @@ export function setCurrentLesson(host: SonicHost, lessonId: string | null): void
  */
 export function resetProgress(host: SonicHost): void {
     const c = host.collection('sonic');
-    if (Object.keys(c.progress).length === 0 && c.current === null) return;
+    if (Object.keys(c.progress).length === 0 && c.current === null && c.known === undefined) return;
     host.updateCollection('sonic', (d) => {
         d.progress = {};
         d.current = null;
+        // the sounds learned are progress too: every moment runs again (tutor-air)
+        delete d.known;
+    });
+}
+
+/**
+ * Train 4, lane tutor-air (the moments): the sounds the pilot learned in a moment or marked "I know this" (SonicState.known), for the
+ * runner's RunnerOptions.known: their moments are skipped and their cues sound from the start. [] for a new pilot.
+ */
+export function knownSounds(host: SonicHost): CueId[] {
+    const known = host.collection('sonic').known;
+    return Array.isArray(known) ? (known.slice() as CueId[]) : [];
+}
+
+/** A sound is known (a moment's event 'learned' or 'known'): saved once, in the order learned. */
+export function addKnownSound(host: SonicHost, cue: CueId): void {
+    if (knownSounds(host).includes(cue)) return;
+    host.updateCollection('sonic', (d) => {
+        d.known = [...(d.known ?? []), cue];
     });
 }
 

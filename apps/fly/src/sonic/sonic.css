@@ -144,3 +144,15 @@ body.sonic-mode.touch-on:has(.attribution:not([data-scene^="lesson-"])) .sonic-c
 .sonic-menu .sonic-menu-item:focus { outline: 4px solid #fbbf24; outline-offset: 2px; background: #fff; color: #000; }
 @media (prefers-color-scheme: light) { .sonic-menu { border-color: #000; outline-color: #fff; background: #fff; color: #000; } .sonic-menu .sonic-menu-item { background: #f1f3f5; color: #000; border-color: #444; } .sonic-menu .sonic-menu-item:focus { outline-color: #1d4ed8; background: #000; color: #fff; } }
 @media (forced-colors: active) { .sonic-menu .sonic-menu-item:focus { outline-color: Highlight; } }
+
+/* ---- a moment (moment-card.ts; train 4, lane tutor-air, decision 9): the flight is frozen for a new sound. One large high-contrast
+   line (the sentence being spoken) and the sound's name over a dark page, nothing else: the panels, the captions and the HUD are faded
+   out under it (opacity only: a screen reader keeps the captions, the one place the line is announced). Under the menus (z 20, 30). */
+.sonic-moment { position: fixed; inset: 0; z-index: 15; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: clamp(8px, 3vh, 28px); padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left)); background: rgba(0, 0, 0, .94); color: #fff; pointer-events: none; text-align: center; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+.sonic-moment[hidden] { display: none; }
+.sonic-moment p { margin: 0; max-width: min(92vw, 1200px); overflow-wrap: anywhere; }
+.sonic-moment-sound { font-size: clamp(22px, 3.6vw, 44px); font-weight: 800; line-height: 1.2; color: #000; background: #ffd400; padding: .15em .6em; border-radius: 10px; }
+.sonic-moment-line { font-size: clamp(26px, 4.6vw, 60px); font-weight: 700; line-height: 1.25; }
+@media (max-height: 500px) { .sonic-moment-sound { font-size: clamp(20px, 6vh, 30px); } .sonic-moment-line { font-size: clamp(22px, 8vh, 34px); } }
+body.sonic-in-moment .sonic-captions, body.sonic-in-moment .sonic-progress, body.sonic-in-moment .sonic-sounds, body.sonic-in-moment .sonic-attitude, body.sonic-in-moment #ui { opacity: 0; }
+@media (forced-colors: active) { .sonic-moment { background: Canvas; color: CanvasText; border: 4px solid CanvasText; } .sonic-moment-sound { background: Highlight; color: HighlightText; forced-color-adjust: none; } }

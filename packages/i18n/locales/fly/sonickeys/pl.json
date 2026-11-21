@@ -10,5 +10,6 @@
   "keys.sonic.repeat": "Lot na słuch: usłysz zadanie jeszcze raz",
   "keys.sonic.send": "Lot na słuch: wyślij lot autorowi",
   "keys.sonic.shareLink": "Lot na słuch: skopiuj link do tej lekcji",
-  "keys.sonic.status": "Lot na słuch: usłysz stan lekcji i nagrywania"
+  "keys.sonic.status": "Lot na słuch: usłysz stan lekcji i nagrywania",
+  "keys.sonic.know": "Lot na słuch: znam ten dźwięk (jego chwila zostaje pominięta)"
 }

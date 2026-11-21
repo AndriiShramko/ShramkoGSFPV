@@ -126,6 +126,10 @@ export const KEYMAP: readonly KeyBinding[] = [
     { action: 'sonic.status', keys: [letter('I')], when: 'sonic', labelKey: 'keys.sonic.status', status: 'shipped' },
     { action: 'sonic.repeat', keys: [letter('Z')], when: 'sonic', labelKey: 'keys.sonic.repeat', status: 'shipped' },
     { action: 'sonic.glossary', keys: [letter('G')], when: 'sonic', labelKey: 'keys.sonic.glossary', status: 'shipped' },
+    // train 4, lane tutor-air (the first outside feedback, point 2: the game stops for a new sound): "I know this sound" in a moment
+    // (its moment ends, the sound is kept as known). K is the key help; Shift+K is bound nowhere and K stands in the same place on
+    // QWERTY, QWERTZ, AZERTY and the Polish and Spanish layouts. Outside a moment it says in one line what it does
+    { action: 'sonic.know', keys: [{ code: 'KeyK', shift: true, cap: 'Shift+K', aria: 'Shift+K' }], when: 'sonic', labelKey: 'keys.sonic.know', status: 'shipped' },
     // lane sonic-hints (the owner's complaint of 2026-11-10): X leaves a lesson for the mode's main menu (its start screen) in one
     // press, the lesson saved. X was free (no binding, not a flying key). A key of the mode only, like the five above
     { action: 'sonic.home', keys: [letter('X')], when: 'sonic', labelKey: 'keys.sonic.home', status: 'shipped' },

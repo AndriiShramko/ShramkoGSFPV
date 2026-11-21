@@ -7,10 +7,10 @@
 // Kept in the prefs collection 'sonic' beside keyHints (packages/prefs doc.ts SonicState.guide: absent means short), like
 // key-hints.ts. GuideLevel is the sound package's own union (tutor-moment); until the package's pin exports it, it is declared
 // here with the same members, and the import switches when the pin has it.
-import type { SonicGuideLevel } from '@gsfpv/prefs';
+import type { GuideLevel } from '@shramko/sonic-fpv';
 import type { SonicHost } from './store';
 
-export type GuideLevel = SonicGuideLevel;
+export type { GuideLevel };
 export const GUIDE_LEVELS: readonly GuideLevel[] = ['full', 'short', 'new'];
 export const DEFAULT_GUIDE: GuideLevel = 'short';
 
