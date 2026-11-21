@@ -334,9 +334,17 @@ try {
     const orbit = async (dy) => { await page.mouse.move(W * 0.5, H * 0.3); await page.mouse.down({ button: 'middle' }); await page.mouse.move(W * 0.5, H * 0.3 + dy, { steps: 12 }); await page.mouse.up({ button: 'middle' }); await sleep(700); };
     const look = { up0: await upLen() };
     if (c !== null && cOff.apart >= 0.25 && look.up0) {
-        await orbit(160);
-        look.up1 = await upLen();
-        if (look.up1 !== null && look.up1 > look.up0) { await orbit(-320); look.up2 = await upLen(); }
+        // 160 px at a time the way the up arrow shortens, until it is short (the floor arrows then lie in the picture)
+        let dy = 160, was = look.up0;
+        look.steps = [];
+        for (let n = 0; n < 6 && was > 40; n++) {
+            await orbit(dy);
+            const now = await upLen();
+            look.steps.push(now === null ? null : Math.round(now));
+            if (now === null) break;
+            if (now > was && n === 0) dy = -dy;
+            was = now;
+        }
     }
     const pull = aPos && c !== null && cOff.apart >= 0.25 && s0.selected === c ? { look, ...(await pullOnto(c, aPos, 0.25)) } : { ok: cOff.apart !== null && cOff.apart < 0.25, skipped: true };
     // gate B selected by a click on it (its place on the page), then pulled down (a drag that misses the arrow circles the view)
