@@ -54,8 +54,8 @@ importers:
         specifier: 1.2.3
         version: 1.2.3
       '@playcanvas/splat-transform':
-        specifier: 3.6.4
-        version: 3.6.4(playcanvas@2.23.2)
+        specifier: 3.12.0
+        version: 3.12.0(playcanvas@2.24.2)
       '@shramko/sonic-fpv':
         specifier: workspace:*
         version: link:../../packages/sonic-fpv
@@ -63,12 +63,12 @@ importers:
         specifier: 1.59.1
         version: 1.59.1
       playcanvas:
-        specifier: 2.23.2
-        version: 2.23.2
+        specifier: 2.24.2
+        version: 2.24.2
     devDependencies:
       '@playcanvas/supersplat-viewer':
         specifier: 1.35.0
-        version: 1.35.0(playcanvas@2.23.2)
+        version: 1.35.0(playcanvas@2.24.2)
       vite:
         specifier: ^8.3.1
         version: 8.3.1(@types/node@22.20.4)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)
@@ -152,8 +152,8 @@ importers:
   packages/render-pc:
     dependencies:
       playcanvas:
-        specifier: 2.23.2
-        version: 2.23.2
+        specifier: 2.24.2
+        version: 2.24.2
 
   packages/scenes: {}
 
@@ -216,8 +216,8 @@ importers:
 
 packages:
 
-  '@adobe/spz@0.2.3':
-    resolution: {integrity: sha512-iMiIB+FUxQ2vaNxP012fdIVd4yugyq0PUXBaknGfYDE3xpTNU5PrhbLtnDTGFE9anKOwjneOuanSKqaaNpC68Q==}
+  '@adobe/spz@0.3.1':
+    resolution: {integrity: sha512-3HVGFYny7rGrpPFvAApDLM9U0owm0wO1+ipcEC52JIy+Vj0p/Mmuuq95utVmdZ7FLAfWb4mvme+H0JBvpc3HFw==}
 
   '@alloc/quick-lru@5.3.0':
     resolution: {integrity: sha512-U4+70Pc5ZS9osnCBCE5Jha/ciHM+Yp+CNMNC/7HvYbNRk1Ldd+f7qO65W5qfhu/TCv+/ozljlXXe9Nj8419DMA==}
@@ -739,8 +739,8 @@ packages:
     resolution: {integrity: sha512-7FNeNl8NCE7aINx7WXiKQrPYZWC/hvrTsmk6zmxbI7LTXE7hVek/n8AfVgpe2y82zl3w0HvCHN0bVKMBoJcC0w==}
     engines: {node: '>= 10.0.0'}
 
-  '@playcanvas/splat-transform@3.6.4':
-    resolution: {integrity: sha512-7/hlyr88z+9aefI9FAlrElTsEVsYbWuZjIwJonmpomjeYdEwZiEG2fa0gpgGFmr8Ge+rIgDCnNdq7I2VnDCQ+g==}
+  '@playcanvas/splat-transform@3.12.0':
+    resolution: {integrity: sha512-Ww9Py0O95FcMIYgEWXuLOeyHUw7v5QwPTQSvy05FA1FR10hJh2ImrlL6QW4EE0/iM1MUBJJpA9norxfYbcWiig==}
     engines: {node: '>=22.0.0'}
     hasBin: true
     peerDependencies:
@@ -1401,8 +1401,8 @@ packages:
     resolution: {integrity: sha512-qcJu88Q2IWqJsDD529JKMdwGm/dvInW4HvQnRwiH9JtihJvzGOscDtHE3x1pBKeUOTysQ8kVmLnJ2kJu7yhcGA==}
     engines: {node: '>=12'}
 
-  playcanvas@2.23.2:
-    resolution: {integrity: sha512-NplQOAJ0jtgBrP4Q1d7IooAsMDvu5NfiXDToEzlg7VuqDqfLSyqilwElEXZDbGUKKYm2Y7iGrEJD8tWUMc7xwA==}
+  playcanvas@2.24.2:
+    resolution: {integrity: sha512-kkd+Ru3pGfYAQ72dP+jogR3wZlA9etFb4u4z+f56hsPrwDLi1SepwOL//1ikoJhqlWS49gW7aUi5Un7C+alI0g==}
     engines: {node: '>=18.3.0'}
 
   playwright-core@1.63.0:
@@ -1611,8 +1611,8 @@ packages:
       jsdom:
         optional: true
 
-  webgpu@0.4.0:
-    resolution: {integrity: sha512-F5pimn3Aoi0zWjuRdiVs5TnrUwSzD2lESBohsIUsqyitWkGRQlXU2fhV6ycXlQTa1bvAf3sjqiUpBEpmSQ5ptA==}
+  webgpu@0.6.2:
+    resolution: {integrity: sha512-3L4GfmqJLvYUIEWJngEQY+2HQiUlAFkg8+P8NDDj3Xx5hHHIFO/r8JW+ynfqBj7kHN4mbnwO74uB+lrRtLhp4Q==}
 
   why-is-node-running@2.3.0:
     resolution: {integrity: sha512-hUrmaWBdVDcxvYqnyh09zunKzROWjbZTiNy8dBEjkS7ehEDQibXJ7XvlmtbwuTclUiIyN+CyXQD4Vmko8fNm8w==}
@@ -1621,7 +1621,7 @@ packages:
 
 snapshots:
 
-  '@adobe/spz@0.2.3': {}
+  '@adobe/spz@0.3.1': {}
 
   '@alloc/quick-lru@5.3.0': {}
 
@@ -1955,17 +1955,17 @@ snapshots:
       '@parcel/watcher-win32-arm64': 2.6.0
       '@parcel/watcher-win32-x64': 2.6.0
 
-  '@playcanvas/splat-transform@3.6.4(playcanvas@2.23.2)':
+  '@playcanvas/splat-transform@3.12.0(playcanvas@2.24.2)':
     dependencies:
-      '@adobe/spz': 0.2.3
-      playcanvas: 2.23.2
-      webgpu: 0.4.0
+      '@adobe/spz': 0.3.1
+      playcanvas: 2.24.2
+      webgpu: 0.6.2
     transitivePeerDependencies:
       - supports-color
 
-  '@playcanvas/supersplat-viewer@1.35.0(playcanvas@2.23.2)':
+  '@playcanvas/supersplat-viewer@1.35.0(playcanvas@2.24.2)':
     optionalDependencies:
-      playcanvas: 2.23.2
+      playcanvas: 2.24.2
 
   '@rolldown/binding-android-arm-eabi@1.2.9':
     optional: true
@@ -2453,7 +2453,7 @@ snapshots:
 
   picomatch@4.0.7: {}
 
-  playcanvas@2.23.2:
+  playcanvas@2.24.2:
     dependencies:
       '@types/webxr': 0.5.24
       '@webgpu/types': 0.1.74
@@ -2628,7 +2628,7 @@ snapshots:
     transitivePeerDependencies:
       - msw
 
-  webgpu@0.4.0:
+  webgpu@0.6.2:
     dependencies:
       '@webgpu/types': 0.1.74
       debug: 4.4.3
