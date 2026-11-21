@@ -48,7 +48,7 @@ Part B 1, Part C 2, 6, 7; brief t8-tutor-brief.md decisions 1, 7, 8, 9 outside m
     (SpokenList.openedAt keeps the list there without the section name); a setting change redraws only its row (redrawRow: a refused
     change, the head switch's refusal), a visit setting updates the link's note in place (refreshVisit), Show all redraws the settings
     section only; the Start buttons are never drawn again by a setting. Guide row (sonic-guide, level first, after the narrator).
-  - locales (four, the same keys; applied by tools/bench/scripts/tutor-say-locale-apply.mjs from tutor-say-locale-patch.json): new
+  - locales (four, the same keys; applied by a one-off script, removed in S4 because B18 forbids people's texts outside the locales): new
     sonic.start.all, sonic.guide.label/full/short/new; sonic.start.quick = Start flying; removed sonic.start.full and the panel's
     counters sonic.progress.step/attempt/counted (unused since S2); cut to two short sentences: listHelp, menuOpen, replayOlder,
     scanLoading, start.intro, wallsBuilding, wallsFailed, scanNoWalls, courseReady, start.scanWhat, narratorTip, inPlaceIntro(Course).
@@ -97,6 +97,8 @@ What the owner should try:
 6. The Guide level is stored (absent = short). `npx vitest run packages/prefs/test/sonic-guide.test.ts`: pass (NEG OK on the base).
 7. The pilot's mouse path: `node tools/bench/scripts/tutor-say-accept.mjs http://localhost:7021 <out>`: 7/7 PASS; the same against
    https://gsfpv.flyreelstudio.eu: open, tab, steps, once, guide FAIL (accept-local.json, accept-live.json).
+8. The gates once: `gates.py --only typecheck,vitest,architecture,i18n,b18,leaks,catalog`: typecheck, vitest, architecture, i18n,
+   catalog, leaks PASS; b18 FAILed on the S3 locale patch file (people's texts outside the locales), the file removed, b18 again PASS.
 
 ## Not verified
 
