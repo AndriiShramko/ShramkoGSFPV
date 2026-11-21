@@ -312,6 +312,9 @@ try {
         if (!yes9) break;
         await click(yes9.x, yes9.y, 900);
     }
+    // int4 car 3: then gen4b's Generate dialog (level, spread) asks; its Build by mouse
+    const dlg9 = await page.waitForSelector('[data-testid=gen-dialog]', { timeout: 4000 }).then(() => true, () => false);
+    if (dlg9) await clickSel('[data-testid=gen-dialog] [data-action="gen-build"]', 600);
     const g9 = await until(snap, (x) => (x.open && Array.isArray(x.egates) && JSON.stringify(x.egates) !== JSON.stringify(dropped)) || (x.s4?.restored ?? 0) >= tG - 60_000 && (x.s4?.restored ?? 0) > 0 && x.open, 300000, 1000);
     await sleep(2000);
     s = await snap();
