@@ -28,6 +28,7 @@
   "sonic.link.titleStart": "Enlace a Fly by Sound",
   "sonic.link.course": "Con el recorrido del enlace: oyes sus puertas.",
   "sonic.link.lessons": "¿Nuevo en volar por sonido? Abre las lecciones",
+  "sonic.link.unsaved": "Este recorrido nunca se guardó, así que el enlace abre solo el escaneo. Para compartir el recorrido, guárdalo en el editor de recorridos y vuelve a compartir.",
   "sonic.loud.heading": "Volumen",
   "sonic.menu.lessons": "Fly by Sound: lecciones y ajustes",
   "sonic.nav.headphones": "Auriculares",

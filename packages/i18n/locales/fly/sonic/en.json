@@ -28,6 +28,7 @@
   "sonic.link.titleStart": "Link to Fly by Sound",
   "sonic.link.course": "With the course of the link: you hear its gates.",
   "sonic.link.lessons": "New to flying by sound? Open the lessons",
+  "sonic.link.unsaved": "This course was never saved, so the link opens the scan alone. To share the course, save it in the course editor and share again.",
   "sonic.loud.heading": "Loudness",
   "sonic.menu.lessons": "Fly by Sound: lessons and settings",
   "sonic.nav.headphones": "Headphones",

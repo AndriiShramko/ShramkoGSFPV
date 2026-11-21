@@ -80,6 +80,8 @@ export interface ShareDeps {
     /** the link in a focused, selected, read-only field of its own, labelled, outside the captions (sonic/link-panel.ts) */
     field(url: string, copied: boolean): void;
     say(line: SpeechLine): Promise<void>;
+    /** the line said after the link's (lane n-share review: a course never saved stays behind and the pilot is told so), or none */
+    readonly note?: SpeechLine | null;
 }
 
 /**
@@ -91,6 +93,7 @@ export async function shareLesson(d: ShareDeps): Promise<boolean> {
     const copied = await d.copy(d.url);
     if (!copied || d.via === 'button') d.field(d.url, copied);
     await d.say(shareLine(copied, d.lesson, d.copyKeys));
+    if (d.note) await d.say(d.note);
     return copied;
 }
 

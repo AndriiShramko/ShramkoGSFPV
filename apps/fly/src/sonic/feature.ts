@@ -27,7 +27,7 @@ import type { AnalyticWorldInfo, FlightSample, LessonDef, LessonWorldRef, Sessio
 import { FlightSession } from '../session';
 import { copyText } from '../share/clipboard';
 import { KeyHelp, keyHelpLines, shareLesson, soundPlace } from './mode-keys';
-import { courseOfFlight, flightLink } from '../share/flight-link';
+import { courseOfFlight, flightLink, shareNoteKey } from '../share/flight-link';
 import { keyHintsOn } from './key-hints';
 import { KeyNames } from './key-names';
 import { ProgressPanel, followProgress, progressNow } from './progress-panel';
@@ -509,7 +509,8 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
     ctx.sonicShare = (via) => {
         const lesson = h.lesson;
         // lane n-share: the scan, the course flown there and the way of flying (share/flight-link.ts, the one writer of a flight's address)
-        const url = flightLink(soundPlace(lesson, entry.setup.prefs, courseOfFlight(ctx.hook.course, liveSearch())), { origin: location.origin, locale: '' });
+        const course = courseOfFlight(ctx.hook.course, liveSearch());
+        const url = flightLink(soundPlace(lesson, entry.setup.prefs, course), { origin: location.origin, locale: '' });
         const keys = copyKeys();
         ctx.hook.sonicLink = { url, copied: null };
         void shareLesson({
@@ -523,7 +524,9 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
                 return copied;
             },
             field: (link, copied) => void openLinkPanel({ parent: ctx.ui, onOpen: () => ctx.pause('panel'), onClose: () => ctx.resume('panel') }, link, copied, { title: t(lesson ? 'sonic.link.title' : 'sonic.link.titleStart'), copyKeys: keys }),
-            say: (line) => sayLine(line, true)
+            say: (line) => sayLine(line, true),
+            // a course never saved cannot travel: the link opens the scan alone and the pilot hears so (never a silent other course)
+            note: shareNoteKey(course) ? { key: 'sonic.link.unsaved' } : null
         }).catch(() => undefined);
     };
     // K (review R4, mode-keys.ts KeyHelp): the mode's keys said one after the other (the first cuts what is being said, as I and Z do)
