@@ -42,6 +42,25 @@ context it can and gets short, exact results from the workers. History, only whe
   is open with him, by button: whether the lead answers Dawid in the Facebook thread (a group comment, so the rules of
   the fb-engage skill apply).
 
+### 2026-11-26 17:50 UTC: w3-wash is done (one run), W3 step 2 runs
+
+- The finding (C:/dev/gsfpv-t7-base, branch w3-wash, docs/wip/w3-wash.md, 'For the lead'): the prop wash model exists
+  since feec5618 (2026-10-16, packages/sim-core/src/wake.ts). Nothing removed it: it is opt-in per preset (D38,
+  docs/decisions.md:76) and only nazgulf5v3, machr5sport and taurusx8 carry it. The default craft pavo20pro-3s (the
+  default since bcef1bf6) never had it; the setting physics.propWash does nothing on any whoop. A preset air65-1s
+  already exists (no prop wash in it). Term ON with the 5-inch estimates on Pavo20: thrust -5.7 %, 2.1 deg/s: too
+  weak to feel, so the size needs a model change, not only three preset fields.
+- DECIDED (the lead; the owner asked for a physically right prop wash, message 78): prop wash becomes ON by default on
+  every craft, scaled by class. That moves the determinism hash of a6-reference (1d01ca5b -> a new one) and needs a
+  SIM_CORE_VERSION bump: accepted, the new hash is recorded by the lane of step 3; old recordings become older-build.
+- W3 step 2 runs as an agent inside the lead's chat (general-purpose, model sonnet, with the web): sources on prop wash
+  by class (the vortex ring state against v_h, the shake band, ducts) and the data of a 65 mm whoop of the Air65
+  class, blackbox logs. Its note: the vault, project folder, research/, 'ShramkoGSFPV — проп-вош и вупы 65 мм —
+  источники.md'. The conductor is at `--max-parallel 2` while it runs: put it back to 3 after.
+- NEXT for W3: step 3 as an opus lane in C:/dev/gsfpv-t7-base on branch w3-wash (prompt to write from the note's last
+  table): the model scaled by disc loading, the presets (pavo20pro-3s, air65-1s and the 5-inch ones re-based), a test
+  with a negative control, the new a6 hash; its check r-w3-model.
+
 ## How the lead works (the owner's economy rule; written into the skills on 2026-11-26, W4 done)
 
 - The lead runs on the top model (Fable); every worker is Opus or Sonnet. NEVER leave `model` out of an Agent call or
