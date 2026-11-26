@@ -183,6 +183,25 @@ gate B18 for every lane; name a vault note by words, not by its Russian file nam
 - A new lead chat is the better place for car 7: start it with 'you are the lead of ShramkoGSFPV, begin with
   C:/dev/gsfpv-v03/docs/wip/train5-lead.md and the gsfpv skill'; this note is complete for that.
 
+### 2026-11-27 00:00 UTC: disk C and the week are eaten by another pipeline, not by the train
+
+- Disk C fell to 1.3 GB at 23:19 UTC with the train idle. A worker (opus) found the cause: the session transcripts of
+  the stock pipeline, C:/Users/andri/.claude/projects/U--Stock-anon-S*-names (100 folders, 28 GB, 1.5 to 1.9 GB an
+  hour, a new folder about every 10 minutes; unattended `claude -p --model sonnet` runs). It still grows.
+- Freed 21 GB (20.5 GB free at 23:55 UTC): 12 simulator copies removed, each merged into origin/main and clean
+  (gsfpv-ga, gsfpv-outreach, gsfpv-sonic-beacon, gsfpv-t4-head, gsfpv-t4-menu, gsfpv-t4-tails, gsfpv-t8-tutor-moment,
+  gsfpv-train1-base, gsfpv-ui, gsfpv-v12-optin, gsfpv-v13-host, gsfpv-v13-look; no branch deleted; 35 copies remain);
+  three folders moved to U: behind junctions by the disk-c skill's offload.py (ms-playwright 2.5 GB, so the bench
+  browsers now load from U:; BambuStudioBeta 3.4 GB; Autodesk 7.1 GB). Tables and logs: U:/Temp/claude/disk-c-free/.
+  gsfpv-t7-hot (fix-fly, merged and released) may be removed too: it stayed only because it was on the list.
+- NOT solved: the transcripts refill C: in about 10 to 13 hours. The disk-c skill forbids touching ~/.claude/projects
+  without the owner's word; the owner was told; a note is on the coop board for the stock pipeline's session. The
+  watcher's disk floor is 5 GB again.
+- THE WEEK: 43 % at 23:55 UTC (35 % at 21:11) with the train idle: about 2.7 points an hour go to other consumers,
+  the stock pipeline first of all. The train's line is on the TOTAL reading (26.9 % now), so the train does not start
+  while that goes on, and the hook stops all work outside publications at 83 %. The lead does not lift the line by
+  himself: which pipeline gets the week is the owner's call. He was told in the report of 2026-11-27 00:00 UTC.
+
 ## How the lead works (the owner's economy rule; written into the skills on 2026-11-26, W4 done)
 
 - The lead runs on the top model (Fable); every worker is Opus or Sonnet. NEVER leave `model` out of an Agent call or
