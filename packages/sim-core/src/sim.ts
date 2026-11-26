@@ -21,7 +21,7 @@ import type { LevelParams, RespawnOpts } from './contracts';
 import { PlatformContact } from './platform';
 import { compileWind } from './wind';
 import type { WindField } from './wind';
-import { inducedVelocity, wakeIntensity, wakeNoise } from './wake';
+import { inducedVelocity, wakeIntensity, wakeRotorNoise } from './wake';
 
 export const DT = 0.001;
 export const DT_US = 1000;
@@ -229,7 +229,7 @@ export class Sim {
      */
     readonly windNow = new Float64Array(3);
     /**
-     * The prop-wash intensity of the last step, 0..1 (wake.ts); always 0 for a preset without prop wash.
+     * The prop-wash intensity of the last step, 0..1 (wake.ts); always 0 with the prop wash multiplier 0.
      * Not part of the hashed state: it is recomputed from the state and the tick every step.
      */
     washNow = 0;
@@ -366,7 +366,7 @@ export class Sim {
         const up = ux * ax + uy * ay + uz * az;
         const right = rx * ax + ry * ay + rz * az;
         const back = bx * ax + by * ay + bz * az;
-        return wakeIntensity(-up, Math.sqrt(right * right + back * back), vi);
+        return wakeIntensity(-up, Math.sqrt(right * right + back * back), vi, p.wakeShift);
     }
 
     step(): void {
@@ -497,8 +497,10 @@ export class Sim {
         // spinning a rotor up takes torque, and the body takes the reaction about the motor axis:
         // J_r * d(omega)/dt with omega = w * omega_max(V) (H.2 item 3); CW props (+1) push +y like their drag
         const jr = (p.rotorInertia * p.omegaMaxPerVolt * volt) / DT;
-        // prop wash (wake.ts): only a preset that has it; without it `keep` stays exactly 1 (x 1 is exact
-        // in IEEE arithmetic) and no torque is added, so such a model flies bit for bit as before
+        // prop wash (wake.ts): the mean loss `keep` on every rotor and each rotor's own thrust fluctuation of SD
+        // wakeShake x wash; the uneven thrust across the X is the torque noise the rate PID fights. With the
+        // multiplier 0 (wakeLoss and wakeShake 0) `wash` stays 0, `keep` exactly 1 and no rotor fluctuates
+        // (x 1 is exact in IEEE arithmetic): the model without the term bit for bit
         let keep = 1;
         let wash = 0;
         if (p.wakeLoss > 0 || p.wakeShake > 0) {
@@ -506,13 +508,19 @@ export class Sim {
             keep = 1 - p.wakeLoss * wash;
         }
         this.washNow = wash;
+        const shake = wash > 0 ? p.wakeShake * wash : 0;
         for (let i = 0; i < 4; i++) {
             const k = S.m0 + i;
             const dw = (out[i] - s[k]) * aa;
             s[k] += dw;
             const w = s[k];
             const T0 = tmax * w * w;
-            const T = T0 * keep;
+            let f = keep;
+            if (shake > 0) {
+                const g = 1 + shake * wakeRotorNoise(i, this.tick);
+                f = g > 0 ? keep * g : 0;
+            }
+            const T = T0 * f;
             th[i] = T;
             tSum += T;
             wSum += w;
@@ -522,13 +530,6 @@ export class Sim {
             tauY += p.motorYaw[i] * (p.kappa * T + jr * dw);
             // the rotors turn as fast in the wash: the power follows the thrust they would make in clean air
             power += p.kappa * T0 * (w * p.omegaMaxPerVolt * volt);
-        }
-        if (wash > 0 && p.wakeShake > 0) {
-            // turbulent roll (about body z) and pitch (about body x) torque: the rotors' thrust fluctuates by a
-            // share of what they make, unevenly from side to side; amplitude = share x one rotor's thrust x arm
-            const amp = p.wakeShake * wash * (tSum * 0.25) * Math.sqrt(mp[0] * mp[0] + mp[2] * mp[2]);
-            tauZ += amp * wakeNoise(0, this.tick);
-            tauX += amp * wakeNoise(1, this.tick);
         }
 
         if (this.perturb) tSum += this.perturb() * 1e-9;

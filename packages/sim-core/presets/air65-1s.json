@@ -22,6 +22,8 @@
       "value": "31 mm class",
       "source": "estimate"
     },
+    "prop_diameter_mm": { "value": 31, "source": "manufacturer", "note": "GF 1219S 3-blade and HQ 31 mm Ultralight: 31 mm; the rotor disk of the prop wash model (sim-core wake.ts)" },
+    "ducted": { "value": true, "source": "manufacturer", "note": "whoop: every prop runs in a duct; the prop wash band moves by WAKE_DUCT_SHIFT (sim-core wake.ts)" },
     "dry_mass_g": {
       "value": 17.3,
       "source": "manufacturer",

@@ -20,6 +20,8 @@
       "value": "35 mm",
       "source": "manufacturer"
     },
+    "prop_diameter_mm": { "value": 35, "source": "manufacturer", "note": "35 mm props; the rotor disk of the prop wash model (sim-core wake.ts)" },
+    "ducted": { "value": true, "source": "manufacturer", "note": "whoop: every prop runs in a duct; the prop wash band moves by WAKE_DUCT_SHIFT (sim-core wake.ts)" },
     "dry_mass_g": {
       "value": 23.1,
       "source": "manufacturer"

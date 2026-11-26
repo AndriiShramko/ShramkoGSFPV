@@ -4,7 +4,7 @@ import type { RatesConfig, RatesType, ThrottleCurve } from './rates';
 import { invertThrottle } from './rates';
 import type { LevelParams } from './contracts';
 import { compileWind } from './wind';
-import { WAKE_LOSS_MAX } from './wake';
+import { WAKE_DUCT_SHIFT, WAKE_LOSS_MAX, WAKE_LOSS_PEAK, WAKE_SHAKE_PEAK } from './wake';
 import type { WindConfig } from './wind';
 
 export type FieldSource = 'manufacturer' | 'estimate' | 'bf-default' | `measured:${string}`;
@@ -86,13 +86,16 @@ export interface SimParams {
     wind: WindConfig | null;
     /**
      * prop wash (wake.ts): the share of thrust lost at the worst point of a descent through the rotors'
-     * own wake (preset wake_loss x the wake override); 0 = no prop-wash term, the model without it bit for bit
+     * own wake (WAKE_LOSS_PEAK x preset wake_scale x the wake override, capped at WAKE_LOSS_MAX);
+     * 0 together with wakeShake 0 = no prop-wash term, the model without it bit for bit
      */
     wakeLoss: number;
-    /** prop wash: turbulent roll/pitch torque, share of one rotor's thrust times the arm (preset wake_shake) */
+    /** prop wash: SD of each rotor's thrust over its mean at the worst point (WAKE_SHAKE_PEAK x the same multipliers) */
     wakeShake: number;
-    /** total rotor disk area, m^2 (4 disks of preset prop_diameter_mm); 0 when the preset has no prop wash */
+    /** total rotor disk area, m^2 (4 disks of preset prop_diameter_mm); 0 when the prop wash is off */
     wakeArea: number;
+    /** the band's shift in v_d / v_i: WAKE_DUCT_SHIFT on a ducted craft (preset `ducted`), else 0 */
+    wakeShift: number;
 }
 
 export const EARTH_G = 9.81;
@@ -143,8 +146,8 @@ export interface ParamOverrides {
      */
     wind?: WindConfig;
     /**
-     * multiplier on the preset's prop wash (wake_loss and wake_shake; 1 = preset, 0 = off). Presets
-     * without those fields have no prop wash whatever this says.
+     * multiplier on the prop wash (wake.ts; the setting physics.propWash): 1 = the size the sources give,
+     * 0 = off (the model without the term bit for bit), above 1 = exaggerated. Works on every preset.
      */
     wake?: number;
     /**
@@ -171,21 +174,28 @@ function optNum(p: PresetJson, key: string, fallback: number): number {
 }
 
 /**
- * The prop-wash terms of a preset (wake.ts): wake_loss and wake_shake (both optional, 0 when absent)
- * times the override, and the disk area from prop_diameter_mm, which a preset with prop wash must have.
- * A preset's own wake_loss outside 0..WAKE_LOSS_MAX is an authoring error (thrown); the override (the
- * pilot's prop wash setting, up to 2x) can push the product past it, and that is capped, never thrown:
- * a setting must not make a drone that cannot be flown (review R5, docs/wip/v08-d.md).
+ * The prop-wash terms of a preset (wake.ts, docs/wip/w3-model.md "## Design"). The size is the model's, from
+ * the sources (WAKE_LOSS_PEAK, WAKE_SHAKE_PEAK), the same on every craft; the craft's own data decide where it
+ * bites: its rotor disks (prop_diameter_mm, required on every preset) with its mass give v_h, and `ducted`
+ * (required, true or false) moves the band. An optional `wake_scale` multiplies it, only where a source
+ * justifies one (no preset has one today). The override (the pilot's prop wash setting, 0..2) multiplies
+ * both; the loss is capped at WAKE_LOSS_MAX, never thrown: a setting must not make a drone that cannot be
+ * flown (review R5, docs/wip/v08-d.md). The per-preset wake_loss / wake_shake of v0.8 are refused.
  */
-function wakeOf(p: PresetJson, scale: number): { wakeLoss: number; wakeShake: number; wakeArea: number } {
+function wakeOf(p: PresetJson, scale: number): { wakeLoss: number; wakeShake: number; wakeArea: number; wakeShift: number } {
     if (!(scale >= 0) || !Number.isFinite(scale)) throw new RangeError(`wake must be a number >= 0, got ${String(scale)}`);
-    const own = optNum(p, 'wake_loss', 0), ownShake = optNum(p, 'wake_shake', 0);
-    if (own < 0 || own > WAKE_LOSS_MAX || ownShake < 0) throw new RangeError(`preset ${p.id}: wake_loss must be 0..${WAKE_LOSS_MAX} and wake_shake >= 0`);
-    const loss = Math.min(WAKE_LOSS_MAX, own * scale);
-    const shake = ownShake * scale;
-    if (loss === 0 && shake === 0) return { wakeLoss: 0, wakeShake: 0, wakeArea: 0 };
+    if (p.fields.wake_loss !== undefined || p.fields.wake_shake !== undefined) {
+        throw new Error(`preset ${p.id}: wake_loss / wake_shake are gone (the size comes from wake.ts); use wake_scale with a source`);
+    }
+    const own = optNum(p, 'wake_scale', 1);
+    if (!(own >= 0)) throw new RangeError(`preset ${p.id}: wake_scale must be >= 0`);
+    const ducted = p.fields.ducted?.value;
+    if (typeof ducted !== 'boolean') throw new Error(`preset ${p.id}: boolean field ducted missing`);
     const r = num(p, 'prop_diameter_mm') / 2000;
-    return { wakeLoss: loss, wakeShake: shake, wakeArea: 4 * Math.PI * r * r };
+    const loss = Math.min(WAKE_LOSS_MAX, WAKE_LOSS_PEAK * own * scale);
+    const shake = WAKE_SHAKE_PEAK * own * scale;
+    if (loss === 0 && shake === 0) return { wakeLoss: 0, wakeShake: 0, wakeArea: 0, wakeShift: 0 };
+    return { wakeLoss: loss, wakeShake: shake, wakeArea: 4 * Math.PI * r * r, wakeShift: ducted ? WAKE_DUCT_SHIFT : 0 };
 }
 
 /**
