@@ -190,6 +190,8 @@ applyFixes :1065, saveMine :1833, saveAdmin :~1885 (the design named :893-1754);
 - fix-n-save R1.3: most turns went to the edit4a probe being stale since gen4b (Shift+G opens a dialog; 8 min lost on
   'no course') and to step 13's gate choice depending on the random course; a probe that presses `gen-dialog` and a fixed
   seed (`?g=` link) for its course would save a drawn run and six replies.
+- Second check: most turns went to reading the 280-line course.ts hunk and the probe; neg_control.py cannot start `npx`
+  on Windows (CreateProcess wants npx.cmd): pass `node node_modules/vitest/vitest.mjs run <test>` from the start.
 
 ## What the owner should try
 
@@ -241,3 +243,20 @@ left as the lead said. The way taken: (c), the first of the lead's list that mee
   other process's fix-edit4a-nocourse.json no longer exists; (2) a quiet re-run of tools/bench/test/app-dji-rc2.test.ts
   alone (node v22.13.0, the gates' node) passes 15 of 15: the R1.3b failure was a timing flake under load; (3) PID 16320
   is gone, nothing serves this copy; dist/ is git-ignored and left. The tree is clean.
+
+## Review
+
+Verdict: SHIP (second independent check, of 6873adf1; the full review is U:/Temp/gsfpv-train4/reviews/n-save.md).
+- PROVEN, repaired in 64e4fe3b: a gate more than 10 m past the scan's grid (problem 'outside', kind 'in-scan') was listed
+  in the Save dialog as "Inside a wall of the scan"; now "In a wall of the scan or outside it" in en, es, pl, ru. Test
+  tools/bench/test/save-words-outside.test.ts, NEG OK on 6873adf1.
+- Holding: saveVerdict mirrors tracks.py validate_track and _bounds; save-verdict, save-verdict-api, autofix,
+  save-dialog, save-fix-one, save-reopen, n-save-top-row, edit4s-fixes 44 passed; NEG OK on 03624451 for save-verdict and
+  save-dialog. The mouse acceptance on a fresh build of 6873adf1 passes all 11 steps, with the check's own step
+  own2.undoThenAsIs (Fix all, Undo, Save again: the dialog comes again and Save as it is stores the pilot's places).
+  Evidence: evidence/2026-11-20/n-save/review2-accept-local.json. Gates typecheck, vitest, i18n, b18 PASS on 64e4fe3b
+  (review2-b18.json).
+- DOUBT: a two-row bar line covers the upper ~18 px of the top-row buttons (centres reachable, the lead's rule 1); a line
+  past two rows ends with "..." (the lead's choice; the full text is in the window and the Messages list); Fix all uses
+  REQUEST_DEFAULTS.level (lane n-level). Not run again: the live negative control, the 1366x768 / 844x390 measures,
+  saveAdmin in a browser. No person, phone or real controller took part.
