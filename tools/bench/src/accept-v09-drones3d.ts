@@ -48,7 +48,7 @@ console.log(`accept-v09-drones3d target: ${SITE}  base (control): ${BASE_SITE ||
 if (!BASE_SITE) throw new Error('BASE_SITE is needed: the negative control is the release built from the base commit 631fd5f');
 if (!PRE_SITE) throw new Error('PRE_SITE is needed: the V10 checks must fail on the release built from 06bef1f, before the review fixes');
 
-const IDS = ['pavo20pro-3s', 'pavo20pro2-3s', 'pavo20pro2-4s', 'pavopico-2s', 'meteor65pro-1s', 'air65-1s', 'nazgulf5v3-6s', 'machr5sport-6s', 'taurusx8-komodo-6s'];
+const IDS = ['pavo20pro-3s', 'pavo20pro2-3s', 'pavo20pro2-4s', 'pavopico-2s', 'meteor65pro-1s', 'air65-1s', 'air65champ-1s', 'air65iichamp-1s', 'nazgulf5v3-6s', 'machr5sport-6s', 'taurusx8-komodo-6s'];
 const CINE = 'taurusx8-komodo-6s';
 const SCENE = '39e63ce9';
 const OUT = join(REPO, 'evidence', today(), 'drones');

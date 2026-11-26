@@ -16,6 +16,8 @@ comes from a real flight log.
       sim-core b12-rewind (2) and log-v2-compat (2): recorded lives of older builds replayed by the new model.
 - [ ] S2 the presets and determinism: air65-1s corrected by the note; presets Air65 Champion and Air65 II Champion;
       SIM_CORE_VERSION bump; the new A6 hash everywhere the old one is named; gates
+      - [x] presets, wiring, sim-core/0.3.0, A6 9cb46a35..., old recordings, catalogue (commit: see git log)
+      - [ ] gates typecheck,vitest,architecture,i18n,b18,leaks,catalog
 - [ ] S3 the numbers and the pilot: w3-wash-run.ts before/after table for default, Air65, 5-inch; page probe
       (`?render=off`) that the Prop wash row changes the flight and 0 switches it off; For the lead
 
@@ -49,6 +51,33 @@ comes from a real flight log.
 | WAKE_SIDE_FADE | 4 (k / (1 + 4 mu^2)) | no quantitative fade curve found; helicopter lore 0.5 to 1 v_h |
 | Shake spectrum | octaves at 40 and 8 ticks | no measured whoop or 5-inch frequency; pilots' 20 to 100 Hz band |
 | Loss and shake on 31 to 56 mm and ducted rotors | same as 152 mm open | no measurement below 152 mm |
+| air65iichamp-1s prop_diameter_mm | 31 | Gemfan 1207: the 1.2 inch class like the 1219S; the maker gives no diameter |
+| air65iichamp-1s camera_uptilt_deg | 25 | the Air65 canopy's lowest angle; the Air65 II page gives none |
+| Both Champions: inertia, tau, kappa, cda, colliders, drag, efficiency | the Air65's estimates | no source for any of them on any 65 mm whoop |
+
+## Presets (S2)
+
+Sources: the research note's table and its maker addendum (betafpv.com read 2026-11-26). No blackbox note exists:
+no field comes from a real flight log. Each field's source is in the preset JSON (`source`, `ref`, `note`).
+
+| Preset | Changed or new fields |
+|---|---|
+| air65-1s | twr 3.5 (estimate) -> 5.26 (maker; motor table check 5.25); battery_mass_g 7 -> 7.11 (maker); auw_g 24.3 -> 24.4 (maker sum); prop named HQ 31 mm Ultralight (maker); camera_uptilt_deg 20 -> 25 (maker canopy 25 to 50). Hover now 32.8 % stick (maker table about 32 %, Oscar Liang 35 %) |
+| air65champ-1s (new) | 0702 II 30000 KV, GF 1219S, dry 17.4 g, AUW 24.5 g, TWR 6.4 (maker). The lead's 17.9 g is a review's number (community); the maker's page says 17.4 +- 0.15 g and wins. Hover 24.8 % |
+| air65iichamp-1s (new) | 0702 36000 KV, GF 1207, dry 16.6 g, LAVA II 320 mAh 8.2 g, AUW 24.8 g, TWR 6.3 CLAIMED by the maker (its motor table gives 6.34), rpm_loaded_fraction 0.46 from the maker's rpm table. Hover 28.1 % |
+
+Names: the picker shows the preset's `name` (product names, as for every other drone; no locale key holds drone
+names today). The Prop wash help text in the four locales now says every drone has it (it said whoops had none).
+
+## Recordings of older builds
+
+sim-core/0.3.0. A life recorded by 0.2.0 is refused, never replayed silently different: the page says
+"flown with sim-core/0.2.0, this page runs sim-core/0.3.0" (apps/fly/src/session/replay.ts), and sim-core itself
+throws "preset ... is not available" (the preset hash moved with prop_diameter_mm and ducted). Proof that nothing
+else changed: the format /2 log fixture and the B12 browser recording, re-headed with today's preset and
+physics.propWash 0 (test log-kit wakeOffHeader), replay to their saved hashes bit for bit, and A6 with wake 0 gives
+the old 1d01ca5b... (tools/bench/test/a6-reference.test.ts). The old hash stays only in history: evidence/, docs/wip
+of earlier lanes, docs/research/drones-v08.md (a v0.8 statement).
 
 ## Claims
 
@@ -58,6 +87,13 @@ comes from a real flight log.
    the four rotors fluctuate independently (|r| < 0.05), SD 0.06 to 0.14, and repeat bit for bit; multiplier 0 =
    no term. Command: `npx vitest run packages/sim-core/test/model-wake.test.ts`. Last result: 7 passed; on
    origin/main 7 failed (neg_control.py NEG OK).
+2. The A6 reference at default settings is 9cb46a358f1a... (sim-core/0.3.0); with physics.propWash 0 it is the old
+   1d01ca5b... bit for bit. Command: `npx vitest run tools/bench/test/a6-reference.test.ts`. Last result: passed.
+3. Old recordings (format /2 fixture, the B12 browser life) are refused as recorded and replay to their saved hashes
+   with the term off. Command: `npx vitest run packages/sim-core/test/log-v2-compat.test.ts packages/sim-core/test/b12-rewind.test.ts`.
+   Last result: 8 passed.
+4. Eleven presets; the Air65 hovers at 32.8 % stick. Command: `npx vitest run tools/bench/test/drone-card.test.ts
+   tools/bench/test/drones3d` and `npx tsx tools/bench/scripts/w3-model-hover.ts` (from tools/bench). Last result: passed; 32.8 / 24.8 / 28.1 %.
 
 ## Not verified
 

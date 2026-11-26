@@ -2,7 +2,7 @@
   "id": "air65-1s",
   "name": "BetaFPV Air65 Freestyle class, 1S",
   "class": "65 mm brushless tiny whoop",
-  "notes": "Numbers read on betafpv.com on 2026-09-24; TWR, inertia and aerodynamics are not published and are estimates.",
+  "notes": "Numbers read on betafpv.com on 2026-09-24 and again on 2026-11-26 (battery mass, AUW, TWR, prop, camera tilt from the maker's pages); inertia and aerodynamics are not published and are estimates. No public 65 mm whoop blackbox log was found.",
   "fields": {
     "wheelbase_mm": {
       "value": 65,
@@ -12,18 +12,29 @@
     "motor": {
       "value": "0702SE II 23000KV (Freestyle version)",
       "source": "manufacturer",
-      "ref": "https://betafpv.com/products/air65-brushless-whoop-quadcopter"
+      "ref": "https://betafpv.com/products/air65-brushless-whoop-quadcopter",
+      "note": "Freestyle version; the Racing version has 0702SE II 27000KV"
     },
     "motor_kv": {
       "value": 23000,
       "source": "manufacturer"
     },
     "prop": {
-      "value": "31 mm class",
-      "source": "estimate"
+      "value": "HQ 31 mm Ultralight 3-blade (Freestyle)",
+      "source": "manufacturer",
+      "ref": "https://betafpv.com/products/air65-brushless-whoop-quadcopter",
+      "note": "Racing and Champion: Gemfan 1219S 3-blade (was \"31 mm class\", estimate)"
     },
-    "prop_diameter_mm": { "value": 31, "source": "manufacturer", "note": "GF 1219S 3-blade and HQ 31 mm Ultralight: 31 mm; the rotor disk of the prop wash model (sim-core wake.ts)" },
-    "ducted": { "value": true, "source": "manufacturer", "note": "whoop: every prop runs in a duct; the prop wash band moves by WAKE_DUCT_SHIFT (sim-core wake.ts)" },
+    "prop_diameter_mm": {
+      "value": 31,
+      "source": "manufacturer",
+      "note": "GF 1219S 3-blade and HQ 31 mm Ultralight: 31 mm; the rotor disk of the prop wash model (sim-core wake.ts)"
+    },
+    "ducted": {
+      "value": true,
+      "source": "manufacturer",
+      "note": "whoop: every prop runs in a duct; the prop wash band moves by WAKE_DUCT_SHIFT (sim-core wake.ts)"
+    },
     "dry_mass_g": {
       "value": 17.3,
       "source": "manufacturer",
@@ -43,19 +54,24 @@
       "source": "manufacturer"
     },
     "battery_mass_g": {
-      "value": 7,
-      "source": "estimate"
+      "value": 7.11,
+      "source": "manufacturer",
+      "ref": "https://betafpv.com/products/lava-1s-260mah-80c-battery-5pcs",
+      "note": "LAVA 1S 260 mAh 80C, 7.11 g each (was 7, estimate)"
     },
     "auw_g": {
-      "value": 24.3,
-      "source": "estimate"
+      "value": 24.4,
+      "source": "manufacturer",
+      "ref": "https://betafpv.com/products/air65-brushless-whoop-quadcopter",
+      "note": "17.3 g dry + 7.11 g LAVA 260 mAh; the maker's own TWR figures give 24.33 g back (4 x 32.0 g / 5.26) (was 24.3, estimate)"
     },
     "twr": {
-      "value": 3.5,
-      "source": "estimate",
-      "note": "not published by BetaFPV",
-      "min": 2.5,
-      "max": 5.0
+      "value": 5.26,
+      "source": "manufacturer",
+      "ref": "https://betafpv.com/products/air65-brushless-whoop-quadcopter",
+      "note": "Freestyle 5.26:1 (Racing 5.82:1). Check: the 0702SE II 23000KV load table (GF 1219S-3, 4 V) gives 32.0 g at 100 %, 4 x 32.0 / 24.4 = 5.25 (was 3.5, estimate)",
+      "min": 4.7,
+      "max": 5.82
     },
     "inertia_roll_pitch_kgm2": {
       "value": 8e-06,
@@ -129,8 +145,10 @@
       "ref": "https://betafpv.com/products/air65-brushless-whoop-quadcopter"
     },
     "camera_uptilt_deg": {
-      "value": 20,
-      "source": "estimate"
+      "value": 25,
+      "source": "manufacturer",
+      "ref": "https://betafpv.com/products/air65-brushless-whoop-quadcopter",
+      "note": "Air Canopy camera angle 25 to 50 degrees: the lowest setting (was 20, estimate, below the range)"
     },
     "camera_fov_deg": {
       "value": 115,
@@ -204,10 +222,10 @@
       "note": "rotor and duct momentum drag at hover rotor speed: momentum theory sqrt(g rho A_rotors / m) = 1.22 1/s, scaled like the Pavo20 Pro (0.6 = 0.68 of its 0.88 1/s ideal)"
     },
     "rotor_inertia_kgm2": {
-      "value": 1.2e-8,
+      "value": 1.2e-08,
       "source": "estimate",
-      "min": 6e-9,
-      "max": 1.8e-8,
+      "min": 6e-09,
+      "max": 1.8e-08,
       "note": "31 mm prop (about 0.2 g at 5.6 mm) + 0702 bell (about 0.45 g at 3.5 mm); drives the yaw reaction to motor speed changes"
     }
   }

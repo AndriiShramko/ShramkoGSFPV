@@ -1,6 +1,6 @@
 {
   "set.physics.propWash": "Prop wash (własny podmuch śmigieł)",
-  "set.physics.propWash.help": "Ile ciągu traci dron i jak mocno się trzęsie, gdy opada we własny strumień zaśmigłowy (wyhamowanie nurkowania lub szybkiego spadania). 1 = preset, 0 = wyłączone. Whoopy nie mają w symulatorze prop wash.",
+  "set.physics.propWash.help": "Ile ciągu traci dron i jak mocno się trzęsie, gdy opada we własny strumień zaśmigłowy (wyhamowanie nurkowania lub szybkiego spadania). Ma go każdy dron, według własnej masy, śmigieł i osłon. 1 = jak w rzeczywistości, 0 = wyłączone, 2 = dwa razy mocniej.",
   "set.drone.tune": "Latasz tym dronem naprawdę, a tu jego fizyka się nie zgadza? Wyślij Andriiemu swój diff all z Betaflight, log z blackboxa i kilka słów albo poproś o drona, którego brakuje.",
   "set.drone.tuneButton": "Pomóż dostroić tego drona",
   "drone.tune.lead": "Te drony powstały z opublikowanych danych i szacunków. Latasz którymś naprawdę, a tu czuje się inaczej? Wyślij swój diff all z Betaflight, log z blackboxa i kilka słów: tak stają się lepsze. Brakuje twojego drona? Poproś o niego.",

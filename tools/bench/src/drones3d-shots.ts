@@ -16,7 +16,7 @@ const args = process.argv.slice(2);
 const cut = args.indexOf('--');
 const ids = (cut < 0 ? args : args.slice(0, cut)).filter(Boolean);
 const extra = cut < 0 ? [] : args.slice(cut + 1);
-const ALL = ['pavo20pro-3s', 'pavo20pro2-3s', 'pavo20pro2-4s', 'pavopico-2s', 'meteor65pro-1s', 'air65-1s', 'nazgulf5v3-6s', 'machr5sport-6s', 'taurusx8-komodo-6s'];
+const ALL = ['pavo20pro-3s', 'pavo20pro2-3s', 'pavo20pro2-4s', 'pavopico-2s', 'meteor65pro-1s', 'air65-1s', 'air65champ-1s', 'air65iichamp-1s', 'nazgulf5v3-6s', 'machr5sport-6s', 'taurusx8-komodo-6s'];
 const LOCK = 'C:/dev/.gpu-lock';
 
 let waited = 0;

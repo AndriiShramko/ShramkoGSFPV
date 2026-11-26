@@ -170,7 +170,7 @@ const def = defaultPreset();
 const crafts = [...new Set([def, lightest, REF])].map(craft);
 // The A6 determinism run (tools/bench/test/a6-reference.test.ts) on the default craft as shipped, and with the
 // term ON (the borrowed numbers): does giving the default craft prop wash move the pinned hash?
-const A6_REFERENCE = '1d01ca5b16aef6edce77d10de52517cbb609ace4fa05e47c3dccdf13111fff65';
+const A6_REFERENCE = '9cb46a358f1a9f82770a63934e8ef87954746b26918538935666f19094562c21';
 const sc = await loadScene('39e63ce9');
 const pos = sc.settings.position, tgt = sc.settings.target;
 const spawn: [number, number, number, number] = [pos[0], pos[1], pos[2], (Math.atan2(tgt[0] - pos[0], -(tgt[2] - pos[2])) * 180) / Math.PI];

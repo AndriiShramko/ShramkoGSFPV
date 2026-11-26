@@ -1,6 +1,6 @@
 {
   "set.physics.propWash": "Prop wash",
-  "set.physics.propWash.help": "How much thrust the drone loses, and how much it shakes, while it sinks into its own downwash (catching a dive or a fast drop). 1 = the preset, 0 = off. The whoops have no prop wash in the simulator.",
+  "set.physics.propWash.help": "How much thrust the drone loses, and how much it shakes, while it sinks into its own downwash (catching a dive or a fast drop). Every drone has it, sized by its own weight, props and ducts. 1 = true to life, 0 = off, 2 = twice as strong.",
   "set.drone.tune": "Fly this drone for real and its physics feels wrong here? Send Andrii your Betaflight diff all, a blackbox log and a few words, or ask for a drone that is missing.",
   "set.drone.tuneButton": "Help tune this drone",
   "drone.tune.lead": "These drones are built from published numbers and estimates. Fly one of them for real and it feels different here? Send your Betaflight diff all, a blackbox log and a few words: that is how they get better. Missing your drone? Ask for it.",
