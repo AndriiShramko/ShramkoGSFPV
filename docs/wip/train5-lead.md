@@ -7,7 +7,42 @@ context it can and gets short, exact results from the workers. History, only whe
 `01 - Projects/FPV-симулятор в 3DGS-сценах/Бриф Андрія — ShramkoGSFPV (дословно).md`, messages 77 to 79 at its end
 (read those three by slice: `grep -n "сообщение 7[789]"`).
 
-## How the lead works (the owner's economy rule, to be written into the skills: W4)
+## Lead 2, state at 2026-11-26 17:45 UTC (it overrides the sections below where they differ)
+
+- Vault git is repaired: merge 2bd2a8a, backup ref `backup/main-20261126-1828`, `main` level with `origin/main`.
+- The week's control: the conductor has a DAILY SHARE (`train4.py plan --share`; skill gsfpv, references/train.md). New
+  model runs start only while the weekly percent is under 25 % at 2026-11-26 18:00 UTC plus 8.5 points a day; the plan's
+  limit_stop is 80 (the hook's border for work outside publications is 83). The event SHARE (once a day) wakes nobody.
+  The reading at 17:40 UTC: 20 %. Agents started inside the lead's chat are NOT held by it: `limit_reserve.py status`
+  before each. API credits: none left (both grants burned), everything runs on the subscription.
+- W4 is DONE: skills limit-safe-work 2.7.0 (the model table, the lead's ceiling and hand-over, no closing question, the
+  line of spend) and gsfpv 2.2.0 (the section about the train's lead); vault commits 1fd4b93 and 032258a.
+- Jobs added (prompts C:/dev/.gsfpv-lanes/prompts/t10-*.md; opus, but w5-inv is sonnet):
+  - fix-fly (priority 1, copy gsfpv-t7-hot) and r-fix-fly: the accept-fly failure, page or probe.
+  - w1-diag (2, copy gsfpv-t7-n-share; its document C:/dev/.gsfpv-lanes/designs/w1-diag.md) and r-w1-diag, which tries
+    to refute the diagnosis. S1 (Rule, History) was done at 17:36 UTC.
+  - w3-wash (3, copy gsfpv-t7-base, --wake): W3 step 1.
+  - w2-pilot (4, copy gsfpv-t8-tutor-air) and r-w2-pilot: W2's three APPLY decisions in ONE lane (the ground default,
+    the camera line, the catalogue from the pause menu).
+  - w5-inv (5, reads C:/dev/gsfpv-v03, writes one vault note in the project's research folder): W5's inventory.
+- The watcher wakes on FAILED, HOLD, END, `DONE r-fix-*`, `WAKE DONE w<N>-*`, `DONE r-w<N>-*`.
+- NEXT, at the wakes:
+  1. r-fix-fly's verdict. Page: release the repair (ship_chain.sh). Probe only: it rides the next car. The result goes
+     into STATE.md's first bullet.
+  2. w3-wash done: W3 step 2 is ONE agent with the web inside the lead's chat (model sonnet) that collects sources on
+     prop wash and on 65 mm whoops of the Air65 class (mass, motors, props, battery, thrust to weight, rates, public
+     blackbox logs) into a vault note; then an opus lane builds the model and the preset (step 3). While such an agent
+     runs: `plan --max-parallel 2` (the norm is 3 at once, the conductor counts only its own).
+  3. r-w1-diag says SHIP: plan the repair lanes from the design page of the document (the owner's ideas a to d) and the
+     next car: n-save and n-scan (both SHIP), W1's repair, w2-pilot, fix-fly.
+  4. W5 after w5-inv: two web research agents (sonnet: cutting a splat scan into named objects; physics and breaking
+     on splats in a browser), one opus design of the staged plan (a small first stage, the MCP design), one critic pass
+     (agent gs-critic, model opus). The plan is a vault note in the project folder. No building.
+- The owner: the first report of this chat carried car 5's path and the three questions of t8-plan Part D. One question
+  is open with him, by button: whether the lead answers Dawid in the Facebook thread (a group comment, so the rules of
+  the fb-engage skill apply).
+
+## How the lead works (the owner's economy rule; written into the skills on 2026-11-26, W4 done)
 
 - The lead runs on the top model (Fable); every worker is Opus or Sonnet. NEVER leave `model` out of an Agent call or
   a Workflow agent(): left out, it inherits the lead's model, the dearest one. Conductor jobs carry `--model opus`.
