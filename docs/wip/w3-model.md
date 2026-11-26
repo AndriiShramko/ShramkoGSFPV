@@ -16,8 +16,22 @@ comes from a real flight log.
       sim-core b12-rewind (2) and log-v2-compat (2): recorded lives of older builds replayed by the new model.
 - [ ] S2 the presets and determinism: air65-1s corrected by the note; presets Air65 Champion and Air65 II Champion;
       SIM_CORE_VERSION bump; the new A6 hash everywhere the old one is named; gates
-      - [x] presets, wiring, sim-core/0.3.0, A6 9cb46a35..., old recordings, catalogue (commit: see git log)
-      - [ ] gates typecheck,vitest,architecture,i18n,b18,leaks,catalog
+      - [x] presets, wiring, sim-core/0.3.0, A6 9cb46a35..., old recordings, catalogue. Commit 66ca8d49.
+      - [x] gates run once on 66ca8d49 (logs U:/Temp/gsfpv-gates-20261126-192836): PASS architecture, i18n, catalog,
+            leaks. FAIL typecheck and 6 sonic vitest cases: NOT this lane, the packages/sonic-fpv checkout was moved
+            off its pin (719aaf54 vs 9ac7876d) before the lanes came (MomentKey, GuideLevel, setAudible missing).
+            FAIL b18: only docs/wip/train5-lead.md (the lead's file, on origin/main). FAIL 2 of this lane:
+            tools/bench/test/app-game.test.ts "every preset ... Shift lands" (machr5sport-6s slow from 20 m touches
+            at 1.42 m/s, limit 1.13) and "the motors stop only at the floor ... control: the Mach R5 stops in the air"
+            (the control no longer stops above the floor).
+      - [ ] LEFT: the two app-game cases. Diagnosis (a throwaway script, game-loop.ts GameLoop): the 1.42 m/s touch is
+            the same at propWash 0 (1.43) and 1 (1.42): the new term does not cause it. The game assist
+            (apps/fly/src/play/game.ts:446-452, "landed") cuts the motors at 8.65 s, y 0.072 m, vy +0.27 m/s: on the
+            rise of a hop; the craft then lands on its spheres at 0.78-1.43 m/s. On origin/main the Mach carried the
+            v0.8 hand-set wake_loss/wake_shake, which damped that hop; S1 removed them. Next run: decide the fix
+            (likely the assist cuts only when not rising, s[S.vy] <= 0, at the bottom of a hop as its comment says;
+            that file is the game's, so name it under For the lead), re-run only app-game.test.ts and the
+            EarlierAssist control, then gates once more is NOT needed for the other groups (passed on unchanged inputs).
 - [ ] S3 the numbers and the pilot: w3-wash-run.ts before/after table for default, Air65, 5-inch; page probe
       (`?render=off`) that the Prop wash row changes the flight and 0 switches it off; For the lead
 
@@ -105,3 +119,6 @@ of earlier lanes, docs/research/drones-v08.md (a v0.8 statement).
 
 - S1: the most replies went to rewriting the v0.8 wake tests (model-drones-v08, drone-ranges) and one neg_control
   run lost to calling npx as an argv (Windows needs the whole test command as ONE quoted string).
+- S2: the most replies went to wiring two presets through tests that pin the preset count and the equipment table,
+  and to diagnosing the game-landing failure the gates found; running app-game.test.ts before the gates would
+  have found it at once (any flight model change: run it with the model tests).
