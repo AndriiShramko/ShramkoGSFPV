@@ -155,10 +155,27 @@ async function densityMap(id: string, w: Walls, cacheDir: string): Promise<Densi
     let neg = 0;
     for (let i = 0; i < op.length; i += 97) if (op[i]! < 0) neg++;
     const logit = neg > 0; // a logit column has negatives; the linear one never
-    // the flown world of the walls: a legacy (flipped) grid answers (x, y, z) from the file's (-x, -y, z)
-    const sx = w.flip ? -1 : 1;
+    // the frame check: opaque splats sit on the walls in the right mapping of the data table into the flown world, and far
+    // less in the other one (its own negative control). Measured 2026-11-26: (-x, -y, z) for every scan of the set, legacy
+    // (flipped) and 1.1 grids alike (on walls 0.96 to 1.0 against 0 to 0.11), so the mapping is chosen by the check
+    const onWalls = (flipIt: boolean): number => {
+        let hit = 0, n = 0;
+        for (let i = 0; i < xs.length && n < 2000; i += Math.max(1, Math.floor(xs.length / 4000))) {
+            const o = logit ? 1 / (1 + Math.exp(-op[i]!)) : op[i]!;
+            if (o < 0.5) continue;
+            n++;
+            const s = flipIt ? -1 : 1;
+            if (sphereOverlaps(w.walls, s * xs[i]!, s * ys[i]!, zs[i]!, level ? 1 : 2 * w.meta.voxelResolution)) hit++; // a merged splat of a coarse level sits up to its size off the surface
+        }
+        return n ? r2(hit / n) : 0;
+    };
+    const minus = onWalls(true), plus = onWalls(false);
+    const sx = minus >= plus ? -1 : 1;
+    const frame = { used: Math.max(minus, plus), other: Math.min(minus, plus) };
+    // the flown footprint of the walls: a legacy (flipped) grid answers (x, y, z) from its stored (-x, -y, z)
     const gb = w.meta.gridBounds;
-    const xA = [sx * gb.min[0], sx * gb.max[0]].sort((p, q) => p - q), zA = [gb.min[2], gb.max[2]];
+    const wx = w.flip ? -1 : 1;
+    const xA = [wx * gb.min[0], wx * gb.max[0]].sort((p, q) => p - q), zA = [gb.min[2], gb.max[2]];
     const tileM = Math.min(3, Math.max(0.2, Math.max(xA[1]! - xA[0]!, zA[1]! - zA[0]!) / 100));
     const nx = Math.ceil((xA[1]! - xA[0]!) / tileM), nz = Math.ceil((zA[1]! - zA[0]!) / tileM);
     const raw = new Float64Array(nx * nz), cnt = new Float64Array(nx * nz);
@@ -172,19 +189,6 @@ async function densityMap(id: string, w: Walls, cacheDir: string): Promise<Densi
         raw[tz * nx + tx] += logit ? 1 / (1 + Math.exp(-o)) : o;
         cnt[tz * nx + tx]++;
     }
-    // the frame check: opaque splats sit on the walls in the mapping used, and far less in the other one (negative control)
-    const onWalls = (flipIt: boolean): number => {
-        let hit = 0, n = 0;
-        for (let i = 0; i < xs.length && n < 2000; i += Math.max(1, Math.floor(xs.length / 4000))) {
-            const o = logit ? 1 / (1 + Math.exp(-op[i]!)) : op[i]!;
-            if (o < 0.5) continue;
-            n++;
-            const s = flipIt ? -1 : 1;
-            if (sphereOverlaps(w.walls, s * xs[i]!, s * ys[i]!, zs[i]!, 2 * w.meta.voxelResolution)) hit++;
-        }
-        return n ? r2(hit / n) : 0;
-    };
-    const frame = { used: onWalls(w.flip), other: onWalls(!w.flip) };
     const mass = new Array<number>(nx * nz).fill(0), count = new Array<number>(nx * nz).fill(0);
     for (let tz = 0; tz < nz; tz++) for (let tx = 0; tx < nx; tx++) {
         let m = 0, k = 0;
