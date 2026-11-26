@@ -39,7 +39,9 @@ import type { CueEvent } from '@shramko/sonic-fpv';
 import { soundCourseSeed } from './sonic-flight';
 import { S } from '@gsfpv/sim-core';
 import { MAX_GATES_EDIT, REQUEST_DEFAULTS, canSave, courseLinkId, checkTrack, edit, flownCollision, flownStart, marginOf, nearestWall, openEditor, pieceSpec, toTrackV1, upgradeTrack, wallsCheck } from '@gsfpv/tracks';
-import type { CourseRequest } from '@gsfpv/tracks';
+import type { CourseAsk, CourseRequest } from '@gsfpv/tracks';
+import { FROM_PILOT, pilotAnchor } from '../../course/anchor';
+import type { AnchorFrom } from '../../course/anchor';
 import { COURSE_LEVELS, COURSE_SPREADS, GenerateDialog, pressAction, type GenerateFrom } from '../../course/generate-dialog';
 import { dialogOpen } from '../../devices/keyboard';
 import { CheckQueue, checkOnPage } from '../../course/editor/check-core';
@@ -130,9 +132,10 @@ export const course: Feature = {
         hook.adopt = (c) => {
             if ('id' in c) return void loadServer(0, true, c);
             if ('request' in c) {
-                const { seed, ...asked } = c.request;
+                // lane w1-anchor: the host's anchor too (in the course's id), so every racer's course grows from the same place
+                const { seed, anchor, ...asked } = c.request;
                 request = asked;
-                return generate(seed >>> 0);
+                return generate(seed >>> 0, 'request', { kind: 'named', anchor });
             }
             generate(c.seed >>> 0, 'legacy');
         };
@@ -142,7 +145,7 @@ export const course: Feature = {
         hud.setCloseLabel(t('course.hide'));
         // lane gen4b B1 (G7-G9): the level and the spread the pilot picked last (store course.level, course.spread); the
         // voxels-only view asks for the whole scene at any scan quality (gen4 design section 3)
-        const remembered = (): Omit<CourseRequest, 'seed'> => {
+        const remembered = (): CourseAsk => {
             const level = ctx.prefs.get<CourseRequest['level']>('course.level');
             const spread = ctx.prefs.get<CourseRequest['spread']>('course.spread');
             const only = ctx.prefs.get<string>('voxels.show') === 'only';
@@ -153,7 +156,7 @@ export const course: Feature = {
             };
         };
         /** what the next generate() asks the worker for (the dialog's choice; a link's or a room's seed keeps it) */
-        let request: Omit<CourseRequest, 'seed'> = remembered();
+        let request: CourseAsk = remembered();
         /** the dialog's open: where from, and the seed its build keeps (the editor's 'regen-same'); null: a new seed */
         let dialogFor: { from: GenerateFrom; seed: number | null } | null = null;
         const genDialog = new GenerateDialog(ctx.ui, t, {
@@ -719,8 +722,9 @@ export const course: Feature = {
             });
         };
 
-        /** `how`: 'request' lays the dialog's ask (planCourse), 'legacy' a 'g1.' link's seed by the old generator */
-        const generate = (seed: number, how: 'request' | 'legacy' = 'request'): void => {
+        /** `how`: 'request' lays the dialog's ask (planCourse), 'legacy' a 'g1.' link's seed by the old generator (from the
+         *  spawn, as those links laid it); `from`: where a 'request' course grows from (lane w1-anchor, course/anchor.ts) */
+        const generate = (seed: number, how: 'request' | 'legacy' = 'request', from: AnchorFrom = FROM_PILOT): void => {
             // course4 review CU-4: the press after 'no course fits' sets the Scene size the line named, waits until the
             // scene has it (scale.ts pending), then builds
             const sc = ctx.hook.scale;
@@ -732,13 +736,13 @@ export const course: Feature = {
                 sc.set(to);
                 const wait = (n: number): void => {
                     if (sc.pending() !== 1 && n < 50) return void window.setTimeout(() => wait(n + 1), 200);
-                    generate(seed, how);
+                    generate(seed, how, from);
                 };
                 return wait(0);
             }
             const s = ctx.session;
             const w = walls();
-            if (!w) return wallsFirst(() => generate(seed, how));
+            if (!w) return wallsFirst(() => generate(seed, how, from));
             // lane onecourse fixes (review OC-1): a press while a course is being made says how far it is (the progress line)
             if (busy) {
                 // lane quiet2 (review QW-2): with the narrator off the press is answered by the package's "wait" sound
@@ -750,7 +754,9 @@ export const course: Feature = {
             box.close();
             startProgress(how === 'request');
             pending = seed;
-            hook.request = how === 'request' ? { seed, ...request } : undefined;
+            // lane w1-anchor: the pilot's place is read now, after a resize and the walls (a size changes the flown frame)
+            const anchor = from.kind === 'named' ? from.anchor : pilotAnchor(ctx.session.runner.sim.s, s.spawn);
+            hook.request = how === 'request' ? { seed, ...request, anchor } : undefined;
             hook.plan = null;
             const msg: CourseJob = {
                 t: 'generate', job: ++job, ...w,
@@ -1997,9 +2003,10 @@ export const course: Feature = {
             const link = linkCourse;
             linkCourse = null;
             if (link.kind === 'legacy') return generate(link.seed, 'legacy');
-            const { seed, ...asked } = link.request;
+            // lane w1-anchor: the link's anchor (null in an old 'g2.' link: the course it laid before, from the core)
+            const { seed, anchor, ...asked } = link.request;
             request = asked;
-            generate(seed);
+            generate(seed, 'request', { kind: 'named', anchor });
         };
         tryLink();
         if (ctx.session.scene) void refresh();

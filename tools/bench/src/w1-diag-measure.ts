@@ -18,7 +18,7 @@ import { deflateSync, gunzipSync } from 'node:zlib';
 import { openVoxelCollision, placeStart, sphereOverlaps } from '@gsfpv/collision';
 import type { VoxelCollision, VoxelMetadata } from '@gsfpv/collision';
 import { compileParams } from '@gsfpv/sim-core';
-import { analyzeScan, planCourse } from '@gsfpv/tracks';
+import { analyzeScan, courseAnchor, planCourse } from '@gsfpv/tracks';
 import type { CourseLevel, CourseSpread, SceneTransform } from '@gsfpv/tracks';
 import { loadScene, sceneSettings } from './scenes';
 import { REPO } from './evidence';
@@ -103,7 +103,7 @@ async function child(id: string, version: 'live' | 'old' | 'neg', out: string, s
         const t0 = performance.now();
         let track: { gates: { pos: number[] }[] } | null = null, closed = false, note = '';
         if (!old) {
-            const r = plan({ walls: w.walls, transform: T, spawn: placed, scene: { id, version: w.version }, created: CREATED, craftRadiusM: craftR, request: { seed: j.seed, level: j.level!, spread: j.spread!, anyQuality: false }, elements: true });
+            const r = plan({ walls: w.walls, transform: T, spawn: placed, scene: { id, version: w.version }, created: CREATED, craftRadiusM: craftR, request: { seed: j.seed, level: j.level!, spread: j.spread!, anyQuality: false, anchor: courseAnchor(placed) }, elements: true });
             if (r.ok) { track = r.track as never; closed = r.stats.closed; note = r.shrunk ? 'shrunk' : ''; } else note = `no-room fit ${r.fitSize}`;
         } else {
             // the old worker's else branch (git show efd17add:apps/fly/src/course/worker.ts, lines 74-90), without progress posts

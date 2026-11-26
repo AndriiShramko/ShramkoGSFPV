@@ -4,7 +4,7 @@
 // the main button (or Enter). Nothing is built and nothing is deleted before that press; the cross, Cancel and Esc build
 // nothing. The model (dialogModel) is pure so the test reads every text and button without a page; GenerateDialog is its DOM.
 import { LEVELS, VOXEL_VIEW_GATES } from '@gsfpv/tracks';
-import type { CourseLevel, CourseRequest, CourseSpread, LevelRules } from '@gsfpv/tracks';
+import type { CourseAsk, CourseLevel, CourseSpread, LevelRules } from '@gsfpv/tracks';
 import { h } from '../ui/dom';
 
 export type GenerateFrom = 'flight' | 'menu' | 'editor';
@@ -44,7 +44,7 @@ export interface DialogModel {
     readonly main: string;
     readonly cancel: string;
     /** what the main button asks the generator for (the seed is added by the page) */
-    readonly request: Omit<CourseRequest, 'seed'>;
+    readonly request: CourseAsk;
 }
 
 type Words = (key: string, vars?: Record<string, string | number>) => string;
@@ -96,7 +96,7 @@ export function dialogKey(code: string): 'build' | 'cancel' | null {
 export interface DialogHandlers {
     /** the level or the spread was picked (the page remembers it) */
     readonly pick: (p: { level?: CourseLevel; spread?: CourseSpread }) => void;
-    readonly build: (request: Omit<CourseRequest, 'seed'>) => void;
+    readonly build: (request: CourseAsk) => void;
     readonly cancel: () => void;
 }
 

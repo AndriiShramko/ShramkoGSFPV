@@ -13,21 +13,22 @@ import { RoomBoard } from '../../../apps/fly/src/rooms/board';
 import { courseFor, parseCourse } from '../../../apps/fly/src/rooms/race';
 import type { CourseNow, CourseRef, RaceMsg } from '../../../apps/fly/src/rooms/race';
 import { planCourse } from '../../../packages/tracks/src';
-import type { CourseRequest, PlanInput, VoxelCollision } from '../../../packages/tracks/src';
+import type { CourseAsk, CourseRequest, PlanInput, VoxelCollision } from '../../../packages/tracks/src';
 import { IDENTITY } from '../../../packages/tracks/test/worlds';
 import { cityFromAbove } from '../../../packages/tracks/test/scan-worlds';
 
 const A = '39e63ce9';
-const HOST: CourseRequest = { seed: 4242, level: 'pro', spread: 'compact', anyQuality: false };
+// lane w1-anchor: the host's course grows from the host's place; its id carries it, so every racer lays it from there
+const HOST: CourseRequest = { seed: 4242, level: 'pro', spread: 'compact', anyQuality: false, anchor: [27, 3, 27] };
 /** the guest's own dialog choice (store course.level, course.spread) */
-const GUEST_OWN: Omit<CourseRequest, 'seed'> = { level: 'beginner', spread: 'wide', anyQuality: false };
+const GUEST_OWN: CourseAsk = { level: 'beginner', spread: 'wide', anyQuality: false };
 const hostNow: CourseNow = { on: true, source: 'generated', track: { id: 'x', version: 1 }, seed: HOST.seed, request: HOST };
 
 /** What a page asks the worker for when it builds a room's course (race-page.ts build, the course feature's adopt): the
  *  link's ask, or for a plain seed the old way, the seed with this page's own level and spread. */
-function askOf(ref: CourseRef | null, own: Omit<CourseRequest, 'seed'>): CourseRequest | null {
+function askOf(ref: CourseRef | null, own: CourseAsk): CourseRequest | null {
     if (!ref || ref.kind === 'saved') return null;
-    if (ref.kind === 'seed') return { seed: ref.seed, ...own };
+    if (ref.kind === 'seed') return { seed: ref.seed, ...own, anchor: null };
     return ref.request;
 }
 
@@ -43,7 +44,7 @@ const gatesOf = (walls: VoxelCollision, r: CourseRequest): number[][] => {
 describe('the course id of an asked course', () => {
     it('names the asker\'s level and spread, and reads back to the same ask', () => {
         const id = courseFor(hostNow, [{ id: 'cd', version: 2 }], 7);
-        expect(id).toBe(`g2.${HOST.seed.toString(36)}.pc`);
+        expect(id).toBe(`g2.${HOST.seed.toString(36)}.pc.27.3.27`);
         expect(askOf(parseCourse(id), GUEST_OWN)).toEqual(HOST);
         // a course without a request (a 'g1.' link) stays the old id
         expect(courseFor({ ...hostNow, request: undefined }, [], 7)).toBe(`g1.${HOST.seed}`);
