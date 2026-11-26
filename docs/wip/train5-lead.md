@@ -77,7 +77,15 @@ context it can and gets short, exact results from the workers. History, only whe
   decodes with the official viewer's parser taken as source, measures by script. 'No public log exists' is a valid end.
 - Queued: w3-model (priority 3, copy gsfpv-t7-base, branch w3-wash, prompt t10-w3-model.md, three stages: the model,
   the presets and the new a6 hash, the numbers and the pilot) and r-w3-model.
-- The conductor is at `--max-parallel 2` while the agent runs: PUT IT BACK TO 3 at the agent's notification.
+- 18:08 UTC: the second pass is back and in the note (three sections «Дополнение», the table corrected); the
+  conductor is at 3 again and w3-model is released. Its numbers: the thrust's standard deviation over hover thrust
+  rises from 0.03 to about 0.10 at the peak ratio (Veismann 2022, read off figures); 20 to 50 rotor revolutions a
+  cycle (Stack 2004), so about 7 to 23 Hz on a whoop (an estimate); pilots report 20 to 100 Hz on 5-inch quads. The
+  maker's pages, opened in the built-in browser: Air65 17.3 g, battery 7.11 g, thrust to weight 5.26 (Freestyle),
+  5.82 (Race), 6.4 (Champion); motor 0702SE II 23000 KV 32.0 g at 4 V with the 1219S-3P propeller; camera 25 to 50
+  degrees. Still no source: the shake of a 31 mm rotor, the gyro swing in deg/s, a whoop's prop wash frequency.
+- State at 18:08 UTC, the week at 23 %: fix-fly in S2, w1-diag in S3 (its last), w2-pilot has S1 and S2, w3-model,
+  w3-bbl and w5-inv are ready and wait for a slot.
 
 ## How the lead works (the owner's economy rule; written into the skills on 2026-11-26, W4 done)
 
