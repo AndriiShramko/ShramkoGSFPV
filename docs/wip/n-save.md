@@ -76,8 +76,9 @@ applyFixes :1065, saveMine :1833, saveAdmin :~1885 (the design named :893-1754);
 5. Save with a gate in a wall and two gates on one spot opens one dialog: the count, one line per kind with the gates from 1,
    the buttons save-fix-all, save-as-is, save-show-me in that order, each answering once; after Fix all the line save-fixed
    names the moved gates and save-undo runs once (none when nothing moved); the ghosts ring the old places; every blocker is
-   one line with its way out; the words exist in en, es, pl, ru; the editor's message line is at least 16 px, wraps to three
-   lines and has no ellipsis. Proof: `npx vitest run tools/bench/test/save-dialog.test.ts` (8 passed); NEG OK on 03624451.
+   one line with its way out; the words exist in en, es, pl, ru; the editor's message line is at least 16 px and wraps
+   (at most two rows since fix-n-save, claim 9). Proof: `npx vitest run tools/bench/test/save-dialog.test.ts` (8 passed);
+   NEG OK on 03624451.
 
 6. A course saved as it is with warnings opens again from Courses (or a link): shown with its warnings and a line that Save
    fixes them; the newest course tried for the flight on its own still skips one that fails the walls. Proof:
@@ -91,6 +92,19 @@ applyFixes :1065, saveMine :1833, saveAdmin :~1885 (the design named :893-1754);
 8. The same probe against the live site (the code before this train) FAILS 'dialog' and 'Save as it is' (the old answer
    "Before saving: gate 1 touches a wall ... Make these small corrections and save?") and stops before any save. Proof:
    evidence/2026-11-20/n-save/accept-live.json (dialog false, asIs.saved false; no track POST).
+9. fix-n-save: every page button of the top row (Motor sound, Full screen, Messages, Share) takes a mouse press at its
+   centre whatever line the editor's bar shows: at 1536x730 scale 1.25, 1366x768 scale 1 and 844x390 scale 2, with the
+   default line ("Editor open. Every key is under Keys."), the longest save warning and no line, `elementFromPoint` at
+   each centre gives that button (9 of 9). The line keeps 16 px and takes at most two rows; a longer text ends with an
+   ellipsis and goes whole into the Messages list. Proof: `npx vitest run tools/bench/test/n-save-top-row.test.ts` (8
+   passed; NEG OK on 511f9594, 5 of 8 fail there) and `MEASURE_TOP=1 node tools/bench/scripts/n-save-accept.mjs dist
+   70b50d42 <out>` on a build of 3d58873e -> evidence/2026-11-20/n-save/fix-top-row-head.json (the check's run on the
+   build of 511f9594: review-top-row-head.json, the bar to y 78 and the centres covered). The lane's acceptance on that
+   build passes every step: fix-accept-local.json.
+10. fix-n-save: the editor's bar and the editor's window still do not lie over each other: the edit4a probe's 15 steps
+   pass on the same build, drawn, 1536x730 scale 1.25 (step 13 at 844x390 scale 2: `over` [], `outside` []). Proof:
+   evidence/2026-11-20/n-save/fix-edit4a-local-run2.json. The repo's probe cannot be run as it is since gen4b (see For
+   the lead); the run used a temp copy whose only change is Enter in the Generate dialog after Shift+G.
 
 ## Not verified
 
@@ -131,6 +145,22 @@ applyFixes :1065, saveMine :1833, saveAdmin :~1885 (the design named :893-1754);
   about 15-20 px. No width of the message alone can clear it (the buttons alone end at x 798, the centred bar cannot end
   left of x 968 with a 420 px line). The fix belongs to the bar's place (.ce-topbar / top-bar.ts place()): on a wide view,
   when the bar's rect meets the top row, put the bar under --top-row-bottom as the narrow-view rule already does.
+  Superseded by fix-n-save (below): the bar's place was not needed.
+- fix-n-save, the way taken: (c), the first of the lead's list. The default line is one short sentence that names the
+  Keys button ("Editor open. Every key is under Keys.", course.edit.opened in en, es, pl, ru) and every line is at most two rows (line-clamp 2, 16 px
+  kept); a cut text that is no refusal goes whole into the Messages list (top-bar.ts setLine -> host.cut, course.ts passes
+  it to tell). Two rows end the bar at y 58 CSS px at 1536x730 scale 1.25, above the top row's centres (y 60), so (b) and
+  (a) were not needed and the bar's place is unchanged (rule 2 holds by construction; the edit4a probe confirms it). Doubt
+  3 done: course.edit.saveFix says "Not saved yet. {fix}". Doubt 2 left as told. Files outside the owned list:
+  tools/bench/test/editor3-g2.test.ts (it asserted the old default line's key list).
+- The top row's centres are reached with 2 px to spare (y 58 vs 60) on the wide view; a third row, a larger font or a
+  taller row would cover them again. tools/bench/test/n-save-top-row.test.ts holds the two-row rule.
+- fix-n-save, not mine: tools/bench/scripts/edit4a-probe.mjs fails 'no course' on the base (511f9594) and on every build
+  since gen4b 3fde6ad6: Shift+G opens the Generate a course dialog, which the probe never presses. Rule 2 was proved with
+  a temp copy (U:/Temp/gsfpv-train4/n-save/make-edit4a-copy.mjs: Enter in the dialog, no step changed). Its first run
+  failed only step 13's "click another gate" part (a 10-gate course left no gate 125 px inside the 844x390 window;
+  `over` [] and `outside` [] held), kept as fix-edit4a-local.json; the second (13 gates) passed every step. The probe's
+  owner should press `gen-dialog`'s build after Shift+G and pick step 13's gate after a wider frame.
 - Deploy order: page only (no API file changed so far).
 
 ## Cost notes
@@ -189,4 +219,6 @@ left as the lead said. The way taken: (c), the first of the lead's list that mee
 - [x] R1.2 build of 3d58873e; MEASURE_TOP=1 n-save-accept on it: 9 of 9 (three views x three lines) every top-row
   centre reaches its button (evidence fix-top-row-head.json; the bar ends at y 48 with one row, y 58 with two; on 844x390
   the line is hidden as before); the lane's acceptance passes every step (fix-accept-local.json)
-- [ ] R1.3 edit4a-probe unchanged; gates once; Claims and For the lead
+- [x] R1.3a edit4a-probe on the build of 3d58873e, drawn: run 2 passes every step (claim 10; the repo probe needs the
+  Generate dialog pressed since gen4b, For the lead); Claims 9, 10 and For the lead written
+- [ ] R1.3b gates once
