@@ -141,6 +141,36 @@ gate B18 for every lane; name a vault note by words, not by its Russian file nam
 - The week: 29 % at 19:35 UTC (26 % at 18:41: the chain above the line, and other consumers). The line allows 25.6 %:
   w1-dialog, r-w3-model, w2-pilot, w3-bbl and w5-inv wait until about midday of 2026-11-27.
 
+### 2026-11-26 21:15 UTC: CAR 6 IS LIVE (94727c6c); one live check failed and is rerun; disk C; this chat is detached
+
+- Live: release.json sha 94727c6c, built 2026-11-26T20:26:21Z, the sound package 9ac7876 (unchanged). ship.log: CI
+  success, 302 checks passed, neighbours equal. Live checks: 8 of 9 PASS (accept-fly, w1-anchor-accept,
+  gen4-generate-dialog, one-course, course-path-wroclaw, gate-guide-wroclaw, n-share-sound-link,
+  tutor-air-first-flight). FAIL sonic-course-wroclaw, the item 'the switch on in the air starts no new life and keeps
+  the speed': at the press the craft already drifted sideways (velocity x -1.92 m/s; in car 5's run -0.03), flew 30 m
+  on and crashed before the first cue. No course exists at that moment, so the generator is not in it. The check is
+  rerun twice from the int copy in the background of the lead's chat (U:/Temp/gsfpv-train4/ship-car6/live-r2 and
+  live-r3). Both PASS: a flaky probe, say so in STATE.md and go on. A FAIL again: a repair lane by the pattern of
+  prompts/t10-fix-fly.md (page or probe), priority 1, share-free.
+- The owner's path: docs/wip/train4-int.md, 'What the owner should try', Car 6 (scan eb5f51dc, Shift+G; fly, pause,
+  Shift+G; the link). Not verified: the same file, 'Not verified', Car 6.
+- Disk C fell to 4.9 GB during the car (the watcher's disk floor woke the lead). 21 build folders (apps/fly/dist, dist)
+  were removed in the train's lane copies: 6.8 GB free. The watcher runs with a floor of 3 GB now
+  (`lead_watch.sh 0 3`). NOT done: removing the work copies of lanes that are merged and released (about 47 worktrees,
+  about 1.8 GB each by du; how much is real with pnpm's hard links was not measured). It needs its own careful session
+  with the disk-c skill: each copy checked for uncommitted files first; never the lead copy, the int copy, or the copy
+  of a job that waits, is ready, held or running.
+- The week: 35 % at 21:11 UTC; the line allows 26.1 %. Every job but a share-free one waits for the line: until about
+  the evening of 2026-11-27 if nothing else spends. No job that is left carries share-free.
+- This chat is a top-level session (the old lead detached it; checked with detach_session 'self'): the end of its
+  turns wakes no other chat. A new lead chat checks the same at once.
+- NEXT: car 7 is w1-dialog, w2-pilot, w3-model, n-save and n-scan (when their checks say SHIP; its prompt by the
+  pattern of prompts/t10-car6-header.txt plus the body of t8-car5.md). W1's R3, the n-route rebase and the test
+  system are still to plan. W3: r-w3-model and w3-bbl wait for the line. W5: w5-inv waits for the line; then two web
+  research agents, the design and the critic.
+- HAND-OVER: this chat has grown; the next wake after a long pause would rewrite its whole context. The next lead is
+  a NEW chat started from this note; this chat leaves no watcher behind once the rerun above is answered.
+
 ## How the lead works (the owner's economy rule; written into the skills on 2026-11-26, W4 done)
 
 - The lead runs on the top model (Fable); every worker is Opus or Sonnet. NEVER leave `model` out of an Agent call or
