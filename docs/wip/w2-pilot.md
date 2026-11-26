@@ -6,7 +6,7 @@ the ground (a lower sensitivity near the ground by default). His fourth point (b
 
 ## Status
 
-- [x] S1 A, the ground: measurement, the softer default, the test, the negative control (this commit)
+- [x] S1 A, the ground: measurement, the softer default, the test, the negative control (25635abf)
 - [ ] S2 B, the camera line in the first-minute menu; the entry points of C and its plan (ten lines below)
 - [ ] S3 C, the scene catalogue from the pause menu, with a test
 - [ ] S4 the acceptance by mouse (local build PASS, live FAIL), gates once, For the lead
