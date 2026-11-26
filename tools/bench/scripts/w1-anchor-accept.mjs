@@ -11,7 +11,7 @@
 //   4 sameCourse a fresh browser context opens that address: the same gates (positions to 1 cm)
 // Usage: node tools/bench/scripts/w1-anchor-accept.mjs <base with /en> <out.json> [scene eb5f51dc]
 // env: RENDER=on draws (hold the GPU lock C:/dev/.gpu-lock around the run), SHOT=<png> one picture after step 1, COURSE_MS.
-// Read only: every request that is not a GET, and analytics, are aborted (listed in the JSON); no save button is pressed; a
+// Read only: every request that is not a GET, HEAD or OPTIONS, and analytics, are aborted (listed in the JSON); no save button is pressed; a
 // generated course lives only in the tab. Against the live site step 1 must FAIL (the negative control). Exit 1 on a failure.
 import { createRequire } from 'node:module';
 import { writeFileSync } from 'node:fs';
@@ -71,7 +71,7 @@ async function newContext() {
     await ctx.route('**/*', (route) => {
         const r = route.request();
         const u = r.url();
-        if (r.method() !== 'GET' || /google-analytics|googletagmanager|doubleclick/.test(u)) {
+        if (!['GET', 'HEAD', 'OPTIONS'].includes(r.method()) || /google-analytics|googletagmanager|doubleclick/.test(u)) {
             out.blocked.push(`${r.method()} ${u.slice(0, 120)}`);
             return route.abort();
         }
@@ -92,6 +92,11 @@ async function openPage(ctx, url) {
     await page.waitForFunction(() => { const w = window.__gsfpv && window.__gsfpv.walls; return !w || w.state !== 'checking'; }, null, { timeout: 120000 }).catch(() => 0);
     await page.waitForFunction(() => !!(window.__gsfpv && window.__gsfpv.session && window.__gsfpv.session.baseCollision), null, { timeout: 180000 }).catch(() => 0);
     await sleep(1000);
+    out.landings = [...(out.landings ?? []), await page.evaluate(() => ({
+        url: location.href.slice(0, 160), status: window.__gsfpv && window.__gsfpv.status, session: !!(window.__gsfpv && window.__gsfpv.session),
+        buttons: [...document.querySelectorAll('button')].filter((b) => b.offsetParent !== null).map((b) => b.getAttribute('data-action') || (b.textContent || '').trim().slice(0, 30)).slice(0, 20)
+    }))];
+    save();
     return page;
 }
 
