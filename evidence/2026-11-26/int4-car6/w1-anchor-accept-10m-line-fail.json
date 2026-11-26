@@ -1,0 +1,210 @@
+{
+ "probe": "w1-anchor-accept",
+ "base": "http://localhost:6180/en",
+ "scene": "eb5f51dc",
+ "render": false,
+ "viewport": "1536x730@1.25",
+ "steps": [
+  {
+   "step": 1,
+   "name": "atCamera: Shift+G at the load, gate 1 within 10 m of the spawn",
+   "pass": true,
+   "detail": {
+    "lock": true,
+    "dialog": true,
+    "built": true,
+    "ms": 1266,
+    "gates": 14,
+    "spawn": [
+     -8.589938163757324,
+     5.890172004699707,
+     -21.17869758605957
+    ],
+    "droneAtBuild": [
+     -8.589938163757324,
+     5.890172004699707,
+     -21.17869758605957
+    ],
+    "gate1": [
+     -8.8,
+     5.6,
+     -23.2
+    ],
+    "gate1ToSpawnM": 2,
+    "meanGateToSpawnM": 15,
+    "request": {
+     "seed": 160842589,
+     "level": "medium",
+     "spread": "compact",
+     "anyQuality": false,
+     "anchor": [
+      -9,
+      6,
+      -21
+     ]
+    }
+   }
+  },
+  {
+   "step": 2,
+   "name": "atDrone: 30 m away, paused, course item, gate 1 within 10 m of the drone",
+   "pass": false,
+   "detail": {
+    "takeoffAt": [
+     -8.589938163757324,
+     5.890172004699707,
+     -21.17869758605957
+    ],
+    "flownAt": [
+     16.632000128938127,
+     15.19231452074374,
+     -4.2366753134706485
+    ],
+    "flownM": 30.4,
+    "rose": 9.3,
+    "menu": true,
+    "stillInPause": true,
+    "courseItem": true,
+    "dialog": true,
+    "built": true,
+    "droneAtBuild": [
+     16.632000128938127,
+     15.19231452074374,
+     -4.2366753134706485
+    ],
+    "droneToSpawnM": 30.4,
+    "gate1": [
+     7.2,
+     7.2,
+     0.8
+    ],
+    "gate1ToDroneM": 10.7,
+    "gate1ToSpawnM": 27.1,
+    "gates": 14,
+    "ms": 4057,
+    "request": {
+     "seed": 717083019,
+     "level": "medium",
+     "spread": "compact",
+     "anyQuality": false,
+     "anchor": [
+      17,
+      15,
+      -4
+     ]
+    }
+   }
+  },
+  {
+   "step": 3,
+   "name": "linkHas: the shared address names the course with its anchor",
+   "pass": true,
+   "detail": {
+    "share": true,
+    "clipboard": "-",
+    "field": "http://localhost:6180/en/fly/?scene=eb5f51dc&course=g2.buxksr.mc.17.15.-4",
+    "course": "g2.buxksr.mc.17.15.-4"
+   }
+  },
+  {
+   "step": 4,
+   "name": "sameCourse: a fresh context lays the same gates",
+   "pass": true,
+   "detail": {
+    "opened": true,
+    "gates": 14,
+    "same": true,
+    "gate1": [
+     7.2,
+     7.2,
+     0.8
+    ],
+    "ms": 5,
+    "request": {
+     "seed": 717083019,
+     "level": "medium",
+     "spread": "compact",
+     "anyQuality": false,
+     "anchor": [
+      17,
+      15,
+      -4
+     ]
+    }
+   }
+  }
+ ],
+ "blocked": [
+  "POST http://localhost:6180/api/e",
+  "POST http://localhost:6180/api/e",
+  "POST http://localhost:6180/api/e",
+  "POST http://localhost:6180/api/e",
+  "POST http://localhost:6180/api/share",
+  "POST http://localhost:6180/api/e",
+  "POST http://localhost:6180/api/e",
+  "POST http://localhost:6180/api/e"
+ ],
+ "errors": [],
+ "landings": [
+  {
+   "url": "http://localhost:6180/en/fly/?scene=eb5f51dc&nowarn=1&set.input.howToFly=false&set.input.play=easy&render=off",
+   "status": "ready",
+   "session": true,
+   "buttons": [
+    "voxpanel-fold",
+    "voxpanel-close",
+    "walls-toggle",
+    "voxels-mode-off",
+    "voxels-mode-overlay",
+    "voxels-mode-only",
+    "floaters-open",
+    "walls-export",
+    "walls-import",
+    "walls-clear",
+    "mode-chip",
+    "sound-toggle",
+    "fullscreen-toggle",
+    "messages-open",
+    "share-top",
+    "open-settings",
+    "open-feedback",
+    "open-controls",
+    "pause",
+    "cinema-rec"
+   ]
+  },
+  {
+   "url": "http://localhost:6180/en/fly/?scene=eb5f51dc&course=g2.buxksr.mc.17.15.-4&nowarn=1&set.input.howToFly=false&set.input.play=easy&render=off",
+   "status": "ready",
+   "session": true,
+   "buttons": [
+    "voxpanel-fold",
+    "voxpanel-close",
+    "walls-toggle",
+    "voxels-mode-off",
+    "voxels-mode-overlay",
+    "voxels-mode-only",
+    "floaters-open",
+    "walls-export",
+    "walls-import",
+    "walls-clear",
+    "mode-chip",
+    "sound-toggle",
+    "fullscreen-toggle",
+    "messages-open",
+    "share-top",
+    "open-settings",
+    "open-feedback",
+    "open-controls",
+    "pause",
+    "cinema-rec"
+   ]
+  }
+ ],
+ "verdict": {
+  "pass": false,
+  "failed": [
+   2
+  ]
+ }
+}

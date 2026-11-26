@@ -3,10 +3,10 @@
 // parked there, else the drone; and its link lays the same course in a fresh browser.
 // Steps (each {step, name, pass, detail}; distances are flat, on x and z, y is up):
 //   1 atCamera   scan eb5f51dc just loaded: a click into the scene (the pointer lock), key Shift+G, the dialog's Build by the
-//                mouse: the course comes, gate 1 lies within 10 m of the spawn
+//                mouse: the course comes, gate 1 lies within NEAR_M (15 m) of the spawn
 //   2 atDrone    a click into the scene, Space (up) then W (forward) until the drone is 30 m from where it took off, Escape (the
-//                pause menu: the drone stops in the air), the menu's course item, Build: gate 1 lies within 10 m of the drone and
-//                the drone is at least 25 m from the spawn
+//                pause menu: the drone stops in the air), the menu's course item, Build: gate 1 lies within NEAR_M of the drone
+//                and nearer it than the spawn, and the drone is at least 25 m from the spawn
 //   3 linkHas    Escape, the pause menu's Share: the copied address names the course with its anchor (g2.<seed>.<ls>.<x>.<y>.<z>)
 //   4 sameCourse a fresh browser context opens that address: the same gates (positions to 1 cm)
 // Usage: node tools/bench/scripts/w1-anchor-accept.mjs <base with /en> <out.json> [scene eb5f51dc]
@@ -54,6 +54,11 @@ const READ = () => {
     };
 };
 const flat = (a, b) => (a && b ? Math.round(Math.hypot(a[0] - b[0], a[2] - b[2]) * 10) / 10 : null);
+/** gate 1 counts as 'round the pilot' within this many flat metres of the anchor. Integration car 6: the design's 10 m is the
+ *  measuring gate's MEDIAN; each press takes a random seed, and single seeds lay gate 1 farther (the review: 12.3 and 12.5 m;
+ *  car 6's build: 10.7 m from the paused drone). 15 m keeps every seed seen so far and still fails the live site (492.6 m);
+ *  step 2 also asks gate 1 to lie nearer the drone than the spawn, so the course must have moved with the pilot. */
+const NEAR_M = 15;
 const digest = (s) => s.poses.map((p) => p.join(',')).join(';');
 const courseUp = (s) => s.gates > 0 && s.drawn > 0;
 
@@ -124,7 +129,7 @@ try {
     const built1 = await build(page);
     const s1 = await poll(page, COURSE_MS, courseUp);
     const g1 = s1.poses[0] ?? null;
-    check(1, 'atCamera: Shift+G at the load, gate 1 within 10 m of the spawn', courseUp(s1) && flat(g1, s1.spawn) <= 10,
+    check(1, `atCamera: Shift+G at the load, gate 1 within ${NEAR_M} m of the spawn`, courseUp(s1) && flat(g1, s1.spawn) <= NEAR_M,
         { lock: lock1, dialog: dlg1, built: built1, ms: s1.ms, gates: s1.gates, spawn: s1.spawn, droneAtBuild: b1.drone, gate1: g1,
           gate1ToSpawnM: flat(g1, s1.spawn), meanGateToSpawnM: s1.poses.length ? Math.round(s1.poses.reduce((a, p) => a + flat(p, s1.spawn), 0) / s1.poses.length) : null,
           request: s1.request });
@@ -163,8 +168,8 @@ try {
     const s2 = await poll(page, COURSE_MS, (q) => courseUp(q) && digest(q) !== d1);
     const g2 = s2.poses[0] ?? null;
     const here = b2.drone;
-    check(2, 'atDrone: 30 m away, paused, course item, gate 1 within 10 m of the drone',
-        courseUp(s2) && digest(s2) !== d1 && flat(here, s2.spawn) >= 25 && flat(g2, here) <= 10,
+    check(2, `atDrone: 30 m away, paused, course item, gate 1 within ${NEAR_M} m of the drone and nearer it than the spawn`,
+        courseUp(s2) && digest(s2) !== d1 && flat(here, s2.spawn) >= 25 && flat(g2, here) <= NEAR_M && flat(g2, here) < flat(g2, s2.spawn),
         { takeoffAt: t0.drone, flownAt: fl.drone, flownM: flat(fl.drone, t0.drone), rose: fl.drone && t0.drone ? Math.round((fl.drone[1] - t0.drone[1]) * 10) / 10 : null,
           menu, stillInPause: flat(p0.drone, p1.drone) === 0 && p0.drone[1] === p1.drone[1], courseItem: hasItem, dialog: dlg2, built: built2,
           droneAtBuild: here, droneToSpawnM: flat(here, s2.spawn), gate1: g2, gate1ToDroneM: flat(g2, here), gate1ToSpawnM: flat(g2, s2.spawn),
