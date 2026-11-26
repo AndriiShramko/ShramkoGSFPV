@@ -257,6 +257,10 @@ cover what changed since car 5's head.)
       flight-link.ts course token with '-' against n-share), the one full check: gates, a6-reference, the package's
       tests, one release build with the walls, w1-anchor-accept, accept-fly B6 B7 B9-B16, n-share-accept, the
       generate dialog probe
+      Done so far: seam test tools/bench/test/int4-car6-seams.test.ts 3/3 PASS, NEG OK on 3cc6b51b (15a01c3d). Release
+      build of 15a01c3d (1950 files, int4/build-car6.log) with the nine walls in dist/walls. Running:
+      U:/Temp/gsfpv-train4/int4/probes-car6.sh (logs-car6/summary.txt; serve-csp on :6180, kill it by the PID there).
+      Left: read logs-car6, the gates once, a6-reference, the picture, evidence commit, delete dist.
 - [ ] S3 the hand-over: origin/main merged, w1-anchor-accept in deploy/live-checks.sh with its negative control on
       the live site, Deploy order, Live checks, What the owner should try, Not verified, int4-car6.json
 
