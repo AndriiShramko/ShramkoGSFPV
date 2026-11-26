@@ -236,3 +236,6 @@ left as the lead said. The way taken: (c), the first of the lead's list that mee
   nor packages/input changed since 511f9594 and it reads no file of this repair; it ran while another process was
   running a drawn edit4a probe on this machine (see For the lead). Not re-run: the gates run once, and nothing about the
   DJI RC 2 is this lane's.
+- [ ] R1 left (not this run's to do, for the lead): (1) the tree is not clean: another process writes in this copy
+  (untracked evidence/2026-11-20/n-save/fix-edit4a-nocourse.json and evidence/2026-11-26/, not mine, not touched);
+  (2) vitest's app-dji-rc2.test.ts:188 timing failure, a quiet re-run decides; (3) dist/ not deleted: PID 16320 serves it.
