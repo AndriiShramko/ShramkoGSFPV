@@ -15,7 +15,9 @@ sections Cause and Design proposal (R1). Temp folder U:/Temp/gsfpv-train4/w1-anc
   - [x] measuring gate (w1-diag-measure.ts: eb5f51dc, Lublin, Tunis): passed, numbers in Claims 6 (b78ce85d)
   - [x] gates.py on b78ce85d: architecture, i18n, leaks PASS; typecheck, vitest, b18 FAIL, none from this lane after one
         fix (see Not verified); walls-first.test.ts's source pattern now allows generate's third argument `from`
-- [ ] S3 acceptance by mouse against a local release build; the same probe against the live site fails its first step
+- [x] S3 acceptance by mouse against a local release build; the same probe against the live site fails its first step
+  - [x] probe tools/bench/scripts/w1-anchor-accept.mjs (e8f33fa9, 49d76338); local release build of e8f33fa9: 4 of 4 PASS
+        (drawn, one picture); live: step 1 FAIL (gate 1 492.6 m from the camera); evidence; dist deleted (this commit)
 
 Design differences (the code wins): the anchor lives in `CourseRequest.anchor` (the request is what the link names, what a
 stored track's id is made of and what a room race hands to every racer), so `PlanInput.anchor` is `input.request.anchor`;
@@ -48,7 +50,18 @@ pos, quat and shape with hashes taken from origin/main's planCourse: equal. `g1.
 
 ## What the owner does
 
-(S3)
+1. Open scan eb5f51dc (the chateau). Click into the scene, press key Shift+G, click Build in the dialog. The note says
+   "Gates: 14. The start gate is 3 m away": the gates stand in the sharp courtyard round the place the scene opened at, not
+   in the dark fringe 500 m off.
+2. Fly away (Space up, W forward) about 30 m, press Escape (the drone stops in the air), click the course item of the menu,
+   click Build: the new course starts beside the drone (gate 1 about 4 m from it).
+3. Escape, Share: the address ends with `course=g2.<seed>.mc.17.15.-4` (the place, whole metres). Open it in another browser:
+   the same gates in the same places.
+4. An address shared before this change (`course=g2.<seed>.mc`, no place) still lays the very course it laid before.
+
+Picture U:/Temp/gsfpv-train4/shots/w1-anchor-camera.png (pilot's eye right after step 1 on the local build): the sunny
+chateau courtyard, sharp walls and windows, two teal gates within a few metres of the drone and the line "The start gate is
+3 m away".
 
 ## Claims
 
@@ -75,6 +88,14 @@ pos, quat and shape with hashes taken from origin/main's planCourse: equal. `g1.
    compact, medium wide 1, pro wide 1 and 3); no refusal, no hang, no gate in the walls (Tunis: 6 legs touch walls, as
    before). `cd tools/bench && npx tsx src/w1-diag-measure.ts --scenes eb5f51dc,2f1ddf5f,887f27aa --versions live --out
    U:/Temp/gsfpv-train4/w1-anchor/measure` -> evidence/2026-11-19/w1-anchor/measure-summary.json and gate1-to-anchor.json.
+7. By the mouse at 1536x730, scale 1.25, pointer locked by a click, on a local release build of e8f33fa9, scan eb5f51dc:
+   Shift+G and Build at the load: gate 1 3.3 m from the spawn (mean gate 16 m); flown 30.4 m, paused in the air, the
+   menu's course item, Build: gate 1 3.8 m from the drone (34.2 m from the spawn); Share gives
+   `course=g2.ery7ej.mc.17.15.-4`; a fresh context lays the same 14 gates to 1 cm. `RENDER=on node
+   tools/bench/scripts/w1-anchor-accept.mjs http://localhost:7480/en <out>` -> {"pass":true} (also with render off).
+   Negative control, the same probe on https://gsfpv.flyreelstudio.eu/en: step 1 FAIL, gate 1 492.6 m from the camera
+   (step 2 FAIL 504.6 m from the drone; step 3 FAIL, `g2.ev43kd.mc` has no place). Read only: the probe aborted only
+   POST /api/e and POST /api/share. evidence/2026-11-19/w1-anchor/accept-local.json, accept-live-negative.json.
 
 ## Not verified
 
@@ -89,13 +110,26 @@ pos, quat and shape with hashes taken from origin/main's planCourse: equal. `g1.
 - Finding for R3 (not repaired here): with the anchor on a flat open field 10 m off the village the course began 15 m
   from it: the roughness quality rule (tiers 0/2) still pulls the course to rough tiles near the anchor. R3 (a forbid
   map from the splats) removes that pull.
+- No person, phone or real controller took part: the acceptance is a headless Chrome driven by the probe (mouse clicks,
+  keys). Only scan eb5f51dc was flown in the page; Lublin and Tunis only by the measuring script.
+- The work tree is clean but for `packages/sonic-fpv` (its work tree at 53a56759, not the pin; not this lane's, never
+  edited here, not committed).
+- No text for people was needed: no locale file changed (the dialog's texts are the next lane, w1-dialog).
 
 ## For the lead
 
-(S3)
-
-Files outside the tracks package and the course feature: apps/fly/src/share/flight-link.ts (one character class: a
-generated course's token may hold '-', so a shared link keeps an anchor with a negative coordinate).
+- A pilot gets: Shift+G (any generate press, the sound mode's too) lays the course round him: at the author's camera when
+  parked or just loaded, round the drone when it is in the air or paused there. eb5f51dc by mouse: live gate 1 492.6 m from
+  the camera, this build 3.3 m; 30 m away and paused: 3.8 m from the drone; the link lays the same gates elsewhere.
+- Numbers (rank of the gates; gate 1 from the anchor, median): eb5f51dc 0.50 -> 0.99, 540.6 -> 2.1 m; Lublin 0.62 -> 0.96,
+  453.5 -> 4.2 m; Tunis control 0.89 -> 0.92, 34.2 -> 4.0 m.
+- Callers and anchors: the table above (dialog, direct press, sound: the pilot's place; a link or a room: its named anchor;
+  an old g2 link: the core as before; g1: the old generator, from the spawn).
+- Old links: `g2.<seed>.<ls>` without a place lay the same course gate for gate (hashes from origin/main).
+- Files: packages/tracks request.ts, plan.ts, tests; apps/fly course/anchor.ts (new), course.ts, generate-dialog.ts; outside:
+  share/flight-link.ts (a course token may hold '-'); tools/bench w1-anchor-accept.mjs, two bench scripts, four tests.
+- Deploy: page only. Live check after deploy: tools/bench/scripts/w1-anchor-accept.mjs on the site gives {"pass":true}.
+- Not verified: no person or phone; Tunis 6 of 18 start 12-20 m off (R3); gates.py not re-run after S2's one-line fix.
 
 ## Cost notes
 
@@ -104,4 +138,7 @@ generated course's token may hold '-', so a shared link keeps an anchor with a n
 - S2: about 35 replies; the most went to the gates' failures (telling the stale submodule's apart from this lane's) and
   to finding the share reader's regex. Cheaper: grep every course-id pattern (`g[0-9]`, COURSE_RE, TRACK_ID) before
   changing a link's form; the gate for gate hashes cost one scratch script against a copy of origin/main's src.
+- S3: about 30 replies; the most went to finding the keys of easy mode and the hook's fields, and one wasted pair of runs:
+  the probe's read-only guard aborted the CDN's HEAD requests, so the scene never loaded. Cheaper: allow GET/HEAD/OPTIONS
+  from the start and record the landing state in the first version of a probe.
 
