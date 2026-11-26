@@ -166,7 +166,7 @@ applyFixes :1065, saveMine :1833, saveAdmin :~1885 (the design named :893-1754);
   evidence/2026-11-20/n-save/fix-edit4a-probe.json ('no course', the stale probe above), which I left untracked and
   uncommitted, and I did not stop its server. If a second fix-n-save run was started, its commits may follow bc20f317.
 - fix-n-save gates: vitest's one failure is tools/bench/test/app-dji-rc2.test.ts:188 (timing, `rc.late` 1, not 0),
-  outside this repair (R1.3b). A quiet re-run of that file by its owner decides whether it is a flake.
+  outside this repair (R1.3b). R1.4: a quiet re-run of that file alone passes 15 of 15, a flake under load.
 - Deploy order: page only (no API file changed so far).
 
 ## Cost notes
@@ -236,6 +236,8 @@ left as the lead said. The way taken: (c), the first of the lead's list that mee
   nor packages/input changed since 511f9594 and it reads no file of this repair; it ran while another process was
   running a drawn edit4a probe on this machine (see For the lead). Not re-run: the gates run once, and nothing about the
   DJI RC 2 is this lane's.
-- [ ] R1 left (not this run's to do, for the lead): (1) the tree is not clean: another process writes in this copy
-  (untracked evidence/2026-11-20/n-save/fix-edit4a-nocourse.json and evidence/2026-11-26/, not mine, not touched);
-  (2) vitest's app-dji-rc2.test.ts:188 timing failure, a quiet re-run decides; (3) dist/ not deleted: PID 16320 serves it.
+- [x] R1.4 the left list closed: (1) the untracked evidence/2026-11-26/b-repo-b18.json was the R1.3b gates' own B18
+  output (gitHead bc20f317, pass true), moved unchanged to evidence/2026-11-20/n-save/fix-b18.json and committed; the
+  other process's fix-edit4a-nocourse.json no longer exists; (2) a quiet re-run of tools/bench/test/app-dji-rc2.test.ts
+  alone (node v22.13.0, the gates' node) passes 15 of 15: the R1.3b failure was a timing flake under load; (3) PID 16320
+  is gone, nothing serves this copy; dist/ is git-ignored and left. The tree is clean.
