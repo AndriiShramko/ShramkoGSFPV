@@ -171,6 +171,18 @@ gate B18 for every lane; name a vault note by words, not by its Russian file nam
 - HAND-OVER: this chat has grown; the next wake after a long pause would rewrite its whole context. The next lead is
   a NEW chat started from this note; this chat leaves no watcher behind once the rerun above is answered.
 
+### 2026-11-26 21:30 UTC: the reruns of sonic-course-wroclaw PASS twice; the watcher is quiet now
+
+- Both reruns on the live site say LIVE CHECKS: PASS (live-r2, live-r3): the failure was the probe's flight before the
+  press (a sideways drift that depends on timing: -1.92 m/s in the failed run, 0.10 and -0.62 in the two that passed),
+  not the page. Car 6 stands: 9 of 9 named checks pass, one of them on the second try. A small repair of that probe
+  (hold the heading before the press) is worth a lane when the week allows: it will fail a release again some day.
+- The watcher runs as `LEAD_WATCH_QUIET=1 bash lead_watch.sh 0 3`: it wakes only on FAILED, BLOCKED, HOLD, LIMIT, END
+  and on a release (not on each lane's end), so that this grown chat is woken once, not six times. At END (every job
+  done, failed or held) the lead plans car 7 from the review files in U:/Temp/gsfpv-train4/reviews/.
+- A new lead chat is the better place for car 7: start it with 'you are the lead of ShramkoGSFPV, begin with
+  C:/dev/gsfpv-v03/docs/wip/train5-lead.md and the gsfpv skill'; this note is complete for that.
+
 ## How the lead works (the owner's economy rule; written into the skills on 2026-11-26, W4 done)
 
 - The lead runs on the top model (Fable); every worker is Opus or Sonnet. NEVER leave `model` out of an Agent call or
