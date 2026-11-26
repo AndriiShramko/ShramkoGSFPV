@@ -14,7 +14,7 @@ comes from a real flight log.
       (pass); neg_control.py on origin/main: NEG OK (7 of 7 fail there). Commit 3868ba8c.
       Left red on purpose for S2: tools/bench/test/a6-reference.test.ts (hash moves by decision 5),
       sim-core b12-rewind (2) and log-v2-compat (2): recorded lives of older builds replayed by the new model.
-- [ ] S2 the presets and determinism: air65-1s corrected by the note; presets Air65 Champion and Air65 II Champion;
+- [x] S2 the presets and determinism: air65-1s corrected by the note; presets Air65 Champion and Air65 II Champion;
       SIM_CORE_VERSION bump; the new A6 hash everywhere the old one is named; gates
       - [x] presets, wiring, sim-core/0.3.0, A6 9cb46a35..., old recordings, catalogue. Commit 66ca8d49.
       - [x] gates run once on 66ca8d49 (logs U:/Temp/gsfpv-gates-20261126-192836): PASS architecture, i18n, catalog,
@@ -24,7 +24,12 @@ comes from a real flight log.
             tools/bench/test/app-game.test.ts "every preset ... Shift lands" (machr5sport-6s slow from 20 m touches
             at 1.42 m/s, limit 1.13) and "the motors stop only at the floor ... control: the Mach R5 stops in the air"
             (the control no longer stops above the floor).
-      - [ ] LEFT: the two app-game cases. Diagnosis (a throwaway script, game-loop.ts GameLoop): the 1.42 m/s touch is
+      - [x] the two app-game cases, fixed (commit "w3-model S2: the landing cut waits for the bottom of a hop"):
+            apps/fly/src/play/game.ts `landed` also needs s[S.vy] <= 0 (never on the rise of a hop); the in-air control
+            now runs the four landing heights (the old cut-anywhere rule still stops in the air from 1.5 m, the rule on
+            none). app-game.test.ts 27 passed; neg_control.py --ref HEAD --files game.ts: NEG OK (the 20 m slow touch
+            fails on the old rule). apps/fly tsc: 27 errors, all in src/sonic/* (the off-pin submodule), none here.
+            Diagnosis of the time (a throwaway script, game-loop.ts GameLoop): the 1.42 m/s touch is
             the same at propWash 0 (1.43) and 1 (1.42): the new term does not cause it. The game assist
             (apps/fly/src/play/game.ts:446-452, "landed") cuts the motors at 8.65 s, y 0.072 m, vy +0.27 m/s: on the
             rise of a hop; the craft then lands on its spheres at 0.78-1.43 m/s. On origin/main the Mach carried the
@@ -108,12 +113,19 @@ of earlier lanes, docs/research/drones-v08.md (a v0.8 statement).
    Last result: 8 passed.
 4. Eleven presets; the Air65 hovers at 32.8 % stick. Command: `npx vitest run tools/bench/test/drone-card.test.ts
    tools/bench/test/drones3d` and `npx tsx tools/bench/scripts/w3-model-hover.ts` (from tools/bench). Last result: passed; 32.8 / 24.8 / 28.1 %.
+5. The game's Shift landing still lands every preset at every speed and height softly with prop wash on, and the
+   motors never stop on the rise of a hop. Command: `npx vitest run tools/bench/test/app-game.test.ts`.
+   Last result: 27 passed; the old cut rule fails the Mach R5 slow from 20 m (touch 1.42 m/s, limit 1.13): NEG OK.
 
 ## Not verified
 
 - No person, phone, real controller or real blackbox log took part. No pilot compared it with a real quad.
 
 ## For the lead
+
+- Outside the model: apps/fly/src/play/game.ts (the game's landing cut also waits for vy <= 0, one condition) and
+  tools/bench/test/app-game.test.ts (the in-air control over the four landing heights), because prop wash on the
+  Mach R5 changed its floor hops.
 
 ## Cost notes
 
@@ -122,3 +134,5 @@ of earlier lanes, docs/research/drones-v08.md (a v0.8 statement).
 - S2: the most replies went to wiring two presets through tests that pin the preset count and the equipment table,
   and to diagnosing the game-landing failure the gates found; running app-game.test.ts before the gates would
   have found it at once (any flight model change: run it with the model tests).
+- S2 close: 12 replies; one lost to a probe loop too short for 20 m (600 x 10 ms). The landing file runs in 10 s:
+  probe by editing the test, not by a separate script.

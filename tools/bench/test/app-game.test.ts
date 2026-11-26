@@ -409,19 +409,23 @@ describe('Space climbs, Shift descends and lands softly; landed, the motors stop
     });
 
     it('the motors stop only at the floor, at the bottom of a hop: never in the air above it; control: cut as soon as the averaged rule holds, the Mach R5 stops in the air', () => {
-        const stoppedAbove = (assist?: GameAssist): number => {
-            const L = new GameLoop(params('machr5sport-6s'), new FloorWorld(), 8, 'slow', { assist });
-            hover(L);
+        // every start height of the landing claim: since prop wash is on every craft (sim-core/0.3.0) the hops differ by
+        // height, and the control cuts in the air on some of them (from 1.5 m), the rule on none
+        const stoppedAbove = (make: () => GameAssist | undefined): number => {
             let n = 0;
-            for (let i = 0; i < 600 && L.sim.armed; i++) {
-                L.run(10, { lift: -1 });
-                if (L.game.landed && (L.snapGround ?? 0) > 0.03) n++;
+            for (const h of LAND_HEIGHTS) {
+                const L = new GameLoop(params('machr5sport-6s'), new FloorWorld(), h, 'slow', { assist: make() });
+                hover(L);
+                for (let i = 0; i < 100 * (LAND_MAX_S + 2) && L.sim.armed; i++) {
+                    L.run(10, { lift: -1 });
+                    if (L.game.landed && (L.snapGround ?? 0) > 0.03) n++;
+                }
+                expect(L.sim.armed, `from ${h} m`).toBe(false);
             }
-            expect(L.sim.armed).toBe(false);
             return n;
         };
-        expect(stoppedAbove()).toBe(0);
-        expect(stoppedAbove(new EarlierAssist({ landing: 'anywhere' }))).toBeGreaterThan(0);
+        expect(stoppedAbove(() => undefined)).toBe(0);
+        expect(stoppedAbove(() => new EarlierAssist({ landing: 'anywhere' }))).toBeGreaterThan(0);
     });
 
     it('control: told there is no ground below, the same descent from 20 m hits the floor at a crash speed', () => {
