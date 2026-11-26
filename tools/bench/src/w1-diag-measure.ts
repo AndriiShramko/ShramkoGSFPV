@@ -8,7 +8,7 @@
 // whose centre falls in the tile column, at every height) is summed over the 3 x 3 tiles around; a point is 'good' when
 // that mass is at least the median over the tiles that hold any splat. A uniform pick among scanned tiles scores 0.5.
 //
-//   npx tsx src/w1-diag-measure.ts [--scenes a,b] [--seeds 1,2,3] [--versions live,old] [--out DIR] [--hang-ms 150000]
+//   npx tsx src/w1-diag-measure.ts [--scenes a,b] [--seeds 1,2,3] [--versions live,old,neg] [--out DIR] [--hang-ms 150000]
 //   (internal) --child <id> <live|old> --skip k1,k2
 import { spawn as spawnProc } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, writeFileSync, appendFileSync } from 'node:fs';
@@ -38,6 +38,9 @@ const SET: Record<string, string> = { '70b50d42': 'street (Wroclaw)', '39e63ce9'
 const LEVELS: CourseLevel[] = ['beginner', 'medium', 'pro'];
 const SPREADS: CourseSpread[] = ['compact', 'wide'];
 const OLD_ROOT = 'U:/Temp/gsfpv-train4/w1-diag/old';
+/** S3 negative control: a scratch copy of packages/tracks whose planCourse takes the spawn (the author's camera) as
+ *  `a.core` (one line after analyzeScan); version 'neg' runs the live jobs with that planCourse */
+const NEG_ROOT = 'U:/Temp/gsfpv-train4/w1-diag/neg';
 const T = [1, 0, 0, 0] as unknown as SceneTransform;
 const CREATED = '2026-11-26T00:00:00.000Z';
 
@@ -82,7 +85,7 @@ function wallsHits(walls: VoxelCollision, gates: V3[], closed: boolean): { gates
 
 // ------------------------------------------------------------------------------------------------------------ child
 
-async function child(id: string, version: 'live' | 'old', out: string, skip: Set<string>, seeds: number[]): Promise<void> {
+async function child(id: string, version: 'live' | 'old' | 'neg', out: string, skip: Set<string>, seeds: number[]): Promise<void> {
     const w = await openWalls(id);
     const preset = JSON.parse(readFileSync(join(REPO, 'packages/sim-core/presets/pavo20pro-3s.json'), 'utf8'));
     const craftR = compileParams(preset).boundRadius; // the page's default drone (apps/fly/src/presets.ts DEFAULT_PRESET)
@@ -90,16 +93,17 @@ async function child(id: string, version: 'live' | 'old', out: string, skip: Set
     const a = analyzeScan(w.walls, T);
     if (!skip.has('head')) appendFileSync(out, JSON.stringify({ head: true, id, version, kind: a.kind, cam: w.cam, spawn: placed, core: a.core, coreRadiusM: a.coreRadiusM, craftR, flip: w.flip, gridBounds: w.meta.gridBounds }) + '\n');
     const jobs: { key: string; seed: number; level?: CourseLevel; spread?: CourseSpread }[] = [];
-    if (version === 'live') for (const level of LEVELS) for (const spread of SPREADS) for (const seed of seeds) jobs.push({ key: `${level}-${spread}-${seed}`, seed, level, spread });
+    if (version !== 'old') for (const level of LEVELS) for (const spread of SPREADS) for (const seed of seeds) jobs.push({ key: `${level}-${spread}-${seed}`, seed, level, spread });
     else for (const seed of seeds) jobs.push({ key: `old-${seed}`, seed });
     const old = version === 'old' ? await import(pathToFileURL(join(OLD_ROOT, 'packages/tracks/src/index.ts')).href) : null;
+    const plan: typeof planCourse = version === 'neg' ? (await import(pathToFileURL(join(NEG_ROOT, 'packages/tracks/src/index.ts')).href)).planCourse : planCourse;
     for (const j of jobs) {
         if (skip.has(j.key)) continue;
         console.log(`BEGIN ${j.key}`);
         const t0 = performance.now();
         let track: { gates: { pos: number[] }[] } | null = null, closed = false, note = '';
         if (!old) {
-            const r = planCourse({ walls: w.walls, transform: T, spawn: placed, scene: { id, version: w.version }, created: CREATED, craftRadiusM: craftR, request: { seed: j.seed, level: j.level!, spread: j.spread!, anyQuality: false }, elements: true });
+            const r = plan({ walls: w.walls, transform: T, spawn: placed, scene: { id, version: w.version }, created: CREATED, craftRadiusM: craftR, request: { seed: j.seed, level: j.level!, spread: j.spread!, anyQuality: false }, elements: true });
             if (r.ok) { track = r.track as never; closed = r.stats.closed; note = r.shrunk ? 'shrunk' : ''; } else note = `no-room fit ${r.fitSize}`;
         } else {
             // the old worker's else branch (git show efd17add:apps/fly/src/course/worker.ts, lines 74-90), without progress posts
@@ -358,5 +362,5 @@ async function parent(): Promise<void> {
 if (process.argv.includes('--child')) {
     const i = process.argv.indexOf('--child');
     const skip = new Set((arg('--skip') ?? '').split(','));
-    void child(process.argv[i + 1]!, process.argv[i + 2] as 'live' | 'old', arg('--rows')!, skip, (arg('--seeds') ?? '1,2,3').split(',').map(Number)).then(() => process.exit(0), (e) => { console.error(String(e?.stack ?? e)); process.exit(2); });
+    void child(process.argv[i + 1]!, process.argv[i + 2] as 'live' | 'old' | 'neg', arg('--rows')!, skip, (arg('--seeds') ?? '1,2,3').split(',').map(Number)).then(() => process.exit(0), (e) => { console.error(String(e?.stack ?? e)); process.exit(2); });
 } else void parent();

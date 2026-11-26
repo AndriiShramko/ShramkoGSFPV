@@ -9,7 +9,7 @@ Temp folder: U:/Temp/gsfpv-train4/w1-diag. Ports 7340-7359. No generator or page
 - [x] S2 point 3: tools/bench/src/w1-diag-measure.ts (2bf4cb38, frame fix in the S2 closing commit); run
   U:/Temp/gsfpv-train4/w1-diag/run1 (table.tsv, summary.json, top-<id>.png, all five looked at); numbers and one
   phrase per picture in the document's 'Measurement'
-- [ ] S3 points 4 to 7: the cause with a negative control (a scratch copy of packages/tracks in the temp folder with
+- [ ] S3 points 4 to 7: the cause with a negative control (scratch copy U:/Temp/gsfpv-train4/w1-diag/neg, plan.ts: `a.core` := the spawn; script version `neg`; run neg-run started on eb5f51dc, 2f1ddf5f and 887f27aa as the unmoved control); then n-route / n-path,
   startOf -> the spawn; rerun w1-diag-measure on eb5f51dc and 2f1ddf5f), n-route / n-path, the design proposal, the
   test system, For the lead
 
