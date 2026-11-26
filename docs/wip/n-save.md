@@ -161,6 +161,12 @@ applyFixes :1065, saveMine :1833, saveAdmin :~1885 (the design named :893-1754);
   failed only step 13's "click another gate" part (a 10-gate course left no gate 125 px inside the 844x390 window;
   `over` [] and `outside` [] held), kept as fix-edit4a-local.json; the second (13 gates) passed every step. The probe's
   owner should press `gen-dialog`'s build after Shift+G and pick step 13's gate after a wider frame.
+- fix-n-save, a second process in this work copy: during R1.3 something else served this copy's dist on port 6912
+  (PID 16320, `serve-csp.mjs dist 6912`) and ran the repo's edit4a probe from 12:47 to 13:55 on 2026-11-26. It wrote
+  evidence/2026-11-20/n-save/fix-edit4a-probe.json ('no course', the stale probe above), which I left untracked and
+  uncommitted, and I did not stop its server. If a second fix-n-save run was started, its commits may follow bc20f317.
+- fix-n-save gates: vitest's one failure is tools/bench/test/app-dji-rc2.test.ts:188 (timing, `rc.late` 1, not 0),
+  outside this repair (R1.3b). A quiet re-run of that file by its owner decides whether it is a flake.
 - Deploy order: page only (no API file changed so far).
 
 ## Cost notes
@@ -181,6 +187,9 @@ applyFixes :1065, saveMine :1833, saveAdmin :~1885 (the design named :893-1754);
   `scripts/check-architecture.mjs` after S2 and a PATH line in train4-common.md would have saved six replies.
 - Review: most turns went to a build that ran while neg_control.py had swapped files to the base (the bundle held the old
   panel); run negative controls only after the build finishes, never in parallel with it.
+- fix-n-save R1.3: most turns went to the edit4a probe being stale since gen4b (Shift+G opens a dialog; 8 min lost on
+  'no course') and to step 13's gate choice depending on the random course; a probe that presses `gen-dialog` and a fixed
+  seed (`?g=` link) for its course would save a drawn run and six replies.
 
 ## What the owner should try
 
@@ -221,4 +230,9 @@ left as the lead said. The way taken: (c), the first of the lead's list that mee
   the line is hidden as before); the lane's acceptance passes every step (fix-accept-local.json)
 - [x] R1.3a edit4a-probe on the build of 3d58873e, drawn: run 2 passes every step (claim 10; the repo probe needs the
   Generate dialog pressed since gen4b, For the lead); Claims 9, 10 and For the lead written
-- [ ] R1.3b gates once
+- [x] R1.3b gates once on bc20f317 (logs U:/Temp/gsfpv-gates-20261126-135807): typecheck, architecture, i18n, b18
+  (`B18 PASS {"outside":[],"placeholders":[],"topics":14}`), leaks PASS; vitest 5740 passed, 1 failed:
+  tools/bench/test/app-dji-rc2.test.ts:188 `expect(rc.late).toBe(0)` got 1, a wall-clock timing assertion. Neither it
+  nor packages/input changed since 511f9594 and it reads no file of this repair; it ran while another process was
+  running a drawn edit4a probe on this machine (see For the lead). Not re-run: the gates run once, and nothing about the
+  DJI RC 2 is this lane's.
