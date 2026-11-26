@@ -54,6 +54,12 @@ Nothing in this lane: it changes no page. He reads the diagnosis document and th
   badly captured tiles high is shown for the core (eb5f51dc core rank 0.00) and by live gates passing the filter at rank
   0.14-0.67, not by a tile-by-tile correlation of the map against the splat density.
 - The proposed repairs (R1 to R3) are not built or measured beyond the scratch-copy anchor switch.
+- Gates (gates.py, 2026-11-26): architecture, i18n, leaks PASS; tools/bench typecheck PASS. typecheck (apps/fly
+  src/sonic) and vitest (14 failed, all import @shramko/sonic-fpv: sonic-*, size-flown) FAIL because this copy's
+  submodule work tree is at 53a5675 while origin/main pins 9ac7876, which its local remote (C:/dev/gsfpv-t7-base) does
+  not hold; this lane's diff against origin/main (4 files: the bench script, this note, 2 evidence JSON) is imported by
+  no test. B18 FAIL only on docs/wip/train5-lead.md (the lead's note on origin/main has Cyrillic); this lane's files pass.
+  The S1 commit 4c8edc2d had recorded that stale pin by mistake; it is restored to 9ac7876 in a later commit.
 - 'Well scanned' is splat opacity mass per tile column; on Lublin (coarse LOD 5) the frame check is inconclusive (0.08
   against 0.01), so its ranks are weak. Wroclaw is read at LOD 2.
 - The old generator ran on today's collision and sonic-fpv packages (the pin moved from 293ebae to 53a5675), not the
@@ -74,7 +80,7 @@ Not proven: that n-route makes it worse (read only); a tile-by-tile check of the
 Lanes: R1 anchor = the pilot's place, link carries it (small, first); R2 dialog Here / Whole scan / Add here (medium,
 after R1); R3 forbid map from the splats, quality stops attracting (large); n-route rebased on R1; gen-quality skill
 from tools/bench/src/w1-diag-measure.ts (small). Files changed: tools/bench/src/w1-diag-measure.ts (new, bench only),
-docs/wip/w1-diag.md, evidence/2026-11-19/w1-diag/*.json. Nothing to deploy.
+docs/wip/w1-diag.md, evidence/2026-11-19/w1-diag/*.json. Nothing to deploy. Gates: see Not verified (sonic pin of this copy).
 
 ## Cost notes
 
