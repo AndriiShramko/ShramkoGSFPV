@@ -319,3 +319,12 @@ PARKED (state hold) until the week's reset: n-level and the gap lanes 4-7 (gap-e
 They need about 25 runs and a car of their own, more than the week holds. Give them back with
 `set --name X --state wait` after 2026-11-26 12:00 UTC or on the owner's word.
 The conductor got `set --limit-stop P` (a job's own stop of the week; 0 takes it away).
+
+## State, 2026-11-26 12:50 UTC: THE LEAD MOVED to docs/wip/train5-lead.md (read that file, not this one)
+
+Car 5 went live on 2026-11-21 at 20:36 UTC (main 3cc6b51b, sound package 9ac7876; 14 of 15 live checks, accept-fly
+FAIL once). The weekly limit stopped the lead's chat from 2026-11-21 17:40 UTC until the reset of 2026-11-26 12:00 UTC;
+the conductor stopped lanes at their own stops (94 % was read at 20:26 UTC). The owner wrote three messages on
+2026-11-25 (77: the generator is worse; 78: prop wash, whoops, the lead's context and the models; 79: named physical
+objects, MCP, breakable things). This chat is at about 60 % of its context, which the owner calls the limit, so the
+lead is a new chat from here: docs/wip/train5-lead.md holds what is live, what runs, what is parked and the new work.
