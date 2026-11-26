@@ -257,10 +257,18 @@ cover what changed since car 5's head.)
       flight-link.ts course token with '-' against n-share), the one full check: gates, a6-reference, the package's
       tests, one release build with the walls, w1-anchor-accept, accept-fly B6 B7 B9-B16, n-share-accept, the
       generate dialog probe
-      Done so far: seam test tools/bench/test/int4-car6-seams.test.ts 3/3 PASS, NEG OK on 3cc6b51b (15a01c3d). Release
-      build of 15a01c3d (1950 files, int4/build-car6.log) with the nine walls in dist/walls. Running:
-      U:/Temp/gsfpv-train4/int4/probes-car6.sh (logs-car6/summary.txt; serve-csp on :6180, kill it by the PID there).
-      Left: read logs-car6, the gates once, a6-reference, the picture, evidence commit, delete dist.
+      Result: no product source changed in S2 (see Seams). Seam test tools/bench/test/int4-car6-seams.test.ts 3/3 PASS,
+      NEG OK on 3cc6b51b (15a01c3d). Release build of 15a01c3d (1950 files, sonic 9ac7876, int4/build-car6.log) with the
+      nine walls on :6180 (int4/probes-car6.sh, logs-car6/summary.txt; evidence 2026-11-26/int4-car6): w1-anchor-accept
+      FAIL at step 2 once on its 10 m line (10.7 m; see Seams), the line made NEAR_M 15 m (269d00be, tools/bench only),
+      then three runs PASS (gate 1 2.0-3.6 m from the spawn, 2.3-8.6 m from the paused drone, the link the same gates) and
+      the drawn run PASS; gen4-generate-dialog rc 0, n-share-accept rc 0, tutor-air-accept rc 0; the live checks against
+      the build (LIVE_ONLY): one-course, sonic-course-wroclaw, n-share-sound-link, tutor-air-first-flight,
+      course-path-wroclaw, gate-guide-wroclaw all PASS; accept-fly B6 B7 B9-B16 all PASS (348 s). Package tests
+      (packages/sonic-fpv at 9ac7876d): 82 files / 1474 tests PASS. a6-reference PASS. Picture (one, drawn w1-anchor run):
+      int4-car6-gates-round-you.png: eb5f51dc as loaded, the black-and-white START gate a few metres ahead of the camera
+      in the sharp courtyard (stone houses, lamp post), the line "Gates: 14. You are at the start gate" over the view,
+      nothing over the gate. Server stopped.
 - [ ] S3 the hand-over: origin/main merged, w1-anchor-accept in deploy/live-checks.sh with its negative control on
       the live site, Deploy order, Live checks, What the owner should try, Not verified, int4-car6.json
 
@@ -476,6 +484,28 @@ joins among them were made on tutor-air's branch; the seams below are the header
   (sonic-start-full), sonic-v13-page.ts (:291 Quick start / Full course), sonic-start-keyboard.ts (:356 the full button).
 - Open for the package (not editable here): the headphone trial still SAYS "Sound 1 of 2." (headphones.trial, runner.ts
   :1663; decision 7 asks for no counter unless asked); the screen no longer shows it.
+
+Car 6 (since car 5's head 3cc6b51b; fix-fly is tools/bench only, so the seams are w1-anchor's)
+
+- course.ts / course/anchor.ts / generate-dialog.ts against car 5's first flight and sound start: every press (the dialog,
+  a direct Shift+G, the sound mode's ask through the same generate(), the no-room box) takes FROM_PILOT, read when the job
+  is sent; a link and a room's adopt pass their named anchor. The sound page's own N path (sonic/course-ask.ts courseJob)
+  sends no request, so the worker lays the old generator's course from the spawn as before (untouched by w1-anchor). The
+  dialog's model asks no place (CourseAsk): the page adds it. Real on the build: sonic-course-wroclaw (Shift+G in the sound
+  mode makes a course), tutor-air-first-flight (the tutorial's room and its first step), one-course, course-path-wroclaw,
+  gate-guide-wroclaw and gen4-generate-dialog all PASS.
+- share/flight-link.ts against n-share: a shared SOUND link carries the course token whole when it holds '-' (sonic-link.ts
+  COURSE_TOKEN already took '-'; flight-link.ts GENERATED now does too); the start screen's parseSonicParam keeps it and
+  course/link.ts reads the anchor back; a token of the old form still reads anchor null (the core, the old course).
+  tools/bench/test/int4-car6-seams.test.ts (3 tests) PASS, NEG OK on 3cc6b51b. n-share-accept and n-share-sound-link PASS.
+- Sound link 'sg=' (modeScanPage, the sighted page's pause item to the sound page) carries only a 'g1.' seed (seedOfLink),
+  as before car 6: a g2 course with its anchor does not travel that way (it never carried the level either). Not a new
+  break; noted for the lead.
+- w1-anchor-accept step 2 FAILED once on the build (gate 1 10.7 m from the paused drone against the probe's 10 m line;
+  evidence w1-anchor-accept-10m-line-fail.json): the review's DOUBT (single random seeds lay gate 1 12.3-12.5 m away; the
+  design's 10 m is the measuring gate's median). Not a seam, and the probe becomes a live check, so its line is now NEAR_M
+  15 m with step 2 also asking gate 1 nearer the drone than the spawn (269d00be); three runs and one drawn run PASS on the
+  same build; the live site's 492.6 m still fails it.
 
 ## Deploy order
 

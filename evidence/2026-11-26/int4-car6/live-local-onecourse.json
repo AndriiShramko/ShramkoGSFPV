@@ -1,0 +1,479 @@
+{
+ "base": "http://localhost:6180/en",
+ "scene": "70b50d42",
+ "tag": "live",
+ "render": false,
+ "steps": [
+  {
+   "name": "shiftG-flight",
+   "before": {
+    "course": {
+     "on": false,
+     "source": "none",
+     "seed": null,
+     "gates": 0,
+     "next": -1,
+     "drawn": 0,
+     "laps": 0,
+     "track": null,
+     "clock": ""
+    },
+    "sonic": null,
+    "note": null,
+    "guide": {
+     "shown": false,
+     "gate": -1,
+     "metres": 0
+    }
+   },
+   "after": {
+    "course": {
+     "on": true,
+     "source": "generated",
+     "seed": 1975923257,
+     "gates": 10,
+     "next": 0,
+     "drawn": 52,
+     "laps": 0,
+     "track": {
+      "id": "g2.woew55.mc.-12.3.-17",
+      "version": 1
+     },
+     "clock": "Fly through START to start the clock"
+    },
+    "sonic": null,
+    "note": "Gates: 10. The start gate is 3 m away: follow the arrow. Key Shift+T hides the course",
+    "guide": {
+     "shown": true,
+     "gate": 0,
+     "metres": 2
+    },
+    "lines": [],
+    "s": 5.5
+   }
+  },
+  {
+   "name": "backslash-on",
+   "before": {
+    "course": {
+     "on": true,
+     "source": "generated",
+     "seed": 1975923257,
+     "gates": 10,
+     "next": 2,
+     "drawn": 68,
+     "laps": 0,
+     "track": {
+      "id": "g2.woew55.mc.-12.3.-17",
+      "version": 1
+     },
+     "clock": "0:01.26Lap 1 of 3\nGate 3 of 10\nLast -\nBest -"
+    },
+    "sonic": null,
+    "note": "Gates: 10. The start gate is 3 m away: follow the arrow. Key Shift+T hides the course",
+    "guide": {
+     "shown": true,
+     "gate": 2,
+     "metres": 8
+    }
+   },
+   "after": {
+    "course": {
+     "on": true,
+     "source": "generated",
+     "seed": 1975923257,
+     "gates": 10,
+     "next": 2,
+     "drawn": 68,
+     "laps": 0,
+     "track": {
+      "id": "g2.woew55.mc.-12.3.-17",
+      "version": 1
+     },
+     "clock": "0:13.30Lap 1 of 3\nGate 3 of 10\nLast -\nBest -"
+    },
+    "sonic": {
+     "lesson": "scan-free",
+     "phase": "flying",
+     "target": "g3",
+     "lastLine": "fly.go",
+     "prims": 0,
+     "passed": false
+    },
+    "note": null,
+    "guide": {
+     "shown": true,
+     "gate": 2,
+     "metres": 8
+    },
+    "lines": [
+     "sonic.say.inPlaceIntroCourse",
+     "fly.go"
+    ],
+    "s": 12.1
+   }
+  },
+  {
+   "name": "shiftG-sound",
+   "before": {
+    "course": {
+     "on": true,
+     "source": "generated",
+     "seed": 1975923257,
+     "gates": 10,
+     "next": 2,
+     "drawn": 68,
+     "laps": 0,
+     "track": {
+      "id": "g2.woew55.mc.-12.3.-17",
+      "version": 1
+     },
+     "clock": "0:13.30Lap 1 of 3\nGate 3 of 10\nLast -\nBest -"
+    },
+    "sonic": {
+     "lesson": "scan-free",
+     "phase": "flying",
+     "target": "g3",
+     "lastLine": "fly.go",
+     "prims": 0,
+     "passed": false
+    },
+    "note": null,
+    "guide": {
+     "shown": true,
+     "gate": 2,
+     "metres": 8
+    }
+   },
+   "after": {
+    "course": {
+     "on": true,
+     "source": "generated",
+     "seed": 3461668287,
+     "gates": 14,
+     "next": 0,
+     "drawn": 74,
+     "laps": 0,
+     "track": {
+      "id": "g2.mazh8u.mc.-7.3.-18",
+      "version": 1
+     },
+     "clock": "Fly through START to start the clock"
+    },
+    "sonic": {
+     "lesson": "scan-free",
+     "phase": "flying",
+     "target": "g1",
+     "lastLine": "fly.go",
+     "prims": 0,
+     "passed": false
+    },
+    "note": "Gates: 14. You are at the start gate: fly through START to start the clock",
+    "guide": {
+     "shown": true,
+     "gate": 0,
+     "metres": 1
+    },
+    "lines": [
+     "fly.go"
+    ],
+    "s": 6.6
+   }
+  },
+  {
+   "name": "N-sound",
+   "before": {
+    "course": {
+     "on": true,
+     "source": "generated",
+     "seed": 3461668287,
+     "gates": 14,
+     "next": 0,
+     "drawn": 74,
+     "laps": 0,
+     "track": {
+      "id": "g2.mazh8u.mc.-7.3.-18",
+      "version": 1
+     },
+     "clock": "Fly through START to start the clock"
+    },
+    "sonic": {
+     "lesson": "scan-free",
+     "phase": "flying",
+     "target": "g1",
+     "lastLine": "fly.go",
+     "prims": 0,
+     "passed": false
+    },
+    "note": "Gates: 14. You are at the start gate: fly through START to start the clock",
+    "guide": {
+     "shown": true,
+     "gate": 0,
+     "metres": 1
+    }
+   },
+   "after": {
+    "course": {
+     "on": true,
+     "source": "generated",
+     "seed": 1448700198,
+     "gates": 14,
+     "next": 0,
+     "drawn": 79,
+     "laps": 0,
+     "track": {
+      "id": "g2.nyio86.mc.-7.3.-18",
+      "version": 1
+     },
+     "clock": "Fly through START to start the clock"
+    },
+    "sonic": {
+     "lesson": "scan-free",
+     "phase": "flying",
+     "target": "g1",
+     "lastLine": "fly.go",
+     "prims": 0,
+     "passed": false
+    },
+    "note": "Gates: 14. The start gate is 3 m away: follow the arrow. Key Shift+T hides the course",
+    "guide": {
+     "shown": true,
+     "gate": 0,
+     "metres": 3
+    },
+    "lines": [
+     "fly.go"
+    ],
+    "s": 6.8
+   }
+  },
+  {
+   "name": "backslash-off",
+   "before": {
+    "course": {
+     "on": true,
+     "source": "generated",
+     "seed": 1448700198,
+     "gates": 14,
+     "next": 0,
+     "drawn": 79,
+     "laps": 0,
+     "track": {
+      "id": "g2.nyio86.mc.-7.3.-18",
+      "version": 1
+     },
+     "clock": "Fly through START to start the clock"
+    },
+    "sonic": {
+     "lesson": "scan-free",
+     "phase": "flying",
+     "target": "g1",
+     "lastLine": "fly.go",
+     "prims": 0,
+     "passed": false
+    },
+    "note": "Gates: 14. The start gate is 3 m away: follow the arrow. Key Shift+T hides the course",
+    "guide": {
+     "shown": true,
+     "gate": 0,
+     "metres": 3
+    }
+   },
+   "after": {
+    "course": {
+     "on": true,
+     "source": "generated",
+     "seed": 1448700198,
+     "gates": 14,
+     "next": 0,
+     "drawn": 79,
+     "laps": 0,
+     "track": {
+      "id": "g2.nyio86.mc.-7.3.-18",
+      "version": 1
+     },
+     "clock": "Fly through START to start the clock"
+    },
+    "sonic": null,
+    "note": null,
+    "guide": {
+     "shown": true,
+     "gate": 0,
+     "metres": 3
+    },
+    "lines": [],
+    "s": 8.1
+   }
+  }
+ ],
+ "errors": [],
+ "trace": [
+  {
+   "s": 0.01,
+   "next": -1,
+   "pilot": null,
+   "y": 3.1230321935790726,
+   "tick": 3142,
+   "life": null
+  },
+  {
+   "s": 5.5,
+   "next": 0,
+   "pilot": null,
+   "y": 3.1795858338939027,
+   "tick": 8556,
+   "life": null
+  },
+  {
+   "s": 0,
+   "next": 2,
+   "pilot": "hold",
+   "y": 2.6,
+   "tick": 13931,
+   "life": null
+  },
+  {
+   "s": 6.56,
+   "next": 0,
+   "pilot": "hold",
+   "y": 2.6,
+   "tick": 32564,
+   "life": null
+  }
+ ],
+ "install": {
+  "hover": 0.27743940434601666,
+  "bot": true
+ },
+ "passes": [
+  {
+   "gate": 1,
+   "next": 1
+  },
+  {
+   "gate": 2,
+   "next": 2
+  }
+ ],
+ "saveCheckSound": {
+  "transform": [
+   1,
+   0,
+   0,
+   0
+  ],
+  "margin": 0.3840523445727473,
+  "walls": {
+   "res": 0.1,
+   "flip": false,
+   "min": [
+    -151.2,
+    -4,
+    -211.20000000000002
+   ],
+   "n": [
+    2944,
+    236,
+    3756
+   ]
+  },
+  "spawn": [
+   -11.900656700134277,
+   3.1238160133361816,
+   -16.831905364990234,
+   93.15394252224232
+  ],
+  "start": {
+   "pos": [
+    -7,
+    2.2,
+    -17.8
+   ],
+   "yawDeg": 202.5
+  },
+  "startFlown": [
+   -7,
+   2.2,
+   -17.8
+  ],
+  "gate1": [
+   -7.8,
+   3,
+   -16.6
+  ],
+  "gates": 14,
+  "laps": 3,
+  "seed": 3461668287,
+  "proof": {
+   "ok": true,
+   "marginM": 0.3840523445727473,
+   "pathM": 85.54
+  },
+  "problems": [],
+  "startFreeM": 6,
+  "nearWallM": 1.4,
+  "legs": [],
+  "gatesBad": [],
+  "issues": []
+ },
+ "afterShiftGSound": {
+  "course": {
+   "on": true,
+   "source": "generated",
+   "seed": 3461668287,
+   "gates": 14,
+   "next": 0,
+   "drawn": 74,
+   "laps": 0,
+   "track": {
+    "id": "g2.mazh8u.mc.-7.3.-18",
+    "version": 1
+   },
+   "clock": "Fly through START to start the clock"
+  },
+  "sonic": {
+   "lesson": "scan-free",
+   "phase": "flying",
+   "target": "g1",
+   "lastLine": "fly.go",
+   "prims": 0,
+   "passed": false
+  },
+  "note": "Gates: 14. You are at the start gate: fly through START to start the clock",
+  "guide": {
+   "shown": true,
+   "gate": 0,
+   "metres": 1
+  }
+ },
+ "afterN": {
+  "course": {
+   "on": true,
+   "source": "generated",
+   "seed": 1448700198,
+   "gates": 14,
+   "next": 0,
+   "drawn": 79,
+   "laps": 0,
+   "track": {
+    "id": "g2.nyio86.mc.-7.3.-18",
+    "version": 1
+   },
+   "clock": "Fly through START to start the clock"
+  },
+  "sonic": {
+   "lesson": "scan-free",
+   "phase": "flying",
+   "target": "g1",
+   "lastLine": "fly.go",
+   "prims": 0,
+   "passed": false
+  },
+  "note": "Gates: 14. The start gate is 3 m away: follow the arrow. Key Shift+T hides the course",
+  "guide": {
+   "shown": true,
+   "gate": 0,
+   "metres": 3
+  }
+ }
+}

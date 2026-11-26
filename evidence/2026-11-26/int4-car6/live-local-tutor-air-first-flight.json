@@ -1,0 +1,165 @@
+{
+ "probe": "tutor-air-accept",
+ "base": "http://localhost:6180",
+ "browser": "system-chrome",
+ "view": "1536x730@1.25",
+ "draw": false,
+ "pass": true,
+ "steps": {
+  "start": {
+   "pass": true,
+   "clicked": true,
+   "lesson": "ears-headphones",
+   "pointerLock": false
+  },
+  "ears": {
+   "pass": true,
+   "check": "ears-headphones",
+   "next": "walls-hall",
+   "atS": 25.533
+  },
+  "move60": {
+   "pass": true,
+   "moveS": 31.559
+  },
+  "words60": {
+   "pass": true,
+   "words": 51,
+   "before": [
+    "Headphone check",
+    "Sound 1 of 2.",
+    "Where is this sound? Press 1 for left, 2 for right, 3 if you are not sure.",
+    "Sound 2 of 2.",
+    "Good. Your headphones work well.",
+    "Now let's fly.",
+    "A small room",
+    "Fly to each wall and stop close to it without touching it.",
+    "Go."
+   ]
+  },
+  "freeze": {
+   "pass": true,
+   "moment": {
+    "tail": [
+     "1252 lesson attempt-start ",
+     "1253 speech headphones.trial ",
+     "2503 speech speech.end ",
+     "9522 speech headphones.q-side ",
+     "14736 speech speech.end ",
+     "14807 answer  ",
+     "14808 speech headphones.trial ",
+     "16055 speech speech.end ",
+     "19662 answer  ",
+     "19662 goal met ",
+     "19662 lesson attempt-pass ",
+     "19662 lesson block-pass ",
+     "19662 lesson passed ",
+     "19664 speech headphones.good ",
+     "19666 speech lesson.ears-headphones.pass ",
+     "23478 speech speech.end ",
+     "25023 session pause ",
+     "25030 session resume ",
+     "25030 speech speech.end ",
+     "0 lesson open ",
+     "0 lesson intro ",
+     "0 speech lesson.walls-hall.title ",
+     "2 speech lesson.walls-hall.goal.1 ",
+     "5371 speech speech.end ",
+     "5371 lesson attempt-start ",
+     "5371 speech fly.go ",
+     "5967 speech speech.end ",
+     "7318 moment freeze wall-ahead",
+     "7319 speech cue.safety.wall.what ",
+     "12142 speech speech.end "
+    ],
+    "inFlight": true,
+    "moved": 0,
+    "cueIds": [
+     "safety.wall"
+    ],
+    "samples": 19,
+    "exact": true,
+    "names": [
+     "Wall"
+    ],
+    "lines": [
+     "Wall: a wooden knock from a wall near you, faster as you get closer."
+    ],
+    "kids": [
+     "sonic-moment-sound",
+     "sonic-moment-line"
+    ],
+    "spokenLines": [
+     "Wall: a wooden knock from a wall near you, faster as you get closer."
+    ],
+    "said": [
+     "Wall: a wooden knock from a wall near you, faster as you get closer."
+    ],
+    "presses": 1,
+    "gone": true
+   },
+   "earlier": [
+    {
+     "names": [
+      "Wall"
+     ],
+     "cueIds": [
+      "safety.wall"
+     ],
+     "gone": true
+    }
+   ]
+  },
+  "card": {
+   "pass": true,
+   "names": [
+    "Wall"
+   ],
+   "lines": [
+    "Wall: a wooden knock from a wall near you, faster as you get closer."
+   ],
+   "kids": [
+    "sonic-moment-sound",
+    "sonic-moment-line"
+   ],
+   "spokenLines": [
+    "Wall: a wooden knock from a wall near you, faster as you get closer."
+   ]
+  },
+  "onN": {
+   "pass": true,
+   "presses": 1,
+   "gone": true
+  },
+  "tour": {
+   "pass": true,
+   "said": [
+    "Sound 1 of 2: Wall.",
+    "Sound 2 of 2: Room.",
+    "Back to the flight."
+   ],
+   "cardNames": [
+    "Wall",
+    "Room"
+   ],
+   "moved": 0,
+   "back": true
+  },
+  "guideOff": {
+   "pass": true,
+   "free": {
+    "soundOn": "scan-free",
+    "cards": 0,
+    "said": [],
+    "maxSpeed": 5.24
+   },
+   "lesson": {
+    "lesson": "walls-hall",
+    "cards": 0,
+    "momentEvents": 0,
+    "maxSpeed": 3.18
+   }
+  }
+ },
+ "errors": []
+}

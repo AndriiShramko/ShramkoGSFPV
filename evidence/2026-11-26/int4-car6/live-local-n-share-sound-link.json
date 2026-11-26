@@ -1,0 +1,130 @@
+{
+ "probe": "n-share-accept",
+ "base": "http://localhost:6180",
+ "tag": "live",
+ "browser": "system-chrome",
+ "viewport": "1536x730@1.25",
+ "scene": "887f27aa",
+ "course": "g1.1",
+ "steps": {
+  "sound.shareCarries": "PASS",
+  "sound.landsOnScene": "PASS",
+  "sound.fliesSame": "PASS"
+ },
+ "pass": true,
+ "facts": {
+  "sound.sharer": {
+   "opened": "http://localhost:6180/en/fly/?scene=887f27aa&course=g1.1&render=off&nowarn=1",
+   "soundBy": "key Backslash",
+   "scene": "887f27aa",
+   "gates": 36,
+   "course": "g1.1",
+   "sonic": {
+    "lesson": "scan-free",
+    "phase": "intro",
+    "scene": "887f27aa",
+    "builtin": false
+   },
+   "locked": true,
+   "menuBy": "Escape",
+   "pauseMenu": true,
+   "shareClicked": true,
+   "clipboard": "http://localhost:6180/fly/?sonic=fly&scene=887f27aa&sz=1&course=g1.1",
+   "field": "http://localhost:6180/fly/?sonic=fly&scene=887f27aa&sz=1&course=g1.1",
+   "hookLink": {
+    "url": "http://localhost:6180/fly/?sonic=fly&scene=887f27aa&sz=1&course=g1.1",
+    "copied": true
+   },
+   "url": "http://localhost:6180/fly/?sonic=fly&scene=887f27aa&sz=1&course=g1.1"
+  },
+  "sound.shareCarries": {
+   "url": "http://localhost:6180/fly/?sonic=fly&scene=887f27aa&sz=1&course=g1.1",
+   "scene": "887f27aa",
+   "course": "g1.1",
+   "sonic": "fly"
+  },
+  "sound.reference": {
+   "href": "/en/fly/?sonic=fly&scene=887f27aa&sz=1&course=g1.1&render=off",
+   "scene": "887f27aa",
+   "status": "ready",
+   "gates": 24,
+   "source": "generated",
+   "courseParam": "g1.1",
+   "sonic": {
+    "lesson": "scan-free",
+    "phase": "intro",
+    "scene": "887f27aa",
+    "builtin": false
+   },
+   "locked": false,
+   "pause": false,
+   "link": null
+  },
+  "sound.landsOnScene": {
+   "primaries": [
+    "sonic-start-scan"
+   ],
+   "consent": [],
+   "startButtons": [
+    "sonic-start-scan",
+    "sonic-hp-left",
+    "sonic-hp-right",
+    "sonic-reset"
+   ],
+   "lessonsLink": {
+    "text": "New to flying by sound? Open the lessons",
+    "h": 44,
+    "primary": false
+   },
+   "focused": "sonic-start-scan",
+   "title": "Fly by Sound",
+   "picture": "U:/Temp/gsfpv-train4/shots/n-share-live-sound.png"
+  },
+  "sound.fliesSame": {
+   "clicks": [
+    "sonic-start-scan"
+   ],
+   "sharer": {
+    "scene": "887f27aa",
+    "gates": 24,
+    "course": "g1.1",
+    "sonic": {
+     "lesson": "scan-free",
+     "phase": "intro",
+     "scene": "887f27aa",
+     "builtin": false
+    },
+    "locked": true,
+    "inPlaceGates": 36,
+    "by": "the same address in the sharer browser"
+   },
+   "friend": {
+    "href": "/en/fly/?sonic=fly&scene=887f27aa&sz=1&course=g1.1&render=off",
+    "scene": "887f27aa",
+    "status": "ready",
+    "gates": 24,
+    "source": "generated",
+    "courseParam": "g1.1",
+    "sonic": {
+     "lesson": "scan-free",
+     "phase": "intro",
+     "scene": "887f27aa",
+     "builtin": false
+    },
+    "locked": false,
+    "pause": false,
+    "link": null
+   }
+  }
+ },
+ "blocked": [
+  "POST http://localhost:6180/api/e",
+  "POST http://localhost:6180/api/e",
+  "POST http://localhost:6180/api/e",
+  "POST http://localhost:6180/api/e",
+  "POST http://localhost:6180/api/e",
+  "POST http://localhost:6180/api/e",
+  "POST http://localhost:6180/api/e"
+ ],
+ "errors": []
+}
