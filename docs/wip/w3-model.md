@@ -11,7 +11,7 @@ comes from a real flight log.
 - [x] S1 the model: Design; wake.ts per-rotor shake + mean loss sized by sources; every preset carries
       prop_diameter_mm and ducted (the v0.8 wake_loss / wake_shake fields removed); unit tests
       packages/sim-core/test/model-wake.test.ts (7 pass); model-drones-v08 and drone-ranges wake cases updated
-      (pass); neg_control.py on origin/main: NEG OK (7 of 7 fail there). Commit: see git log "w3-model S1".
+      (pass); neg_control.py on origin/main: NEG OK (7 of 7 fail there). Commit 3868ba8c.
       Left red on purpose for S2: tools/bench/test/a6-reference.test.ts (hash moves by decision 5),
       sim-core b12-rewind (2) and log-v2-compat (2): recorded lives of older builds replayed by the new model.
 - [ ] S2 the presets and determinism: air65-1s corrected by the note; presets Air65 Champion and Air65 II Champion;
