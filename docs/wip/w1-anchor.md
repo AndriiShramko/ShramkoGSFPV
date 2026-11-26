@@ -12,7 +12,7 @@ sections Cause and Design proposal (R1). Temp folder U:/Temp/gsfpv-train4/w1-anc
 - [ ] S2 the link (point 3): request.test.ts round trip, old link gives the old course; measuring gate (eb5f51dc, Lublin, Tunis); gates.py
   - [x] request.test.ts: anchor round trip; old g2 links gate for gate (hashes from origin/main); the share reader keeps a
         negative anchor (flight-link.ts GENERATED took no '-'); NEG OK twice
-  - [ ] measuring gate (w1-diag-measure.ts: eb5f51dc, Lublin, Tunis)
+  - [x] measuring gate (w1-diag-measure.ts: eb5f51dc, Lublin, Tunis): passed, numbers in Claims 6
   - [ ] gates.py
 - [ ] S3 acceptance by mouse against a local release build; the same probe against the live site fails its first step
 
@@ -67,6 +67,13 @@ pos, quat and shape with hashes taken from origin/main's planCourse: equal. `g1.
 5. A shared link keeps a course whose anchor is negative: a fresh browser reads `course=g2.2r.mc.12.-3.-540` as that course.
    `npx vitest run tools/bench/test/w1-anchor.test.ts -t "shared link"` -> passed; NEG OK on origin/main (readFlightLink
    gave course null: the share reader's GENERATED took no '-').
+6. On the real scans the course grows from the pilot at the first load (anchor = the spawn), 18 courses each (3 levels x
+   2 spreads x 3 seeds), mean splat-density rank of the gates and gate 1's flat distance from the anchor, before (w1-diag
+   live, from the core) -> now: eb5f51dc 0.50 -> 0.99, median 540.6 -> 2.1 m, worst 8.1 m; Lublin 2f1ddf5f 0.62 -> 0.96,
+   453.5 -> 4.2 m, worst 4.8 m; control Tunis 887f27aa 0.89 -> 0.92, 34.2 -> 4.0 m (6 of 18 start 12-20 m away: medium
+   compact, medium wide 1, pro wide 1 and 3); no refusal, no hang, no gate in the walls (Tunis: 6 legs touch walls, as
+   before). `cd tools/bench && npx tsx src/w1-diag-measure.ts --scenes eb5f51dc,2f1ddf5f,887f27aa --versions live --out
+   U:/Temp/gsfpv-train4/w1-anchor/measure` -> evidence/2026-11-19/w1-anchor/measure-summary.json and gate1-to-anchor.json.
 
 ## Not verified
 
@@ -79,6 +86,9 @@ pos, quat and shape with hashes taken from origin/main's planCourse: equal. `g1.
 ## For the lead
 
 (S3)
+
+Files outside the tracks package and the course feature: apps/fly/src/share/flight-link.ts (one character class: a
+generated course's token may hold '-', so a shared link keeps an anchor with a negative coordinate).
 
 ## Cost notes
 

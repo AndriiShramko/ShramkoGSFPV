@@ -1,0 +1,86 @@
+{
+ "what": "w1-anchor S2: flat distance of gate 1 from the anchor (the spawn, whole metres) per course, from rows-<id>-live.jsonl of tools/bench/src/w1-diag-measure.ts --versions live (branch w1-anchor f911c2c0)",
+ "scans": {
+  "eb5f51dc": {
+   "anchor": [
+    -9,
+    6,
+    -21
+   ],
+   "gate1M": {
+    "beginner-compact-1": 5.97,
+    "beginner-compact-2": 7.98,
+    "beginner-compact-3": 8.14,
+    "beginner-wide-1": 5.97,
+    "beginner-wide-2": 7.98,
+    "beginner-wide-3": 8.14,
+    "medium-compact-1": 1.02,
+    "medium-compact-2": 2.21,
+    "medium-compact-3": 1.02,
+    "medium-wide-1": 1.02,
+    "medium-wide-2": 2.21,
+    "medium-wide-3": 1.02,
+    "pro-compact-1": 1.02,
+    "pro-compact-2": 1.72,
+    "pro-compact-3": 1.02,
+    "pro-wide-1": 1.02,
+    "pro-wide-2": 1.72,
+    "pro-wide-3": 1.02
+   }
+  },
+  "2f1ddf5f": {
+   "anchor": [
+    92,
+    14,
+    -104
+   ],
+   "gate1M": {
+    "beginner-compact-1": 2.83,
+    "beginner-compact-2": 2.83,
+    "beginner-compact-3": 4.83,
+    "beginner-wide-1": 2.83,
+    "beginner-wide-2": 2.83,
+    "beginner-wide-3": 4.83,
+    "medium-compact-1": 1.26,
+    "medium-compact-2": 3.44,
+    "medium-compact-3": 1.26,
+    "medium-wide-1": 1.26,
+    "medium-wide-2": 3.44,
+    "medium-wide-3": 1.26,
+    "pro-compact-1": 2.04,
+    "pro-compact-2": 1.26,
+    "pro-compact-3": 1.26,
+    "pro-wide-1": 2.04,
+    "pro-wide-2": 2.04,
+    "pro-wide-3": 1.26
+   }
+  },
+  "887f27aa": {
+   "anchor": [
+    0,
+    2,
+    0
+   ],
+   "gate1M": {
+    "beginner-compact-1": 3.81,
+    "beginner-compact-2": 3.93,
+    "beginner-compact-3": 3.81,
+    "beginner-wide-1": 3.96,
+    "beginner-wide-2": 3.55,
+    "beginner-wide-3": 3.81,
+    "medium-compact-1": 11.97,
+    "medium-compact-2": 11.97,
+    "medium-compact-3": 11.97,
+    "medium-wide-1": 17.32,
+    "medium-wide-2": 2.91,
+    "medium-wide-3": 3.68,
+    "pro-compact-1": 1.8,
+    "pro-compact-2": 0.45,
+    "pro-compact-3": 2.09,
+    "pro-wide-1": 20.0,
+    "pro-wide-2": 2.43,
+    "pro-wide-3": 20.0
+   }
+  }
+ }
+}
