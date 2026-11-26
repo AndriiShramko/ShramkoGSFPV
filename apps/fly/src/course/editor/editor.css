@@ -156,8 +156,8 @@
 .ce-topbar .ce-tb[aria-pressed='true'] { background: #2a3a12; }
 .ce-topbar .ce-tb-line {
     color: #c9d1db;
-    /* lane n-save (t7-plan Decision 6: Save's answer was 12.75 px and cut with '...'): 16 px, it wraps to at most three
-       lines and is never cut; a longer sentence scrolls inside the three lines. The full text stays in its title (top-bar.ts).
+    /* lane n-save (t7-plan Decision 6: Save's answer was 12.75 px and cut with '...'): 16 px and it wraps (the rows
+       allowed: fix-n-save below). The full text stays in its title (top-bar.ts).
        lane editfix E4.2: a fixed basis, not the text's width: a new line no longer moves the centred buttons (a touch tap's
        click is hit-tested after pointerup cleared the held line, and the second Exit tap landed on this line). The width
        too: Chrome sizes the placed bar by its items' max-content, which a basis alone does not set (measured: 340 px) */
