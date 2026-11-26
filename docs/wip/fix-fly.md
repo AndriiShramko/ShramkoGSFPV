@@ -102,3 +102,16 @@ the scan", 0 s) with its preview photo, i.e. the page is up and opening the scen
   file:// imports, GSFPV_REPO for evidence); cheaper: a `--trace-nav` switch in accept-fly itself.
 - S2: cheap (about 20 replies); the three full runs were the time; reusing the S1 dist saved a build. neg_control
   needs `npx.cmd` on Windows (plain `npx` is not found by CreateProcess).
+- Review: about 20 replies, most of the time was the three browser runs queued on the GPU lock; cheaper: one
+  script for live + build + local run (done here), and a scratch probe copy inside tools/bench/src (imports resolve).
+
+## Review
+
+Verdict: SHIP (independent check, 2026-11-26; full file U:/Temp/gsfpv-train4/reviews/fix-fly.md).
+- Diff: tools/bench only plus this file; the B10 judge is unchanged; `wizard` waits for `commit` then waitLogic.
+- Own runs: live site B6 B7 B9 B10 B11 B12 B13 B14 B15 B16 all PASS (exit 0); local release build of 0ec000e3 on
+  port 7320 all PASS (exit 0); negative control (wizard opens a page that never becomes ready) exit 1 with "page did
+  not become ready"; neg_control.py on the unit test NEG OK.
+- DOUBT, not holding: live run 2's 30 s timeout stays unexplained; its call log does not show whether the
+  navigation had committed, so the new 60 s commit budget may only widen the margin. No pilot impact found.
+- Repaired: nothing.
