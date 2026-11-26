@@ -9,11 +9,12 @@ sections Cause and Design proposal (R1). Temp folder U:/Temp/gsfpv-train4/w1-anc
   - [x] tracks: `CourseRequest.anchor`, `courseAnchor`, `anchorOf` in plan.ts; world `fringeField`; plan.test.ts tests (f6cb45ef)
   - [x] every caller passes its anchor (apps/fly course/anchor.ts `pilotAnchor`, course.ts generate, rooms through the id); bench scripts (9aa499bd)
   - [x] neg_control.py on origin/main: NEG OK twice (anchorOf missing; gate 1 89.8 m from the anchor)
-- [ ] S2 the link (point 3): request.test.ts round trip, old link gives the old course; measuring gate (eb5f51dc, Lublin, Tunis); gates.py
+- [x] S2 the link (point 3): request.test.ts round trip, old link gives the old course; measuring gate (eb5f51dc, Lublin, Tunis); gates.py
   - [x] request.test.ts: anchor round trip; old g2 links gate for gate (hashes from origin/main); the share reader keeps a
-        negative anchor (flight-link.ts GENERATED took no '-'); NEG OK twice
-  - [x] measuring gate (w1-diag-measure.ts: eb5f51dc, Lublin, Tunis): passed, numbers in Claims 6
-  - [ ] gates.py
+        negative anchor (flight-link.ts GENERATED took no '-'); NEG OK twice (f911c2c0)
+  - [x] measuring gate (w1-diag-measure.ts: eb5f51dc, Lublin, Tunis): passed, numbers in Claims 6 (b78ce85d)
+  - [x] gates.py on b78ce85d: architecture, i18n, leaks PASS; typecheck, vitest, b18 FAIL, none from this lane after one
+        fix (see Not verified); walls-first.test.ts's source pattern now allows generate's third argument `from`
 - [ ] S3 acceptance by mouse against a local release build; the same probe against the live site fails its first step
 
 Design differences (the code wins): the anchor lives in `CourseRequest.anchor` (the request is what the link names, what a
@@ -79,6 +80,12 @@ pos, quat and shape with hashes taken from origin/main's planCourse: equal. `g1.
 
 - apps/fly typecheck shows errors only in src/sonic/* (MomentKey, GuideLevel): this copy's packages/sonic-fpv work tree
   stands at 53a56759, not the pin 9ac7876 (not present locally; not fetched); none in a file of this lane.
+- gates.py on b78ce85d (logs U:/Temp/gsfpv-gates-20261126-195902): typecheck FAIL only in apps/fly src/sonic/* and vitest
+  14 failures only in tests that import @shramko/sonic-fpv (sonic-*, size-flown), the same stale submodule work tree
+  (w1-diag recorded the same 14); B18 FAIL names only docs/wip/train5-lead.md (the lead's note, train4-common B18 NOTE).
+  The 15th vitest failure, walls-first.test.ts, was this lane's (S1 gave generate a third argument): its pattern is
+  fixed and the file passes (23 passed); the gates were not run a second time.
+- Tunis: 6 of 18 courses begin 12-20 m from the anchor (the roughness quality rule pulls to rough tiles near it; R3).
 - Finding for R3 (not repaired here): with the anchor on a flat open field 10 m off the village the course began 15 m
   from it: the roughness quality rule (tiers 0/2) still pulls the course to rough tiles near the anchor. R3 (a forbid
   map from the splats) removes that pull.
@@ -94,4 +101,7 @@ generated course's token may hold '-', so a shared link keeps an anchor with a n
 
 - S1: about 45 replies; most went to reading course.ts's generate paths and tuning the test world (a dense fuzz made one
   solid run, so the village won the core). Cheaper: print analyzeScan's core for a draft world in one script before the tests.
+- S2: about 35 replies; the most went to the gates' failures (telling the stale submodule's apart from this lane's) and
+  to finding the share reader's regex. Cheaper: grep every course-id pattern (`g[0-9]`, COURSE_RE, TRACK_ID) before
+  changing a link's form; the gate for gate hashes cost one scratch script against a copy of origin/main's src.
 
