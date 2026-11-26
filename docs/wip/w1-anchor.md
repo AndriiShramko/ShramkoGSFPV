@@ -10,6 +10,10 @@ sections Cause and Design proposal (R1). Temp folder U:/Temp/gsfpv-train4/w1-anc
   - [x] every caller passes its anchor (apps/fly course/anchor.ts `pilotAnchor`, course.ts generate, rooms through the id); bench scripts (9aa499bd)
   - [x] neg_control.py on origin/main: NEG OK twice (anchorOf missing; gate 1 89.8 m from the anchor)
 - [ ] S2 the link (point 3): request.test.ts round trip, old link gives the old course; measuring gate (eb5f51dc, Lublin, Tunis); gates.py
+  - [x] request.test.ts: anchor round trip; old g2 links gate for gate (hashes from origin/main); the share reader keeps a
+        negative anchor (flight-link.ts GENERATED took no '-'); NEG OK twice
+  - [ ] measuring gate (w1-diag-measure.ts: eb5f51dc, Lublin, Tunis)
+  - [ ] gates.py
 - [ ] S3 acceptance by mouse against a local release build; the same probe against the live site fails its first step
 
 Design differences (the code wins): the anchor lives in `CourseRequest.anchor` (the request is what the link names, what a
@@ -32,6 +36,15 @@ object's own rule, not a start.
 | bench: w1-diag-measure.ts | planCourse | `courseAnchor(spawn)` (the pilot at the first load) |
 | bench: gen4-place-audit.ts | planCourse | null: its spawn was the core; it measures as before |
 
+### Old links (point 3)
+
+A `g2.` link of the old form names no anchor: `parseCourseLink` gives `anchor: null`, and `anchorOf` then answers the
+analysis core, the very place planCourse walked from before; nothing else in the plan reads the anchor. A link made now
+carries the anchor, whole flown metres, `g2.<seed>.<level><spread>.<x>.<y>.<z>` (at most 37 characters: within TRACK_ID's 80
+and the rooms' COURSE_RE 64); a stored track's id is that link (plan.ts `id: courseLinkId(request)`), so it carries the
+anchor too. Proof: request.test.ts lays three old links (a room, a city, the fringe world) and compares every gate's
+pos, quat and shape with hashes taken from origin/main's planCourse: equal. `g1.` links never reach planCourse.
+
 ## What the owner does
 
 (S3)
@@ -47,6 +60,13 @@ object's own rule, not a start.
 3. The touched tests hold: `npx vitest run tools/bench/test/w1-anchor.test.ts tools/bench/test/course-progress.test.ts
    tools/bench/test/gap-gen-race.test.ts tools/bench/test/generate-dialog.test.ts packages/tracks/test/request.test.ts
    packages/tracks/test/gap-gen-plan.test.ts` -> 6 files, 43 passed.
+
+4. A link with an anchor round-trips (every level and spread, negative and far places, -0 as 0, at most 64 characters;
+   half an anchor refused), and an old `g2.` link lays the same course as origin/main, gate for gate.
+   `npx vitest run packages/tracks/test/request.test.ts` -> passed; NEG OK on origin/main (`-t "with an anchor round-trips"`).
+5. A shared link keeps a course whose anchor is negative: a fresh browser reads `course=g2.2r.mc.12.-3.-540` as that course.
+   `npx vitest run tools/bench/test/w1-anchor.test.ts -t "shared link"` -> passed; NEG OK on origin/main (readFlightLink
+   gave course null: the share reader's GENERATED took no '-').
 
 ## Not verified
 

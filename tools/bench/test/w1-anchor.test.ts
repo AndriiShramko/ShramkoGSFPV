@@ -6,6 +6,8 @@ import { describe, expect, it } from 'vitest';
 import { S } from '@gsfpv/sim-core';
 import { courseLinkId, parseCourseLink } from '@gsfpv/tracks';
 import { FROM_PILOT, pilotAnchor } from '../../../apps/fly/src/course/anchor';
+import { courseOfLink } from '../../../apps/fly/src/course/link';
+import { courseToken, isCourseToken, readFlightLink } from '../../../apps/fly/src/share/flight-link';
 
 const SPAWN = [10.4, 2.6, -7.5];
 
@@ -35,5 +37,14 @@ describe('the anchor of a course asked now', () => {
         const id = courseLinkId(request);
         expect(id).toBe('g2.2r.mc.0.1.-123');
         expect(parseCourseLink(id)).toEqual({ kind: 'request', request });
+    });
+
+    it('a shared link (Share) keeps a course whose anchor is negative; the browser that opens it reads the same course', () => {
+        const id = 'g2.2r.mc.12.-3.-540';
+        expect(isCourseToken(id)).toBe(true);
+        const place = readFlightLink(`?scene=eb5f51dc&course=${id}`);
+        expect(place?.course).toEqual({ kind: 'generated', link: id });
+        expect(courseToken({ kind: 'generated', link: id })).toBe(id);
+        expect(courseOfLink(`?scene=eb5f51dc&course=${id}`)).toEqual({ kind: 'request', request: { seed: 99, level: 'medium', spread: 'compact', anyQuality: false, anchor: [12, -3, -540] } });
     });
 });
