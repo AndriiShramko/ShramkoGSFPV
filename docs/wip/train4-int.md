@@ -271,8 +271,15 @@ cover what changed since car 5's head.)
       nothing over the gate. Server stopped. Gates once on 14d3774e (+ this status): all PASS rc 0 (typecheck, vitest
       470 files / 5871 tests, api-unittest, architecture, i18n, catalog, b18, leaks; U:/Temp/gsfpv-gates-20261126-210804,
       int4/gates-car6.log). dist deleted.
-- [ ] S3 the hand-over: origin/main merged, w1-anchor-accept in deploy/live-checks.sh with its negative control on
-      the live site, Deploy order, Live checks, What the owner should try, Not verified, int4-car6.json
+- [x] S3 the hand-over: `git fetch origin` found nothing new on origin/main (5a4d4a0d, already in this head). New live
+      check w1-anchor-accept in deploy/live-checks.sh; its negative control against the live site (release 3cc6b51b):
+      FAIL exit 1, steps 1-3 (gate 1 490.3 m from the camera, 508 m from the paused drone; the link has no anchor;
+      int4/live-neg6, evidence/2026-11-26/int4-car6/w1-anchor-accept-live-neg.json). Only docs/ and
+      deploy/live-checks.sh changed since the S2 gates: loadq-hold.test.ts (reads live-checks.sh) 5/5 and b18 PASS.
+      Deploy order, Live checks, What the owner should try, Not verified written. U:/Temp/gsfpv-train4/int4-car6.json
+      is written for the commit that writes this line (sha, api [], rooms false, nginx false, package_sha '', live_only
+      as in Live checks, held n-save, n-scan, w2-pilot, w1-dialog, w3-model: the lead's order, the generator's repair
+      goes live first).
 
 ## Progress
 
@@ -585,6 +592,21 @@ no held gap lane, no re-baked walls)
 5. nginx: no (deploy/nginx.conf unchanged since car 3's head).
 6. Walls: no new walls (the S2 build used the nine release walls); deploy/release-walls.sh need not run.
 
+Car 6 (what changed since car 5's head 3cc6b51b15b6aca43a4c2b397bf6553ad1456e12: `git diff 3cc6b51b HEAD -- apps/api
+apps/rooms deploy packages/sonic-fpv nginx compose*` gives deploy/live-checks.sh only; held lanes are not merged, no
+re-baked walls)
+
+1. The sound package: nothing. The pin of packages/sonic-fpv stays 9ac7876dee42b8a874e51e6d46eb7cf8d70c3a48 (car 5's,
+   already live: release.json of the site says sonic 9ac7876); package_sha is empty.
+2. The API files: none (apps/api unchanged since car 5's head).
+3. The page: one release of this head (apps/fly with w1-anchor: course/anchor.ts, the generator grows the course from
+   the pilot's place, the spawn when the drone is parked there, else the drone; a link's course token g2.<seed>.<ls>.<x>.
+   <y>.<z> carries the anchor; a link of the old form lays its old course; the site; the generated catalogue), built with
+   packages/sonic-fpv at 9ac7876d. fix-fly changes only tools/bench (the accept-fly probe), nothing that ships.
+4. Rooms: no (apps/rooms and apps/api/rooms unchanged; a room's adopt passes the asker's named anchor in page code).
+5. nginx: no (deploy/nginx.conf unchanged since car 5's head).
+6. Walls: no new walls (the S2 build used the nine release walls); deploy/release-walls.sh need not run.
+
 ## Live checks
 
 Car 1. After the release and the nginx reload: `LIVE_ONLY=<names> bash deploy/live-checks.sh <outdir>` with the names
@@ -727,6 +749,33 @@ gap-sound-start,menu4-first-minute,tails4-start-moved,head4-accept,accept-fly
 Left out on purpose: the stale lane harnesses no check runs (sonic-v13-page.ts, sonic-start-keyboard.ts,
 sonic-review-keys.ts, sonic-int-review R10: see Seams).
 
+Car 6. After the page: `LIVE_ONLY=<names> bash deploy/live-checks.sh <outdir>` with the names below (the hand-over's
+live_only), then the whole file as usual.
+
+New in deploy/live-checks.sh (read-only, render off, no GPU lock, a new throwaway browser context; honours LIVE_ONLY
+through run(); the probe exits 1 on a failed step, which FAILs its line):
+- w1-anchor-accept: w1-anchor-accept.mjs on scan eb5f51dc by the mouse at 1536x730: Shift+G and Build at the camera lay
+  gate 1 within 15 m of it; flown 30 m away and paused, the menu's course item and Build lay gate 1 within 15 m of the
+  drone and nearer it than the spawn; Share's address names the course with its anchor; that address in a fresh context
+  lays the same gates. Every request but GET, HEAD and OPTIONS is aborted and listed; nothing is saved, sent or created.
+
+Positive side: PASS on the release build of 15a01c3d (S2, logs-car6: three runs and one drawn run; gate 1 2.0-3.6 m from
+the spawn, 2.3-8.6 m from the paused drone). Negative side against the live site before the release (release 3cc6b51b,
+sonic 9ac7876; U:/Temp/gsfpv-train4/int4/live-neg6, evidence/2026-11-26/int4-car6/w1-anchor-accept-live-neg.json):
+`w1-anchor-accept FAIL (exit 1)`, verdict {"pass":false,"failed":[1,2,3]}: step 1 gate 1 490.3 m from the spawn (mean
+gate 491 m), step 2 gate 1 508 m from the drone flown 30.3 m (493.4 m from the spawn), step 3 the shared address
+`course=g2.bvpy62.mc` has no anchor; step 4 (the old link lays the same gates) passes on the old page too.
+
+Existing names that cover what changed: accept-fly (B6-B16, fix-fly's repaired probe waits for the page's readiness),
+gen4-generate-dialog (the dialog's Build now takes the pilot's place), one-course, course-path-wroclaw, gate-guide-wroclaw
+(generated courses on the Wroclaw scan, Shift+G), sonic-course-wroclaw (a course generated in the sound mode),
+n-share-sound-link (a shared sound link with a course token that may hold '-'), tutor-air-first-flight (the tutorial's
+room and first step). All of them PASS on the release build of 15a01c3d (S2, logs-car6). Every name exists in
+deploy/live-checks.sh as spelled; none was left out.
+
+live_only (int4-car6.json, one line): accept-fly,w1-anchor-accept,gen4-generate-dialog,one-course,course-path-wroclaw,
+gate-guide-wroclaw,sonic-course-wroclaw,n-share-sound-link,tutor-air-first-flight
+
 ## What the owner should try
 
 Car 1, in the order of his messages (tails4: train 2's leftovers; menu4: brief line 373; head4: the head tracking plan;
@@ -852,6 +901,16 @@ Car 5, for the lead.
 - Open calls taken as t8-plan recommended (Part D): the narrator off is the guide off; moments only in the first set (the
   other lessons keep their intros); G is the tour, the glossary stays in the lesson menu; Guide defaults to Short.
 
+Car 6 (the generator's repair: the gates come back round the pilot)
+1. Open scan eb5f51dc on the site (https://gsfpv.flyreelstudio.eu/en/fly/?scene=eb5f51dc), press Shift+G, Generate: the
+   gates stand round you, on the well scanned part (the courtyard), not in the blurred outskirts hundreds of metres away.
+2. Fly somewhere else, pause (Escape), Shift+G (or the pause menu's course item), Generate: the gates stand round the
+   drone where it hangs.
+3. Copy the course's link (Share) and open it in another browser: the same course, gate for gate. A link made before
+   this release still lays the course it laid before.
+4. The dialog that asks Here, Whole scan or Add here comes with the next car (w1-dialog), with n-save, n-scan, w2-pilot
+   and w3-model.
+
 ## Not verified
 
 Car 1
@@ -926,6 +985,18 @@ Car 5
 - The three new live checks' positive side ran on the release build of 9bebe9b1 (S2); against the live site with car 5's
   code they run after the release (live_only).
 
+Car 6
+- No person took part: the gates' places were measured by the probe in metres (gate 1 to the camera and to the paused
+  drone), not judged by an eye on a screen; one drawn picture (int4-car6-gates-round-you.png) was looked at once. The
+  owner's walk under What the owner should try is the real check.
+- The pilot's place was proved on eb5f51dc (the probe and the drawn run) and by the lane's measuring gate (eb5f51dc,
+  Lublin, Tunis control, Wroclaw at review); other scans with a poor middle or a spawn in a bad part are not walked.
+- A single random seed may lay gate 1 up to ~12.5 m from the pilot (the design's 10 m is the median); the live check's
+  line is 15 m (see Seams).
+- The sound page's 'sg=' link (the pause item to the sound page) still carries only a g1 seed: a g2 course with its
+  anchor does not travel that way (as before car 6; for the lead).
+- No phone, no touch, no Firefox or Safari for the new probe (Chromium only); render off but the one drawn run.
+
 ## Cost notes
 
 - S1 (car 1): about 20 replies; the most went to deciding whether gen4b stands without gen4a (its status file and the
@@ -969,3 +1040,5 @@ Car 5
 - Car 6 S2 (~40 calls): the most went to the shell (Node 20 on PATH broke vitest; no python until the PATH line of the
   common file) and to the w1-anchor probe's 10 m line on a random seed. Cheaper: start every command with the common
   file's PATH line; run a random-seed probe three times before judging its threshold.
+- Car 6 S3 (~15 calls): the most went to finding the Car 5 end of each hand-over section in the long status file.
+  Cheaper: `grep -n "^Car\|^## "` once, then edit before each next '## ' anchor without reading the sections.

@@ -1,0 +1,197 @@
+{
+ "probe": "w1-anchor-accept",
+ "base": "https://gsfpv.flyreelstudio.eu/en",
+ "scene": "eb5f51dc",
+ "render": false,
+ "viewport": "1536x730@1.25",
+ "steps": [
+  {
+   "step": 1,
+   "name": "atCamera: Shift+G at the load, gate 1 within 15 m of the spawn",
+   "pass": false,
+   "detail": {
+    "lock": true,
+    "dialog": true,
+    "built": true,
+    "ms": 982,
+    "gates": 8,
+    "spawn": [
+     -8.589938163757324,
+     5.890172004699707,
+     -21.17869758605957
+    ],
+    "droneAtBuild": [
+     -8.589938163757324,
+     5.890172004699707,
+     -21.17869758605957
+    ],
+    "gate1": [
+     -442.4,
+     -218.4,
+     207.2
+    ],
+    "gate1ToSpawnM": 490.3,
+    "meanGateToSpawnM": 491,
+    "request": {
+     "seed": 391732438,
+     "level": "medium",
+     "spread": "compact",
+     "anyQuality": false
+    }
+   }
+  },
+  {
+   "step": 2,
+   "name": "atDrone: 30 m away, paused, course item, gate 1 within 15 m of the drone and nearer it than the spawn",
+   "pass": false,
+   "detail": {
+    "takeoffAt": [
+     -8.589938163757324,
+     5.890172004699707,
+     -21.17869758605957
+    ],
+    "flownAt": [
+     16.594901860969742,
+     15.429056280749869,
+     -4.2602610492739155
+    ],
+    "flownM": 30.3,
+    "rose": 9.5,
+    "menu": true,
+    "stillInPause": true,
+    "courseItem": true,
+    "dialog": true,
+    "built": true,
+    "droneAtBuild": [
+     16.594901860969742,
+     15.429056280749869,
+     -4.2602610492739155
+    ],
+    "droneToSpawnM": 30.3,
+    "gate1": [
+     -440.8,
+     -213.6,
+     216.8
+    ],
+    "gate1ToDroneM": 508,
+    "gate1ToSpawnM": 493.4,
+    "gates": 14,
+    "ms": 4202,
+    "request": {
+     "seed": 718406714,
+     "level": "medium",
+     "spread": "compact",
+     "anyQuality": false
+    }
+   }
+  },
+  {
+   "step": 3,
+   "name": "linkHas: the shared address names the course with its anchor",
+   "pass": false,
+   "detail": {
+    "share": true,
+    "clipboard": "-",
+    "field": "https://gsfpv.flyreelstudio.eu/en/fly/?scene=eb5f51dc&course=g2.bvpy62.mc",
+    "course": "g2.bvpy62.mc"
+   }
+  },
+  {
+   "step": 4,
+   "name": "sameCourse: a fresh context lays the same gates",
+   "pass": true,
+   "detail": {
+    "opened": true,
+    "gates": 14,
+    "same": true,
+    "gate1": [
+     -440.8,
+     -213.6,
+     216.8
+    ],
+    "ms": 1693,
+    "request": {
+     "seed": 718406714,
+     "level": "medium",
+     "spread": "compact",
+     "anyQuality": false
+    }
+   }
+  }
+ ],
+ "blocked": [
+  "POST https://gsfpv.flyreelstudio.eu/api/e",
+  "POST https://gsfpv.flyreelstudio.eu/api/e",
+  "POST https://gsfpv.flyreelstudio.eu/api/e",
+  "POST https://gsfpv.flyreelstudio.eu/api/e",
+  "POST https://gsfpv.flyreelstudio.eu/api/share",
+  "POST https://gsfpv.flyreelstudio.eu/api/e",
+  "POST https://gsfpv.flyreelstudio.eu/api/e",
+  "POST https://gsfpv.flyreelstudio.eu/api/e"
+ ],
+ "errors": [],
+ "landings": [
+  {
+   "url": "https://gsfpv.flyreelstudio.eu/en/fly/?scene=eb5f51dc&nowarn=1&set.input.howToFly=false&set.input.play=easy&render=off",
+   "status": "ready",
+   "session": true,
+   "buttons": [
+    "voxpanel-fold",
+    "voxpanel-close",
+    "walls-toggle",
+    "voxels-mode-off",
+    "voxels-mode-overlay",
+    "voxels-mode-only",
+    "floaters-open",
+    "walls-export",
+    "walls-import",
+    "walls-clear",
+    "mode-chip",
+    "sound-toggle",
+    "fullscreen-toggle",
+    "messages-open",
+    "share-top",
+    "open-settings",
+    "open-feedback",
+    "open-controls",
+    "pause",
+    "cinema-rec"
+   ]
+  },
+  {
+   "url": "https://gsfpv.flyreelstudio.eu/en/fly/?scene=eb5f51dc&course=g2.bvpy62.mc&nowarn=1&set.input.howToFly=false&set.input.play=easy&render=off",
+   "status": "ready",
+   "session": true,
+   "buttons": [
+    "voxpanel-fold",
+    "voxpanel-close",
+    "walls-toggle",
+    "voxels-mode-off",
+    "voxels-mode-overlay",
+    "voxels-mode-only",
+    "floaters-open",
+    "walls-export",
+    "walls-import",
+    "walls-clear",
+    "mode-chip",
+    "sound-toggle",
+    "fullscreen-toggle",
+    "messages-open",
+    "share-top",
+    "open-settings",
+    "open-feedback",
+    "open-controls",
+    "pause",
+    "cinema-rec"
+   ]
+  }
+ ],
+ "verdict": {
+  "pass": false,
+  "failed": [
+   1,
+   2,
+   3
+  ]
+ }
+}

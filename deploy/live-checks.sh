@@ -419,6 +419,12 @@ run tutor-air-first-flight node scripts/tutor-air-accept.mjs "$SITE" "$OUT/tutor
 # n-share-accept.mjs (sound row): a sound flight's Share address opened in a new profile offers one main button that flies
 # the same scene, course and way of flying.
 run n-share-sound-link env ROWS=sound TEMP_DIR="$OUT/n-share-tmp" node scripts/n-share-accept.mjs "$SITE" "$OUT/n-share-sound-link.json" live
+# Train 5 integration, car 6 (w1-anchor). w1-anchor-accept.mjs: render off, no GPU lock, a new throwaway browser context;
+# read-only on any site (every request but GET, HEAD and OPTIONS is aborted and listed; no save button is pressed; a
+# generated course lives only in the tab). On scan eb5f51dc by the mouse: Shift+G and Build at the camera lay gate 1 within
+# 15 m of it; 30 m away, paused, Build lays gate 1 within 15 m of the drone; Share's address names the course with its
+# anchor; that address in a fresh context lays the same gates. Exit 1 on a failed step.
+run w1-anchor-accept node scripts/w1-anchor-accept.mjs "$SITE/en" "$OUT/w1-anchor-accept.json"
 
 if [ "$FAILED" = 0 ]; then echo "LIVE CHECKS: PASS"; exit 0; fi
 echo "LIVE CHECKS: FAIL"
