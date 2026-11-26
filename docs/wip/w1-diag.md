@@ -7,6 +7,8 @@ Temp folder: U:/Temp/gsfpv-train4/w1-diag. Ports 7340-7359. No generator or page
 
 - [x] S1 points 1 and 2: Rule and History in the diagnosis document (reading and git only), d8b72bcb
 - [ ] S2 point 3: the measuring script in tools/bench, the table file, the pictures from above
+  - [x] script tools/bench/src/w1-diag-measure.ts, 2bf4cb38 (smoke on 39e63ce9: live 6 courses, old 1, frame check 1.0 vs 0.11)
+  - [ ] full run U:/Temp/gsfpv-train4/w1-diag/run1 (table.tsv, summary.json, top-<id>.png), look at the pictures, numbers into the document
 - [ ] S3 points 4 to 7: the cause with a negative control, n-route / n-path, the design proposal, the test system, For the lead
 
 S1 findings, in short: the asked course (planCourse, packages/tracks/src/plan.ts:336) starts its walk at the scan
