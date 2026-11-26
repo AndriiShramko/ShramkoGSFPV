@@ -253,7 +253,7 @@ cover what changed since car 5's head.)
       packages/sonic-fpv nginx compose*` is empty (api [], rooms false, nginx false, package_sha ''). pnpm install
       --frozen-lockfile rc 0, pnpm -r typecheck rc 0 on 683d7faa. Held: n-save, n-scan, w2-pilot, w1-dialog, w3-model
       (the lead's order: the generator's repair goes live first).
-- [ ] S2 the seams (course.ts, generate-dialog.ts, course/anchor.ts against the first flight and the sound start;
+- [x] S2 the seams (course.ts, generate-dialog.ts, course/anchor.ts against the first flight and the sound start;
       flight-link.ts course token with '-' against n-share), the one full check: gates, a6-reference, the package's
       tests, one release build with the walls, w1-anchor-accept, accept-fly B6 B7 B9-B16, n-share-accept, the
       generate dialog probe
@@ -268,7 +268,9 @@ cover what changed since car 5's head.)
       (packages/sonic-fpv at 9ac7876d): 82 files / 1474 tests PASS. a6-reference PASS. Picture (one, drawn w1-anchor run):
       int4-car6-gates-round-you.png: eb5f51dc as loaded, the black-and-white START gate a few metres ahead of the camera
       in the sharp courtyard (stone houses, lamp post), the line "Gates: 14. You are at the start gate" over the view,
-      nothing over the gate. Server stopped.
+      nothing over the gate. Server stopped. Gates once on 14d3774e (+ this status): all PASS rc 0 (typecheck, vitest
+      470 files / 5871 tests, api-unittest, architecture, i18n, catalog, b18, leaks; U:/Temp/gsfpv-gates-20261126-210804,
+      int4/gates-car6.log). dist deleted.
 - [ ] S3 the hand-over: origin/main merged, w1-anchor-accept in deploy/live-checks.sh with its negative control on
       the live site, Deploy order, Live checks, What the owner should try, Not verified, int4-car6.json
 
@@ -964,3 +966,6 @@ Car 5
   run that proves it (the negative control's summary straight into Live checks), not at the end.
 - Car 6 S1 (~10 calls): two clean merges; the most turns went to reading the long status file to find the Car 5 parts.
   Cheaper: a grep for '^Car ' gives every part's line at once; read only the last car's slice.
+- Car 6 S2 (~40 calls): the most went to the shell (Node 20 on PATH broke vitest; no python until the PATH line of the
+  common file) and to the w1-anchor probe's 10 m line on a random seed. Cheaper: start every command with the common
+  file's PATH line; run a random-seed probe three times before judging its threshold.
