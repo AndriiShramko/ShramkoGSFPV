@@ -141,4 +141,21 @@ chateau courtyard, sharp walls and windows, two teal gates within a few metres o
 - S3: about 30 replies; the most went to finding the keys of easy mode and the hook's fields, and one wasted pair of runs:
   the probe's read-only guard aborted the CDN's HEAD requests, so the scene never loaded. Cheaper: allow GET/HEAD/OPTIONS
   from the start and record the landing state in the first version of a probe.
+- Review: about 35 replies; the most went to neg_control.py failing on `npx` (Windows needs `node
+  node_modules/vitest/vitest.mjs`) and to a scratch test whose console output vitest hid. Cheaper: call vitest through node
+  and write scratch results to a file from the start.
+
+## Review
+
+Verdict: SHIP (independent check, head bc031d1d; full text U:/Temp/gsfpv-train4/reviews/w1-anchor.md).
+- No path reaches `a.core` as a start, compact zone or zone box except an old link's (anchor null); the object kind rule
+  keeps the core on purpose. The dialog, a direct press and the sound mode read the pilot's place when the job is sent.
+- Old g2 links: the same gates on the base and the head (4 links, one with a seed the lane did not use).
+- Unit tests 40 passed; NEG OK on the base. Measuring script, seeds 7 and 11: eb5f51dc rank 0.99, gate 1 median 6.1 m,
+  worst 12.5 m; Wroclaw 70b50d42 (new scan) rank 0.97, median 3.1 m, worst 8.8 m; no refusal, hang or gate in walls.
+- Mouse probe on a local release build: eb5f51dc gate 1 1.9 m from the spawn, 12.3 m from the paused drone 30 m away,
+  link and fresh context the same gates; Wroclaw gate 1 12.5 m from the spawn, 3.1 m from the drone, link the same gates.
+- DOUBT: gate 1 is not within 10 m for every seed (12.3-12.5 m seen; the live site 490-540 m); the probe's 10 m line fails
+  on such seeds. DOUBT: a link's anchor is flown metres, so it depends on the Scene size travelling with the link.
+- Repaired: nothing. Not run: gates.py (no repair), the live site, a two-page room race, a drawn run.
 
