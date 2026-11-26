@@ -19,6 +19,7 @@ import { join } from 'node:path';
 import { firefox } from 'playwright';
 import type { BrowserContext, Page } from 'playwright';
 import { launch, waitReady } from './browser';
+import { openFlyPage } from './fly-open';
 import { benchHeadless } from './chrome.mjs';
 import { writeEvidence, REPO, today } from './evidence';
 import { LOCK, lock, unlock } from './gpu-lock';
@@ -276,10 +277,12 @@ if (want('B9')) {
 }
 
 // ------------------------------------------------------------------ B10 wizard on SimRadio-raw
-async function wizard(qs: string, timeoutMs: number): Promise<{ step: number; msg: string; err: string | null; prof: Record<string, unknown> | null }> {
-    await page.goto(flyLogic('en', `scene=39e63ce9&simradio=raw&${qs}`));
-    await waitLogic(page, 180000);
-    return waitFor(page, 'const r = h.radio; return r && r.wizard ? { step: r.wizard.state.step, msg: r.wizard.state.message, err: r.wizard.state.error, prof: r.wizard.state.profile } : { step: -1 };', (v: { step: number }) => v.step === 6, timeoutMs);
+// The page is opened as a pilot waits for it: the navigation commits, then the page's own readiness (fly-open.ts);
+// not the browser's `load` (live run 2 of car 5 timed out there right after B9, fix-fly)
+async function wizard(qs: string, timeoutMs: number): Promise<{ step: number; msg: string; err: string | null; prof: Record<string, unknown> | null; open: { commitMs: number; readyMs: number; status: unknown } }> {
+    const o = await openFlyPage(page, flyLogic('en', `scene=39e63ce9&simradio=raw&${qs}`), (p) => waitLogic(p, 180000));
+    const w = await waitFor(page, 'const r = h.radio; return r && r.wizard ? { step: r.wizard.state.step, msg: r.wizard.state.message, err: r.wizard.state.error, prof: r.wizard.state.profile } : { step: -1 };', (v: { step: number }) => v.step === 6, timeoutMs);
+    return { ...w, open: { commitMs: o.commitMs, readyMs: o.readyMs, status: o.ready.status } };
 }
 if (want('B10') || want('B11')) {
     const good = await wizard('order=TAER&inv=E&offset=0.03&noise=0.01', 60000);
@@ -319,7 +322,7 @@ if (want('B10') || want('B11')) {
         const otherDiffers = !!op && op.axes.roll.index === 0 && op.axes.throttle.index === 2;
         const broken = await wizard('order=TAER&inv=E&broken=E', 25000);
         const pass = good.step === 6 && mapOk && climb.armed && climb.climbed > 0.05 && persisted && otherDiffers && broken.step !== 6;
-        record('B10', { pass, radio: 'SimRadio EdgeTX Classic (simulated raw HID reports, NOT a real radio)', good: { step: good.step, profile: good.prof, mappingCorrect: mapOk }, throttleUpClimbs: climb, survivesReload: persisted, profileBefore: saved, profileAfterReload: savedAfter, controls: { otherOrder: { profile: other.prof, fired: otherDiffers }, brokenStick: { step: broken.step, message: broken.msg, fired: broken.step !== 6 } } });
+        record('B10', { pass, radio: 'SimRadio EdgeTX Classic (simulated raw HID reports, NOT a real radio)', good: { step: good.step, profile: good.prof, mappingCorrect: mapOk }, throttleUpClimbs: climb, survivesReload: persisted, profileBefore: saved, profileAfterReload: savedAfter, controls: { otherOrder: { profile: other.prof, fired: otherDiffers }, brokenStick: { step: broken.step, message: broken.msg, fired: broken.step !== 6 } }, opens: { good: good.open, other: other.open, broken: broken.open } });
     }
 }
 
