@@ -4,8 +4,10 @@ Written 2026-11-26 12:50 UTC by the lead of train 4, whose chat had grown to abo
 rule (vault brief, message 78): a lead whose context grows hands the work to a new chat; the lead keeps the smallest
 context it can and gets short, exact results from the workers. History, only when needed: docs/wip/train4-lead.md
 (336 lines; read its last State section by slice, never whole). The owner's words are in the vault brief
-`01 - Projects/FPV-симулятор в 3DGS-сценах/Бриф Андрія — ShramkoGSFPV (дословно).md`, messages 77 to 79 at its end
-(read those three by slice: `grep -n "сообщение 7[789]"`).
+the verbatim brief in the vault's project folder of the FPV simulator (`01 - Projects/FPV-*3DGS*/`, the one file whose
+name ends with `ShramkoGSFPV (...).md`), messages 77 to 80 at its end (read them by slice:
+`grep -nE "^## 2026-11-2[56], \S+ (7[789]|80) "`). THIS NOTE STAYS IN LATIN LETTERS: Cyrillic in the repo's docs fails
+gate B18 for every lane; name a vault note by words, not by its Russian file name.
 
 ## Lead 2, state at 2026-11-26 17:45 UTC (it overrides the sections below where they differ)
 
@@ -55,15 +57,15 @@ context it can and gets short, exact results from the workers. History, only whe
   SIM_CORE_VERSION bump: accepted, the new hash is recorded by the lane of step 3; old recordings become older-build.
 - W3 step 2 runs as an agent inside the lead's chat (general-purpose, model sonnet, with the web): sources on prop wash
   by class (the vortex ring state against v_h, the shake band, ducts) and the data of a 65 mm whoop of the Air65
-  class, blackbox logs. Its note: the vault, project folder, research/, 'ShramkoGSFPV — проп-вош и вупы 65 мм —
-  источники.md'. The conductor is at `--max-parallel 2` while it runs: put it back to 3 after.
+  class, blackbox logs. Its note (W3-SOURCES below): the vault, project folder, research/, the ShramkoGSFPV note about prop wash and
+  65 mm whoops with the sources. The conductor is at `--max-parallel 2` while it runs: put it back to 3 after.
 - NEXT for W3: step 3 as an opus lane in C:/dev/gsfpv-t7-base on branch w3-wash (prompt to write from the note's last
   table): the model scaled by disc loading, the presets (pavo20pro-3s, air65-1s and the 5-inch ones re-based), a test
   with a negative control, the new a6 hash; its check r-w3-model.
 
 ### 2026-11-26 18:05 UTC: W3 step 2 came back, step 3 is queued
 
-- The research note is in the vault (project folder, research/, '…проп-вош и вупы 65 мм — источники.md', each number
+- The research note is in the vault (W3-SOURCES, each number
   marked measured, manufacturer, community or estimate). The main numbers: thrust is lost between 0.5 and 1.7 v_c/v_h
   with the peak at 1.2 to 1.4, up to 20 % (Veismann 2022, a 152 mm rotor); fluctuations begin near 0.4 v_h on a 63 g
   quad (arXiv 1909.09069); v_h at hover: whoop 5.68, Pavo20 7.85, 5-inch 7.03 m/s; the Air65 hovers at 35 % throttle,
@@ -73,11 +75,11 @@ context it can and gets short, exact results from the workers. History, only whe
   see. A second agent (w3-research-2, sonnet) appends them to the same note; its last action creates
   U:/Temp/gsfpv-train4/w3-research-2.done, the file that releases w3-model.
 - Public blackbox logs were not found by the web search: job w3-bbl (opus, priority 4, writes only to
-  U:/Temp/gsfpv-train4/w3-bbl and one vault note '…блэкбоксы вупов 65 мм — замеры.md') looks in GitHub issues with gh,
+  U:/Temp/gsfpv-train4/w3-bbl and one vault note in the same research folder, about the blackbox logs of 65 mm whoops) looks in GitHub issues with gh,
   decodes with the official viewer's parser taken as source, measures by script. 'No public log exists' is a valid end.
 - Queued: w3-model (priority 3, copy gsfpv-t7-base, branch w3-wash, prompt t10-w3-model.md, three stages: the model,
   the presets and the new a6 hash, the numbers and the pilot) and r-w3-model.
-- 18:08 UTC: the second pass is back and in the note (three sections «Дополнение», the table corrected); the
+- 18:08 UTC: the second pass is back and in the note (three added sections, the table corrected); the
   conductor is at 3 again and w3-model is released. Its numbers: the thrust's standard deviation over hover thrust
   rises from 0.03 to about 0.10 at the peak ratio (Veismann 2022, read off figures); 20 to 50 rotor revolutions a
   cycle (Stack 2004), so about 7 to 23 Hz on a whoop (an estimate); pilots report 20 to 100 Hz on 5-inch quads. The
@@ -86,6 +88,32 @@ context it can and gets short, exact results from the workers. History, only whe
   degrees. Still no source: the shake of a 31 mm rotor, the gyro swing in deg/s, a whoop's prop wash frequency.
 - State at 18:08 UTC, the week at 23 %: fix-fly in S2, w1-diag in S3 (its last), w2-pilot has S1 and S2, w3-model,
   w3-bbl and w5-inv are ready and wait for a slot.
+
+### 2026-11-26 18:35 UTC: W1's diagnosis stands (r-w1-diag: SHIP), the repair lanes are queued; fix-fly: the probe
+
+- THE CAUSE (C:/dev/.gsfpv-lanes/designs/w1-diag.md; the check U:/Temp/gsfpv-train4/reviews/w1-diag.md): car 3
+  (72d4babf) made planCourse walk from `a.core`, the detail-richest window of the voxels (scan.ts:317, plan.ts:311); the
+  spawn, which is the camera the scan's author set, is never read. A scan whose roughest place is a badly captured
+  fringe gets every course there: scan eb5f51dc, gate 1 at 540 m from the camera; with the anchor at the spawn 2 m,
+  and a mean splat rank of 0.99 instead of 0.50. The check repeated it with its own seed (0.45 to 0.99) and on Wroclaw
+  (0.82 to 0.96). The picture: U:/Temp/gsfpv-train4/shots/w1-diag-eb5f51dc-live-old-neg.png (sent to the owner).
+- DECIDED. R1 is lane w1-anchor (priority 1; copy gsfpv-t7-n-share, branch w1-anchor from w1-diag): the anchor is the
+  pilot's place (the spawn when parked), every caller of planCourse is listed, the link carries the anchor, links of
+  the old form keep their course. Then r-w1-anchor, then R2, lane w1-dialog (Here, the default; Whole scan; Add here;
+  the owner's idea (d) is one line of text), and r-w1-dialog. NOT queued yet: R3 (a forbid map made from the splats,
+  the quality map stops attracting; large), n-route rebased on R1, and the test system as one command with a ledger
+  and a reference in the gsfpv skill (its seed: tools/bench/src/w1-diag-measure.ts; the document's section Test
+  system). Plan them when r-w1-anchor says SHIP.
+- fix-fly's answer: the PROBE, not the page. The live page reaches `load` in 0.1 to 0.7 s; with the repaired probe the
+  ten items pass twice on the live site. No release is needed; branch fix-fly (copy gsfpv-t7-hot) rides the next car.
+  r-fix-fly runs.
+- The next car (car 6), when their checks say SHIP: fix-fly, w1-anchor, w2-pilot, n-save, n-scan; w1-dialog and
+  w3-model if they are ready by then. Its integration prompt is still to write (patterns: prompts/t6-car4.md,
+  prompts/t8-car5.md).
+- The week is AT the daily line (25 %): new runs start only as the line climbs, 0.35 points an hour. w1-anchor goes
+  first by priority.
+- B18: this note held Cyrillic (a vault path) from its first version and failed gate b18 in every lane. It is in
+  Latin letters now; a lane on an older base still sees that one failure and train4-common.md tells it to pass by.
 
 ## How the lead works (the owner's economy rule; written into the skills on 2026-11-26, W4 done)
 
@@ -192,7 +220,7 @@ physics on splats; an MCP design) and bring the owner a staged plan with a small
 
 ## First actions, in order
 
-1. Read the four messages in the brief (77 to 80: `grep -n "сообщение \(7[789]\|80\)"`). `train4.py status`, first
+1. Read the four messages in the brief (77 to 80: the grep of this note's first paragraph). `train4.py status`, first
    lines only: nothing runs. Measure the week's spend (see 'The conductor now').
 2. The repair lane for accept-fly (see 'Live'), priority 1.
 3. W4 (small). Then W1's diagnosis lane and W3's step 1 as conductor jobs; W2 as lanes by the decision above; W5 by
