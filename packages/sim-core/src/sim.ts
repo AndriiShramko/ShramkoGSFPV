@@ -154,6 +154,11 @@ export const SLIDE_PUSH_MPS = 0.3;
  * and Coulomb friction (MU) on the centre's motion along it, so a craft that lands stops instead of skating.
  */
 export const SLIDE_FLOOR_NY = 0.7;
+/**
+ * A contact whose surface normal points up at least this much (within about 45 deg of straight up) is a touch of the
+ * ground: it crashes only from p.vCrashGround, every other contact (walls, gates, ceilings) from p.vCrash.
+ */
+export const GROUND_NY = 0.7;
 const CRASH_ANG_DAMP = 3; // 1/s, tumbling craft (props stopped, ducts dragging) [estimate]
 const CRASH_LIN_DAMP = 0.5; // 1/s horizontal, scraping and bouncing losses [estimate]
 
@@ -927,7 +932,8 @@ export class Sim {
         const p = this.p;
         const flying = s[S.crashed] === 0;
         // crashes off (C.7): the same impact is a bounce, reported with its speed; motors keep running
-        if (flying && p.crashOn && approach >= p.vCrash) {
+        const limit = ny >= GROUND_NY ? p.vCrashGround : p.vCrash;
+        if (flying && p.crashOn && approach >= limit) {
             s[S.crashed] = 1;
             s[S.crashT] = 0;
             s[S.restT] = 0;

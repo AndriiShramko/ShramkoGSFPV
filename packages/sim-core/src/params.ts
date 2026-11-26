@@ -58,6 +58,12 @@ export interface SimParams {
     boundRadius: number; // body origin -> farthest sphere surface, m
     vBounce: number;
     vCrash: number;
+    /**
+     * crash speed of a touch of the ground (a contact normal with y >= sim.ts GROUND_NY), m/s: the override, else vCrash.
+     * The simulator's setting physics.vCrashGround (7 m/s) is in every life header since train 5; a log without it
+     * (every one before) crashes on the ground from vCrash, as it was flown.
+     */
+    vCrashGround: number;
     rates: RatesConfig;
     pid: { roll: number[]; pitch: number[]; yaw: number[] };
     throttle: ThrottleCurve;
@@ -117,6 +123,8 @@ export interface ParamOverrides {
     gravityMode?: GravityMode;
     rates?: RatesConfig;
     vCrash?: number;
+    /** crash speed of a touch of the ground, m/s (Params.vCrashGround) */
+    vCrashGround?: number;
     vBounce?: number;
     pid?: { roll?: number[]; pitch?: number[]; yaw?: number[] };
     throttle?: ThrottleCurve; // thr_mid / thr_expo, e.g. imported from a Betaflight diff
@@ -341,6 +349,7 @@ export function compileParams(p: PresetJson, o: ParamOverrides = {}): SimParams 
     const iy = num(p, 'inertia_yaw_kgm2') + load.dIy;
     if (!(ipr > 0) || !(iy > 0)) throw new RangeError(`preset ${p.id}: a payload of ${String(o.payloadG)} g leaves no inertia`);
 
+    const vCrash = o.vCrash ?? num(p, 'v_crash_ms');
     return {
         presetId: p.id,
         mass,
@@ -362,7 +371,8 @@ export function compileParams(p: PresetJson, o: ParamOverrides = {}): SimParams 
         spheres,
         boundRadius,
         vBounce: o.vBounce ?? num(p, 'v_bounce_ms'),
-        vCrash: o.vCrash ?? num(p, 'v_crash_ms'),
+        vCrash,
+        vCrashGround: o.vCrashGround ?? vCrash,
         rates,
         pid: {
             roll: o.pid?.roll ?? (p.fields.pid_roll.value as number[]),

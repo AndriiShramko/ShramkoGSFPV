@@ -67,6 +67,7 @@ export const LEVEL_TABLE: Readonly<Record<string, MenuLevel>> = {
     'physics.gravityMode': 'expert',
     'drone.payload': 'expert',
     'physics.vCrash': 'expert',
+    'physics.vCrashGround': 'expert',
     'respawn.delayS': 'expert',
     'respawn.rewindS': 'expert',
     'respawn.platform': 'expert',

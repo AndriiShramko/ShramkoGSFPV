@@ -64,6 +64,19 @@ function memStore(): PrefsStore {
 
 const model = (store: PrefsStore, drone: string) => compileParams(PR.PRESETS[drone], P.overridesFor(store, drone));
 const PAVO = 'pavo20pro-3s', METEOR = 'meteor65pro-1s', AIR = 'air65-1s';
+/** the page's ground-touch threshold (physics.vCrashGround, train 5): in every life header, even at its default */
+const GROUND = { vCrashGround: 7 };
+
+describe('the ground-touch threshold (train 5): softer than walls by default, the strict rule one setting away', () => {
+    it('at defaults the model crashes on walls from 4 m/s, on the ground from 7; set to 4 it is the old single rule', () => {
+        const s = memStore();
+        expect(model(s, PAVO).vCrash).toBe(4);
+        expect(model(s, PAVO).vCrashGround).toBe(7);
+        P.pilotSet(s, 'physics.vCrashGround', 4, { drone: PAVO });
+        expect(model(s, PAVO).vCrashGround).toBe(4);
+        expect(model(s, METEOR).vCrashGround).toBe(7);
+    });
+});
 
 describe('per drone: a drone flies its own values (D-c, review C1/C10)', () => {
     it('tau, FOV and PID set on the Pavo20 stay the Pavo\'s; the Meteor flies its preset; a reload keeps both', () => {
@@ -74,7 +87,7 @@ describe('per drone: a drone flies its own values (D-c, review C1/C10)', () => {
         P.pilotSet(s, 'tune.pid', { roll: [60, 100, 40, 0], pitch: [60, 100, 40, 0], yaw: [50, 90, 0, 0] }, { drone: PAVO });
         P.pilotSet(s, 'drone.current', METEOR);
         expect(P.droneOf(s)).toBe(METEOR);
-        expect(P.overridesFor(s, METEOR)).toEqual({});
+        expect(P.overridesFor(s, METEOR)).toEqual(GROUND);
         expect(model(s, METEOR).tau).toBeCloseTo(PR.PRESETS[METEOR].fields.motor_tau_ms.value as number / 1000, 9);
         expect(P.cameraFor(s, METEOR).fovDeg).toBe(115);
         expect(model(s, PAVO).tau).toBeCloseTo(0.025, 9);
@@ -102,6 +115,7 @@ describe('per drone: a drone flies its own values (D-c, review C1/C10)', () => {
  */
 const CHANGES: Record<string, { v: unknown; field: (p: ReturnType<typeof compileParams>) => unknown; drone?: string }> = {
     'physics.vCrash': { v: 6.5, field: (p) => p.vCrash },
+    'physics.vCrashGround': { v: 4, field: (p) => p.vCrashGround },
     // shipped by W2-2 (crashes off, item 3): the model's crashOn flag
     'crash.enabled': { v: false, field: (p) => p.crashOn },
     'physics.gravity': { v: 1.62, field: (p) => p.gravity },
@@ -140,7 +154,7 @@ describe('each flight-model row the screen shows changes sim-core\'s model (and 
             P.pilotSet(s, id, c.v, { drone: d });
             expect(c.field(model(s, d))).not.toEqual(before);
             // a per-drone value stays that drone's: the Air65 keeps its own model (gravity is one world for all)
-            const air = JSON.stringify(model(s, AIR)) === JSON.stringify(compileParams(PR.PRESETS[AIR]));
+            const air = JSON.stringify(model(s, AIR)) === JSON.stringify(compileParams(PR.PRESETS[AIR], GROUND));
             expect(air).toBe(SCHEMA.byId.get(id)!.scope === 'drone');
             P.pilotReset(s, id, { drone: d });
             expect(c.field(model(s, d))).toEqual(before);
@@ -164,8 +178,8 @@ describe('each flight-model row the screen shows changes sim-core\'s model (and 
         const s = memStore();
         P.pilotSet(s, 'camera.fovDeg', 140, { drone: PAVO });
         P.pilotSet(s, 'camera.uptiltDeg', 40, { drone: PAVO });
-        expect(P.overridesFor(s, PAVO)).toEqual({});
-        expect(JSON.stringify(model(s, PAVO))).toBe(JSON.stringify(compileParams(PR.PRESETS[PAVO])));
+        expect(P.overridesFor(s, PAVO)).toEqual(GROUND);
+        expect(JSON.stringify(model(s, PAVO))).toBe(JSON.stringify(compileParams(PR.PRESETS[PAVO], GROUND)));
         expect(P.cameraFor(s, PAVO)).toEqual({ fovDeg: 140, uptiltDeg: 40 });
     });
 
@@ -180,7 +194,7 @@ describe('life settings go on the flight once (A.7)', () => {
         const calls: { drone: string; o: ParamOverrides }[] = [];
         const session = {
             presetId: PAVO,
-            overrides: {} as ParamOverrides,
+            overrides: { ...GROUND } as ParamOverrides, // in step with the store at defaults, as applyToFlight leaves it at the start
             applyLifeSettings(drone: string, o: ParamOverrides) { calls.push({ drone, o }); this.presetId = drone; this.overrides = o; }
         };
         return { session, calls };
@@ -194,7 +208,7 @@ describe('life settings go on the flight once (A.7)', () => {
         P.pilotSet(s, 'physics.tauMs', 20, { drone: PAVO });
         P.pilotSet(s, 'camera.fovDeg', 100, { drone: PAVO });
         expect(P.applyModel(session, s)).toBe(true);
-        expect(calls).toEqual([{ drone: PAVO, o: { vCrash: 6.5, tauMs: 20 } }]);
+        expect(calls).toEqual([{ drone: PAVO, o: { vCrash: 6.5, vCrashGround: 7, tauMs: 20 } }]);
         expect(P.applyModel(session, s)).toBe(false);
         expect(calls).toHaveLength(1);
     });

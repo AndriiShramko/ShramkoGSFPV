@@ -14,13 +14,13 @@ const FIRST = ['ui.menuLevel', 'crash.enabled', 'display.reducedMotion', 'drone.
 const SIM = ['course.lapSplash', 'battery.refill', 'camera.fovDeg', 'camera.uptiltDeg', 'crosshair.shape', 'display.hud', 'flight.mode', 'input.haptics', 'input.mouseInvertY', 'input.stickMode', 'input.throttleStyle', 'recording.auto', 'recording.resolution', 'respawn.auto', 'respawn.keepArmed', 'respawn.target', 'scene.ceiling', 'scene.walls', 'scenes.autoSwitch', 'sound.motors', 'tune.rates', 'tune.throttle', 'wind.mode', 'wind.speed'];
 
 describe('menu levels of the settings', () => {
-    it('every def has a level; the shipped settings split 11 / 35 / 78 by level', () => {
+    it('every def has a level; the shipped settings split 11 / 35 / 79 by level', () => {
         expect(SCHEMA.defs.filter((d) => d.level === undefined).map((d) => d.id)).toEqual([]);
         expect(shippedAt('first')).toEqual([...FIRST].sort());
         expect(shippedAt('sim')).toEqual([...FIRST, ...SIM].sort());
         expect(shippedAt('first')).toHaveLength(11);
         expect(shippedAt('sim')).toHaveLength(35);
-        expect(shippedAt('expert')).toHaveLength(78);
+        expect(shippedAt('expert')).toHaveLength(79);
         expect(shippedAt('expert')).toEqual(SCHEMA.defs.filter((d) => d.status === 'shipped').map((d) => d.id).sort());
     });
 
