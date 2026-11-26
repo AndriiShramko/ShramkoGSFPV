@@ -115,6 +115,11 @@ gate B18 for every lane; name a vault note by words, not by its Russian file nam
 - B18: this note held Cyrillic (a vault path) from its first version and failed gate b18 in every lane. It is in
   Latin letters now; a lane on an older base still sees that one failure and train4-common.md tells it to pass by.
 
+- 18:45 UTC: r-fix-fly says SHIP (the probe only, no release); STATE.md has a bullet for it. The week is at 26 %,
+  over the line (25.2): everything waits for the line but a job marked `train4.py set --name N --share-free on`
+  (new: for the owner's first priority only; the plan's stop still holds). w1-anchor and r-w1-anchor carry the
+  mark. Take it off when r-w1-anchor is done; give it to the car's integration job if the line still holds then.
+
 ## How the lead works (the owner's economy rule; written into the skills on 2026-11-26, W4 done)
 
 - The lead runs on the top model (Fable); every worker is Opus or Sonnet. NEVER leave `model` out of an Agent call or
