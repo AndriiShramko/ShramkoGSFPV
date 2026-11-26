@@ -39,6 +39,10 @@ comes from a real flight log.
             EarlierAssist control, then gates once more is NOT needed for the other groups (passed on unchanged inputs).
 - [ ] S3 the numbers and the pilot: w3-wash-run.ts before/after table for default, Air65, 5-inch; page probe
       (`?render=off`) that the Prop wash row changes the flight and 0 switches it off; For the lead
+      - [x] w3-wash-run.ts on the new model (multipliers 0/1/2, 3/4/5 m/s and fast-drop catch, punch angle/acro),
+            table "## Numbers (S3)", A6 holds 9cb46a35; bench tsc clean. Commit: see the next Status commit.
+      - [ ] page probe tools/bench/scripts/w3-model-wash-probe.mjs; For the lead; gates not re-run (S2 ran them,
+            only the bench script, a comment and docs changed since)
 
 ## Design
 
@@ -87,6 +91,32 @@ no field comes from a real flight log. Each field's source is in the preset JSON
 
 Names: the picker shows the preset's `name` (product names, as for every other drone; no locale key holds drone
 names today). The Prop wash help text in the four locales now says every drone has it (it said whoops had none).
+
+## Numbers (S3)
+
+`cd tools/bench && npx tsx src/w3-wash-run.ts` (evidence/2026-11-19/w3-model/w3-model-wash.json). 1 kHz, still air,
+angle mode. x0 = physics.propWash 0 = the flight before on the default and the Air65 (origin/main gave neither a term;
+the Air65 column uses the S2 preset). x1 = default, x2 = the most the setting allows. Before on the Nazgul F5 (origin/main,
+its v0.8 one-loss-for-all term, w3-wash run, 4 m/s P loop): held descent 7.5 % loss, 2.7 deg/s, 0.14 deg; punch
+79 ms in wash, 25 % peak loss, 7.9 deg/s, 0.30 deg. Cells: x1 (x2). Wobble = RMS roll/pitch rate in the wash, tilt off level.
+
+| Manoeuvre | Pavo20 Pro default (151 g, ducted, v_h 7.9) | Air65 (24.4 g, ducted, v_h 5.7) | Nazgul F5 (736 g, open, v_h 7.5) |
+|---|---|---|---|
+| held descent 3 m/s: loss, wobble | 0 % (band not reached) | 0.5 %, 0.5 deg/s | 0.2 %, 0 deg/s |
+| held descent 4 m/s: loss, wobble, tilt | 0.4 %, 0.6 deg/s, 0.03 deg | 5.9 % (10.3), 2.4 deg/s (4.5), 0.17 deg | 2.3 % (4.1), 1.1 deg/s (2.1), 0.10 deg |
+| held descent 5 m/s: loss, wobble, tilt | 3.5 % (6.2), 1.7 deg/s (3.5), 0.12 deg (0.24) | 15.3 % (26.6), 5.2 deg/s (9.8), 0.32 deg (0.67) | 6.6 % (11.1), 3.0 deg/s (5.5), 0.21 deg (0.43) |
+| catch after a fast drop (11.7 / 8.7 / 11.6 m/s), stick 1.5 x hover: height lost x0 -> x1 (x2) | 7.17 -> 7.63 m (8.28): +0.47 m (+1.12) | 2.89 -> 3.02 m (3.19): +0.13 m (+0.30) | 6.06 -> 6.88 m (8.30): +0.81 m (+2.23) |
+| same catch: time to stop the fall, time in wash, loss in wash | 1407 -> 1455 ms, 498 ms, 8.0 % (16.4) | 746 -> 763 ms, 244 ms, 7.0 % (14.4) | 1116 -> 1204 ms, 633 ms, 9.8 % (20.6) |
+| same catch: wobble, tilt | 5.7 deg/s (11.5), 0.40 deg (0.89) | 4.7 deg/s (9.7), 0.28 deg (0.59) | 7.0 deg/s (14.3), 0.55 deg (1.21) |
+| full punch after a 1.5 s idle dive: sink x0 -> x1 (x2) | 1.35 -> 1.37 m (1.38), +2 ms | 0.79 -> 0.84 m (0.88), +11 ms | 1.14 -> 1.18 m (1.22), +4 ms |
+| same punch: time in wash, loss in wash, wobble, tilt | 18 ms, 7.4 %, 3.2 deg/s, 0.03 deg | 14 ms, 6.9 %, 6.3 deg/s (11.5), 0.04 deg | 35 ms, 6.2 %, 6.2 deg/s (11.3), 0.04 deg |
+
+Reading: the full punch leaves the band in tens of ms (full thrust raises v_i, the ratio drops below the band), so it
+bites only a little late; the big effect is a firm (not full) catch after a fast drop: half a metre more on the default,
+0.8 m on the 5-inch. Acro gives the same wobble as angle within 0.01 deg/s (the rate PID does the fighting). A punch
+after a forward dive (M2b) gets at most 2 ms of wash: the sideways speed fades it. The angle-mode tilt stays under
+1 deg at x1: the shake shows as a rate wobble of 3 to 7 deg/s, not as a visible lean. A held 4 to 5 m/s descent then
+a catch loses no extra height: the pilot loop already added throttle against the loss.
 
 ## Recordings of older builds
 

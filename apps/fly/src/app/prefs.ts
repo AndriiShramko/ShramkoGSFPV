@@ -126,7 +126,7 @@ const PARAM_FIELDS: Readonly<Record<string, (o: ParamOverrides, v: unknown) => v
     'physics.dragScale': (o, v) => { o.cdaScale = v as number; },
     'physics.ductDrag': (o, v) => { o.ductDrag = v as number; },
     'physics.propInertia': (o, v) => { o.propInertia = v as number; },
-    // v0.8: prop wash, a multiplier on the preset's (sim-core wake.ts); presets without prop wash ignore it
+    // prop wash multiplier on every preset (sim-core wake.ts): 0 off, 1 the size the sources give, 2 doubled
     'physics.propWash': (o, v) => { o.wake = v as number; },
     // v0.9 lane D: the cinelifter's camera load in grams (sim-core payloadG); a preset without a camera load ignores it
     'drone.payload': (o, v) => { const p = Object.hasOwn(PAYLOADS, v as string) ? PAYLOADS[v as PayloadId] : undefined; if (p) o.payloadG = p.loadG; },
