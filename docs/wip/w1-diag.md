@@ -9,9 +9,10 @@ Temp folder: U:/Temp/gsfpv-train4/w1-diag. Ports 7340-7359. No generator or page
 - [x] S2 point 3: tools/bench/src/w1-diag-measure.ts (2bf4cb38, frame fix in the S2 closing commit); run
   U:/Temp/gsfpv-train4/w1-diag/run1 (table.tsv, summary.json, top-<id>.png, all five looked at); numbers and one
   phrase per picture in the document's 'Measurement'
-- [ ] S3 points 4 to 7: the cause with a negative control (scratch copy U:/Temp/gsfpv-train4/w1-diag/neg, plan.ts: `a.core` := the spawn; script version `neg`; run neg-run started on eb5f51dc, 2f1ddf5f and 887f27aa as the unmoved control); then n-route / n-path,
-  startOf -> the spawn; rerun w1-diag-measure on eb5f51dc and 2f1ddf5f), n-route / n-path, the design proposal, the
-  test system, For the lead
+- [x] S3 points 4 to 7 (7650f17a script version `neg`; closing commit 'w1-diag S3: cause proven'): negative control
+  in the scratch copy U:/Temp/gsfpv-train4/w1-diag/neg (plan.ts, one change: `a.core` := the spawn), run
+  U:/Temp/gsfpv-train4/w1-diag/neg-run on eb5f51dc, 2f1ddf5f and 887f27aa (the near-core control); n-route / n-path
+  read; design proposal and test system in the document; For the lead below; evidence/2026-11-19/w1-diag/*.json
 
 S1 findings, in short: the asked course (planCourse, packages/tracks/src/plan.ts:336) starts its walk at the scan
 analysis' `core` (plan.ts:311 startOf; scan.ts:317-349), the window richest in voxel roughness (solid runs per column
@@ -40,11 +41,19 @@ Nothing in this lane: it changes no page. He reads the diagnosis document and th
 3. On the wide scan the live course starts far from the author's camera in a poorly scanned place, the old one at the
    camera: `cd tools/bench && npx tsx src/w1-diag-measure.ts --scenes eb5f51dc --out <dir>` (result 2026-11-26:
    live meanRank 0.50, medGate1ToStartM 540.63, coreRank 0; old meanRank 0.99, medGate1ToStartM 8.38).
+4. The anchor `a.core` is the cause: the same planCourse with only `a.core` := the spawn (scratch copy
+   U:/Temp/gsfpv-train4/w1-diag/neg) lays the far-core scans in the good part, the near-core scan barely moves:
+   `cd tools/bench && npx tsx src/w1-diag-measure.ts --scenes eb5f51dc,2f1ddf5f,887f27aa --versions neg --out <dir>`
+   then `--versions live,old,neg --report-only` (result 2026-11-26: meanRank live -> neg eb5f51dc 0.50 -> 0.99,
+   2f1ddf5f 0.62 -> 0.96, 887f27aa 0.89 -> 0.92; median gate1 to spawn 540.6 -> 2.1 m, 453.5 -> 4.2 m, 34.2 -> 4.0 m;
+   refusals 0, hangs 0; evidence/2026-11-19/w1-diag/neg-control-summary.json).
 
 ## Not verified
 
-- S1 is reading and git only; S2 measured that the core lies in a poorly scanned place on 2 of 5 scans (wide, Lublin),
-  that it is the CAUSE waits for the S3 negative control.
+- n-route making it worse is by reading its diff only (its copy was not run). That the roughness quality map ranks
+  badly captured tiles high is shown for the core (eb5f51dc core rank 0.00) and by live gates passing the filter at rank
+  0.14-0.67, not by a tile-by-tile correlation of the map against the splat density.
+- The proposed repairs (R1 to R3) are not built or measured beyond the scratch-copy anchor switch.
 - 'Well scanned' is splat opacity mass per tile column; on Lublin (coarse LOD 5) the frame check is inconclusive (0.08
   against 0.01), so its ranks are weak. Wroclaw is read at LOD 2.
 - The old generator ran on today's collision and sonic-fpv packages (the pin moved from 293ebae to 53a5675), not the
@@ -54,7 +63,18 @@ Nothing in this lane: it changes no page. He reads the diagnosis document and th
 
 ## For the lead
 
-(S3)
+Cause: car 3 (72d4babf, 2026-11-21) made planCourse walk from `a.core`, the roughest window of the voxels
+(scan.ts:317, plan.ts:311), and it never reads the spawn (the author's camera). On scans whose roughest place is a badly
+captured fringe, every seed and level lands there; before, the course grew from the author's camera.
+Proof (one change in a scratch copy, anchor := the spawn): eb5f51dc mean splat rank 0.50 -> 0.99 and gate 1 540 m ->
+2 m from the camera; Lublin 0.62 -> 0.96; the near-core control Tunis 0.89 -> 0.92.
+Open: U:/Temp/gsfpv-train4/shots/w1-diag-eb5f51dc-live-old-neg.png (left live in the dark field, middle old and right
+neg on the bright scan at the camera). Document: C:/dev/.gsfpv-lanes/designs/w1-diag.md (Cause, Design, Test system).
+Not proven: that n-route makes it worse (read only); a tile-by-tile check of the roughness map against splat density.
+Lanes: R1 anchor = the pilot's place, link carries it (small, first); R2 dialog Here / Whole scan / Add here (medium,
+after R1); R3 forbid map from the splats, quality stops attracting (large); n-route rebased on R1; gen-quality skill
+from tools/bench/src/w1-diag-measure.ts (small). Files changed: tools/bench/src/w1-diag-measure.ts (new, bench only),
+docs/wip/w1-diag.md, evidence/2026-11-19/w1-diag/*.json. Nothing to deploy.
 
 ## Cost notes
 
@@ -63,3 +83,5 @@ Nothing in this lane: it changes no page. He reads the diagnosis document and th
 - S2: about 35 replies; most went to running the old generator from a temp extract (pnpm's relative links need three
   junctions) and to the splat frame (the data table is (-x, -y, z) of the flown walls for every scan, found by the
   on-walls check). A bench helper 'splats in the flown frame' would save both next time.
+- S3: about 30 replies; most went to the scratch copy's pnpm links (two sibling junctions, as for the old extract) and to
+  fitting the document in 150 lines. A bench option '--tracks <dir>' that sets up those junctions itself would save it.
