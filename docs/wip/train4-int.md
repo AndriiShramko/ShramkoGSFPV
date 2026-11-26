@@ -242,6 +242,24 @@ car 3's head.)
       written for the commit that writes this line (sha, api [], rooms false, nginx false, package_sha 9ac7876d...,
       live_only as in Live checks, held []).
 
+Car 6 (job int4-car6, train 5, work copy C:/dev/gsfpv-v13-int, branch train4 on car 5's head
+3cc6b51b15b6aca43a4c2b397bf6553ad1456e12 (the `sha` of int4-car5.json); the lead's order: the generator's repair
+goes live first. Lanes: fix-fly, w1-anchor. The seams, the full check, Deploy order, Live checks and the hand-over
+cover what changed since car 5's head.)
+
+- [x] S1 the merges: origin/main 5a4d4a0d (the leads' notes and STATE.md only; fast-forward); 0b0cd554 fix-fly,
+      683d7faa w1-anchor (both reviews 'Verdict: SHIP' when S1 started), no conflict. Every lane head is an ancestor
+      of HEAD (fix-fly 83de811c, w1-anchor ab98035c). `git diff 3cc6b51b HEAD -- apps/api apps/rooms deploy
+      packages/sonic-fpv nginx compose*` is empty (api [], rooms false, nginx false, package_sha ''). pnpm install
+      --frozen-lockfile rc 0, pnpm -r typecheck rc 0 on 683d7faa. Held: n-save, n-scan, w2-pilot, w1-dialog, w3-model
+      (the lead's order: the generator's repair goes live first).
+- [ ] S2 the seams (course.ts, generate-dialog.ts, course/anchor.ts against the first flight and the sound start;
+      flight-link.ts course token with '-' against n-share), the one full check: gates, a6-reference, the package's
+      tests, one release build with the walls, w1-anchor-accept, accept-fly B6 B7 B9-B16, n-share-accept, the
+      generate dialog probe
+- [ ] S3 the hand-over: origin/main merged, w1-anchor-accept in deploy/live-checks.sh with its negative control on
+      the live site, Deploy order, Live checks, What the owner should try, Not verified, int4-car6.json
+
 ## Progress
 
 Car 1 (one line a lane, in the merge order)
@@ -285,6 +303,12 @@ Car 5 (job int4-car5, on car 3's head 72d4babf and origin/main b9bbc779; one lin
 - tutor-moment: merged 41ff795f (review SHIP), no conflict; the gitlink takes its package head 9ac7876d (719aaf54 is an ancestor), the package checked out there
 - tutor-air: merged a7ac26e6 (review SHIP; carries tutor-say and tutor-moment, pin 9ac7876d), no conflict; gen-catalog up to date, pnpm -r typecheck rc 0
 - held: none
+
+Car 6 (job int4-car6, on car 5's head 3cc6b51b and origin/main 5a4d4a0d; one line a lane, in the merge order)
+
+- fix-fly: merged 0b0cd554 (review SHIP; tools/bench only: accept-fly waits for the page's own readiness), no conflict
+- w1-anchor: merged 683d7faa (review SHIP; stands on w1-diag, whose measuring script and notes come with it), no conflict; pnpm -r typecheck rc 0
+- held: n-save, n-scan, w2-pilot, w1-dialog, w3-model (the lead's order: the generator's repair goes live first)
 
 ## Seams
 
@@ -904,3 +928,5 @@ Car 5
 - Car 5 S3 (two runs, ~25 calls): the first run ended after the checks and the negative control without writing the Live
   checks part, so the second re-read the logs to rebuild it. Cheaper: write each status part in the same commit as the
   run that proves it (the negative control's summary straight into Live checks), not at the end.
+- Car 6 S1 (~10 calls): two clean merges; the most turns went to reading the long status file to find the Car 5 parts.
+  Cheaper: a grep for '^Car ' gives every part's line at once; read only the last car's slice.
