@@ -5,7 +5,7 @@ Temp folder: U:/Temp/gsfpv-train4/w1-diag. Ports 7340-7359. No generator or page
 
 ## Status
 
-- [x] S1 points 1 and 2: Rule and History in the diagnosis document (reading and git only)
+- [x] S1 points 1 and 2: Rule and History in the diagnosis document (reading and git only), d8b72bcb
 - [ ] S2 point 3: the measuring script in tools/bench, the table file, the pictures from above
 - [ ] S3 points 4 to 7: the cause with a negative control, n-route / n-path, the design proposal, the test system, For the lead
 
