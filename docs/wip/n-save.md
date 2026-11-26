@@ -186,5 +186,7 @@ left as the lead said. The way taken: (c), the first of the lead's list that mee
   longer text ends with an ellipsis and a cut line that is no refusal goes whole to the Messages list (top-bar.ts
   setLine, host.cut; course.ts passes it to tell); doubt 3: course.edit.saveFix "Not saved yet. {fix}" in the four
   files; tests n-save-top-row (8), save-dialog and editor3-g2 updated; NEG OK on 511f9594 (5 of 8 fail there)
-- [ ] R1.2 build of the head; MEASURE_TOP=1 n-save-accept on it (three views, three lines); the lane's acceptance
+- [x] R1.2 build of 3d58873e; MEASURE_TOP=1 n-save-accept on it: 9 of 9 (three views x three lines) every top-row
+  centre reaches its button (evidence fix-top-row-head.json; the bar ends at y 48 with one row, y 58 with two; on 844x390
+  the line is hidden as before); the lane's acceptance passes every step (fix-accept-local.json)
 - [ ] R1.3 edit4a-probe unchanged; gates once; Claims and For the lead

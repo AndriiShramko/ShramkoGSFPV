@@ -1,0 +1,688 @@
+{
+ "address": "http://localhost:6912/en",
+ "live": false,
+ "scan": "70b50d42",
+ "size": [
+  1536,
+  730
+ ],
+ "dsf": 1.25,
+ "date": "2026-11-21T17:47:02.234Z",
+ "steps": {
+  "open": {
+   "ok": true,
+   "status": "ready",
+   "lock": "CANVAS",
+   "open": true,
+   "ms": 4064,
+   "gates": 11
+  },
+  "topRow": {
+   "ok": true,
+   "measured": 9,
+   "bad": []
+  }
+ },
+ "posts": [],
+ "notRun": [],
+ "shots": [],
+ "measureTop": [
+  {
+   "view": [
+    1536,
+    730,
+    1.25
+   ],
+   "line": "Editor open. Every key is under Keys.",
+   "ok": true,
+   "bar": [
+    305,
+    8,
+    1231,
+    48
+   ],
+   "lineH": 20,
+   "lineCut": false,
+   "row": [
+    {
+     "name": "Motor sound: on — tu",
+     "top": 38,
+     "h": 44,
+     "coveredPx": 10,
+     "centreReaches": true
+    },
+    {
+     "name": "Full screen (F)",
+     "top": 38,
+     "h": 44,
+     "coveredPx": 10,
+     "centreReaches": true
+    },
+    {
+     "name": "Messages (Shift+J)",
+     "top": 38,
+     "h": 44,
+     "coveredPx": 10,
+     "centreReaches": true
+    },
+    {
+     "name": "Share this scene (L)",
+     "top": 38,
+     "h": 44,
+     "coveredPx": 10,
+     "centreReaches": true
+    },
+    {
+     "name": "Settings (O)",
+     "top": 38,
+     "h": 44,
+     "coveredPx": 10,
+     "centreReaches": true
+    },
+    {
+     "name": "Feedback",
+     "top": 38,
+     "h": 44,
+     "coveredPx": 0,
+     "centreReaches": true
+    },
+    {
+     "name": "Controls",
+     "top": 38,
+     "h": 44,
+     "coveredPx": 0,
+     "centreReaches": true
+    },
+    {
+     "name": "Pause",
+     "top": 38,
+     "h": 44,
+     "coveredPx": 0,
+     "centreReaches": true
+    }
+   ]
+  },
+  {
+   "view": [
+    1536,
+    730,
+    1.25
+   ],
+   "line": "Not saved yet. The way from gate {a} to gate {b} goes through a wall. Pull the a",
+   "ok": true,
+   "bar": [
+    305,
+    8,
+    1231,
+    58
+   ],
+   "lineH": 40,
+   "lineCut": true,
+   "row": [
+    {
+     "name": "Motor sound: on — tu",
+     "top": 38,
+     "h": 44,
+     "coveredPx": 20,
+     "centreReaches": true
+    },
+    {
+     "name": "Full screen (F)",
+     "top": 38,
+     "h": 44,
+     "coveredPx": 20,
+     "centreReaches": true
+    },
+    {
+     "name": "Messages (Shift+J)",
+     "top": 38,
+     "h": 44,
+     "coveredPx": 20,
+     "centreReaches": true
+    },
+    {
+     "name": "Share this scene (L)",
+     "top": 38,
+     "h": 44,
+     "coveredPx": 20,
+     "centreReaches": true
+    },
+    {
+     "name": "Settings (O)",
+     "top": 38,
+     "h": 44,
+     "coveredPx": 20,
+     "centreReaches": true
+    },
+    {
+     "name": "Feedback",
+     "top": 38,
+     "h": 44,
+     "coveredPx": 0,
+     "centreReaches": true
+    },
+    {
+     "name": "Controls",
+     "top": 38,
+     "h": 44,
+     "coveredPx": 0,
+     "centreReaches": true
+    },
+    {
+     "name": "Pause",
+     "top": 38,
+     "h": 44,
+     "coveredPx": 0,
+     "centreReaches": true
+    }
+   ]
+  },
+  {
+   "view": [
+    1536,
+    730,
+    1.25
+   ],
+   "line": "",
+   "ok": true,
+   "bar": [
+    305,
+    8,
+    1231,
+    48
+   ],
+   "lineH": 0,
+   "lineCut": false,
+   "row": [
+    {
+     "name": "Motor sound: on — tu",
+     "top": 38,
+     "h": 44,
+     "coveredPx": 10,
+     "centreReaches": true
+    },
+    {
+     "name": "Full screen (F)",
+     "top": 38,
+     "h": 44,
+     "coveredPx": 10,
+     "centreReaches": true
+    },
+    {
+     "name": "Messages (Shift+J)",
+     "top": 38,
+     "h": 44,
+     "coveredPx": 10,
+     "centreReaches": true
+    },
+    {
+     "name": "Share this scene (L)",
+     "top": 38,
+     "h": 44,
+     "coveredPx": 10,
+     "centreReaches": true
+    },
+    {
+     "name": "Settings (O)",
+     "top": 38,
+     "h": 44,
+     "coveredPx": 10,
+     "centreReaches": true
+    },
+    {
+     "name": "Feedback",
+     "top": 38,
+     "h": 44,
+     "coveredPx": 0,
+     "centreReaches": true
+    },
+    {
+     "name": "Controls",
+     "top": 38,
+     "h": 44,
+     "coveredPx": 0,
+     "centreReaches": true
+    },
+    {
+     "name": "Pause",
+     "top": 38,
+     "h": 44,
+     "coveredPx": 0,
+     "centreReaches": true
+    }
+   ]
+  },
+  {
+   "view": [
+    1366,
+    768,
+    1
+   ],
+   "line": "Editor open. Every key is under Keys.",
+   "ok": true,
+   "bar": [
+    220,
+    8,
+    1146,
+    48
+   ],
+   "lineH": 20,
+   "lineCut": false,
+   "row": [
+    {
+     "name": "Motor sound: on — tu",
+     "top": 38,
+     "h": 44,
+     "coveredPx": 10,
+     "centreReaches": true
+    },
+    {
+     "name": "Full screen (F)",
+     "top": 38,
+     "h": 44,
+     "coveredPx": 10,
+     "centreReaches": true
+    },
+    {
+     "name": "Messages (Shift+J)",
+     "top": 38,
+     "h": 44,
+     "coveredPx": 10,
+     "centreReaches": true
+    },
+    {
+     "name": "Share this scene (L)",
+     "top": 38,
+     "h": 44,
+     "coveredPx": 10,
+     "centreReaches": true
+    },
+    {
+     "name": "Settings (O)",
+     "top": 38,
+     "h": 44,
+     "coveredPx": 10,
+     "centreReaches": true
+    },
+    {
+     "name": "Feedback",
+     "top": 38,
+     "h": 44,
+     "coveredPx": 10,
+     "centreReaches": true
+    },
+    {
+     "name": "Controls",
+     "top": 38,
+     "h": 44,
+     "coveredPx": 0,
+     "centreReaches": true
+    },
+    {
+     "name": "Pause",
+     "top": 38,
+     "h": 44,
+     "coveredPx": 0,
+     "centreReaches": true
+    }
+   ]
+  },
+  {
+   "view": [
+    1366,
+    768,
+    1
+   ],
+   "line": "Not saved yet. The way from gate {a} to gate {b} goes through a wall. Pull the a",
+   "ok": true,
+   "bar": [
+    220,
+    8,
+    1146,
+    58
+   ],
+   "lineH": 40,
+   "lineCut": true,
+   "row": [
+    {
+     "name": "Motor sound: on — tu",
+     "top": 38,
+     "h": 44,
+     "coveredPx": 20,
+     "centreReaches": true
+    },
+    {
+     "name": "Full screen (F)",
+     "top": 38,
+     "h": 44,
+     "coveredPx": 20,
+     "centreReaches": true
+    },
+    {
+     "name": "Messages (Shift+J)",
+     "top": 38,
+     "h": 44,
+     "coveredPx": 20,
+     "centreReaches": true
+    },
+    {
+     "name": "Share this scene (L)",
+     "top": 38,
+     "h": 44,
+     "coveredPx": 20,
+     "centreReaches": true
+    },
+    {
+     "name": "Settings (O)",
+     "top": 38,
+     "h": 44,
+     "coveredPx": 20,
+     "centreReaches": true
+    },
+    {
+     "name": "Feedback",
+     "top": 38,
+     "h": 44,
+     "coveredPx": 20,
+     "centreReaches": true
+    },
+    {
+     "name": "Controls",
+     "top": 38,
+     "h": 44,
+     "coveredPx": 0,
+     "centreReaches": true
+    },
+    {
+     "name": "Pause",
+     "top": 38,
+     "h": 44,
+     "coveredPx": 0,
+     "centreReaches": true
+    }
+   ]
+  },
+  {
+   "view": [
+    1366,
+    768,
+    1
+   ],
+   "line": "",
+   "ok": true,
+   "bar": [
+    220,
+    8,
+    1146,
+    48
+   ],
+   "lineH": 0,
+   "lineCut": false,
+   "row": [
+    {
+     "name": "Motor sound: on — tu",
+     "top": 38,
+     "h": 44,
+     "coveredPx": 10,
+     "centreReaches": true
+    },
+    {
+     "name": "Full screen (F)",
+     "top": 38,
+     "h": 44,
+     "coveredPx": 10,
+     "centreReaches": true
+    },
+    {
+     "name": "Messages (Shift+J)",
+     "top": 38,
+     "h": 44,
+     "coveredPx": 10,
+     "centreReaches": true
+    },
+    {
+     "name": "Share this scene (L)",
+     "top": 38,
+     "h": 44,
+     "coveredPx": 10,
+     "centreReaches": true
+    },
+    {
+     "name": "Settings (O)",
+     "top": 38,
+     "h": 44,
+     "coveredPx": 10,
+     "centreReaches": true
+    },
+    {
+     "name": "Feedback",
+     "top": 38,
+     "h": 44,
+     "coveredPx": 10,
+     "centreReaches": true
+    },
+    {
+     "name": "Controls",
+     "top": 38,
+     "h": 44,
+     "coveredPx": 0,
+     "centreReaches": true
+    },
+    {
+     "name": "Pause",
+     "top": 38,
+     "h": 44,
+     "coveredPx": 0,
+     "centreReaches": true
+    }
+   ]
+  },
+  {
+   "view": [
+    844,
+    390,
+    2
+   ],
+   "line": "Editor open. Every key is under Keys.",
+   "ok": true,
+   "bar": [
+    8,
+    109,
+    434,
+    161
+   ],
+   "lineH": 0,
+   "lineCut": false,
+   "row": [
+    {
+     "name": "Motor sound: on — tu",
+     "top": 90,
+     "h": 40,
+     "coveredPx": 0,
+     "centreReaches": true
+    },
+    {
+     "name": "Messages (Shift+J)",
+     "top": 38,
+     "h": 44,
+     "coveredPx": 0,
+     "centreReaches": true
+    },
+    {
+     "name": "Share this scene (L)",
+     "top": 38,
+     "h": 44,
+     "coveredPx": 0,
+     "centreReaches": true
+    },
+    {
+     "name": "Settings (O)",
+     "top": 38,
+     "h": 44,
+     "coveredPx": 0,
+     "centreReaches": true
+    },
+    {
+     "name": "Feedback",
+     "top": 38,
+     "h": 44,
+     "coveredPx": 0,
+     "centreReaches": true
+    },
+    {
+     "name": "Controls",
+     "top": 38,
+     "h": 44,
+     "coveredPx": 0,
+     "centreReaches": true
+    },
+    {
+     "name": "Pause",
+     "top": 38,
+     "h": 44,
+     "coveredPx": 0,
+     "centreReaches": true
+    }
+   ]
+  },
+  {
+   "view": [
+    844,
+    390,
+    2
+   ],
+   "line": "Not saved yet. The way from gate {a} to gate {b} goes through a wall. Pull the a",
+   "ok": true,
+   "bar": [
+    8,
+    109,
+    434,
+    161
+   ],
+   "lineH": 0,
+   "lineCut": false,
+   "row": [
+    {
+     "name": "Motor sound: on — tu",
+     "top": 90,
+     "h": 40,
+     "coveredPx": 0,
+     "centreReaches": true
+    },
+    {
+     "name": "Messages (Shift+J)",
+     "top": 38,
+     "h": 44,
+     "coveredPx": 0,
+     "centreReaches": true
+    },
+    {
+     "name": "Share this scene (L)",
+     "top": 38,
+     "h": 44,
+     "coveredPx": 0,
+     "centreReaches": true
+    },
+    {
+     "name": "Settings (O)",
+     "top": 38,
+     "h": 44,
+     "coveredPx": 0,
+     "centreReaches": true
+    },
+    {
+     "name": "Feedback",
+     "top": 38,
+     "h": 44,
+     "coveredPx": 0,
+     "centreReaches": true
+    },
+    {
+     "name": "Controls",
+     "top": 38,
+     "h": 44,
+     "coveredPx": 0,
+     "centreReaches": true
+    },
+    {
+     "name": "Pause",
+     "top": 38,
+     "h": 44,
+     "coveredPx": 0,
+     "centreReaches": true
+    }
+   ]
+  },
+  {
+   "view": [
+    844,
+    390,
+    2
+   ],
+   "line": "",
+   "ok": true,
+   "bar": [
+    8,
+    109,
+    434,
+    161
+   ],
+   "lineH": 0,
+   "lineCut": false,
+   "row": [
+    {
+     "name": "Motor sound: on — tu",
+     "top": 90,
+     "h": 40,
+     "coveredPx": 0,
+     "centreReaches": true
+    },
+    {
+     "name": "Messages (Shift+J)",
+     "top": 38,
+     "h": 44,
+     "coveredPx": 0,
+     "centreReaches": true
+    },
+    {
+     "name": "Share this scene (L)",
+     "top": 38,
+     "h": 44,
+     "coveredPx": 0,
+     "centreReaches": true
+    },
+    {
+     "name": "Settings (O)",
+     "top": 38,
+     "h": 44,
+     "coveredPx": 0,
+     "centreReaches": true
+    },
+    {
+     "name": "Feedback",
+     "top": 38,
+     "h": 44,
+     "coveredPx": 0,
+     "centreReaches": true
+    },
+    {
+     "name": "Controls",
+     "top": 38,
+     "h": 44,
+     "coveredPx": 0,
+     "centreReaches": true
+    },
+    {
+     "name": "Pause",
+     "top": 38,
+     "h": 44,
+     "coveredPx": 0,
+     "centreReaches": true
+    }
+   ]
+  }
+ ],
+ "error": "Error: STOP after measure",
+ "fails": [],
+ "log": []
+}
