@@ -24,7 +24,7 @@ comes from a real flight log.
             tools/bench/test/app-game.test.ts "every preset ... Shift lands" (machr5sport-6s slow from 20 m touches
             at 1.42 m/s, limit 1.13) and "the motors stop only at the floor ... control: the Mach R5 stops in the air"
             (the control no longer stops above the floor).
-      - [x] the two app-game cases, fixed (commit "w3-model S2: the landing cut waits for the bottom of a hop"):
+      - [x] the two app-game cases, fixed (commit ef5b3f7b):
             apps/fly/src/play/game.ts `landed` also needs s[S.vy] <= 0 (never on the rise of a hop); the in-air control
             now runs the four landing heights (the old cut-anywhere rule still stops in the air from 1.5 m, the rule on
             none). app-game.test.ts 27 passed; neg_control.py --ref HEAD --files game.ts: NEG OK (the 20 m slow touch
