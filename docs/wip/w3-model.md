@@ -37,12 +37,15 @@ comes from a real flight log.
             (likely the assist cuts only when not rising, s[S.vy] <= 0, at the bottom of a hop as its comment says;
             that file is the game's, so name it under For the lead), re-run only app-game.test.ts and the
             EarlierAssist control, then gates once more is NOT needed for the other groups (passed on unchanged inputs).
-- [ ] S3 the numbers and the pilot: w3-wash-run.ts before/after table for default, Air65, 5-inch; page probe
+- [x] S3 the numbers and the pilot: w3-wash-run.ts before/after table for default, Air65, 5-inch; page probe
       (`?render=off`) that the Prop wash row changes the flight and 0 switches it off; For the lead
       - [x] w3-wash-run.ts on the new model (multipliers 0/1/2, 3/4/5 m/s and fast-drop catch, punch angle/acro),
-            table "## Numbers (S3)", A6 holds 9cb46a35; bench tsc clean. Commit: see the next Status commit.
-      - [ ] page probe tools/bench/scripts/w3-model-wash-probe.mjs; For the lead; gates not re-run (S2 ran them,
-            only the bench script, a comment and docs changed since)
+            table "## Numbers (S3)", A6 holds 9cb46a35; bench tsc clean. Commit aa31b733.
+      - [x] page probe tools/bench/scripts/w3-model-wash-probe.mjs (commit 300b2d7c) on the release build of 300b2d7c:
+            PASS 8 of 8; the same probe on the live site: FAIL 4 (the setting does nothing there: sink 4.72 m at 0, 1
+            and 2). Evidence evidence/2026-11-19/w3-model/w3-model-wash-probe*.json. dist removed. For the lead.
+            Gates: only b18 again (this file changed); the other groups ran in S2, inputs since then are the bench
+            script, the probe, one comment in prefs.ts and docs.
 
 ## Design
 
@@ -147,15 +150,45 @@ of earlier lanes, docs/research/drones-v08.md (a v0.8 statement).
    motors never stop on the rise of a hop. Command: `npx vitest run tools/bench/test/app-game.test.ts`.
    Last result: 27 passed; the old cut rule fails the Mach R5 slow from 20 m (touch 1.42 m/s, limit 1.13): NEG OK.
 
+6. The Prop wash setting reaches the flight of the default craft in the built page and 0 switches it off: a fast
+   drop and a 1.5 x hover catch sink 4.72 m at 0 (no wash at all, wakeLoss = wakeShake = 0), 4.86 m at 1 (256 ms of
+   wash, 3.7 deg/s), 5.03 m at 2. Command: build, serve, then `node tools/bench/scripts/w3-model-wash-probe.mjs
+   http://localhost:7440/en out.json`. Last result: PASS 8 of 8; on the live site FAIL 4 (4.72 m at 0, 1 and 2).
+7. The numbers table "## Numbers (S3)". Command: `cd tools/bench && npx tsx src/w3-wash-run.ts`. Last result: as
+   in the table; A6 holds 9cb46a35 at the default.
+
+## What the owner does
+
+1. Open any scan, fly the default drone (Pavo20 Pro). Climb, cut the throttle for about 1.5 s, then catch with about
+   half throttle: the drop ends about 15 cm lower than before (half a metre after an 11 m/s drop) and the picture
+   trembles a little (3 to 6 deg/s) for a quarter to half a second. A full punch bites only a little late.
+2. Settings (expert level) -> Drone -> Prop wash: 0 = the old smooth drop, 1 = the default, 2 = twice as strong.
+   The change applies when Settings close (a new life). The Air65 shakes most in a slow 4 to 5 m/s sink;
+   the 5-inch loses most height after a fast drop.
+
 ## Not verified
 
-- No person, phone, real controller or real blackbox log took part. No pilot compared it with a real quad.
+- No person, phone, real controller or real blackbox log took part. No pilot compared it with a real quad: the
+  sizes are from rotor test stands (152 mm and up) and NASA multicopter data, carried down to 31 to 56 mm by estimate.
+- The probe sets the setting by its URL form (set.physics.propWash, the same setting and validation as the row),
+  not by clicking the row; the row's apply on close is the settings screen's existing path (settings.ts applyToFlight).
+- B18 FAIL on docs/wip/train5-lead.md only (S2 gates): the lead's file, repaired on origin/main; not this lane's.
+- typecheck and 6 sonic vitest cases (S2 gates) fail from the packages/sonic-fpv checkout off its pin in this copy.
 
 ## For the lead
 
-- Outside the model: apps/fly/src/play/game.ts (the game's landing cut also waits for vy <= 0, one condition) and
-  tools/bench/test/app-game.test.ts (the in-air control over the four landing heights), because prop wash on the
-  Mach R5 changed its floor hops.
+- A pilot gets, at the default x1: Pavo20 (default) 3.5 % thrust lost in a 5 m/s sink, +0.47 m after an 11.7 m/s
+  drop and catch; Air65 15 % lost at 5 m/s, 5 deg/s wobble, +0.13 m after an 8.7 m/s drop; Nazgul F5 6.6 % at
+  5 m/s, +0.81 m after an 11.6 m/s drop. Tilt stays under 1 deg everywhere (the rate PID wins); a punch from a
+  straight dive leaves the band in 14 to 35 ms. Table: "## Numbers (S3)". On live today: nothing (0 % everywhere).
+- Estimates with no source: the "## Estimates" table (duct shift 0.15, side fade 4, the shake spectrum, the loss
+  and shake carried to small rotors, two Air65 II fields, the Champions' inertia/drag).
+- New A6 hash 9cb46a358f1a... (sim-core/0.3.0); propWash 0 still gives 1d01ca5b... Older recordings are refused
+  with the build named ("## Recordings of older builds").
+- Files outside sim-core and the presets: apps/fly/src/play/game.ts (landing cut waits for vy <= 0),
+  apps/fly/src/app/prefs.ts (comment), locales dronetune x4, prefs defs, docs, tests and bench files listed in S1/S2.
+- Release: page only (no API, rooms, nginx or sound package). Live checks: w3-model-wash-probe.mjs on the live site
+  must turn PASS 8 of 8; a6-reference and app-game in CI.
 
 ## Cost notes
 
@@ -166,3 +199,6 @@ of earlier lanes, docs/research/drones-v08.md (a v0.8 statement).
   have found it at once (any flight model change: run it with the model tests).
 - S2 close: 12 replies; one lost to a probe loop too short for 20 m (600 x 10 ms). The landing file runs in 10 s:
   probe by editing the test, not by a separate script.
+- S3: about 30 replies; the most went to finding how a probe sets a setting and reads the life (the set.<id> URL
+  form and window.__gsfpv.session.runner.sim); a note in docs/agent-map.md on those two would save five replies.
+  The first bench catch was closed loop and hid the extra sink: measure catches with a fixed stick.
