@@ -53,7 +53,7 @@
   "course.edit.saveWarn.show": "Muéstramelo",
   "course.edit.saveWarn.close": "Cerrar",
   "course.edit.saveWarn.closed": "No guardado. Pulsa Guardar cuando quieras.",
-  "course.edit.saveWarn.kind.inScan": "Dentro de una pared del escaneo (puertas: {gates})",
+  "course.edit.saveWarn.kind.inScan": "En una pared del escaneo o fuera de él (puertas: {gates})",
   "course.edit.saveWarn.kind.underGround": "Bajo el suelo (puertas: {gates})",
   "course.edit.saveWarn.kind.samePlace": "Dos puertas en el mismo sitio (puertas: {gates})",
   "course.edit.saveWarn.kind.tooClose": "Demasiado cerca de otra puerta (puertas: {gates})",

@@ -53,7 +53,7 @@
   "course.edit.saveWarn.show": "Показать",
   "course.edit.saveWarn.close": "Закрыть",
   "course.edit.saveWarn.closed": "Не сохранено. Нажмите «Сохранить», когда будете готовы.",
-  "course.edit.saveWarn.kind.inScan": "Внутри стены скана (ворота: {gates})",
+  "course.edit.saveWarn.kind.inScan": "В стене скана или вне скана (ворота: {gates})",
   "course.edit.saveWarn.kind.underGround": "Под землёй (ворота: {gates})",
   "course.edit.saveWarn.kind.samePlace": "Двое ворот на одном месте (ворота: {gates})",
   "course.edit.saveWarn.kind.tooClose": "Слишком близко к другим воротам (ворота: {gates})",

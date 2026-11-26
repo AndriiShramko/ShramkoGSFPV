@@ -53,7 +53,7 @@
   "course.edit.saveWarn.show": "Pokaż mi",
   "course.edit.saveWarn.close": "Zamknij",
   "course.edit.saveWarn.closed": "Nie zapisano. Naciśnij Zapisz, gdy będziesz gotowy.",
-  "course.edit.saveWarn.kind.inScan": "W ścianie skanu (bramki: {gates})",
+  "course.edit.saveWarn.kind.inScan": "W ścianie skanu lub poza skanem (bramki: {gates})",
   "course.edit.saveWarn.kind.underGround": "Pod ziemią (bramki: {gates})",
   "course.edit.saveWarn.kind.samePlace": "Dwie bramki w jednym miejscu (bramki: {gates})",
   "course.edit.saveWarn.kind.tooClose": "Za blisko innej bramki (bramki: {gates})",

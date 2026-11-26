@@ -499,6 +499,29 @@ try {
         t = await snap();
         judge('own.handAfterFix', handMoved && samePlaces(t.egates, beforeOwn), { handMoved, undoShownAfterHandMove: !!undoBox, ways, back: samePlaces(t.egates, beforeOwn), line: t.topLine });
     }
+
+    // ---- the second review's own step: Fix all, then Undo (the pilot wants his own places), then Save again. What must
+    // hold: Save is not "nothing changed" (the server holds the fixed version), the dialog comes again, and Save as it is
+    // stores the places from before Fix all
+    const beforeR = (await snap()).egates;
+    const d6 = await saveToDialog('n-save undo then as is');
+    if (!d6.dialog) res.notRun.push('own2.undoThenAsIs: no Save dialog');
+    else {
+        await clickSel('[data-testid="save-fix-all"]', 300);
+        const st6 = await until(snap, () => postsSince(d6.t0).includes(201), 20000, 300);
+        const moved6 = (await snap()).fix?.moved ?? [];
+        const undo6 = await until(() => boxOf('[data-testid="save-undo"]'), (b) => !!b, 5000, 200);
+        if (undo6.ok) await click(undo6.v.x, undo6.v.y, 700);
+        const back6 = samePlaces((await snap()).egates, beforeR);
+        const t7 = Date.now();
+        const b7 = await clickSel('.ce-topbar [data-top="save"]', 600);
+        const d7 = await until(dialogOf, (x) => !!x, 15000, 300);
+        const asIs7 = d7.v ? await clickSel('[data-testid="save-as-is"]', 400) : null;
+        const st7 = asIs7 ? await until(snap, () => postsSince(t7).includes(201), 20000, 300) : { ok: false };
+        const t = await snap();
+        const stored7 = t.saved ? await storedPlaces(t.saved) : null;
+        judge('own2.undoThenAsIs', st6.ok && moved6.length > 0 && undo6.ok && back6 && !!b7 && !!d7.v && st7.ok && samePlaces(stored7?.places, beforeR), { fixSaved: st6.ok, moved: moved6, undo: undo6.ok, back: back6, savePressed: !!b7, dialogAgain: !!d7.v, asIsSaved: st7.ok, stored: stored7 ? { version: stored7.version, same: samePlaces(stored7.places, beforeR) } : null, line: t.topLine, said: t.said });
+    }
 } catch (e) {
     res.error = String(e).slice(0, 400);
     // the measure of the top row ends the run on purpose: its verdict is the step topRow

@@ -53,7 +53,7 @@
   "course.edit.saveWarn.show": "Show me",
   "course.edit.saveWarn.close": "Close",
   "course.edit.saveWarn.closed": "Not saved. Press Save when you are ready.",
-  "course.edit.saveWarn.kind.inScan": "Inside a wall of the scan (gates: {gates})",
+  "course.edit.saveWarn.kind.inScan": "In a wall of the scan or outside it (gates: {gates})",
   "course.edit.saveWarn.kind.underGround": "Under the ground (gates: {gates})",
   "course.edit.saveWarn.kind.samePlace": "Two gates on one spot (gates: {gates})",
   "course.edit.saveWarn.kind.tooClose": "Too close to another gate (gates: {gates})",
