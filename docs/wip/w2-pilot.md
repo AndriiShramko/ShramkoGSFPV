@@ -7,7 +7,7 @@ the ground (a lower sensitivity near the ground by default). His fourth point (b
 ## Status
 
 - [x] S1 A, the ground: measurement, the softer default, the test, the negative control (25635abf)
-- [ ] S2 B, the camera line in the first-minute menu; the entry points of C and its plan (ten lines below)
+- [x] S2 B, the camera line in the first-minute menu; the entry points of C and its plan (ten lines below) (this commit)
 - [ ] S3 C, the scene catalogue from the pause menu, with a test
 - [ ] S4 the acceptance by mouse (local build PASS, live FAIL), gates once, For the lead
 
@@ -39,6 +39,30 @@ the ground (a lower sensitivity near the ground by default). His fourth point (b
 - Side effect: at the start of a flight with all defaults the session's model is rebuilt once at the spawn by
   settings.ts applyToFlight (the path any pilot with one changed setting already took).
 
+## B. The camera line
+
+- "Before you fly" (apps/fly/src/ui/panels.ts warningModal, lane menu4's first-minute screen) gets one line under
+  "You can change this any time": "Camera angle: key O opens Settings, then Camera, Camera uptilt." (`menu.level.camera`
+  in fly/menu/{en,es,pl,ru}.json). The key comes from the keymap (`settings.open`), the three names are the Settings
+  screen's own labels (pause.settings, group.camera, set.camera.uptiltDeg), so the line cannot drift from the screen.
+- The camera angle has no key of its own (camera.uptiltDeg, 0..50 deg, level sim): the line names the settings path.
+
+## C. Entry points and plan
+
+Code differs from the lead's brief: the pause menu ALREADY has "Change scan" (`pause.scene`, app/builtin/scene.ts:45,
+order 30, level first) -> `ctx.scenes.openPicker()` (app/scene-host.ts:149) -> `new ScenePicker(ctx.ui, showcase,
+collections)`, the same component and data as the start page (app/boot.ts:82). Where a pilot meets "only next or random"
+is the crash card (ui/crash-overlay.ts, row `cp-scenes`: Next N, Random Shift+N, Next favourite), the card a pilot who
+breaks on landing sees most; and "Change scan" / "Zmien skan" does not say "choose". Plan (one stage of code is enough):
+1. Crash card: a first button "Choose a scan" (data-action `scene-pick`) in `cp-scenes`; PanelActions.scenes.pick =
+   `ctx.scenes.openPicker()` (app/builtin/crash.ts). Next, random and favourite stay. No new key (the picker has none).
+2. Check the crash card leaves when the picker opens or a scene is picked (a 'session' event), else close it on pick.
+3. The pause item says what it opens: `pause.scene` gets the catalogue's own title (`scenes.title`) in en/es/pl/ru.
+4. Test tools/bench/test/w2-pilot-scene-pick.test.ts (fake DOM, as crash-overlay tests): the button is first in the
+   row and runs pick; crash.ts wires it to openPicker; the label equals scenes.title in four locales. NEG on origin/main.
+5. S4: the pause path (Esc, the item, a card) is old code, so on the live site it PASSES; the live FAILS are the crash
+   card's `scene-pick` and the label. Said so in For the lead.
+
 ## What the owner does
 
 (S4)
@@ -50,6 +74,9 @@ the ground (a lower sensitivity near the ground by default). His fourth point (b
    `npx vitest run packages/sim-core/test/ground-touch.test.ts tools/bench/test/app-settings.test.ts`: 47 passed;
    neg_control.py on origin/main (sim.ts params.ts crash.ts levels.ts app/prefs.ts): NEG OK.
 2. Determinism and old logs hold: `npx vitest run packages/sim-core tools/bench/test/a6-reference.test.ts`: 335 passed.
+3. "Before you fly" names the camera angle and its path in en and pl, and every locale has the line.
+   `npx vitest run tools/bench/test/w2-pilot-camera-line.test.ts tools/bench/test/menu4-levels.test.ts`: 6 passed;
+   neg_control.py on origin/main (panels.ts, fly/menu/*.json): NEG OK; `pnpm --filter ./apps/fly typecheck`: 0 errors.
 
 ## Not verified
 
@@ -63,3 +90,6 @@ the ground (a lower sensitivity near the ground by default). His fourth point (b
 
 - S1: most replies went to the preset-field design that would have broken saved replays (found by sim-core
   log-v2-compat) and to three counting tests in prefs/app-settings; reading runner.ts lifeParams first would have saved it.
+- S2: most replies went to finding where "only next or random" comes from (the crash card, not the pause menu, which
+  already opens the picker); grepping the pilot's words' buttons (`scene-random`) first would have found it at once.
+  neg_control.py needs `npx.cmd`, not `npx`, on Windows.

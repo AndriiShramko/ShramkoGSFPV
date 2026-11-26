@@ -7,6 +7,7 @@
   "menu.level.expert": "Show me everything",
   "menu.level.expert.hint": "Every button and every setting at once.",
   "menu.level.later": "You can change this any time: Settings, Display, Menu.",
+  "menu.level.camera": "Camera angle: key {key} opens {settings}, then {group}, {row}.",
   "menu.more": "More ({n})",
   "menu.showAll": "Always show everything",
   "menu.settings.showAll": "Show all settings ({n} more)",
