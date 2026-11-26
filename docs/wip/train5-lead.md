@@ -120,6 +120,27 @@ gate B18 for every lane; name a vault note by words, not by its Russian file nam
   (new: for the owner's first priority only; the plan's stop still holds). w1-anchor and r-w1-anchor carry the
   mark. Take it off when r-w1-anchor is done; give it to the car's integration job if the line still holds then.
 
+### 2026-11-26 19:45 UTC: w1-anchor is checked (SHIP); car 6 is queued and its job releases it
+
+- w1-anchor (R1): r-w1-anchor says SHIP, no repair was needed. Scan eb5f51dc by mouse: gate 1 at 3.3 m from the camera
+  (live: 492.6 m); 30 m away and paused: 3.8 m from the drone; a link lays the same gates in a fresh browser; links of
+  the old form lay their old course gate for gate (hashes). Ranks of the gates: eb5f51dc 0.50 to 0.99, Lublin 0.62 to
+  0.96, Tunis 0.89 to 0.92. Page only. Left for R3: on Tunis 6 of 18 courses start 12 to 20 m off the anchor.
+- w3-model is done (4 runs); r-w3-model waits for the line.
+- CAR 6 is fix-fly and w1-anchor ONLY (the lead's order: the generator's repair goes live first; n-save, n-scan,
+  w2-pilot, w1-dialog and w3-model ride car 7). Jobs: car6 (prompt prompts/t10-car6.md: a header for this car, then
+  the body of t8-car5.md; copy gsfpv-v13-int; share-free) and ship-car6 (a command: ship_handover.py with
+  U:/Temp/gsfpv-train4/int4-car6.json, out folder U:/Temp/gsfpv-train4/ship-car6). The watcher wakes on
+  `DONE ship-car6`, on FAILED and on RETRY-LATER.
+- UNTIL ship-car6 IS DONE: no commit to C:/dev/gsfpv-v03 outside docs/ (ship_handover.py stops with exit 40 when
+  origin/main holds a path outside docs/, evidence/ and the locales that the candidate lacks: STATE.md counts), and
+  no edit of the lead copy while the ship job itself runs (exit 12).
+- AFTER the release: the last lines of U:/Temp/gsfpv-train4/ship-car6/ship.log and live.log; STATE.md's first bullet
+  (car 6 live, the checks, what is not verified); the owner's path from docs/wip/train4-int.md, 'What the owner
+  should try', Car 6; take share-free off car6; then plan car 7 and W1's R3, the n-route rebase and the test system.
+- The week: 29 % at 19:35 UTC (26 % at 18:41: the chain above the line, and other consumers). The line allows 25.6 %:
+  w1-dialog, r-w3-model, w2-pilot, w3-bbl and w5-inv wait until about midday of 2026-11-27.
+
 ## How the lead works (the owner's economy rule; written into the skills on 2026-11-26, W4 done)
 
 - The lead runs on the top model (Fable); every worker is Opus or Sonnet. NEVER leave `model` out of an Agent call or
