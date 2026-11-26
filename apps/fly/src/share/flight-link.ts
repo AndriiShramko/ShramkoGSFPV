@@ -47,8 +47,9 @@ export const SOUND_FREE = 'fly';
 /** The `sonic=` values that name no lesson: the free flight (the template's own id and the older `scan` included) and the start screen. */
 const NO_LESSON: ReadonlySet<string> = new Set([SOUND_FREE, 'scan', 'scan-free', 'start']);
 
-/** A generated course's link token: `g<n>.` and the rest as the course feature wrote it. */
-const GENERATED = /^g[0-9]\.[0-9a-z.]{1,60}$/;
+/** A generated course's link token: `g<n>.` and the rest as the course feature wrote it (lane w1-anchor: a 'g2.' link's
+ *  anchor may be negative, `g2.7.mc.12.-3.-540`, so '-' is part of the token) */
+const GENERATED = /^g[0-9]\.[0-9a-z.-]{1,60}$/;
 
 /** A `course=` value an address may carry: a generated course's link or a saved course's `<id>[.v<n>]`. */
 export function isCourseToken(v: string): boolean {

@@ -74,7 +74,8 @@ async function main(): Promise<void> {
             for (const level of LEVEL_NAMES)
                 for (const spread of SPREADS)
                     for (const seed of seeds) {
-                        const request: CourseRequest = { seed, level, spread, anyQuality: false };
+                        // lane w1-anchor: no pilot here (the spawn is the core): anchor null lays from the core, as this audit measured before
+                        const request: CourseRequest = { seed, level, spread, anyQuality: false, anchor: null };
                         const t0 = performance.now();
                         const r = planCourse({ walls, transform: T, spawn: a.core, scene: { id: s.id, version: s.version }, created: '2026-11-19T00:00:00.000Z', craftRadiusM: craftR, request, elements: true });
                         const ms = Math.round(performance.now() - t0);

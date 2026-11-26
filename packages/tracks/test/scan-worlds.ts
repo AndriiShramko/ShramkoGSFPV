@@ -66,6 +66,26 @@ export function crowdedPocket(): VoxelCollision {
     return analyticCollision([-0.2, -0.2, -0.2], [2.2, 1.4, 2.2], 0.025, (x, y, z) => !inBox(x, y, z, POCKET_IN[0], POCKET_IN[1]) || (post(x) && post(z)));
 }
 
+/** Lane w1-anchor: a wide open place 100 x 100 m (as eb5f51dc): a solid ground 1 m thick, a well-captured village round
+ *  the author's camera (FRINGE_SPAWN; blocks 4 x 4 m, 3 to 6 m high on a 10 m pitch over x, z 5-45) and a badly captured
+ *  fringe in the far corner (x, z 70-100: one voxel in fifty floating up to 9 m, many runs a column): the voxels' roughest
+ *  window, the analysis core, lies in the fringe, 70 m and more from the camera; voxel 0.25 m. */
+export const FRINGE_SPAWN: Vec3 = [22, 2.5, 22];
+/** the far street corner of the village, 28 m from the camera: where the pilot flew to */
+export const FRINGE_MOVED: Vec3 = [42, 2.5, 42];
+export function fringeField(): VoxelCollision {
+    const v = 0.25;
+    return analyticCollision([-2, -0.5, -2], [102, 12, 102], v, (x, y, z) => {
+        if (x < 0 || z < 0 || x >= 100 || z >= 100 || y < 0) return false;
+        if (y < 1) return true;
+        if (x >= 70 && z >= 70) return y < 9 && fuzz(x, y, z, v, 20);
+        if (x < 5 || z < 5 || x >= 45 || z >= 45) return false;
+        const i = Math.floor((x - 5) / 10), j = Math.floor((z - 5) / 10);
+        const bx = x - 5 - i * 10, bz = z - 5 - j * 10;
+        return bx < 4 && bz < 4 && y < 1 + 3 + ((i + 2 * j) % 4);
+    });
+}
+
 /** A tray of plants 1 x 1 m: soil 4 cm, stems every 0.25 m 0.4 m high, a leaf ball (r 8 cm) on each and one half way;
  *  voxel 0.02 m; air to 1.5 m up (a gate a whoop passes over the leaves). */
 export function plantTray(): VoxelCollision {

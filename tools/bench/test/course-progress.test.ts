@@ -315,8 +315,11 @@ describe('gen4b B2: the course box', () => {
 
     it('a link names the asked course (g2) and an old link stays the old generator (g1)', () => {
         expect(courseOfLink('?course=g1.bnhwha')).toEqual({ kind: 'legacy', seed: parseInt('bnhwha', 36) });
-        const r = { seed: 1234567, level: 'pro' as const, spread: 'wide' as const, anyQuality: false };
+        const r = { seed: 1234567, level: 'pro' as const, spread: 'wide' as const, anyQuality: false, anchor: null };
         expect(courseOfLink(`?x=1&course=${courseLinkId(r)}`)).toEqual({ kind: 'request', request: r });
+        // lane w1-anchor: a link with the pilot's place reads back to it
+        const at = { ...r, anchor: [-12, 3, 40] as const };
+        expect(courseOfLink(`?course=${courseLinkId(at)}`)).toEqual({ kind: 'request', request: at });
         expect(courseOfLink('?course=g2.zz.bq')).toBeNull();
         expect(courseOfLink('?scene=abc')).toBeNull();
     });

@@ -18,8 +18,15 @@ export interface CourseRequest {
     readonly spread: CourseSpread;
     /** the voxels-only view: scan quality is ignored, the whole scanned territory is used, up to VOXEL_VIEW_GATES gates */
     readonly anyQuality: boolean;
+    /** lane w1-anchor: where the course grows from, the pilot's place (courseAnchor: flown m, whole metres); null only for an
+     *  old 'g2.' link that names none, which keeps laying the course it laid before (from the analysis core, plan.ts anchorOf) */
+    readonly anchor: CourseAnchor | null;
 }
-export const REQUEST_DEFAULTS: Readonly<Omit<CourseRequest, 'seed'>> = { level: 'medium', spread: 'compact', anyQuality: false };
+/** a course's anchor, flown world m rounded to whole metres (a link carries it, so the page lays the rounded place too) */
+export type CourseAnchor = readonly [number, number, number];
+/** the pilot's choice in the 'Generate a course' dialog: a request without its seed and its anchor (the page adds both) */
+export type CourseAsk = Omit<CourseRequest, 'seed' | 'anchor'>;
+export const REQUEST_DEFAULTS: Readonly<CourseAsk> = { level: 'medium', spread: 'compact', anyQuality: false };
 /** the gates of a course in the voxels-only view (estimate; under SERVER_MAX_GATES 60) */
 export const VOXEL_VIEW_GATES = 40;
 
@@ -54,17 +61,25 @@ export type CourseLink = { readonly kind: 'legacy'; readonly seed: number } | { 
 const LEVEL_CODE: Readonly<Record<CourseLevel, string>> = { beginner: 'b', medium: 'm', pro: 'p' };
 const CODE_LEVEL: Readonly<Record<string, CourseLevel>> = { b: 'beginner', m: 'medium', p: 'pro' };
 const LEGACY_RE = /^g1\.([0-9a-z]{1,7})$/;
-const REQUEST_RE = /^g2\.([0-9a-z]{1,7})\.([bmp])([cwv])$/;
+const REQUEST_RE = /^g2\.([0-9a-z]{1,7})\.([bmp])([cwv])(?:\.(-?\d{1,6})\.(-?\d{1,6})\.(-?\d{1,6}))?$/;
+
+/** the anchor of a flown place: whole metres (-0 as 0), the one form a link holds and planCourse is given */
+export function courseAnchor(p: ArrayLike<number>): CourseAnchor {
+    const r = (v: number): number => Math.round(v) + 0;
+    return [r(p[0]!), r(p[1]!), r(p[2]!)];
+}
 
 function seedOf(s36: string): number | null {
     const seed = parseInt(s36, 36);
     return Number.isFinite(seed) && seed >= 0 && seed <= 0xffffffff ? seed : null;
 }
 
-/** 'g2.<seed36>.<b|m|p><c|w|v>'; v: the voxels-only view (anyQuality, which always spreads over the whole scan) */
+/** 'g2.<seed36>.<b|m|p><c|w|v>[.<x>.<y>.<z>]'; v: the voxels-only view (anyQuality, which always spreads over the whole
+ *  scan); x y z: the anchor, flown whole metres (lane w1-anchor; a link without them is an old one: anchor null) */
 export function courseLinkId(r: CourseRequest): string {
     const spread = r.anyQuality ? 'v' : r.spread === 'wide' ? 'w' : 'c';
-    return `g2.${(r.seed >>> 0).toString(36)}.${LEVEL_CODE[r.level]}${spread}`;
+    const at = r.anchor ? `.${courseAnchor(r.anchor).join('.')}` : '';
+    return `g2.${(r.seed >>> 0).toString(36)}.${LEVEL_CODE[r.level]}${spread}${at}`;
 }
 
 /** the course a link's `course=` value names, or null when it names no generated course */
@@ -79,7 +94,8 @@ export function parseCourseLink(id: string): CourseLink | null {
     const seed = seedOf(m[1]!);
     if (seed === null) return null;
     const s = m[3]!;
-    return { kind: 'request', request: { seed, level: CODE_LEVEL[m[2]!]!, spread: s === 'c' ? 'compact' : 'wide', anyQuality: s === 'v' } };
+    const anchor: CourseAnchor | null = m[4] !== undefined ? [Number(m[4]) + 0, Number(m[5]) + 0, Number(m[6]) + 0] : null;
+    return { kind: 'request', request: { seed, level: CODE_LEVEL[m[2]!]!, spread: s === 'c' ? 'compact' : 'wide', anyQuality: s === 'v', anchor } };
 }
 
 /** 'analyse': the scan analysis; 'free': the free space; 'lay': one try of the gates */
@@ -94,7 +110,7 @@ export interface PlanInput {
     readonly walls: VoxelCollision;
     /** [s, tx, ty, tz] of the flight now */
     readonly transform: SceneTransform;
-    /** flown world */
+    /** flown world: the author's camera (session findSpawn); planCourse grows the course from request.anchor, not from here */
     readonly spawn: Vec3;
     readonly scene: { readonly id: string; readonly version: number };
     /** ISO 8601 */

@@ -14,7 +14,7 @@ const D = 2 * WHOOP_R;
 const input = (walls: VoxelCollision, request: CourseRequest): PlanInput => ({
     walls, transform: IDENTITY, spawn: [0, 1, 0], scene: { id: 'abcdef12', version: 1 }, created: '2026-11-19T00:00:00.000Z', craftRadiusM: WHOOP_R, request, elements: true
 });
-const ask = (level: CourseLevel, seed: number, spread: 'compact' | 'wide' = 'compact', anyQuality = false): CourseRequest => ({ seed, level, spread, anyQuality });
+const ask = (level: CourseLevel, seed: number, spread: 'compact' | 'wide' = 'compact', anyQuality = false): CourseRequest => ({ seed, level, spread, anyQuality, anchor: null });
 /** the kinds of a course's elements: a cube frame, a flat square (a gate pitched up: its quaternion's x near 0.7) */
 const shapesOf = (t: TrackFile): Set<string> => new Set(t.gates.map((g) => (g.shape.kind === 'cube-frame' ? 'cube' : Math.abs(g.quat[1]) > 0.5 ? 'flat' : g.shape.kind)));
 
