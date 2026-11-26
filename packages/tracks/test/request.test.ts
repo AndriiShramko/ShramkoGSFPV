@@ -17,7 +17,7 @@ describe('course link of a request', () => {
         for (const level of LEVEL_NAMES) {
             for (const s of SPREADS) {
                 for (const seed of [0, 12345, 0xffffffff]) {
-                    const r: CourseRequest = { seed, level, ...s };
+                    const r: CourseRequest = { seed, level, ...s, anchor: null };
                     const id = courseLinkId(r);
                     expect(id).toMatch(/^g2\.[0-9a-z]{1,7}\.[bmp][cwv]$/);
                     expect(parseCourseLink(id)).toEqual({ kind: 'request', request: r });
@@ -33,7 +33,7 @@ describe('course link of a request', () => {
     });
 
     it('the voxels-only view always spreads over the whole scan', () => {
-        expect(courseLinkId({ seed: 7, level: 'pro', spread: 'compact', anyQuality: true })).toBe('g2.7.pv');
+        expect(courseLinkId({ seed: 7, level: 'pro', spread: 'compact', anyQuality: true, anchor: null })).toBe('g2.7.pv');
     });
 
     it('refuses what names no generated course', () => {

@@ -4,17 +4,17 @@
 // course open.
 import { describe, expect, it } from 'vitest';
 import { analyticCollision } from '@gsfpv/collision';
-import { CELL_PER_OPENING, cellCentre, COURSE_DEFAULTS, FREE_DEFAULTS, LEVELS, analyzeScan, clipBox, courseLinkId, fitCourse, freeSpace, generateCourse, fitSizeFor, flownCollision, goodForGate, placementStats, planCourse, planRules, walkReach, legsWithinServer, qualityBounds, qualityMap, validateServerTrack } from '../src';
+import { CELL_PER_OPENING, cellCentre, COURSE_DEFAULTS, FREE_DEFAULTS, LEVELS, analyzeScan, anchorOf, clipBox, courseLinkId, fitCourse, freeSpace, generateCourse, fitSizeFor, flownCollision, goodForGate, placementStats, planCourse, planRules, walkReach, legsWithinServer, qualityBounds, qualityMap, validateServerTrack } from '../src';
 import type { CourseLevel, CourseRequest, PlanInput, SceneTransform, TrackFile, VoxelCollision } from '../src';
 import { IDENTITY } from './worlds';
-import { cityFromAbove, crowdedPocket, plantTray, scannedRoom, tableAndSkull } from './scan-worlds';
+import { FRINGE_MOVED, FRINGE_SPAWN, cityFromAbove, crowdedPocket, fringeField, plantTray, scannedRoom, tableAndSkull } from './scan-worlds';
 
 const WHOOP_R = 0.0425; // a 65 mm whoop (fit.ts SMALLEST_DRONE_RADIUS_M)
 const D = 2 * WHOOP_R;
 const input = (walls: VoxelCollision, request: CourseRequest): PlanInput => ({
     walls, transform: IDENTITY, spawn: [0, 1, 0], scene: { id: 'abcdef12', version: 1 }, created: '2026-11-19T00:00:00.000Z', craftRadiusM: WHOOP_R, request, elements: true
 });
-const ask = (level: CourseLevel, seed = 7): CourseRequest => ({ seed, level, spread: 'compact', anyQuality: false });
+const ask = (level: CourseLevel, seed = 7): CourseRequest => ({ seed, level, spread: 'compact', anyQuality: false, anchor: null });
 
 describe('planCourse: the asked course in the scanned part, closed, at the craft\'s size', () => {
     const room = scannedRoom();
@@ -62,7 +62,7 @@ describe('planCourse: the asked course in the scanned part, closed, at the craft
     // gen4a A3 (G3; Forest Floor beginner had 0.4-0.6 of its gates on good tiles): the quality rule is kept down the whole
     // opening ladder before a pass drops it
     it('a city filmed from above, pro wide seed 2: every gate on a well-scanned tile', () => {
-        const r = planCourse(input(cityFromAbove(), { seed: 2, level: 'pro', spread: 'wide', anyQuality: false }));
+        const r = planCourse(input(cityFromAbove(), { seed: 2, level: 'pro', spread: 'wide', anyQuality: false, anchor: null }));
         expect(r.ok).toBe(true);
         if (!r.ok) return;
         expect(r.stats.gates).toBeGreaterThanOrEqual(LEVELS.pro.gatesMin);
@@ -174,7 +174,7 @@ describe('planCourse: the asked course in the scanned part, closed, at the craft
         const T: SceneTransform = [20, 0, 0, 0];
         const walls = flownCollision(cityFromAbove(), T);
         for (const seed of [1, 2, 3, 4, 5, 6]) {
-            const r = planCourse({ ...input(walls, { seed, level: 'pro', spread: 'compact', anyQuality: false }), transform: T });
+            const r = planCourse({ ...input(walls, { seed, level: 'pro', spread: 'compact', anyQuality: false, anchor: null }), transform: T });
             expect(r.ok).toBe(true);
             if (!r.ok) continue;
             const v = validateServerTrack(r.track);
@@ -239,7 +239,7 @@ describe('planCourse: the asked course in the scanned part, closed, at the craft
     it('walkReach: a pro wide course on a 1 km scan gets a box of its walk and one leg, not its loop laid out straight', () => {
         // 1994c65c pro wide (audit run 4): a 260 m box of 3.2 m cells against a 0.43 m gate, no course
         const scan = { extentM: 1000, coreRadiusM: 60 } as unknown as Parameters<typeof planRules>[2];
-        const R = planRules({ seed: 1, level: 'pro', spread: 'wide', anyQuality: false }, WHOOP_R, scan);
+        const R = planRules({ seed: 1, level: 'pro', spread: 'wide', anyQuality: false, anchor: null }, WHOOP_R, scan);
         const w = walkReach(R, 1);
         const straight = (R.gates * R.legMaxM) / 2 + R.legMaxM;
         expect(straight).toBeGreaterThan(200);
@@ -247,7 +247,7 @@ describe('planCourse: the asked course in the scanned part, closed, at the craft
         expect(w.boxR).toBeCloseTo(Math.min(straight, w.walkR + R.legMaxM), 6);
         expect(w.boxR).toBeLessThan(0.5 * straight);
         // a small room keeps its whole loop: the box is never more than the loop laid out straight
-        const room = planRules({ seed: 1, level: 'beginner', spread: 'compact', anyQuality: false }, WHOOP_R, { extentM: 10, coreRadiusM: 3 } as unknown as Parameters<typeof planRules>[2]);
+        const room = planRules({ seed: 1, level: 'beginner', spread: 'compact', anyQuality: false, anchor: null }, WHOOP_R, { extentM: 10, coreRadiusM: 3 } as unknown as Parameters<typeof planRules>[2]);
         const wr = walkReach(room, 1);
         expect(wr.boxR).toBeLessThanOrEqual((room.gates * room.legMaxM) / 2 + room.legMaxM + 1e-9);
     });
@@ -271,5 +271,53 @@ describe('planCourse: the asked course in the scanned part, closed, at the craft
         for (let ax = 0; ax < 3; ax++) expect(start[ax]! >= fine.min[ax]! && start[ax]! <= fine.max[ax]!).toBe(true);
         const small = { min: [0, 0, 0] as [number, number, number], max: [5, 3, 4] as [number, number, number] };
         expect(clipBox(small, [1, 1, 1], 30, 0.85, 0.1)).toEqual(small);
+    });
+});
+
+// Lane w1-anchor (design w1-diag R1): a course grows from the pilot's place, not from the analysis core. On eb5f51dc the core
+// (the voxels' roughest window) lay 485 m from the author's camera in a badly captured field and every course started there.
+// Negative control: origin/main ignores request.anchor and lays gate 1 at the core, 60 m and more away.
+describe('planCourse: the course grows from its anchor, the pilot\'s place', () => {
+    const field = fringeField();
+    const scan = analyzeScan(field, IDENTITY);
+    const flat = (p: readonly number[], q: readonly number[]): number => Math.hypot(p[0]! - q[0]!, p[2]! - q[2]!);
+    const at = (level: CourseLevel, seed: number, anchor: readonly [number, number, number] | null): CourseRequest => ({ seed, level, spread: 'compact', anyQuality: false, anchor });
+    const gate1 = (r: ReturnType<typeof planCourse>): readonly number[] => (r.ok ? r.track.gates[0]!.pos : [Infinity, Infinity, Infinity]);
+
+    it('the world: its analysis core lies in the far fringe, 60 m and more from the camera', () => {
+        expect(flat(scan.core, FRINGE_SPAWN)).toBeGreaterThan(60);
+    });
+
+    for (const level of ['beginner', 'medium', 'pro'] as CourseLevel[])
+        for (const seed of [1, 2, 3])
+            it(`${level} seed ${seed}: gate 1 within 10 m of the anchor at the author's camera, the whole course in the village`, () => {
+                const r = planCourse(input(field, at(level, seed, FRINGE_SPAWN)));
+                expect(r.ok).toBe(true);
+                if (!r.ok) return;
+                expect(flat(gate1(r), FRINGE_SPAWN)).toBeLessThanOrEqual(10);
+                for (const g of r.track.gates) expect(flat(g.pos, scan.core)).toBeGreaterThan(30);
+                // the link names the anchor: the course is laid again from it
+                expect(r.track.id).toBe(courseLinkId(at(level, seed, FRINGE_SPAWN)));
+                expect(r.track.id.endsWith('.22.3.22')).toBe(true);
+            });
+
+    it('the anchor moved 28 m to the far street of the village: the course moves with it', () => {
+        const here = planCourse(input(field, at('medium', 2, FRINGE_SPAWN)));
+        const there = planCourse(input(field, at('medium', 2, FRINGE_MOVED)));
+        expect(here.ok && there.ok).toBe(true);
+        expect(flat(gate1(there), FRINGE_MOVED)).toBeLessThanOrEqual(10);
+        expect(flat(gate1(here), FRINGE_SPAWN)).toBeLessThanOrEqual(10);
+        expect(flat(gate1(there), FRINGE_SPAWN)).toBeGreaterThan(15);
+        expect(flat(gate1(there), gate1(here))).toBeGreaterThan(15);
+    });
+
+    it('anchorOf: the anchor itself on a usable tile; off the scan the nearest usable tile, never the core; none (an old link) the core', () => {
+        const ask = (anchor: readonly [number, number, number] | null): PlanInput => input(field, at('medium', 1, anchor));
+        expect(anchorOf(ask(FRINGE_SPAWN), scan)).toEqual(FRINGE_SPAWN);
+        const off = anchorOf(ask([-40, 3, 20]), scan);
+        expect(off[0]).toBeLessThan(scan.tileM);
+        expect(Math.abs(off[2] - 20)).toBeLessThanOrEqual(scan.tileM);
+        expect(off[1]).toBe(3);
+        expect(anchorOf(ask(null), scan)).toEqual(scan.core);
     });
 });

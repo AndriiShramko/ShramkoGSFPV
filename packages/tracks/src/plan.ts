@@ -142,16 +142,17 @@ export const LOOSEST_TIER = 3;
 /** the zone's rules, strictest first; `tier` 0 all, 1 without the quality rule, 2 without the kind rule (the quality rule
  *  kept: Forest Floor at x1 has no whoop gate under its leaves, and its courses then left the good tiles: goodShare
  *  0.4-0.6), 3 (LOOSEST_TIER) without both */
-export function zoneAt(a: ScanAnalysis, request: CourseRequest, rules: PlanRules, openingM: number, tier: number): (p: Vec3) => boolean {
+export function zoneAt(a: ScanAnalysis, request: CourseRequest, rules: PlanRules, openingM: number, tier: number, anchor: Vec3): (p: Vec3) => boolean {
     const k = openingM / RING_DIAMETER_M;
     const half = (SQUARE_SIDE_M / 2 + SQUARE_BAR_M) * k;
     const u = a.unitM;
     const compact = request.spread === 'compact' && !request.anyQuality;
     const r2 = rules.zoneR * rules.zoneR;
+    // the object's own rule stays round the object (the analysis core): a course round the skull, not round the pilot
     const objR2 = 9 * a.coreRadiusM * a.coreRadiusM;
     return (p) => {
         if (!insideAt(a, p, half, openingM)) return false;
-        if (compact && flat2(p, a.core) > r2) return false;
+        if (compact && flat2(p, anchor) > r2) return false;
         const t = scanTile(a, p);
         if ((tier === 0 || tier === 2) && !request.anyQuality && a.quality[t]! < GOOD_Q) return false;
         if (tier >= 2) return true;
@@ -216,7 +217,7 @@ function zoneCount(free: FreeSpace, k: number, at: (p: Vec3) => boolean): number
 }
 
 /** the free-space box: the zone's tiles, from the lowest ground to the highest roof plus two openings */
-function zoneBox(a: ScanAnalysis, request: CourseRequest, rules: PlanRules, openingM: number): { min: Vec3; max: Vec3 } | null {
+function zoneBox(a: ScanAnalysis, request: CourseRequest, rules: PlanRules, openingM: number, anchor: Vec3): { min: Vec3; max: Vec3 } | null {
     const compact = request.spread === 'compact' && !request.anyQuality;
     let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity, z0 = Infinity, z1 = -Infinity;
     for (let tz = 0; tz < a.nz; tz++)
@@ -225,7 +226,7 @@ function zoneBox(a: ScanAnalysis, request: CourseRequest, rules: PlanRules, open
             if (a.footprint[t] !== 1 || !Number.isFinite(a.groundTop[t]!)) continue;
             const lx = a.x0 + tx * a.tileM, lz = a.z0 + tz * a.tileM;
             const c: Vec3 = [lx + a.tileM / 2, 0, lz + a.tileM / 2];
-            if (compact && Math.sqrt(flat2(c, a.core)) > rules.zoneR + a.tileM) continue;
+            if (compact && Math.sqrt(flat2(c, anchor)) > rules.zoneR + a.tileM) continue;
             x0 = Math.min(x0, lx);
             x1 = Math.max(x1, lx + a.tileM);
             z0 = Math.min(z0, lz);
@@ -306,25 +307,53 @@ export function legsWithinServer(track: TrackFile): boolean {
     });
 }
 
-/** where the walk starts: over the core, half way between its ground and its roof or ceiling (a street at eye height;
- *  the walk takes the nearest zone cell) */
-function startOf(a: ScanAnalysis, openingM: number): Vec3 {
-    const t = scanTile(a, a.core);
+/** a tile a course can grow from: on the scanned footprint, with ground */
+const usableTile = (a: ScanAnalysis, t: number): boolean => t >= 0 && a.footprint[t] === 1 && Number.isFinite(a.groundTop[t]!);
+
+/**
+ * Lane w1-anchor (design w1-diag, R1): where a course grows from, flown world. The request's anchor is the pilot's place
+ * (the drone in the air or paused in the air; the spawn, the author's camera, when parked or just loaded); when its own tile
+ * is not usable, the nearest usable tile's centre (at the anchor's height), never the core. A request with no anchor is an
+ * old 'g2.' link: the analysis core, the course that link laid before this lane (a.core = the detail-richest window of the
+ * voxels, which on eb5f51dc lies 485 m from the author's camera in a badly captured field: w1-diag Cause).
+ */
+export function anchorOf(input: PlanInput, a: ScanAnalysis): Vec3 {
+    const p = input.request.anchor;
+    if (!p) return a.core;
+    const at: Vec3 = [p[0], p[1], p[2]];
+    if (usableTile(a, scanTile(a, at))) return at;
+    let best = -1, bestD = Infinity;
+    for (let t = 0; t < a.nx * a.nz; t++) {
+        if (!usableTile(a, t)) continue;
+        const cx = a.x0 + ((t % a.nx) + 0.5) * a.tileM, cz = a.z0 + (Math.floor(t / a.nx) + 0.5) * a.tileM;
+        const d = (cx - at[0]) * (cx - at[0]) + (cz - at[2]) * (cz - at[2]);
+        if (d < bestD) {
+            bestD = d;
+            best = t;
+        }
+    }
+    return best < 0 ? at : [a.x0 + ((best % a.nx) + 0.5) * a.tileM, at[1], a.z0 + (Math.floor(best / a.nx) + 0.5) * a.tileM];
+}
+
+/** where the walk starts: over the anchor (anchorOf), half way between its ground and its roof or ceiling (a street at eye
+ *  height; the walk takes the nearest zone cell) */
+function startOf(a: ScanAnalysis, openingM: number, anchor: Vec3): Vec3 {
+    const t = scanTile(a, anchor);
     const g = t >= 0 ? a.groundTop[t]! : NaN;
-    if (!Number.isFinite(g)) return a.core;
+    if (!Number.isFinite(g)) return anchor;
     const c = a.ceiling[t]!, r = a.roofTop[t]!;
     const eye = g + EYE_HI_M * a.unitM;
     const top = a.kind === 'street' ? eye : Number.isFinite(c) ? c : Number.isFinite(r) ? Math.max(r, eye) : eye;
-    return [a.core[0], Math.max(g + lowEdgeM(a, openingM) + openingM, (g + top) / 2), a.core[2]];
+    return [anchor[0], Math.max(g + lowEdgeM(a, openingM) + openingM, (g + top) / 2), anchor[2]];
 }
 
-/** the starts tried in turn: startOf, then one opening over the core's roof when that is higher (inside the territory:
+/** the starts tried in turn: startOf, then one opening over the anchor's roof when that is higher (inside the territory:
  *  insideAt allows a centre up to two openings over the roofs) */
-function startsOf(a: ScanAnalysis, openingM: number): Vec3[] {
-    const s = startOf(a, openingM);
-    const t = scanTile(a, a.core);
+function startsOf(a: ScanAnalysis, openingM: number, anchor: Vec3): Vec3[] {
+    const s = startOf(a, openingM, anchor);
+    const t = scanTile(a, anchor);
     const r = t >= 0 ? a.roofTop[t]! : NaN;
-    return Number.isFinite(r) && r + openingM > s[1] + openingM ? [s, [a.core[0], r + openingM, a.core[2]]] : [s];
+    return Number.isFinite(r) && r + openingM > s[1] + openingM ? [s, [anchor[0], r + openingM, anchor[2]]] : [s];
 }
 
 /** the version letters of a request (request.ts courseLinkId: 'g2.<seed>.<letters>') */
@@ -342,6 +371,8 @@ export function planCourse(input: PlanInput, hooks: PlanHooks = {}): PlanAnswer 
     const late = (): boolean => !!hooks.deadline && hooks.deadline.now() + longest >= hooks.deadline.at;
     hooks.onStep?.('analyse', 0);
     const a = analyzeScan(walls, transform);
+    // lane w1-anchor: every start, the compact zone and its box grow from the pilot's place, never the core (an old link: the core)
+    const anchor = anchorOf(input, a);
     const craftR = input.craftRadiusM || SMALLEST_DRONE_RADIUS_M;
     const rules = planRules(request, craftR, a);
     /** the asks of one ladder: `req` itself, and when it is compact the same over the whole scan (a compact course that
@@ -393,14 +424,14 @@ export function planCourse(input: PlanInput, hooks: PlanHooks = {}): PlanAnswer 
                 // a shrunk opening shrinks the legs with it (a 1 m plant tray has no 15 D leg for a whoop)
                 const shrink = opening / openings[0]!;
                 const p = scaledParams(k, COURSE_DEFAULTS);
-                const starts = startsOf(a, opening);
+                const starts = startsOf(a, opening, anchor);
                 for (const ask of asks) {
                     if (late() || enough()) break;
                     const R = ask.rules;
-                    const box = zoneBox(a, ask.req, R, opening);
+                    const box = zoneBox(a, ask.req, R, opening, anchor);
                     if (!box) continue;
                     hooks.onStep?.('free', 0);
-                    const zone2 = zoneAt(a, ask.req, R, opening, LOOSEST_TIER);
+                    const zone2 = zoneAt(a, ask.req, R, opening, LOOSEST_TIER, anchor);
                     const { walkR, boxR } = walkReach(R, shrink);
                     const freeFrom = (spawn: Vec3): FreeSpace => freeAtMargin(walls, { spawn, bounds: clipBox(box, spawn, boxR, opening, walls.voxelResolution), unitM: a.unitM, kind: a.kind === 'room' ? 'indoor' : 'auto', goodAt: zone2, enclosureMin: 0 }, p.marginM);
                     let start = starts[0]!;
@@ -416,12 +447,12 @@ export function planCourse(input: PlanInput, hooks: PlanHooks = {}): PlanAnswer 
                             start = starts[si]!;
                         }
                     }
-                    if (oi === openings.length - 1) ratio = Math.max(ratio, roomRatio(free, k, zoneAt(a, ask.req, R, opening, LOOSEST_TIER)));
+                    if (oi === openings.length - 1) ratio = Math.max(ratio, roomRatio(free, k, zoneAt(a, ask.req, R, opening, LOOSEST_TIER, anchor)));
                     const params = { ...p, legMinM: R.legMinM * shrink, legMaxM: R.legMaxM * shrink, spacingM: R.legMinM * shrink, turnCosMin: R.level.turnCosMin, axisCosMin: R.level.axisCosMin, gatesMin: R.level.gatesMin, gatesMax: Math.max(R.gates, R.level.gatesMax) };
                     // a zone with enough cells can still be a broken sheet (Wroclaw's eye band over 7.2 m tiles at 0.4 m cells:
                     // every walk stopped at 1-2 gates): the pass's looser tier is walked at the same opening before it shrinks
                     const lay = (t: number, v: number): void => {
-                        const place: CoursePlace = { at: zoneAt(a, ask.req, R, opening, t), start, reachM: walkR, gates: R.gates, maxGates: R.level.gatesMax, climbMax: R.level.climbMax, version: v ? `${version}.w${v}` : version, kinds: R.level.elements };
+                        const place: CoursePlace = { at: zoneAt(a, ask.req, R, opening, t, anchor), start, reachM: walkR, gates: R.gates, maxGates: R.level.gatesMax, climbMax: R.level.climbMax, version: v ? `${version}.w${v}` : version, kinds: R.level.elements };
                         hooks.onStep?.('lay', lastMs);
                         const t0 = now ? now() : 0;
                         const track = generateCourse(free, walls, { seed: walkSeed(request.seed, v), scene: input.scene, transform, created: input.created, spawn: start, params, place, elements, craftRadiusM: input.craftRadiusM });
@@ -434,7 +465,7 @@ export function planCourse(input: PlanInput, hooks: PlanHooks = {}): PlanAnswer 
                     // a tier with too few cells is not walked unless it is the pass's last; each tier's derived seeds are walked
                     // before the tier loosens
                     const last = pass.tiers[pass.tiers.length - 1]!;
-                    const sparse = (t: number): boolean => t !== last && zoneCount(free, k, zoneAt(a, ask.req, R, opening, t)) < ZONE_CANDS_PER_GATE * R.gates;
+                    const sparse = (t: number): boolean => t !== last && zoneCount(free, k, zoneAt(a, ask.req, R, opening, t, anchor)) < ZONE_CANDS_PER_GATE * R.gates;
                     for (const t of pass.tiers) {
                         if (late() || enough()) break;
                         if (sparse(t) || (tierOk && !tierOk(t))) continue;
@@ -463,7 +494,7 @@ export function planCourse(input: PlanInput, hooks: PlanHooks = {}): PlanAnswer 
     }
     if (!best) return { ok: false, reason: 'no-room', kind: a.kind, fitSize: fitSizeFor(transform[0], ratio) };
     const track: TrackFile = { ...best.track, id: courseLinkId(request), title: courseTitle(request.seed) };
-    const start = flownStart(track, transform) ?? { pos: a.core, yawDeg: 0 };
+    const start = flownStart(track, transform) ?? { pos: anchor, yawDeg: 0 };
     // eased: laid nearer the core than asked or by a sharper walk than the level's (fallbackAsks, the short course's walk)
     const b = best.ask;
     const eased = b.walk !== request.level || b.req.anyQuality !== request.anyQuality || (request.spread === 'wide' && b.req.spread === 'compact');
