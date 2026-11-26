@@ -5,6 +5,11 @@
 - [x] S1 reproduce and decide: answer (b) the probe (commit of this file, see git log "fix-fly S1 done")
 - [ ] S2 repair and prove: the wizard step waits for the pilot's readiness, not the browser's `load`; the whole
       accept-fly list twice on the live site (read only) and once on a local release build of the head
+  - [x] repair: tools/bench/src/fly-open.ts (openFlyPage: goto waitUntil 'commit', then the caller's readiness),
+        `wizard` in accept-fly.ts uses it and B10 evidence records `opens` (commit and ready ms); test
+        tools/bench/test/fly-open.test.ts 4/4, bench typecheck clean, neg_control NEG OK against origin/main
+  - [ ] live run 1, live run 2, local release run of the head
+  - [ ] gates once, For the lead
 
 ### S1 answer: (b) the probe
 
