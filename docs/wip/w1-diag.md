@@ -91,3 +91,18 @@ docs/wip/w1-diag.md, evidence/2026-11-19/w1-diag/*.json. Nothing to deploy. Gate
   on-walls check). A bench helper 'splats in the flown frame' would save both next time.
 - S3: about 30 replies; most went to the scratch copy's pnpm links (two sibling junctions, as for the old extract) and to
   fitting the document in 150 lines. A bench option '--tracks <dir>' that sets up those junctions itself would save it.
+- Review: about 25 replies; most went to the second scratch copy (junctions by hand, the script's NEG_ROOT edited and
+  reverted to run it). A '--tracks <dir>' option on w1-diag-measure.ts would have made the alternative test one command.
+
+## Review
+
+Verdict: SHIP (independent check, 2026-11-26; full file U:/Temp/gsfpv-train4/reviews/w1-diag.md).
+- PROVEN: the Shift+G chain ends in planCourse, which never reads the spawn and starts from a.core (plan.ts:311-344).
+- PROVEN: the old extract is byte-identical to efd17add packages/tracks/src (16 files); the neg copy differs in one hunk.
+- PROVEN with seed 7 (not used by the lane): eb5f51dc live 0.45 / 540.6 m -> neg 0.99 / 6.1 m (old 0.98 / 19.9 m);
+  Wroclaw 70b50d42 (not in the lane's neg run) 0.82 / 47.7 m -> 0.96 / 9.2 m.
+- PROVEN: the other candidate, the roughness quality filter, is not the cause: a.quality := 1 with a.core kept leaves
+  eb5f51dc at 0.45 / 540.6 m (identical to live), Wroclaw 0.79 / 47.7 m.
+- Side finding: on eb5f51dc the live gates lie 203 m below the core and 229 m below the camera (a floater layer).
+- DOUBT: R3 (splat forbid map) does not follow from the proven cause; the old generator's 'sometimes not' is not
+  reproduced; Lublin's ranks are weak (LOD 5); old ran with today's placeStart spawn.
