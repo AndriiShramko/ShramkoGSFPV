@@ -7,7 +7,7 @@ sections Cause and Design proposal (R1). Temp folder U:/Temp/gsfpv-train4/w1-anc
 
 - [x] S1 the anchor (points 1 and 2) with unit tests; negative control on origin/main
   - [x] tracks: `CourseRequest.anchor`, `courseAnchor`, `anchorOf` in plan.ts; world `fringeField`; plan.test.ts tests (f6cb45ef)
-  - [x] every caller passes its anchor (apps/fly course/anchor.ts `pilotAnchor`, course.ts generate, rooms through the id); bench scripts (S1 callers commit)
+  - [x] every caller passes its anchor (apps/fly course/anchor.ts `pilotAnchor`, course.ts generate, rooms through the id); bench scripts (9aa499bd)
   - [x] neg_control.py on origin/main: NEG OK twice (anchorOf missing; gate 1 89.8 m from the anchor)
 - [ ] S2 the link (point 3): request.test.ts round trip, old link gives the old course; measuring gate (eb5f51dc, Lublin, Tunis); gates.py
 - [ ] S3 acceptance by mouse against a local release build; the same probe against the live site fails its first step
