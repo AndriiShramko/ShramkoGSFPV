@@ -6,11 +6,11 @@ Base: origin/main 078805f0. No flight model, preset or page file changed.
 
 ## Status
 
-- [x] 1. History: was there a prop wash model (git log -S / -G over the whole history) - this commit
-- [x] 2. Where it went - this commit
-- [x] 3. Today on origin/main: code, presets, setting, default pilot - this commit
-- [x] 4. The number, headless: tools/bench/src/w3-wash-run.ts, evidence/2026-11-19/w3-wash/w3-wash-headless.json - this commit
-- [x] 5. The cheapest honest way back - this commit
+- [x] 1. History: was there a prop wash model (git log -S / -G over the whole history) - 91347605
+- [x] 2. Where it went - 91347605
+- [x] 3. Today on origin/main: code, presets, setting, default pilot - 91347605
+- [x] 4. The number, headless: tools/bench/src/w3-wash-run.ts, evidence/2026-11-19/w3-wash/w3-wash-headless.json - 91347605
+- [x] 5. The cheapest honest way back - 91347605
 
 ## Findings
 
