@@ -331,6 +331,8 @@ Most useful now: real-radio test reports (EdgeTX version, radio model, RF on/off
 
 ShramkoGSFPV is free, and nobody is paid to talk about it. Pilots and creators who tried it and told their audience about it, or sent an idea that made it into the simulator, are listed on the [supporters wall](https://gsfpv.flyreelstudio.eu/en/supporters/), each with a page of their own, and in this section.
 
+- [Prosto o Dronach](https://gsfpv.flyreelstudio.eu/pl/supporters/prosto-o-dronach/) — Polish FPV channel on YouTube: a live test of the simulator and an interview with the author, [PoDstream FPV #64](https://www.youtube.com/watch?v=FLZsDvynLrE) (19 November 2026).
+
 Want to be one of them? Fly it, say what you think wherever your audience is (a video, a post, a story, in any language) and send the link to zmei116@gmail.com. In return: your own page and card on the site, your name in this README, your review shared in the author's Facebook groups, on his profile and on LinkedIn, your quad as a preset from your Betaflight `diff all`, your favourite spot as a flyable scene from a 3DGS scan.
 
 ## Author and collaboration

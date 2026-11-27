@@ -176,7 +176,7 @@
     {
       "slug": "prosto-o-dronach",
       "name": "Prosto o Dronach",
-      "status": "invited",
+      "status": "joined",
       "since": "2026-10-29",
       "lang": "pl",
       "photo": "/media/supporters/prosto-o-dronach.webp",
@@ -217,7 +217,14 @@
       ],
       "scene": "7a475d38",
       "sceneCredit": "Winter Garden, Jastrzębia Góra, Poland — 3DGS scan by Andrii Shramko, CC BY 4.0, SuperSplat",
-      "review": null,
+      "review": {
+        "kind": "video",
+        "href": "https://www.youtube.com/watch?v=FLZsDvynLrE",
+        "title": "PoDstream FPV #64. ShramkoGSFPV od kuchni – wywiad z Andriim + wyniki konkursu MEPSKING!",
+        "date": "2026-11-19",
+        "platform": "YouTube",
+        "thumb": "/media/supporters/prosto-o-dronach-review.webp"
+      },
       "text": {
         "en": {
           "role": "Polish FPV educator and builder on YouTube",
