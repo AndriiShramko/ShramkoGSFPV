@@ -19,6 +19,11 @@ export interface WallsSwitch {
 
 const pct = (a: number): number => Math.round(a * 100);
 
+/** A text written only when it changes (a live region reads every write, the same text too). */
+function setText(el: HTMLElement, text: string): void {
+    if (el.textContent !== text) el.textContent = text;
+}
+
 /** One line about what the grid shows now, or why it shows nothing. */
 export function voxelStatus(v: VoxelController): string {
     const s = v.stats();
@@ -92,8 +97,10 @@ export function wallsVoxelsControls(v: VoxelController, walls: WallsSwitch, id: 
         sw.disabled = !has;
         sw.setAttribute('aria-checked', String(has && on));
         sw.classList.toggle('on', has && on);
-        (sw.querySelector('.wv-state') as HTMLElement).textContent = t(has && on ? 'walls.state.on' : 'walls.state.off');
-        wallsNote.textContent = !has ? t('walls.none') : [on ? '' : t('walls.offHint'), walls.adminOff ? t('walls.adminOff') : ''].filter(Boolean).join(' ');
+        // lane sr-quiet: render runs every 500 ms and #ui is a live region; a text written again, even the same, is read again by a
+        // screen reader ("on, 55 %" twice a second under JAWS), so each text is written only when it changes
+        setText(sw.querySelector('.wv-state') as HTMLElement, t(has && on ? 'walls.state.on' : 'walls.state.off'));
+        setText(wallsNote, !has ? t('walls.none') : [on ? '' : t('walls.offHint'), walls.adminOff ? t('walls.adminOff') : ''].filter(Boolean).join(' '));
         wallsNote.hidden = wallsNote.textContent === '';
         for (const b of modeBtns) {
             const sel = b.dataset.mode === v.mode;
@@ -106,7 +113,7 @@ export function wallsVoxelsControls(v: VoxelController, walls: WallsSwitch, id: 
         const a = v.opacity;
         if (document.activeElement !== op) op.value = String(pct(a));
         op.disabled = !has;
-        opOut.textContent = `${pct(a)} %`;
+        setText(opOut, `${pct(a)} %`);
         const st = voxelStatus(v);
         if (status.textContent !== st) status.textContent = st;
         if (clean) clean.hidden = !has;

@@ -1,0 +1,132 @@
+{
+ "base": "https://gsfpv.flyreelstudio.eu/pl",
+ "runs": {
+  "plain-before": {
+   "paused": true,
+   "open": [
+    "walls-panel",
+    "school-panel"
+   ],
+   "after": {
+    "paused": false,
+    "reasons": null
+   }
+  },
+  "plain": {
+   "url": "https://gsfpv.flyreelstudio.eu/pl/fly/?scene=887f27aa&nowarn=1&set.input.howToFly=false&render=off",
+   "flyS": 4,
+   "liveChanges": 224,
+   "perSecond": 40.73,
+   "sample": [
+    {
+     "t": 7943,
+     "text": "DISARMED",
+     "path": "span.disarmed<div.osd<div.hud"
+    },
+    {
+     "t": 7943,
+     "text": "\u00b7 ANGLE",
+     "path": "div.osd<div.hud"
+    },
+    {
+     "t": 7943,
+     "text": "12.6 V  2.1 s",
+     "path": "div.osd<div.hud"
+    },
+    {
+     "t": 7943,
+     "text": "THR 0%  0.0 m/s  ALT 0.0 m",
+     "path": "div.osd<div.hud"
+    },
+    {
+     "t": 7999,
+     "text": "w\u0142\u0105czone",
+     "path": "span.wv-state<button.wv-switch<div.wv-row<div.wv[walls-voxels-wm]<div.walls-body[walls-body]<div.walls-menu[walls-panel]"
+    },
+    {
+     "t": 7999,
+     "text": "55 %",
+     "path": "output.wv-out<div.wv-row<div.wv[walls-voxels-wm]<div.walls-body[walls-body]<div.walls-menu[walls-panel]<details[walls-more]"
+    },
+    {
+     "t": 8052,
+     "text": "ARMED",
+     "path": "span.armed<div.osd<div.hud"
+    },
+    {
+     "t": 8052,
+     "text": "\u00b7 ANGLE",
+     "path": "div.osd<div.hud"
+    },
+    {
+     "t": 8052,
+     "text": "12.3 V  2.2 s",
+     "path": "div.osd<div.hud"
+    },
+    {
+     "t": 8052,
+     "text": "THR 42%  0.2 m/s  ALT 0.0 m",
+     "path": "div.osd<div.hud"
+    },
+    {
+     "t": 8212,
+     "text": "ARMED",
+     "path": "span.armed<div.osd<div.hud"
+    },
+    {
+     "t": 8212,
+     "text": "\u00b7 ANGLE",
+     "path": "div.osd<div.hud"
+    }
+   ],
+   "trText": "12.4 V  2.2 s",
+   "paused": false,
+   "trHidden": null,
+   "uiLive": "polite"
+  },
+  "sound-before": {
+   "paused": true,
+   "open": [
+    "walls-panel",
+    "school-panel"
+   ],
+   "after": {
+    "paused": false,
+    "reasons": null
+   }
+  },
+  "sound": {
+   "url": "https://gsfpv.flyreelstudio.eu/pl/fly/?scene=887f27aa&nowarn=1&set.input.howToFly=false&render=off",
+   "flyS": 4,
+   "liveChanges": 0,
+   "perSecond": 0,
+   "sample": [],
+   "trText": "12.4 V  11.6 s",
+   "paused": false,
+   "trHidden": null,
+   "uiLive": "off"
+  },
+  "startScreen": {
+   "keysList": {
+    "missing": true,
+    "body": "Lot na s\u0142uch\n\nNaucz si\u0119 lata\u0107 dronem na s\u0142uch: wszystko jest d\u017awi\u0119kiem, ekran nie jest potrzebny. Pomocnik mo\u017ce ustawi\u0107 twoj\u0105 aparatur\u0119, klawiatur\u0119 lub pad.\n\nStart\nS\u0142uchawki\nLekcje\nUstawienia\nStart\nZacznij lata\u0107\nSzybko: s\u0142uchawki, d\u017awi\u0119ki pokoju, potem lot.\nWszystkie lekcje\nSprawd\u017a s\u0142uchawki\nZa\u0142\u00f3\u017c s\u0142uchawki, L na lewe ucho.\nNajlepiej dzia\u0142aj\u0105 s\u0142uchawki z kablem. S\u0142uchawki Bluetooth dodaj\u0105 op\u00f3\u017anienie.\nWy\u0142\u0105cz Windows Sonic, Atmos i inne efekty przestrzenne. Zmieniaj\u0105 d\u017awi\u0119k.\nOdtw\u00f3rz d\u017awi\u0119k z lewej\nOdtw\u00f3rz d\u017awi\u0119k z prawej\nG\u0142o\u015bno\u015b\u0107\n\nUstaw wygodn\u0105 g\u0142o\u015bno\u015b\u0107. Je\u015bli d\u017awi\u0119k boli, zdejmij s\u0142uchawki i \u015bc",
+    "h2": [
+     "Start",
+     "Sprawd\u017a s\u0142uchawki",
+     "G\u0142o\u015bno\u015b\u0107",
+     "Lekcje",
+     "Uszy",
+     "Zawis",
+     "Ruch i zatrzymanie",
+     "\u015aciany",
+     "Korytarz i tunele",
+     "Obr\u0119cze",
+     "Kszta\u0142ty",
+     "Swobodny lot",
+     "Ustawienia"
+    ]
+   }
+  }
+ },
+ "errors": []
+}

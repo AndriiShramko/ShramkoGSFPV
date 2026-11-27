@@ -133,5 +133,14 @@
   "sonic.say.helpKnow": "Press key {key} when the game stops for a new sound you know already.",
   "sonic.say.helpWhatSound": "Press key {key} to hear what each sound playing now is.",
   "sonic.say.tourName": "Sound {n} of {of}: {name}.",
-  "sonic.say.tourNone": "No sound plays right now. Fly near a wall or change height, then press key {key} again."
+  "sonic.say.tourNone": "No sound plays right now. Fly near a wall or change height, then press key {key} again.",
+  "sonic.say.helpFlyIntro": "Flying keys on the keyboard.",
+  "sonic.say.helpFlyUp": "Space: up. Hold it to climb.",
+  "sonic.say.helpFlyDown": "Shift: down. Hold it to descend and land.",
+  "sonic.say.helpFlyMove": "W or the Up arrow: forward. S or the Down arrow: back.",
+  "sonic.say.helpFlySide": "A and D: sideways, left and right.",
+  "sonic.say.helpFlyTurn": "Left and Right arrows, or Q and E: turn on the spot.",
+  "sonic.say.helpFlyStop": "Let go of all keys and the drone stops and hovers where it is.",
+  "sonic.keysList.heading": "Keys",
+  "sonic.keysList.more": "In a lesson, press K to hear all the keys of the mode."
 }

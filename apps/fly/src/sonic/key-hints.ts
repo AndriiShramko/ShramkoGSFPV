@@ -25,3 +25,12 @@ export function setKeyHints(host: LookHost, choice: KeyHintsChoice): void {
         d.keyHints = on;
     });
 }
+
+/**
+ * The flying keys, first in K's help and in the start screen's list of keys (a blind tester's report of 2026-11-20: "I reached the
+ * height lesson and do not know which keys change the height"). The mode flies the game scheme (mode.ts MODE_PREFS input.play
+ * 'easy', play/keys.ts GAME_KEYS), whose keys are KeyboardEvent codes, the same place on every layout, so the lines name them.
+ */
+export const FLY_HELP: readonly string[] = [
+    'sonic.say.helpFlyIntro', 'sonic.say.helpFlyUp', 'sonic.say.helpFlyDown', 'sonic.say.helpFlyMove', 'sonic.say.helpFlySide', 'sonic.say.helpFlyTurn', 'sonic.say.helpFlyStop'
+];

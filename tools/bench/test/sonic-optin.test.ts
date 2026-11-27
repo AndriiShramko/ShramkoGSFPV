@@ -19,6 +19,7 @@ import { KeyRouter } from '../../../apps/fly/src/app/keys';
 import { setSonicEntry, setSonicInstaller } from '../../../apps/fly/src/sonic/entry-state';
 import type { SonicEntry } from '../../../apps/fly/src/sonic/entry';
 import { KEY_HELP, KeyHelp, keyHelpLines, lessonLink, shareLine } from '../../../apps/fly/src/sonic/mode-keys';
+import { FLY_HELP } from '../../../apps/fly/src/sonic/key-hints';
 import { engineDicts } from '../../../apps/fly/src/sonic/host-lines';
 import { parseSonicParam } from '../../../apps/fly/src/sonic/start-model';
 
@@ -331,11 +332,12 @@ describe('K in the mode: the mode\'s own key help, said (step 2, the mode\'s own
 
     it('on a ?sonic= page it says the intro, Escape N B Z I G R T U L with their keys, then the digits; every line is in the engine\'s dictionaries in en, es, pl and ru', () => {
         const lines = keyHelpLines(capsOf(true));
-        expect(lines.map((l) => l.key)).toEqual(['help.intro', ...KEY_HELP.map(([k]) => k), 'help.digits']);
+        // lane sr-quiet: the flying keys right after the intro (a blind tester did not know which keys change the height)
+        expect(lines.map((l) => l.key)).toEqual(['help.intro', ...FLY_HELP, ...KEY_HELP.map(([k]) => k), 'help.digits']);
         // lane onecourse: Shift+G, the one key for a course in every mode, after N
-        expect(lines.slice(1, -1).map((l) => l.params?.key)).toEqual(['Esc', 'N', 'Shift+G', 'B', 'Z', 'Shift+K', 'X', 'Shift+V', 'Shift+H', 'I', 'G', 'R', 'T', 'U', 'L']);
+        expect(lines.slice(1 + FLY_HELP.length, -1).map((l) => l.params?.key)).toEqual(['Esc', 'N', 'Shift+G', 'B', 'Z', 'Shift+K', 'X', 'Shift+V', 'Shift+H', 'I', 'G', 'R', 'T', 'U', 'L']);
         // Escape alone (P shares its binding and stays the pause menu's), with the menu's own line
-        expect(lines[1]).toEqual({ key: 'sonic.say.helpMenu', params: { key: 'Esc' } });
+        expect(lines[1 + FLY_HELP.length]).toEqual({ key: 'sonic.say.helpMenu', params: { key: 'Esc' } });
         // B goes one step back and Z gives the task again: the page's own lines (the package's help.repeat says "the last line")
         expect(lines.find((l) => l.params?.key === 'Z')?.key).toBe('sonic.say.helpRepeat');
         expect(lines.find((l) => l.params?.key === 'B')?.key).toBe('sonic.say.helpPrevious');
@@ -351,7 +353,7 @@ describe('K in the mode: the mode\'s own key help, said (step 2, the mode\'s own
 
     it('control: with the keys of an ordinary page the five keys of the mode have no cap, so no line names them', () => {
         const lines = keyHelpLines(capsOf(false));
-        expect(lines.slice(1, -1).map((l) => l.params?.key)).toEqual(['Esc', 'N', 'Shift+G', 'B', 'R', 'L']);
+        expect(lines.slice(1 + FLY_HELP.length, -1).map((l) => l.params?.key)).toEqual(['Esc', 'N', 'Shift+G', 'B', 'R', 'L']);
     });
 });
 

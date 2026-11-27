@@ -14,6 +14,7 @@ import { linkSound } from '@gsfpv/scenes/sonic-link';
 import type { SonicLink } from '@gsfpv/scenes/sonic-link';
 import type { ActionId } from '@gsfpv/prefs';
 import type { FlightPlace, LinkCourse } from '../share/flight-link';
+import { FLY_HELP } from './key-hints';
 
 /** The free flight's lesson id (the sound package's SCAN_FREE_ID, the template a scan link flies; held equal by share-links-table.test.ts). */
 const FREE_FLIGHT = 'scan-free';
@@ -130,7 +131,7 @@ export const KEY_HELP: readonly (readonly [line: string, action: ActionId, aria?
  * digits.
  */
 export function keyHelpLines(cap: (action: ActionId, aria?: string) => string, o: { free?: boolean } = {}): SpeechLine[] {
-    const lines: SpeechLine[] = [{ key: 'help.intro' }];
+    const lines: SpeechLine[] = [{ key: 'help.intro' }, ...FLY_HELP.map((key) => ({ key }))];
     for (const [key, action, aria] of KEY_HELP) {
         // lead's decision P2: in the free flight N goes to no next step (it makes a course there), so K does not name it
         if (o.free === true && key === 'help.next') continue;
