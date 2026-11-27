@@ -41,7 +41,7 @@ import type { SpokenAnchor, SpokenItem } from './spoken-list';
 import { audioProblemKey } from './audio';
 import { buildModel, firstOf, lessonPlace, scanStartOrder } from './start-model';
 import type { LessonPlace, LessonRow, LessonState, SonicRequest, StartModel } from './start-model';
-import { KEY_HINTS_CHOICES, keyHintsChoice, setKeyHints } from './key-hints';
+import { FLY_HELP, KEY_HINTS_CHOICES, keyHintsChoice, setKeyHints } from './key-hints';
 import type { KeyHintsChoice } from './key-hints';
 import { GUIDE_LEVELS, guideLevel, setGuide } from './guide';
 import type { GuideLevel } from './guide';
@@ -575,7 +575,18 @@ export class StartScreen {
             return h('section', { class: 'sonic-module', 'aria-labelledby': hid }, h('h3', { id: hid, tabindex: -1 }, this.S(mod.name)), h('ul', { class: 'sonic-lessons' }, ...items));
         });
         this.resetBox = this.resetPart();
-        return this.section('lessons', this.key('menu.lessons.title'), h('p', { class: 'sonic-hint' }, t('sonic.lessons.hint')), ...lists, this.resetBox);
+        return this.section('lessons', this.key('menu.lessons.title'), h('p', { class: 'sonic-hint' }, t('sonic.lessons.hint')), this.keysList(), ...lists, this.resetBox);
+    }
+
+    /**
+     * The flying keys as plain text a screen reader reads (a blind tester's report of 2026-11-20, JAWS: which keys change the
+     * height): a heading and a list, the same lines K says (key-hints.ts FLY_HELP). No stop of the spoken list: text, not a control.
+     */
+    private keysList(): HTMLElement {
+        const [intro, ...rest] = FLY_HELP;
+        return h('div', { class: 'sonic-loud sonic-keys', role: 'group', 'aria-labelledby': 'sonic-h-keys', 'data-testid': 'sonic-keys-list' },
+            h('h3', { id: 'sonic-h-keys', tabindex: -1 }, t('sonic.keysList.heading')), h('p', {}, t(intro ?? '')),
+            h('ul', { class: 'sonic-notes' }, ...rest.map((k) => h('li', {}, t(k)))), h('p', {}, t('sonic.keysList.more')));
     }
 
     /** "Lesson 20 of 28" */

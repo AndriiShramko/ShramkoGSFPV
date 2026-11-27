@@ -133,5 +133,12 @@
   "sonic.say.helpKnow": "Naciśnij klawisz {key}, gdy gra zatrzyma się na nowym dźwięku, który już znasz.",
   "sonic.say.helpWhatSound": "Naciśnij klawisz {key}, aby usłyszeć, czym jest każdy dźwięk, który teraz gra.",
   "sonic.say.tourName": "Dźwięk {n} z {of}: {name}.",
-  "sonic.say.tourNone": "Teraz nic nie gra. Podleć do ściany albo zmień wysokość i naciśnij znowu klawisz {key}."
+  "sonic.say.tourNone": "Teraz nic nie gra. Podleć do ściany albo zmień wysokość i naciśnij znowu klawisz {key}.",
+  "sonic.say.helpFlyIntro": "Klawisze lotu na klawiaturze.",
+  "sonic.say.helpFlyUp": "Spacja: w górę. Przytrzymaj, aby wznosić. Shift: w dół. Przytrzymaj, aby opadać i lądować.",
+  "sonic.say.helpFlyMove": "W albo strzałka w górę: do przodu. S albo strzałka w dół: do tyłu. A i D: bokiem w lewo i w prawo.",
+  "sonic.say.helpFlyTurn": "Strzałki w lewo i w prawo albo Q i E: obrót w miejscu.",
+  "sonic.say.helpFlyStop": "Puść wszystkie klawisze, a dron zatrzyma się i zawiśnie w miejscu.",
+  "sonic.keysList.heading": "Klawisze",
+  "sonic.keysList.more": "W lekcji naciśnij K, aby usłyszeć wszystkie klawisze trybu."
 }

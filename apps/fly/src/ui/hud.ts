@@ -247,22 +247,25 @@ export class Hud {
     readonly root: HTMLDivElement;
     private ui: HTMLElement | null = null;
     private textOff = false;
-    private tl = h('div', { class: 'osd tl' });
-    private tr = h('div', { class: 'osd tr' });
-    private bl = h('div', { class: 'osd bl' });
-    private br = h('div', { class: 'osd br' });
+    // a blind tester's report (JAWS, 2026-11-20): #ui is a live region, so a screen reader read the volts and the timer
+    // ("12.6 V 8.1 s") every second. The OSD corners change ten times a second and are for the eyes only (aria-hidden); the
+    // events (a crash, a problem) reach a screen reader through the message stack and the gate line, outside these corners
+    private tl = h('div', { class: 'osd tl', 'aria-hidden': 'true' });
+    private tr = h('div', { class: 'osd tr', 'aria-hidden': 'true' });
+    private bl = h('div', { class: 'osd bl', 'aria-hidden': 'true' });
+    private br = h('div', { class: 'osd br', 'aria-hidden': 'true' });
     private gate = h('div', { class: 'gate-msg', role: 'status', 'aria-live': 'polite' });
     // F3: display rate and estimated stick -> screen delay, then a hint when the screen is slow
-    private statsMain = h('div', { 'data-testid': 'latency-line' });
+    private statsMain = h('div', { 'data-testid': 'latency-line', 'aria-hidden': 'true' });
     private statsHint = h('div', { 'data-testid': 'display-hint', hidden: true });
     // F3: the levels of detail at work (app/lod.ts lodLine, written by app/builtin/hud.ts)
-    private statsDetail = h('div', { 'data-testid': 'detail-line', class: 'detail', hidden: true });
+    private statsDetail = h('div', { 'data-testid': 'detail-line', 'aria-hidden': 'true', class: 'detail', hidden: true });
     // F3: how the scan is drawn and who decided it (app/drawing.ts drawingLine, written by app/builtin/hud.ts)
-    private statsDrawing = h('div', { 'data-testid': 'drawing-line', class: 'detail', hidden: true });
+    private statsDrawing = h('div', { 'data-testid': 'drawing-line', 'aria-hidden': 'true', class: 'detail', hidden: true });
     // F3: how the radio's or gamepad's reports arrive (interval, jitter, longest gap) and, for a slow or
     // bunched link, the note about a cable (v0.9 lane E, @gsfpv/input link.ts)
-    private statsInput = h('div', { 'data-testid': 'input-line', class: 'detail', hidden: true });
-    private statsLink = h('div', { 'data-testid': 'link-hint', class: 'detail', hidden: true });
+    private statsInput = h('div', { 'data-testid': 'input-line', 'aria-hidden': 'true', class: 'detail', hidden: true });
+    private statsLink = h('div', { 'data-testid': 'link-hint', 'aria-hidden': 'true', class: 'detail', hidden: true });
     /** U1: the F3 line has a cross too (the key stays) */
     private statsX = h('button', { type: 'button', class: 'panel-x osd-x interactive', 'data-action': 'frame-stats-close', 'aria-label': t('hud.frameHide'), title: `${t('hud.frameHide')} (F3)`, 'aria-keyshortcuts': 'F3', onclick: () => this.toggleFrameStats() }, '\u00d7');
     private frameStats = h('div', { class: 'osd frame hidden' }, this.statsX, this.statsMain, this.statsInput, this.statsLink, this.statsDetail, this.statsDrawing, this.statsHint);
@@ -271,7 +274,7 @@ export class Hud {
     private offer = new ArmOffer();
     private offerShown = false;
     /** centred style and acro: the throttle is direct (one line under the OSD's top line) */
-    private acroLine = h('div', { class: 'osd acro-thr', 'data-testid': 'acro-throttle', hidden: true });
+    private acroLine = h('div', { class: 'osd acro-thr', 'data-testid': 'acro-throttle', 'aria-hidden': 'true', hidden: true });
     /** The throttle style of the controller in use (app/builtin/throttle-style.ts); null: never set (the arm card has no offer). */
     throttle: HudThrottle | null = null;
     private keys = new KeyCard();

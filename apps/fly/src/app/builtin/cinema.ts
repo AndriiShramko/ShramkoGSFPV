@@ -133,7 +133,7 @@ export const cinema: Feature = {
             noticeTimer = window.setTimeout(hideNotice, NOTICE_MS);
         };
         // the recording dot: first in the top-right row of buttons (builtin/top.ts, installed before this)
-        const dotTime = h('span', { class: 'rec-dot-time' });
+        const dotTime = h('span', { class: 'rec-dot-time', 'aria-hidden': 'true' }); // the running time is for the eyes: #ui is a live region
         const dot = h('button', { type: 'button', class: 'btn rec-dot', 'data-action': 'rec-dot', 'data-testid': 'rec-dot', hidden: true, 'aria-keyshortcuts': 'F9', onclick: () => toggle(true) },
             h('span', { class: 'rec-dot-i', 'aria-hidden': 'true' }), dotTime) as HTMLButtonElement;
         ui.querySelector('.top-actions')?.prepend(dot);
