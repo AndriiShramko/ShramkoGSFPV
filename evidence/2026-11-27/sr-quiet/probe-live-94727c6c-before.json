@@ -25,7 +25,7 @@
     },
     {
      "t": 7943,
-     "text": "· ANGLE",
+     "text": "\u00b7 ANGLE",
      "path": "div.osd<div.hud"
     },
     {
@@ -40,7 +40,7 @@
     },
     {
      "t": 7999,
-     "text": "włączone",
+     "text": "w\u0142\u0105czone",
      "path": "span.wv-state<button.wv-switch<div.wv-row<div.wv[walls-voxels-wm]<div.walls-body[walls-body]<div.walls-menu[walls-panel]"
     },
     {
@@ -55,7 +55,7 @@
     },
     {
      "t": 8052,
-     "text": "· ANGLE",
+     "text": "\u00b7 ANGLE",
      "path": "div.osd<div.hud"
     },
     {
@@ -75,7 +75,7 @@
     },
     {
      "t": 8212,
-     "text": "· ANGLE",
+     "text": "\u00b7 ANGLE",
      "path": "div.osd<div.hud"
     }
    ],
@@ -109,19 +109,19 @@
   "startScreen": {
    "keysList": {
     "missing": true,
-    "body": "Lot na słuch\n\nNaucz się latać dronem na słuch: wszystko jest dźwiękiem, ekran nie jest potrzebny. Pomocnik może ustawić twoją aparaturę, klawiaturę lub pad.\n\nStart\nSłuchawki\nLekcje\nUstawienia\nStart\nZacznij latać\nSzybko: słuchawki, dźwięki pokoju, potem lot.\nWszystkie lekcje\nSprawdź słuchawki\nZałóż słuchawki, L na lewe ucho.\nNajlepiej działają słuchawki z kablem. Słuchawki Bluetooth dodają opóźnienie.\nWyłącz Windows Sonic, Atmos i inne efekty przestrzenne. Zmieniają dźwięk.\nOdtwórz dźwięk z lewej\nOdtwórz dźwięk z prawej\nGłośność\n\nUstaw wygodną głośność. Jeśli dźwięk boli, zdejmij słuchawki i śc",
+    "body": "Lot na s\u0142uch\n\nNaucz si\u0119 lata\u0107 dronem na s\u0142uch: wszystko jest d\u017awi\u0119kiem, ekran nie jest potrzebny. Pomocnik mo\u017ce ustawi\u0107 twoj\u0105 aparatur\u0119, klawiatur\u0119 lub pad.\n\nStart\nS\u0142uchawki\nLekcje\nUstawienia\nStart\nZacznij lata\u0107\nSzybko: s\u0142uchawki, d\u017awi\u0119ki pokoju, potem lot.\nWszystkie lekcje\nSprawd\u017a s\u0142uchawki\nZa\u0142\u00f3\u017c s\u0142uchawki, L na lewe ucho.\nNajlepiej dzia\u0142aj\u0105 s\u0142uchawki z kablem. S\u0142uchawki Bluetooth dodaj\u0105 op\u00f3\u017anienie.\nWy\u0142\u0105cz Windows Sonic, Atmos i inne efekty przestrzenne. Zmieniaj\u0105 d\u017awi\u0119k.\nOdtw\u00f3rz d\u017awi\u0119k z lewej\nOdtw\u00f3rz d\u017awi\u0119k z prawej\nG\u0142o\u015bno\u015b\u0107\n\nUstaw wygodn\u0105 g\u0142o\u015bno\u015b\u0107. Je\u015bli d\u017awi\u0119k boli, zdejmij s\u0142uchawki i \u015bc",
     "h2": [
      "Start",
-     "Sprawdź słuchawki",
-     "Głośność",
+     "Sprawd\u017a s\u0142uchawki",
+     "G\u0142o\u015bno\u015b\u0107",
      "Lekcje",
      "Uszy",
      "Zawis",
      "Ruch i zatrzymanie",
-     "Ściany",
+     "\u015aciany",
      "Korytarz i tunele",
-     "Obręcze",
-     "Kształty",
+     "Obr\u0119cze",
+     "Kszta\u0142ty",
      "Swobodny lot",
      "Ustawienia"
     ]

@@ -20,7 +20,7 @@
    "sample": [
     {
      "t": 8702,
-     "text": "Crash przy 5.2 m/s. Dron wróci sam. Enter: zostań tutaj.Crash 5.2 m/s · na start",
+     "text": "Crash przy 5.2 m/s. Dron wr\u00f3ci sam. Enter: zosta\u0144 tutaj.Crash 5.2 m/s \u00b7 na start",
      "path": "div.crash-toast[crash-toast]"
     }
    ],
@@ -53,7 +53,7 @@
   },
   "startScreen": {
    "keysList": {
-    "text": "Klawisze\n\nKlawisze lotu na klawiaturze.\n\nSpacja: w górę. Przytrzymaj, aby wznosić.\nShift: w dół. Przytrzymaj, aby opadać i lądować.\nW albo strzałka w górę: do przodu. S albo strzałka w dół: do tyłu.\nA i D: bokiem w lewo i w prawo.\nStrzałki w lewo i w prawo albo Q i E: obrót w miejscu.\nPuść wszystkie klawisze, a dron zatrzyma się i zawiśnie w miejscu.\n\nW lekcji naciśnij K, aby usłyszeć wszystkie klawisze trybu.",
+    "text": "Klawisze\n\nKlawisze lotu na klawiaturze.\n\nSpacja: w g\u00f3r\u0119. Przytrzymaj, aby wznosi\u0107.\nShift: w d\u00f3\u0142. Przytrzymaj, aby opada\u0107 i l\u0105dowa\u0107.\nW albo strza\u0142ka w g\u00f3r\u0119: do przodu. S albo strza\u0142ka w d\u00f3\u0142: do ty\u0142u.\nA i D: bokiem w lewo i w prawo.\nStrza\u0142ki w lewo i w prawo albo Q i E: obr\u00f3t w miejscu.\nPu\u015b\u0107 wszystkie klawisze, a dron zatrzyma si\u0119 i zawi\u015bnie w miejscu.\n\nW lekcji naci\u015bnij K, aby us\u0142ysze\u0107 wszystkie klawisze trybu.",
     "hidden": false,
     "visible": true
    }
