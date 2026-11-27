@@ -30,7 +30,12 @@ const HOOK = () => {
     const start = () => new MutationObserver((ms) => {
         for (const m of ms) {
             const nodes = m.type === 'characterData' ? [m.target] : [...m.addedNodes];
-            for (const n of nodes) if (spoken(n) && (n.textContent || '').trim()) q.live.push({ t: Math.round(performance.now()), text: n.textContent.trim().slice(0, 80) });
+            for (const n of nodes) if (spoken(n) && (n.textContent || '').trim()) {
+                const el = n.nodeType === 1 ? n : n.parentElement;
+                const path = [];
+                for (let e = el; e && e.id !== 'ui' && path.length < 6; e = e.parentElement) path.push(e.tagName.toLowerCase() + (e.className && typeof e.className === 'string' ? '.' + e.className.split(' ')[0] : '') + (e.dataset && e.dataset.testid ? `[${e.dataset.testid}]` : ''));
+                q.live.push({ t: Math.round(performance.now()), text: n.textContent.trim().slice(0, 80), path: path.join('<') });
+            }
         }
     }).observe(document.documentElement, { subtree: true, childList: true, characterData: true });
     if (document.documentElement) start(); else addEventListener('DOMContentLoaded', start);
@@ -43,7 +48,18 @@ async function flight(name, url, sound) {
     await page.goto(url, { waitUntil: 'load' });
     await page.waitForFunction(() => ['ready', 'error'].includes(window.__gsfpv && window.__gsfpv.status), null, { timeout: 300000 });
     await page.waitForTimeout(3000);
-    await page.mouse.click(760, 360);
+    // the pointer captured by a click in the scene, as a pilot does; a panel left open (paused) is closed with Escape first
+    const why = await page.evaluate(() => ({ paused: !!(window.__gsfpv.session && window.__gsfpv.session.paused), open: [...document.querySelectorAll('#ui [data-testid$="-panel"], #ui .panel:not(.hidden)')].map((e) => e.getAttribute('data-testid') || e.className).slice(0, 5) }));
+    out.runs[`${name}-before`] = why;
+    await page.waitForFunction(() => { const w = window.__gsfpv && window.__gsfpv.walls; return w && w.state !== 'checking'; }, null, { timeout: 60000 }).catch(() => 0);
+    for (let i = 0; i < 4; i++) {
+        if (!(await page.evaluate(() => !!(window.__gsfpv.session && window.__gsfpv.session.paused)))) break;
+        await page.keyboard.press('Escape');
+        await page.waitForTimeout(700);
+    }
+    await page.mouse.click(760, 400);
+    await page.waitForTimeout(500);
+    out.runs[`${name}-before`].after = await page.evaluate(() => ({ paused: !!(window.__gsfpv.session && window.__gsfpv.session.paused), reasons: window.__gsfpv.session && window.__gsfpv.session.pauseReasons ? [...window.__gsfpv.session.pauseReasons] : null }));
     if (sound) {
         await page.keyboard.press('Backslash');
         await page.waitForTimeout(4000);
@@ -58,9 +74,9 @@ async function flight(name, url, sound) {
     const r = await page.evaluate((t) => {
         const q = window.__srq;
         const tr = document.querySelector('.hud .osd.tr');
-        return { during: q.live.filter((e) => e.t >= t), trText: tr ? tr.textContent : null, trHidden: tr ? tr.getAttribute('aria-hidden') : null, uiLive: document.getElementById('ui')?.getAttribute('aria-live') ?? null };
+        return { during: q.live.filter((e) => e.t >= t), trText: tr ? tr.textContent : null, paused: !!(window.__gsfpv && window.__gsfpv.session && window.__gsfpv.session.paused), trHidden: tr ? tr.getAttribute('aria-hidden') : null, uiLive: document.getElementById('ui')?.getAttribute('aria-live') ?? null };
     }, t0);
-    out.runs[name] = { url, flyS: FLY_S, liveChanges: r.during.length, perSecond: +(r.during.length / (FLY_S + 1.5)).toFixed(2), sample: r.during.slice(0, 12), trText: r.trText, trHidden: r.trHidden, uiLive: r.uiLive };
+    out.runs[name] = { url, flyS: FLY_S, liveChanges: r.during.length, perSecond: +(r.during.length / (FLY_S + 1.5)).toFixed(2), sample: r.during.slice(0, 12), trText: r.trText, paused: r.paused, trHidden: r.trHidden, uiLive: r.uiLive };
     await page.close();
 }
 
@@ -78,8 +94,8 @@ async function startScreen() {
 }
 
 try {
-    await flight('plain', `${base}/fly/?nowarn=1&set.input.howToFly=false&render=off`, false);
-    await flight('sound', `${base}/fly/?nowarn=1&set.input.howToFly=false&render=off`, true);
+    await flight('plain', `${base}/fly/?scene=${process.env.SCENE ?? "887f27aa"}&nowarn=1&set.input.howToFly=false&render=off`, false);
+    await flight('sound', `${base}/fly/?scene=${process.env.SCENE ?? "887f27aa"}&nowarn=1&set.input.howToFly=false&render=off`, true);
     await startScreen();
 } catch (e) {
     out.errors.push(String(e).slice(0, 300));

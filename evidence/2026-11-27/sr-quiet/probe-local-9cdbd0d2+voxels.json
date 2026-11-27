@@ -1,0 +1,63 @@
+{
+ "base": "http://localhost:5391/pl",
+ "runs": {
+  "plain-before": {
+   "paused": true,
+   "open": [
+    "walls-panel",
+    "school-panel"
+   ],
+   "after": {
+    "paused": false,
+    "reasons": null
+   }
+  },
+  "plain": {
+   "url": "http://localhost:5391/pl/fly/?scene=887f27aa&nowarn=1&set.input.howToFly=false&render=off",
+   "flyS": 4,
+   "liveChanges": 1,
+   "perSecond": 0.18,
+   "sample": [
+    {
+     "t": 8702,
+     "text": "Crash przy 5.2 m/s. Dron wróci sam. Enter: zostań tutaj.Crash 5.2 m/s · na start",
+     "path": "div.crash-toast[crash-toast]"
+    }
+   ],
+   "trText": "12.4 V  2.1 s",
+   "paused": false,
+   "trHidden": "true",
+   "uiLive": "polite"
+  },
+  "sound-before": {
+   "paused": true,
+   "open": [
+    "walls-panel",
+    "school-panel"
+   ],
+   "after": {
+    "paused": false,
+    "reasons": null
+   }
+  },
+  "sound": {
+   "url": "http://localhost:5391/pl/fly/?scene=887f27aa&nowarn=1&set.input.howToFly=false&render=off",
+   "flyS": 4,
+   "liveChanges": 0,
+   "perSecond": 0,
+   "sample": [],
+   "trText": "12.4 V  11.5 s",
+   "paused": false,
+   "trHidden": "true",
+   "uiLive": "off"
+  },
+  "startScreen": {
+   "keysList": {
+    "text": "Klawisze\n\nKlawisze lotu na klawiaturze.\n\nSpacja: w górę. Przytrzymaj, aby wznosić.\nShift: w dół. Przytrzymaj, aby opadać i lądować.\nW albo strzałka w górę: do przodu. S albo strzałka w dół: do tyłu.\nA i D: bokiem w lewo i w prawo.\nStrzałki w lewo i w prawo albo Q i E: obrót w miejscu.\nPuść wszystkie klawisze, a dron zatrzyma się i zawiśnie w miejscu.\n\nW lekcji naciśnij K, aby usłyszeć wszystkie klawisze trybu.",
+    "hidden": false,
+    "visible": true
+   }
+  }
+ },
+ "errors": []
+}
