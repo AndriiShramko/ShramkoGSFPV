@@ -305,6 +305,28 @@ gate B18 for every lane; name a vault note by words, not by its Russian file nam
   Fable alone 13 %: the lead's own turns cost about 2 points of the week in 35 minutes. Keep the lead's turns short
   and its thinking small; hand over at 50 %.
 
+### 2026-11-28 17:10 UTC: THE OWNER'S MESSAGE 82: W5 is NOT about splats; the splat plan is cancelled; Unreal scenes come last
+
+- The owner (message 82, the end of the vault brief): he did not ask to work with splat scenes or to break them. He
+  wants a 3DGS scan REMODELLED into a normal scene of meshes with textures through MCP servers for Unreal Engine or
+  Blender: the splat is only the sketch, the result is a photorealistic Unreal Engine scene made by our skills. It
+  is the VERY LAST stage: first every other change of the simulator's functions; only when all of that is done may
+  this begin.
+- DONE: job w5-probes is parked (hold, 0 runs; do not release it). The plan note of the splat objects is marked
+  superseded in the vault and stays as research; the brief holds the message and the decision; the lessons of the
+  gsfpv skill hold his words (vault commit 261eb95). The block above ('W5's staged plan is written') is history:
+  build nothing from it.
+- THE RULE FROM NOW: nothing runs for the Unreal direction until the queue of the simulator's functions is done
+  (cars 7, 8, 9, then the level switch of the old n-level and what the owner adds). When its time comes: the
+  project-kickoff skill from his words of message 82. The first things to settle then: which MCP (Unreal Engine, or
+  Blender with an import), where the result is used (the browser simulator does not load an Unreal Engine scene),
+  what 'photorealistic' is measured by. Of the work done, the inventory, the research of how objects in a scan are
+  recognised and named, and the survey of MCP servers for Blender and Unreal stay of use.
+- THE LESSON: message 79 began with 'this tool' and named no subject; the lead read 'objects' as objects inside the
+  splat scene and spent an inventory, two researches, a design and a critic on it. A new direction named by a phrase
+  with no clear subject starts with ONE line 'understood as' in the report to the owner and a cheap inventory;
+  research and design agents come after his words make the subject clear.
+
 ## How the lead works (the owner's economy rule; written into the skills on 2026-11-26, W4 done)
 
 - The lead runs on the top model (Fable); every worker is Opus or Sonnet. NEVER leave `model` out of an Agent call or
