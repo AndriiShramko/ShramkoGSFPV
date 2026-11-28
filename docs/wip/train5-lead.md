@@ -330,6 +330,22 @@ gate B18 for every lane; name a vault note by words, not by its Russian file nam
   physics) is to be made later ON THE REBUILT Unreal Engine scene, not on splats. In the simulator nothing of it is
   built: the flight and the drone's collisions with the walls stay as they are.
 
+### 2026-11-28 18:40 UTC: THE OWNER'S MESSAGE 84 (taken by another chat, not by the lead): the mouse does not turn the craft in Fly by Sound
+
+- The owner flew Fly by Sound with W A S D and the mouse: the mouse tilts the view (pitch) and does not turn the craft
+  (yaw). His rule: keyboard and mouse fly like an ordinary game everywhere. He asked NOT to repair it in that chat but
+  to hand it to the train. His words: the vault brief, message 84.
+- First look (code read, no browser run): the mouse moves `aimYawDeg` (play/game.ts `look`), the craft follows under
+  `caps.yawDps` = a lesson's `maxYawDps` (play/lesson-pilot.ts `lessonCaps`); the sound lessons carry 0 (the five
+  ears-* lessons) or 60 to 120, so the craft never turns or lags. The lessons live in packages/sonic-fpv (not edited
+  here): the lane repairs in apps/fly and names the package's values under 'For the lead'.
+- QUEUED by that chat: fix-sonic-mouse (opus, effort high, priority 4, --wake, copy C:/dev/gsfpv-t7-n-scan, after
+  r-fix-sonic-probe because of the shared copy) and r-fix-sonic-mouse; prompts
+  C:/dev/.gsfpv-lanes/prompts/t11-fix-sonic-mouse.md and t11-r-fix-sonic-mouse.md.
+- FOR THE LEAD: it is in NO car. At `WAKE DONE fix-sonic-mouse` and its check's SHIP: put it into the next car that
+  is not yet started (car 9 when it still waits: add r-fix-sonic-mouse to its --after and the branch to its prompt's
+  list; else car 10). After the release: one line to the owner that the mouse turns in Fly by Sound, checked on live.
+
 ## How the lead works (the owner's economy rule; written into the skills on 2026-11-26, W4 done)
 
 - The lead runs on the top model (Fable); every worker is Opus or Sonnet. NEVER leave `model` out of an Agent call or
