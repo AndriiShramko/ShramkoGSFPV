@@ -1,9 +1,9 @@
 {
- "generated": "2026-11-19",
+ "generated": "2026-11-28",
  "schemaVersion": 2,
  "defaultDrone": "pavo20pro-3s",
  "counts": {
-  "settings": 78,
+  "settings": 79,
   "groups": 11,
   "drones": 9,
   "modes": 3,
@@ -122,7 +122,7 @@
       {
        "id": "physics.vCrash",
        "label": "Crash threshold",
-       "help": "Impact speed above which a hit counts as a crash; slower touches slide along the wall.",
+       "help": "A hit on a wall, a gate or anything that is not the ground breaks the drone from this speed.",
        "type": "number",
        "default": "4 m/s",
        "range": "2\u201310 m/s",
@@ -131,6 +131,23 @@
        "keys": [],
        "advanced": false,
        "preset": true,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "physics.vCrashGround",
+       "label": "Ground touch threshold",
+       "help": "A landing or a skid on the ground breaks the drone only from this speed. For the strict rule set it to the crash threshold.",
+       "type": "number",
+       "default": "7 m/s",
+       "range": "2\u201312 m/s",
+       "scope": "drone",
+       "apply": "life",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
        "options": [],
        "shown": [
         "settings"
@@ -2322,7 +2339,7 @@
       {
        "id": "physics.vCrash",
        "label": "Umbral de choque",
-       "help": "Velocidad de impacto a partir de la cual un golpe cuenta como choque; los roces m\u00e1s lentos se deslizan por la pared.",
+       "help": "Un golpe contra una pared, una puerta o cualquier cosa que no sea el suelo rompe el dron desde esta velocidad.",
        "type": "number",
        "default": "4 m/s",
        "range": "2\u201310 m/s",
@@ -2331,6 +2348,23 @@
        "keys": [],
        "advanced": false,
        "preset": true,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "physics.vCrashGround",
+       "label": "Umbral al tocar el suelo",
+       "help": "Un aterrizaje o un derrape en el suelo rompe el dron solo desde esta velocidad. Para la regla estricta, ponlo igual al umbral de choque.",
+       "type": "number",
+       "default": "7 m/s",
+       "range": "2\u201312 m/s",
+       "scope": "drone",
+       "apply": "life",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
        "options": [],
        "shown": [
         "settings"
@@ -4522,7 +4556,7 @@
       {
        "id": "physics.vCrash",
        "label": "Pr\u00f3g kraksy",
-       "help": "Pr\u0119dko\u015b\u0107 uderzenia, od kt\u00f3rej zderzenie liczy si\u0119 jako kraksa; wolniejsze otarcia \u015blizgaj\u0105 si\u0119 po \u015bcianie.",
+       "help": "Uderzenie w \u015bcian\u0119, bramk\u0119 lub cokolwiek innego ni\u017c ziemia psuje drona od tej pr\u0119dko\u015bci.",
        "type": "number",
        "default": "4 m/s",
        "range": "2\u201310 m/s",
@@ -4531,6 +4565,23 @@
        "keys": [],
        "advanced": false,
        "preset": true,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "physics.vCrashGround",
+       "label": "Pr\u00f3g dotkni\u0119cia ziemi",
+       "help": "L\u0105dowanie lub po\u015blizg po ziemi psuje drona dopiero od tej pr\u0119dko\u015bci. Dla \u015bcis\u0142ej zasady ustaw go r\u00f3wno z progiem kraksy.",
+       "type": "number",
+       "default": "7 m/s",
+       "range": "2\u201312 m/s",
+       "scope": "drone",
+       "apply": "life",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
        "options": [],
        "shown": [
         "settings"
@@ -6722,7 +6773,7 @@
       {
        "id": "physics.vCrash",
        "label": "\u041f\u043e\u0440\u043e\u0433 \u043a\u0440\u0430\u0448\u0430",
-       "help": "\u0421\u043a\u043e\u0440\u043e\u0441\u0442\u044c \u0443\u0434\u0430\u0440\u0430, \u0432\u044b\u0448\u0435 \u043a\u043e\u0442\u043e\u0440\u043e\u0439 \u043a\u0430\u0441\u0430\u043d\u0438\u0435 \u0441\u0447\u0438\u0442\u0430\u0435\u0442\u0441\u044f \u043a\u0440\u0430\u0448\u0435\u043c; \u0431\u043e\u043b\u0435\u0435 \u043c\u0435\u0434\u043b\u0435\u043d\u043d\u044b\u0435 \u043a\u0430\u0441\u0430\u043d\u0438\u044f \u0441\u043a\u043e\u043b\u044c\u0437\u044f\u0442 \u0432\u0434\u043e\u043b\u044c \u0441\u0442\u0435\u043d\u044b.",
+       "help": "\u0423\u0434\u0430\u0440 \u043e \u0441\u0442\u0435\u043d\u0443, \u0432\u043e\u0440\u043e\u0442\u0430 \u0438\u043b\u0438 \u0447\u0442\u043e \u0443\u0433\u043e\u0434\u043d\u043e, \u043a\u0440\u043e\u043c\u0435 \u0437\u0435\u043c\u043b\u0438, \u043b\u043e\u043c\u0430\u0435\u0442 \u0434\u0440\u043e\u043d \u0441 \u044d\u0442\u043e\u0439 \u0441\u043a\u043e\u0440\u043e\u0441\u0442\u0438.",
        "type": "number",
        "default": "4 \u043c/\u0441",
        "range": "2\u201310 \u043c/\u0441",
@@ -6731,6 +6782,23 @@
        "keys": [],
        "advanced": false,
        "preset": true,
+       "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "physics.vCrashGround",
+       "label": "\u041f\u043e\u0440\u043e\u0433 \u043a\u0430\u0441\u0430\u043d\u0438\u044f \u0437\u0435\u043c\u043b\u0438",
+       "help": "\u041f\u043e\u0441\u0430\u0434\u043a\u0430 \u0438\u043b\u0438 \u0441\u043a\u043e\u043b\u044c\u0436\u0435\u043d\u0438\u0435 \u043f\u043e \u0437\u0435\u043c\u043b\u0435 \u043b\u043e\u043c\u0430\u0435\u0442 \u0434\u0440\u043e\u043d \u0442\u043e\u043b\u044c\u043a\u043e \u0441 \u044d\u0442\u043e\u0439 \u0441\u043a\u043e\u0440\u043e\u0441\u0442\u0438. \u0414\u043b\u044f \u0441\u0442\u0440\u043e\u0433\u043e\u0433\u043e \u043f\u0440\u0430\u0432\u0438\u043b\u0430 \u043f\u043e\u0441\u0442\u0430\u0432\u044c\u0442\u0435 \u0435\u0433\u043e \u0440\u0430\u0432\u043d\u044b\u043c \u043f\u043e\u0440\u043e\u0433\u0443 \u043a\u0440\u0430\u0448\u0430.",
+       "type": "number",
+       "default": "7 \u043c/\u0441",
+       "range": "2\u201312 \u043c/\u0441",
+       "scope": "drone",
+       "apply": "life",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
        "options": [],
        "shown": [
         "settings"

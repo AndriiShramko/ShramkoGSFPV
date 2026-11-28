@@ -19,11 +19,13 @@ export const LEVEL_TABLE: Readonly<Record<string, MenuLevel>> = {
     'crash.enabled': 'first',
     'sound.volume': 'first',
     'drone.current': 'first',
+    // the camera angle (w2-pilot review): "Before you fly" names it before the pilot picks a level, so it is shown at
+    // every level; at sim the line pointed a pilot who never flew to a Camera group that was not on the screen
+    'camera.uptiltDeg': 'first',
     // sim
     'flight.mode': 'sim',
     'tune.rates': 'sim',
     'tune.throttle': 'sim',
-    'camera.uptiltDeg': 'sim',
     'camera.fovDeg': 'sim',
     'input.stickMode': 'sim',
     'input.throttleStyle': 'sim',
@@ -67,6 +69,7 @@ export const LEVEL_TABLE: Readonly<Record<string, MenuLevel>> = {
     'physics.gravityMode': 'expert',
     'drone.payload': 'expert',
     'physics.vCrash': 'expert',
+    'physics.vCrashGround': 'expert',
     'respawn.delayS': 'expert',
     'respawn.rewindS': 'expert',
     'respawn.platform': 'expert',

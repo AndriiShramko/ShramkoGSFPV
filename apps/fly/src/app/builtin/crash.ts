@@ -57,6 +57,8 @@ export const crash: Feature = {
                     settings: settings ? { run: () => settings.run(true), keys: ctx.keys.caps('settings.open') } : null,
                     share: { run: () => openFlightShare(ctx, 'crash', { speed: e.speed }), keys: ctx.keys.caps('share.open') },
                     scenes: {
+                        // the start page's catalogue (ui/scenes.ts ScenePicker) over the wreck; a pick loads and clears the crash
+                        pick: () => ctx.scenes.openPicker(),
                         next: { run: () => void ctx.scenes.go('next'), keys: ctx.keys.caps('scene.next') },
                         random: { run: () => void ctx.scenes.go('random'), keys: ctx.keys.caps('scene.random') },
                         favourite: { run: () => void ctx.scenes.go('favourite'), keys: ctx.keys.caps('scene.favourite') }

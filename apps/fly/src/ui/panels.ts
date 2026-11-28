@@ -4,6 +4,7 @@
 // every change to the store at once and has no Apply button.
 import { h, clear, panel, fmt } from './dom';
 import { t } from '../i18n';
+import { keysFor } from '@gsfpv/prefs';
 import type { MenuLevel } from '@gsfpv/prefs';
 
 export function measurePanel(parent: HTMLElement, report: Record<string, unknown>, onClose: () => void): void {
@@ -56,6 +57,15 @@ export const LEVEL_ANSWERS: readonly { level: MenuLevel; action: string }[] = [
 ];
 
 /**
+ * The camera angle line of "Before you fly" (lane w2-pilot; a pilot's words: at first he could not find where the
+ * camera angle is set). Built from the same labels the Settings screen shows and the key of `settings.open`, so the
+ * path it names is the one on the screen. A first visit has the default keymap.
+ */
+export function cameraLine(): string {
+    return t('menu.level.camera', { key: keysFor('settings.open')[0]?.cap ?? 'O', settings: t('pause.settings'), group: t('group.camera'), row: t('set.camera.uptiltDeg') });
+}
+
+/**
  * "Before you fly": the motion notice and the question "Have you flown FPV before?". Each answer accepts the
  * notice and names the menu level; `onAnswer` stores it (app/boot.ts). The first answer has the focus.
  */
@@ -65,7 +75,8 @@ export function warningModal(parent: HTMLElement, onAnswer: (level: MenuLevel) =
         h('span', { class: 'level-name' }, t(`menu.level.${level}`)), h('span', { class: 'level-hint' }, t(`menu.level.${level}.hint`))));
     p.body.append(h('p', {}, t('warning.text')),
         h('div', { class: 'level-ask', role: 'group', 'aria-labelledby': 'level-ask-q' }, h('h3', { id: 'level-ask-q' }, t('menu.level.ask')), ...answers),
-        h('p', { class: 'muted' }, t('menu.level.later')));
+        h('p', { class: 'muted' }, t('menu.level.later')),
+        h('p', { class: 'muted', 'data-testid': 'camera-line' }, cameraLine()));
     parent.append(p.root);
     answers[0]?.focus({ preventScroll: true });
 }
