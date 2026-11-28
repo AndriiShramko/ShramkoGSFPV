@@ -157,3 +157,17 @@ at 1.25, about 2 minutes; it aborts every POST to the site's /api/, so it sends 
 - S4: most replies went to making a keyboard drop land at a known speed on a real scan (the spawn's one-way disc, low
   ceilings, a noisy climb in a headless page); reading platform.ts and judging the sim's own contact events from the
   first run would have saved about ten probe runs. Routing every request in Playwright stalls the scan downloads.
+- Review: most turns went to reading the level filter of the Settings screen to prove the camera line; a status line
+  naming each text's menu level would have made it one grep.
+
+## Review
+
+Verdict: SHIP (independent check, 2026-11-28; review file U:/Temp/gsfpv-train4/reviews/w2-pilot.md).
+- Repaired (c53abcc2): at menu level first (the first, focused answer of Before you fly) Settings had no Camera group,
+  so the camera line pointed to a path not on the screen; camera.uptiltDeg moved to level first, test in
+  w2-pilot-camera-line.test.ts, NEG OK.
+- Mouse run on a local release build of 81d38d6b (evidence accept-review.json): 6/7 PASS; gentle FAILED: two of three
+  1.3 m drops on scene 7a475d38 crashed on a contact with ny 0.59 (6.36 m/s) and ny 0.15 (4.76 m/s) after a ground touch
+  survived; the third survived a 4.06 m/s ground touch (the base crashes from 4.0). Not worse than live; on an uneven
+  scan floor the softer ground helps only where the normal is within 45 deg of up.
+
