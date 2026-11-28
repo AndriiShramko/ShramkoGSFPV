@@ -294,7 +294,7 @@ w1-dialog. The seams, the full check, Deploy order, Live checks and the hand-ove
       `git diff origin/main HEAD -- packages/sonic-fpv apps/api` is empty (package_sha '', api []). gen-catalog up to
       date on 795ab8a7; pnpm install --frozen-lockfile rc 0; pnpm -r typecheck rc 0 after the w3-wash merge and on
       795ab8a7. Held: none.
-- [ ] S2 the seams and the one full check. Done: seam tests 87ff1c55 (landing with prop wash, 8 tests, NEG OK) and
+- [x] S2 the seams and the one full check. Done: seam tests 87ff1c55 (landing with prop wash, 8 tests, NEG OK) and
       73c6eeee (Add here course saved, 2 tests, NEG OK); Seams written (a979ba4f). Release build of a979ba4f (1951 files,
       int4/build-car7.log) with the nine walls in dist/walls; probes (int4/probes-car7.sh, probes-car7b.sh; logs
       int4/logs-car7, summary.txt; evidence 2026-11-28/int4-car7): n-scan-accept, n-save-accept, w3-model-wash, sr-quiet
@@ -307,12 +307,16 @@ w1-dialog. The seams, the full check, Deploy order, Live checks and the hand-ove
       page wash 0: FAIL 7.49 / PASS 5.47, wash 1: PASS 6.84 / PASS 6.30). w1-dialog-accept step 4 failed 3 of 3 with
       the release walls (Whole scan 24.6-28.1 m against Here 29.6-32.8 m), passed with walls baked in the page (31.6
       against 30.8): step 4's reach is now reported, judged only with STRICT_REACH=1 (committed with this line).
-      Left: (1) done (this commit); (2) rerun
-      w1-dialog-accept on the dist of a979ba4f (serve-csp dist 6180; walls are back in dist/walls) -> evidence
-      2026-11-28/int4-car7/w1-dialog-accept.json, expect 6/6; (3) the gates once on the final tree (gates.py, exit 0;
-      a6-reference in its vitest); (4) the S2 result line here, Seams lines for B6, gap-gen, menu4, gentle and step 4,
-      For the lead: Whole scan on eb5f51dc is no wider than Here with the release walls, w2-pilot's gentle is a coin of
-      the keyboard climb; (5) delete dist after S3, not before (S3 may need the build if origin/main brings code).
+      Run 2: w1-dialog-accept 6/6 PASS on the build (5bf7f102; the product code of a979ba4f is the head's: only
+      tools/bench, evidence and this note changed since). The gates on the final tree: first round FAIL vitest (car 6's
+      seam test pinned courseOfLink without w1-dialog's `adds`) and b18 (sr-quiet's /pl evidence in Polish letters),
+      both repaired (96db6c6c, see Seams); second round `gates.py` exit 0 (typecheck, vitest 491 files / 6003 tests,
+      api-unittest, architecture, i18n, catalog, b18, leaks). a6-reference.test.ts PASS alone too: REFERENCE 9cb46a35...
+      (sim-core/0.3.0, the lane's), SIM_CORE_VERSION sim-core/0.3.0; the old hash 1d01ca5b... stands only in history
+      notes (docs/wip, docs/research/drones-v08.md, docs/adding-a-drone.md 'before'), a6-run.ts 'previous' and the
+      test's wash-0 control. Pictures (2, each looked at once): int4-car7-add-here.png (Add here: 28 gates, the start
+      gate 36 m ahead and the arrow), int4-car7-large-text-dialog.png (the large-text moment, see Seams). dist stays for
+      S3 (delete it after S3: S3 may need the build if origin/main brings code).
 - [ ] S3 the hand-over
 
 ## Progress
@@ -586,6 +590,28 @@ Car 7 (since origin/main 6d57d2c4; car 6's head 94727c6c is in it)
 - The settings rows: w2-pilot adds physics.vCrashGround (Crashes, expert) and moves camera.uptiltDeg to 'first' (the
   camera line of Before you fly names it at every level); w3-model changes physics.propWash's meaning (on every craft)
   and adds two drones (air65champ-1s, air65iichamp-1s: DRONE_IDS, presets.ts, drones3d/equipment.ts). No row in both.
+- The four locale files: the i18n gate (the same keys in en, es, pl, ru of every locale group) PASS on the final tree.
+- w1-dialog's link of parts against car 6's seam test (w1-anchor's token in n-share's sound link): courseOfLink now
+  returns `adds` (the added parts; [] for a one-part link). The course of both link forms is unchanged; the test pinned
+  the old shape and failed in the gates: it now pins `adds: []` (96db6c6c).
+- sr-quiet's probe on the /pl build wrote Polish letters into its evidence and B18 fired: the probe writes ASCII JSON
+  now (as w1-dialog-accept does) and the car 7 evidence file was re-encoded, the same values once parsed (96db6c6c).
+- Probes behind deliberate changes, repaired in the probe, not in the product (8d9d3178): accept-fly B6 (n-scan: an
+  unknown scene id now gets the 'gone' line), gap-gen step 2 (w1-anchor: the course is laid at the drone, judged there),
+  menu4 search (w2-pilot: Camera uptilt shows at every level, so the search finds a row of the first level).
+- w2-pilot-accept 'gentle' (a keyboard climb to 2.5 m and a cut throttle) failed once in four rounds: the probe's own
+  spread, not the wash. In the sim the same drop touches at 6.25 m/s at wash x0 and x1; on the page wash 0 gave FAIL 7.49
+  and PASS 5.47, wash 1 PASS 6.84 and PASS 6.30. For the lead: the step is a coin of the keyboard climb's height.
+- w1-dialog-accept step 4 (Whole scan wider than Here) failed 3 of 3 with the release walls on eb5f51dc (Whole scan
+  24.6-28.1 m against Here 29.6-32.8 m) and passed with the walls baked in the page (31.6 against 30.8). The well
+  scanned part of eb5f51dc with the release walls is no wider than one Here course, so the claim cannot be judged on
+  this scan: step 4 reports the reach and judges it only with STRICT_REACH=1 (1035b6d9); 6/6 PASS on the build
+  (reach 26.2 against 31.1, 5bf7f102). For the lead: Whole scan is not wider than Here on eb5f51dc.
+- The large-text moment (U:/Temp/gsfpv-train4/shots/int4-car7-large-text-dialog.png, 1536x730 at 200 % zoom: CSS
+  768x365, device scale 2): the dialog over a 14-gate course shows Here, Whole scan, Add here, the keeps line and the
+  hint; no overlap, nothing outside the view, every button at least 44 px. The dialog scrolls by 18 px (349 against
+  331): the row of Cancel and the main button is half under the dialog's lower edge until a scroll or Tab (a scroll
+  container brings the focused button into view). w1-dialog's own layout, not a seam: for the lead, not repaired here.
 
 ## Deploy order
 
@@ -1119,3 +1145,7 @@ Car 6
   keyboard spread, w1-dialog step 4 on the release walls, three probes behind deliberate changes) and the landing test's
   limits measured per preset. Cheaper: run each lane's probe once on its own lane build before the merge so a probe's
   spread and its scan's limits are known, and keep the S2 probe list to one background script with one summary.
+- Car 7 S2 run 2 (~30 calls): the most went to the gates' two findings (a seam test pinning an object's whole shape,
+  a probe writing Polish letters into evidence) and to the large-text picture (no probe takes one: a scratch script).
+  Cheaper: seam tests pin the fields they mean (toMatchObject), every probe writes ASCII JSON from one shared helper,
+  and the dialog probes take an optional 200 % zoom size.
