@@ -132,7 +132,10 @@ async function generate(page, level, spread, menuOpen) {
     const dialog = await page.waitForSelector('[data-testid=gen-dialog]', { timeout: 4000 }).then(() => true, () => false);
     const pressed = [];
     if (dialog) {
-        for (const act of [`gen-level-${level}`, `gen-spread-${spread}`, 'gen-build']) {
+        // lane w1-dialog: the spread row became WHERE (Here = compact, Whole scan = wide); a build before it still has gen-spread
+        const where = (await page.locator('[data-testid=gen-dialog] [data-action^="gen-where-"]').count()) > 0;
+        const spreadAct = where ? `gen-where-${spread === 'wide' ? 'scan' : 'here'}` : `gen-spread-${spread}`;
+        for (const act of [`gen-level-${level}`, spreadAct, 'gen-build']) {
             const b = page.locator(`[data-testid=gen-dialog] [data-action="${act}"]`);
             const n = await b.count();
             if (n) { await b.first().click(); await sleep(250); }

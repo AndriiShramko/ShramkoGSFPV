@@ -42,7 +42,7 @@ import { MAX_GATES_EDIT, REQUEST_DEFAULTS, canSave, courseLinkId, checkTrack, ed
 import type { CourseAsk, CourseRequest } from '@gsfpv/tracks';
 import { FROM_PILOT, pilotAnchor } from '../../course/anchor';
 import type { AnchorFrom } from '../../course/anchor';
-import { COURSE_LEVELS, COURSE_SPREADS, GenerateDialog, pressAction, type GenerateFrom } from '../../course/generate-dialog';
+import { COURSE_LEVELS, DEFAULT_WHERE, GenerateDialog, pressAction, type GenerateFrom } from '../../course/generate-dialog';
 import { dialogOpen } from '../../devices/keyboard';
 import { CheckQueue, checkOnPage } from '../../course/editor/check-core';
 import type { FromCheckWorker } from '../../course/editor/check-core';
@@ -143,15 +143,16 @@ export const course: Feature = {
         const stage = new CourseStage(ctx.renderer);
         const hud = new CourseHud(ctx.ui);
         hud.setCloseLabel(t('course.hide'));
-        // lane gen4b B1 (G7-G9): the level and the spread the pilot picked last (store course.level, course.spread); the
-        // voxels-only view asks for the whole scene at any scan quality (gen4 design section 3)
+        // lane gen4b B1 (G7-G9): the level the pilot picked last (store course.level); the voxels-only view asks for the whole
+        // scene at any scan quality (gen4 design section 3). Lane w1-dialog: the dialog opens on Here every time (its where is
+        // not remembered); the stored spread (course.spread, the settings) is what Fly by Sound's direct press asks
         const remembered = (): CourseAsk => {
             const level = ctx.prefs.get<CourseRequest['level']>('course.level');
             const spread = ctx.prefs.get<CourseRequest['spread']>('course.spread');
             const only = ctx.prefs.get<string>('voxels.show') === 'only';
             return {
                 level: COURSE_LEVELS.includes(level) ? level : REQUEST_DEFAULTS.level,
-                spread: only ? 'wide' : COURSE_SPREADS.includes(spread) ? spread : REQUEST_DEFAULTS.spread,
+                spread: only || spread === 'wide' ? 'wide' : REQUEST_DEFAULTS.spread,
                 anyQuality: only
             };
         };
@@ -162,7 +163,6 @@ export const course: Feature = {
         const genDialog = new GenerateDialog(ctx.ui, t, {
             pick: (p) => {
                 if (p.level) ctx.prefs.set('course.level', p.level);
-                if (p.spread) ctx.prefs.set('course.spread', p.spread);
             },
             build: (r) => {
                 const f = dialogFor;
@@ -919,7 +919,7 @@ export const course: Feature = {
             // int4 car 3: from 'editor' the Course menu's own question (edit4b life.ts) has named the unsaved changes and the
             // pilot said yes (edit4s kept a draft): the dialog does not warn a second time
             const unsaved = from !== 'editor' && !!ed && edChanged;
-            genDialog.open({ level: r.level, spread: r.spread, voxelsOnly: r.anyQuality, shownGates: run?.gates.length ?? 0, unsaved });
+            genDialog.open({ level: r.level, where: DEFAULT_WHERE, voxelsOnly: r.anyQuality, shownGates: run?.gates.length ?? 0, unsaved });
         };
         hook.generateDialog = (from) => openGenerateDialog(from);
         hook.dialog = () => genDialog.model();
