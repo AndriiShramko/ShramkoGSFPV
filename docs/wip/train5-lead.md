@@ -326,6 +326,9 @@ gate B18 for every lane; name a vault note by words, not by its Russian file nam
   splat scene and spent an inventory, two researches, a design and a critic on it. A new direction named by a phrase
   with no clear subject starts with ONE line 'understood as' in the report to the owner and a cheap inventory;
   research and design agents come after his words make the subject clear.
+- MESSAGE 83 (the same evening): ALL the physics of objects (glass that breaks, pieces off a wall, the exaggerated
+  physics) is to be made later ON THE REBUILT Unreal Engine scene, not on splats. In the simulator nothing of it is
+  built: the flight and the drone's collisions with the walls stay as they are.
 
 ## How the lead works (the owner's economy rule; written into the skills on 2026-11-26, W4 done)
 
