@@ -7,8 +7,8 @@ the ground (a lower sensitivity near the ground by default). His fourth point (b
 ## Status
 
 - [x] S1 A, the ground: measurement, the softer default, the test, the negative control (25635abf)
-- [x] S2 B, the camera line in the first-minute menu; the entry points of C and its plan (ten lines below) (this commit)
-- [ ] S3 C, the scene catalogue from the pause menu, with a test
+- [x] S2 B, the camera line in the first-minute menu; the entry points of C and its plan (ten lines below) (79fc5cdb)
+- [x] S3 C, "Choose a scan" on the crash card and as the pause item's label, with a test (this commit)
 - [ ] S4 the acceptance by mouse (local build PASS, live FAIL), gates once, For the lead
 
 ## A. The measurement (origin/main 1bda96d3)
@@ -63,6 +63,17 @@ breaks on landing sees most; and "Change scan" / "Zmien skan" does not say "choo
 5. S4: the pause path (Esc, the item, a card) is old code, so on the live site it PASSES; the live FAILS are the crash
    card's `scene-pick` and the label. Said so in For the lead.
 
+## C. What was built (S3)
+
+- Crash card (ui/crash-overlay.ts): the scene row starts with "Choose a scan" (data-action `scene-pick`, no key, as the
+  pause item has none); app/builtin/crash.ts wires it to `ctx.scenes.openPicker()`, the start page's ScenePicker over
+  the flight (opaque, z-index 6, covers the card); a pick loads the scene and `load()` clears the crash; Esc goes back
+  to the card. Next, random and favourite stay after it.
+- The pause item `pause.scene` now wears `scenes.title` ("Choose a scan" / "Wybierz skan"); the key `pause.scene` is
+  gone from the four locale files (nothing else used it). Its menu id is unchanged, so probes clicking
+  `[data-action="pause.scene"]` still work.
+- tools/bench/src/accept-v03-scenes.ts S3 expects the row with `scene-pick:null` first.
+
 ## What the owner does
 
 (S4)
@@ -77,6 +88,12 @@ breaks on landing sees most; and "Change scan" / "Zmien skan" does not say "choo
 3. "Before you fly" names the camera angle and its path in en and pl, and every locale has the line.
    `npx vitest run tools/bench/test/w2-pilot-camera-line.test.ts tools/bench/test/menu4-levels.test.ts`: 6 passed;
    neg_control.py on origin/main (panels.ts, fly/menu/*.json): NEG OK; `pnpm --filter ./apps/fly typecheck`: 0 errors.
+
+4. The crash card's first scene button "Choose a scan" opens the catalogue (openPicker), next/random/favourite stay; the
+   pause item wears the catalogue title in four locales.
+   `npx vitest run tools/bench/test/w2-pilot-scene-pick.test.ts`: 3 passed; neg_control.py on origin/main (crash-overlay.ts,
+   crash.ts, scene.ts, fly/{en,es,pl,ru}.json): NEG OK; `npx vitest run --changed origin/main`: 2307 passed;
+   `pnpm --filter ./apps/fly typecheck`: 0 errors.
 
 ## Not verified
 
@@ -93,3 +110,5 @@ breaks on landing sees most; and "Change scan" / "Zmien skan" does not say "choo
 - S2: most replies went to finding where "only next or random" comes from (the crash card, not the pause menu, which
   already opens the picker); grepping the pilot's words' buttons (`scene-random`) first would have found it at once.
   neg_control.py needs `npx.cmd`, not `npx`, on Windows.
+- S3: most replies went to the fake DOM (no descendant selectors, no global addEventListener for app/diagnostics.ts);
+  reading tools/bench/test/helpers/fake-dom.ts querySelectorAll first would have saved two runs.

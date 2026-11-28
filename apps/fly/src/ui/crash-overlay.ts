@@ -7,8 +7,8 @@
 //   with the crash's words). data-action values: respawn (B12 clicks it), rewind, replay, save,
 //   settings, share-crash.
 // - Scene keys (E.5, item 10): the toast hints N (next scene) and Shift+F (next favourite); the panel has
-//   Next scene (N), Random scene (Shift+N) and Next favourite (Shift+F): data-action scene-next,
-//   scene-random, scene-favourite. With scenes.autoSwitch the toast counts down to the next scene.
+//   Choose a scan (the scene catalogue over the flight, w2-pilot), Next scene (N), Random scene (Shift+N) and
+//   Next favourite (Shift+F): data-action scene-pick, scene-next, scene-random, scene-favourite. With scenes.autoSwitch the toast counts down to the next scene.
 // - RewindLabel: after a rewind a small "-5 s" at the top centre for 1.5 s. It fades, never flashes
 //   (WCAG 2.3.1).
 // app/builtin/crash.ts shows them and wires the actions.
@@ -82,8 +82,11 @@ export interface PanelActions {
     settings: { run: () => void; keys: readonly KeyHint[] } | null;
     /** v0.7 D1: Share this crash (the share panel, builtin/share.ts); absent: no button */
     share?: { run: () => void; keys: readonly KeyHint[] };
-    /** E.5: Next scene (N), Random scene (Shift+N), Next favourite (Shift+F); absent: no scene row */
-    scenes?: Record<'next' | 'random' | 'favourite', { run: () => void; keys: readonly KeyHint[] }>;
+    /**
+     * E.5: Next scene (N), Random scene (Shift+N), Next favourite (Shift+F); w2-pilot: first "Choose a scan", the
+     * scene catalogue over the flight (no key of its own, as the pause menu's item); absent: no scene row
+     */
+    scenes?: { pick: () => void } & Record<'next' | 'random' | 'favourite', { run: () => void; keys: readonly KeyHint[] }>;
 }
 
 /** The life's numbers on the panel (session.stats.life()). */
@@ -109,6 +112,7 @@ export class CrashPanel {
                 a.share ? btn('share-crash', t('share.crash'), a.share.run, a.share.keys) : null
             ),
             a.scenes ? h('div', { class: 'actions cp-scenes', 'data-testid': 'crash-scenes' },
+                btn('scene-pick', t('scenes.title'), a.scenes.pick),
                 btn('scene-next', t('keys.scene.next'), a.scenes.next.run, a.scenes.next.keys),
                 btn('scene-random', t('keys.scene.random'), a.scenes.random.run, a.scenes.random.keys),
                 btn('scene-favourite', t('keys.scene.favourite'), a.scenes.favourite.run, a.scenes.favourite.keys)) : null
