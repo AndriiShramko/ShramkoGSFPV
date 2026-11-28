@@ -140,3 +140,19 @@ the address carries the scene alone (no link that lays another course), and Save
 - S2: about 30 replies; most went to reading generate.ts walkCourse and plan.ts planCourse to find the one place for the
   occupied points and the join; a design note naming walkCourse's spacing rule would have saved half.
 - S1: about 15 replies; most went to reading course.ts slices and the probes that press the dialog's buttons.
+- Review: about 30 tool calls; most went to neg_control.py needing the test command as one quoted string on Windows and to
+  vitest swallowing console output (write notes to a file); a review probe template beside the lane's would save five.
+
+## Review
+
+Verdict: SHIP (independent check of e1912105; base ab98035c; full text U:/Temp/gsfpv-train4/reviews/w1-dialog.md).
+- Lane tests (8 files) 96 passed; NEG OK on ab98035c for add-here.test.ts (tracks sources) and generate-dialog.test.ts
+  (dialog and the four locales).
+- Own mouse path on a local release build of e1912105, Polish, 1536x730@1.25, render off: Here 14 gates; Add here three
+  times in a row 14 -> 28 -> 42 -> 56, every old gate kept to 1 cm each time, the dialog fits each time; the 4-part link
+  lays the same 56 gates in a fresh browser; Whole scan replaces (2 of 56 kept by chance, wide ask). 6/6 PASS.
+- Own Node check: Add here three times on the fringe field (11 -> 25 -> 39 -> 47, link relaid gate for gate) and Add here
+  with the anchor inside a wall block (a proven course, every kept gate in place). Not committed (a review run only).
+- No repair was needed. DOUBTs: the link of a joined course is relaid under planCourse's time budget, so a much slower
+  machine might lay a different course (not proven; it applies to every 'g2.' link); rooms courseFor names only the last
+  part after Add here (the race is off, RACE_ON false).
