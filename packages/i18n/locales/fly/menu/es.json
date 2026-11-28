@@ -7,6 +7,7 @@
   "menu.level.expert": "Muéstramelo todo",
   "menu.level.expert.hint": "Todos los botones y todos los ajustes a la vez.",
   "menu.level.later": "Puedes cambiarlo cuando quieras: Ajustes, Pantalla, Menú.",
+  "menu.level.camera": "Ángulo de la cámara: la tecla {key} abre {settings}, luego {group}, {row}.",
   "menu.more": "Más ({n})",
   "menu.showAll": "Mostrar siempre todo",
   "menu.settings.showAll": "Mostrar todos los ajustes ({n} más)",

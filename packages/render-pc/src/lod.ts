@@ -18,6 +18,80 @@ export class BrokenFileError extends Error {
     }
 }
 
+/**
+ * The SOG versions the pinned engine reads: playcanvas 2.24.2 framework/parsers/sog.js loadTextures upgrades a meta.json
+ * without `version` (version 1) and reads 2 and 3; any other version is its error "unsupported SOG version N". SuperSplat
+ * publishes version 3 since 2026-11-10 (splat-transform 3.11); engine 2.23.2 read 1 and 2 only and never settled on a 3
+ * (C:/dev/.gsfpv-lanes/designs/t7-scene-open.md). The engine pin and this list change together: the test
+ * scan-sog-version.test.ts reads the engine's own parser and fails when they disagree.
+ */
+export const ENGINE_SOG_VERSIONS: readonly number[] = [1, 2, 3];
+
+/**
+ * A scan file in a format this simulator's engine does not read (a newer SOG version, or a format SuperSplat added):
+ * not damaged and not the network. `format` names it ("SOG version 4"); the pilot is told "this scan uses a newer
+ * format" with what to do next, never a loader that waits for ever.
+ */
+export class UnsupportedFormatError extends Error {
+    readonly format: string;
+    constructor(format: string, message: string) {
+        super(message);
+        this.format = format;
+        this.name = 'UnsupportedFormatError';
+    }
+}
+
+/**
+ * A single scan file the engine read without an error but with no splat in it (a file it misread, an empty export):
+ * nothing would be drawn, so the load fails instead of saying "ready" over an empty scene (lane n-scan).
+ */
+export class NoSplatsError extends Error {
+    constructor(message: string) {
+        super(message);
+        this.name = 'NoSplatsError';
+    }
+}
+
+/** True when a loaded single-file resource holds no splat (an octree streams its levels later: never judged here). */
+export function holdsNoSplats(resource: unknown): boolean {
+    const r = resource as { octree?: unknown; numSplats?: unknown } | null | undefined;
+    if (!r || r.octree) return false;
+    return typeof r.numSplats === 'number' && r.numSplats <= 0;
+}
+
+/** The SOG version of a meta.json (a single SOG or one chunk of a streamed scan): no `version` is version 1. */
+export function sogVersion(meta: unknown): unknown {
+    return isObject(meta) && meta.version !== undefined ? meta.version : 1;
+}
+
+/**
+ * Why the engine cannot read this SOG meta.json's version ("SOG version 4"), or null when it can (ENGINE_SOG_VERSIONS).
+ * Checked before the engine asset exists, so a scan SuperSplat writes in a version newer than the engine's is said
+ * plainly and at once.
+ */
+export function sogVersionProblem(meta: unknown): string | null {
+    const v = sogVersion(meta);
+    return typeof v === 'number' && ENGINE_SOG_VERSIONS.includes(v) ? null : `SOG version ${JSON.stringify(v)}`;
+}
+
+/**
+ * The SOG version problem of a streamed scan: lod-meta.json has its own format version (1), its chunks are SOG meta.json
+ * files (a39abad1's sibling f924b0f5: chunk version 3), so the first chunk is read (one small GET through `get`, which
+ * resolves to the parsed JSON) and checked like a single SOG. Null when the engine reads it, or when the chunk could not
+ * be read: then the engine's own request decides (a network failure is not a format).
+ */
+export async function lodChunkVersionProblem(lodMetaUrl: string, lodMeta: unknown, get: (url: string) => Promise<unknown>): Promise<string | null> {
+    const first = isObject(lodMeta) && Array.isArray(lodMeta.filenames) ? lodMeta.filenames[0] : undefined;
+    if (typeof first !== 'string') return null;
+    let chunk: unknown;
+    try {
+        chunk = await get(new URL(first, lodMetaUrl).toString());
+    } catch {
+        return null;
+    }
+    return sogVersionProblem(chunk);
+}
+
 /** A plain JSON object (not null, not an array). */
 function isObject(x: unknown): x is Record<string, unknown> {
     return !!x && typeof x === 'object' && !Array.isArray(x);
@@ -88,8 +162,9 @@ export function lodMetaProblem(json: unknown): string | null {
 
 /** What the scan on screen is drawn from and how its levels of detail work right now (SplatRenderer.lodState). */
 export interface LodState {
-    /** 'lod-meta': a streamed octree (levels of detail); 'meta': one SOG file; null: no scan loaded */
-    kind: 'lod-meta' | 'meta' | null;
+    /** 'lod-meta': a streamed octree (levels of detail); 'meta': one SOG file; 'ply': one compressed PLY
+     *  (2025 uploads); null: no scan loaded */
+    kind: 'lod-meta' | 'meta' | 'ply' | null;
     /** levels of detail in the scan (1 for a single file) */
     levels: number;
     /** the LOD range the engine may pick from: [finest, coarsest] (0 = the finest level) */

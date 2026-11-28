@@ -49,8 +49,11 @@ export const LADDER_S_PER_MILLION = 9.5;
  *  abort, so a running step cannot be cut short). A setting, not measured. */
 export const STEP_MAX_S = 150;
 
+/** The scan file a bake reads (@gsfpv/scenes ContentKind): one SOG, a streamed octree, or one compressed PLY. */
+export type BakeKind = 'meta' | 'lod-meta' | 'ply';
+
 export interface SceneSize {
-    kind: 'meta' | 'lod-meta';
+    kind: BakeKind;
     gaussians: number; // the full-detail count that would be voxelised
     lodLevels: number;
     /** where the count came from: a lod-meta.json of SuperSplat has neither counts nor count */
@@ -95,8 +98,8 @@ export function levelsFromTree(tree: LodNode | undefined, levels: number): numbe
 }
 
 /** How many Gaussians a bake would voxelise, from the scene's own metadata. */
-export function gaussiansFromMeta(m: { count?: number; counts?: number[]; lodLevels?: number; tree?: LodNode }, kind: 'meta' | 'lod-meta', etag: string | null = null): SceneSize {
-    if (kind === 'meta') return { kind, gaussians: m.count ?? 0, lodLevels: 1, from: typeof m.count === 'number' ? 'count' : 'none', etag };
+export function gaussiansFromMeta(m: { count?: number; counts?: number[]; lodLevels?: number; tree?: LodNode }, kind: BakeKind, etag: string | null = null): SceneSize {
+    if (kind !== 'lod-meta') return { kind, gaussians: m.count ?? 0, lodLevels: 1, from: typeof m.count === 'number' ? 'count' : 'none', etag };
     const tree = lod0FromTree(m.tree);
     const lodLevels = m.lodLevels ?? m.counts?.length ?? 1;
     if (tree > 0) return { kind, gaussians: tree, lodLevels, from: 'tree', etag, byLevel: levelsFromTree(m.tree, lodLevels) };
@@ -105,11 +108,36 @@ export function gaussiansFromMeta(m: { count?: number; counts?: number[]; lodLev
     return { kind, gaussians: 0, lodLevels, from: 'none', etag };
 }
 
-/** How big is the scene? Read from its own metadata (a few KB), before anything heavy. */
-export async function sceneSize(contentUrl: string, kind: 'meta' | 'lod-meta', f: (u: string) => Promise<Response> = fetch): Promise<SceneSize> {
+/**
+ * The splat count of a PLY, from its header ('element vertex N', within the first few KB): the body is read
+ * as a stream and dropped after the header. Not a ranged request: c67edb74 is stored gzip-encoded, and a
+ * range of such a file fails in Chrome (index.ts exists). null: no vertex element in the first 64 KB.
+ */
+export async function plyVertexCount(r: Response): Promise<number | null> {
+    const reader = r.body?.getReader();
+    if (!reader) return null;
+    let head = '';
+    const dec = new TextDecoder('latin1');
+    try {
+        while (head.length < 65536 && !head.includes('end_header')) {
+            const { value, done } = await reader.read();
+            if (done) break;
+            head += dec.decode(value, { stream: true });
+        }
+    } finally {
+        void reader.cancel().catch(() => {});
+    }
+    const end = head.indexOf('end_header');
+    const m = /^element vertex (\d+)\s*$/m.exec(end >= 0 ? head.slice(0, end) : head);
+    return m ? Number(m[1]) : null;
+}
+
+/** How big is the scene? Read from its own metadata (a few KB, the header of a PLY), before anything heavy. */
+export async function sceneSize(contentUrl: string, kind: BakeKind, f: (u: string) => Promise<Response> = fetch): Promise<SceneSize> {
     const r = await f(contentUrl);
     if (!r.ok) throw new Error(`scene metadata ${r.status}`);
     const etag = r.headers.get('etag') ?? r.headers.get('last-modified');
+    if (kind === 'ply') return gaussiansFromMeta({ count: await plyVertexCount(r) ?? undefined }, kind, etag);
     return gaussiansFromMeta((await r.json()) as Parameters<typeof gaussiansFromMeta>[0], kind, etag);
 }
 
@@ -478,7 +506,7 @@ export function wholeFileSystem(st: Pick<typeof import('@playcanvas/splat-transf
     };
 }
 
-export async function bakeCollision(contentUrl: string, kind: 'meta' | 'lod-meta', device: GraphicsDevice, onStage: (stage: 'size' | 'read' | 'voxelize' | 'done') => void, o: BakeOptions = {}): Promise<BakeResult> {
+export async function bakeCollision(contentUrl: string, kind: BakeKind, device: GraphicsDevice, onStage: (stage: 'size' | 'read' | 'voxelize' | 'done') => void, o: BakeOptions = {}): Promise<BakeResult> {
     const voxelM = o.voxelM ?? BASE_VOXEL_M;
     const t0 = performance.now();
     let peak = heapMb();
@@ -499,7 +527,7 @@ export async function bakeCollision(contentUrl: string, kind: 'meta' | 'lod-meta
         const base = contentUrl.slice(0, contentUrl.lastIndexOf('/') + 1);
         const file = contentUrl.slice(base.length);
         const fs = wholeFileSystem(st, base);
-        const sources = await st.readFile({ filename: file, inputFormat: kind === 'lod-meta' ? 'lod' : 'sog', fileSystem: fs });
+        const sources = await st.readFile({ filename: file, inputFormat: kind === 'lod-meta' ? 'lod' : kind === 'ply' ? 'ply' : 'sog', fileSystem: fs });
         const src = kind === 'lod-meta' ? st.selectLod(sources[0], level) : sources[0];
         // only what the voxeliser reads (as the CLI does): same octree, bit for bit, at half the memory
         // (15.4 M Gaussians: 2.65 GB instead of 5.6 GB with the colour columns)
@@ -558,8 +586,8 @@ export type BaseStage = 'size' | 'read' | 'voxelize' | 'lighter' | 'done';
  * until one fits this device. Only a failure that is not about room (no WebGPU, a network error,
  * empty walls) ends it early. `bake` is bakeCollision (a test passes its own).
  */
-export async function bakeBase(contentUrl: string, kind: 'meta' | 'lod-meta', device: GraphicsDevice, onStage: (stage: BaseStage) => void, o: BakeOptions & {
-    bake?: (contentUrl: string, kind: 'meta' | 'lod-meta', device: GraphicsDevice, onStage: (stage: 'size' | 'read' | 'voxelize' | 'done') => void, o: BakeOptions & { signal?: AbortSignal }) => Promise<BakeResult>;
+export async function bakeBase(contentUrl: string, kind: BakeKind, device: GraphicsDevice, onStage: (stage: BaseStage) => void, o: BakeOptions & {
+    bake?: (contentUrl: string, kind: BakeKind, device: GraphicsDevice, onStage: (stage: 'size' | 'read' | 'voxelize' | 'done') => void, o: BakeOptions & { signal?: AbortSignal }) => Promise<BakeResult>;
     sPerMillion?: number | null;
     onStep?: (step: BaseStep, i: number, n: number) => void;
     /** F1-no-freeze: the time limit of a step (only for a bake that stops on its signal: the worker's) */

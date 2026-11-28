@@ -1,0 +1,376 @@
+{
+ "probe": "w2-pilot-accept",
+ "base": "http://localhost:6180",
+ "browser": "system-chrome",
+ "view": "1536x730@1.25",
+ "at": "2026-11-28T18:35:40.673Z",
+ "pass": false,
+ "steps": {
+  "capture": {
+   "pass": true,
+   "controls": true,
+   "pointerLock": true
+  },
+  "pausePick": {
+   "pass": true,
+   "menu": true,
+   "key": "Escape",
+   "label": "Choose a scan",
+   "viaPause": {
+    "shown": true,
+    "cards": 4,
+    "id": "7a475d38",
+    "loaded": true,
+    "rec": {
+     "from": "39e63ce9",
+     "to": "7a475d38",
+     "reason": "pick",
+     "ok": true,
+     "ms": 1833
+    },
+    "pickerGone": true,
+    "captured": true,
+    "climbed": 1.28,
+    "flies": true
+   }
+  },
+  "gentle": {
+   "pass": false,
+   "scene": "7a475d38",
+   "touch": {
+    "type": "crash",
+    "speed": 8.54,
+    "ny": 1
+   },
+   "groundCrash": [],
+   "slope": [
+    {
+     "touch": {
+      "type": "contact",
+      "speed": 5.5,
+      "ny": 1
+     },
+     "crash": {
+      "speed": 4.8,
+      "ny": 0
+     }
+    }
+   ],
+   "tries": [
+    {
+     "run": 0,
+     "rest": true,
+     "model": {
+      "vCrash": 4,
+      "vCrashGround": 7,
+      "lastCrash": {
+       "speed": 4.8,
+       "ny": 0
+      },
+      "groundTouch": {
+       "type": "contact",
+       "speed": 5.5,
+       "ny": 1
+      }
+     },
+     "h": 0.5,
+     "peak": 1.36,
+     "driftCut": 0,
+     "driftEnd": 0.48,
+     "climbed": 0.58,
+     "impact": 5.37,
+     "crashed": true,
+     "armed": false,
+     "crashes": 1,
+     "crashesBefore": 0,
+     "alt": -1.18
+    },
+    {
+     "run": 1,
+     "rest": true,
+     "model": {
+      "vCrash": 4,
+      "vCrashGround": 7,
+      "lastCrash": {
+       "speed": 8.68,
+       "ny": 1
+      },
+      "groundTouch": {
+       "type": "crash",
+       "speed": 8.68,
+       "ny": 1
+      }
+     },
+     "h": 0.5,
+     "peak": 1.34,
+     "driftCut": 0,
+     "driftEnd": 0.25,
+     "climbed": 0.71,
+     "impact": 5.53,
+     "crashed": true,
+     "armed": false,
+     "crashes": 1,
+     "crashesBefore": 0,
+     "alt": -0.8
+    },
+    {
+     "run": 2,
+     "rest": true,
+     "model": {
+      "vCrash": 4,
+      "vCrashGround": 7,
+      "lastCrash": {
+       "speed": 8.54,
+       "ny": 1
+      },
+      "groundTouch": {
+       "type": "crash",
+       "speed": 8.54,
+       "ny": 1
+      }
+     },
+     "h": 0.5,
+     "peak": 1.37,
+     "driftCut": 0,
+     "driftEnd": 1.28,
+     "climbed": 0.64,
+     "impact": 6.4,
+     "crashed": true,
+     "armed": false,
+     "crashes": 1,
+     "crashesBefore": 0,
+     "alt": -1.22
+    }
+   ]
+  },
+  "hard": {
+   "pass": true,
+   "scene": "887f27aa",
+   "hard": {
+    "model": {
+     "vCrash": 4,
+     "vCrashGround": 7,
+     "lastCrash": {
+      "speed": 8.15,
+      "ny": 1
+     },
+     "groundTouch": {
+      "type": "crash",
+      "speed": 8.15,
+      "ny": 1
+     }
+    },
+    "h": 2.5,
+    "peak": 2.7,
+    "driftCut": 0,
+    "driftEnd": 0.12,
+    "climbed": 2.6,
+    "impact": 8.05,
+    "crashed": true,
+    "armed": false,
+    "crashes": 1,
+    "crashesBefore": 0,
+    "alt": -2.07
+   }
+  },
+  "cardPick": {
+   "pass": true,
+   "crashed": true,
+   "toast": "Crash at 8.2 m/s. The drone comes back by itself. Enter: stay here.Crash 8.2 m/s \u00b7 to the start in 1.5 sEnterStayRBack to startNNext sceneShift+FFavourite",
+   "card": true,
+   "row": [
+    {
+     "action": "scene-pick",
+     "text": "Choose a scan"
+    },
+    {
+     "action": "scene-next",
+     "text": "Next sceneN"
+    },
+    {
+     "action": "scene-random",
+     "text": "Random sceneShift+N"
+    },
+    {
+     "action": "scene-favourite",
+     "text": "Next favourite sceneShift+F"
+    }
+   ],
+   "viaCard": {
+    "shown": true,
+    "cards": 4,
+    "id": "39e63ce9",
+    "loaded": true,
+    "rec": {
+     "from": "887f27aa",
+     "to": "39e63ce9",
+     "reason": "pick",
+     "ok": true,
+     "ms": 1125
+    },
+    "pickerGone": true,
+    "captured": false,
+    "climbed": 0.95,
+    "flies": true
+   }
+  },
+  "cameraEn": {
+   "pass": true,
+   "line": {
+    "text": "Camera angle: key O opens Settings, then Camera, Camera uptilt.",
+    "top": 556,
+    "bottom": 577,
+    "h": 22,
+    "font": "15px"
+   }
+  },
+  "cameraPl": {
+   "pass": true,
+   "line": {
+    "text": "K\u0105t kamery: klawisz O otwiera Ustawienia, potem Kamera, K\u0105t nachylenia kamery.",
+    "top": 556,
+    "bottom": 599,
+    "h": 44,
+    "font": "15px"
+   }
+  }
+ },
+ "errors": [],
+ "sent": {
+  "count": 51,
+  "outsideApi": [
+   {
+    "method": "HEAD",
+    "url": "https://d28zzqy0iyovbz.cloudfront.net/39e63ce9/v1/lod-meta.json",
+    "api": false
+   },
+   {
+    "method": "HEAD",
+    "url": "https://d28zzqy0iyovbz.cloudfront.net/39e63ce9/v1/meta.json",
+    "api": false
+   },
+   {
+    "method": "HEAD",
+    "url": "https://d28zzqy0iyovbz.cloudfront.net/39e63ce9/v1/scene.voxel.json",
+    "api": false
+   },
+   {
+    "method": "HEAD",
+    "url": "https://d28zzqy0iyovbz.cloudfront.net/7a475d38/v1/lod-meta.json",
+    "api": false
+   },
+   {
+    "method": "HEAD",
+    "url": "https://d28zzqy0iyovbz.cloudfront.net/7a475d38/v1/meta.json",
+    "api": false
+   },
+   {
+    "method": "HEAD",
+    "url": "https://d28zzqy0iyovbz.cloudfront.net/7a475d38/v1/scene.voxel.json",
+    "api": false
+   },
+   {
+    "method": "HEAD",
+    "url": "https://d28zzqy0iyovbz.cloudfront.net/7a475d38/v1/lod-meta.json",
+    "api": false
+   },
+   {
+    "method": "HEAD",
+    "url": "https://d28zzqy0iyovbz.cloudfront.net/7a475d38/v1/meta.json",
+    "api": false
+   },
+   {
+    "method": "HEAD",
+    "url": "https://d28zzqy0iyovbz.cloudfront.net/7a475d38/v1/scene.voxel.json",
+    "api": false
+   },
+   {
+    "method": "HEAD",
+    "url": "https://d28zzqy0iyovbz.cloudfront.net/7a475d38/v1/lod-meta.json",
+    "api": false
+   },
+   {
+    "method": "HEAD",
+    "url": "https://d28zzqy0iyovbz.cloudfront.net/7a475d38/v1/meta.json",
+    "api": false
+   },
+   {
+    "method": "HEAD",
+    "url": "https://d28zzqy0iyovbz.cloudfront.net/7a475d38/v1/scene.voxel.json",
+    "api": false
+   },
+   {
+    "method": "HEAD",
+    "url": "https://d28zzqy0iyovbz.cloudfront.net/7a475d38/v1/lod-meta.json",
+    "api": false
+   },
+   {
+    "method": "HEAD",
+    "url": "https://d28zzqy0iyovbz.cloudfront.net/7a475d38/v1/meta.json",
+    "api": false
+   },
+   {
+    "method": "HEAD",
+    "url": "https://d28zzqy0iyovbz.cloudfront.net/7a475d38/v1/scene.voxel.json",
+    "api": false
+   },
+   {
+    "method": "HEAD",
+    "url": "https://d28zzqy0iyovbz.cloudfront.net/887f27aa/v1/lod-meta.json",
+    "api": false
+   },
+   {
+    "method": "HEAD",
+    "url": "https://d28zzqy0iyovbz.cloudfront.net/887f27aa/v1/meta.json",
+    "api": false
+   },
+   {
+    "method": "HEAD",
+    "url": "https://d28zzqy0iyovbz.cloudfront.net/887f27aa/v1/scene.voxel.json",
+    "api": false
+   },
+   {
+    "method": "HEAD",
+    "url": "https://d28zzqy0iyovbz.cloudfront.net/39e63ce9/v1/lod-meta.json",
+    "api": false
+   },
+   {
+    "method": "HEAD",
+    "url": "https://d28zzqy0iyovbz.cloudfront.net/39e63ce9/v1/meta.json",
+    "api": false
+   },
+   {
+    "method": "HEAD",
+    "url": "https://d28zzqy0iyovbz.cloudfront.net/39e63ce9/v1/scene.voxel.json",
+    "api": false
+   }
+  ],
+  "first": [
+   {
+    "method": "POST",
+    "url": "http://localhost:6180/api/e",
+    "api": true
+   },
+   {
+    "method": "HEAD",
+    "url": "https://d28zzqy0iyovbz.cloudfront.net/39e63ce9/v1/lod-meta.json",
+    "api": false
+   },
+   {
+    "method": "HEAD",
+    "url": "https://d28zzqy0iyovbz.cloudfront.net/39e63ce9/v1/meta.json",
+    "api": false
+   },
+   {
+    "method": "HEAD",
+    "url": "https://d28zzqy0iyovbz.cloudfront.net/39e63ce9/v1/scene.voxel.json",
+    "api": false
+   },
+   {
+    "method": "POST",
+    "url": "http://localhost:6180/api/e",
+    "api": true
+   }
+  ]
+ }
+}

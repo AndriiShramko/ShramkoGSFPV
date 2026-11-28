@@ -371,7 +371,8 @@ export class SuperSplatCatalog {
         const verdictOf = (it: ExploreItem) => this.opensSeen.get(`${it.id}/v${it.version}`);
         const isBroken = o.isBroken ?? ((it: ExploreItem) => {
             const v = formatVerdict(it.format);
-            return v === 'unsupported' || (v === 'unknown' && (!check || verdictOf(it) === 'no'));
+            // 'legacy' (compressed PLY) opens only when the pilot picks it, never at random
+            return v === 'unsupported' || v === 'legacy' || (v === 'unknown' && (!check || verdictOf(it) === 'no'));
         });
         const opts: PickOptions = { ...o, rng: o.rng ?? Math.random, broken: ruledOut, isBroken };
         const pool = new Map<string, ExploreItem>();
@@ -522,17 +523,22 @@ export class SuperSplatCatalog {
 
 /** Formats the simulator opens (resolveScene: lod-meta.json for 'ssog', meta.json for 'sog' and 'sogs'). */
 export const SUPPORTED_FORMATS: readonly string[] = ['sog', 'ssog', 'sogs'];
-/** Formats the simulator cannot open yet (resolveScene: 'unsupported'). */
-export const UNSUPPORTED_FORMATS: readonly string[] = ['compressed.ply'];
+/** Formats the simulator opens when asked for, but never picks by itself (resolveScene: scene.compressed.ply):
+ *  2025 uploads, one file with no levels of detail, up to 163 MB (c67edb74). */
+export const LEGACY_FORMATS: readonly string[] = ['compressed.ply'];
+/** Formats the simulator cannot open yet (resolveScene: 'unsupported', index.ts UNSUPPORTED_FILES). */
+export const UNSUPPORTED_FORMATS: readonly string[] = ['gsaf'];
 
 /**
  * What the API's format field says. It does not label old uploads reliably: legacy compressed-PLY scenes
  * come back with format '' (review C9; 2026-10-01, top 40 walkable by likes: both ''-format scenes, among
  * them the best-liked of all, c67edb74, have only scene.compressed.ply on the CDN). So only the formats
- * named above count as known; anything else is 'unknown' and is not picked without a check.
+ * named above count as known; anything else is 'unknown' and is not picked without a check. Only 'opens' is
+ * picked at random or by the tour; 'legacy' opens when the pilot chooses it.
  */
-export function formatVerdict(format: string): 'opens' | 'unsupported' | 'unknown' {
+export function formatVerdict(format: string): 'opens' | 'legacy' | 'unsupported' | 'unknown' {
     if (SUPPORTED_FORMATS.includes(format)) return 'opens';
+    if (LEGACY_FORMATS.includes(format)) return 'legacy';
     return UNSUPPORTED_FORMATS.includes(format) ? 'unsupported' : 'unknown';
 }
 

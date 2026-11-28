@@ -13,8 +13,8 @@ import './editor.css';
 import './keep.css';
 import { clockOf, type DraftEntry } from './drafts';
 import { draftByKey } from './keep-texts';
-import { fieldProblem, type SaveAgain } from './save-words';
-import { OFFER_KEYS, type FixAnswer } from './fixes';
+import { FIXED_KEYS, SAVE_ASK_KEYS, fieldProblem, type SaveAgain } from './save-words';
+import type { FixAnswer } from './fixes';
 
 export interface PanelHost {
     key(press: KeyPress): void;
@@ -58,6 +58,11 @@ export class EditorPanel {
     private readonly offerText: HTMLElement;
     private readonly offerYes: HTMLButtonElement;
     private offerAnswer: ((a: FixAnswer) => void) | null = null;
+    private readonly offerList: HTMLElement;
+    private readonly fixed: HTMLElement;
+    private readonly fixedText: HTMLElement;
+    private onUndo: (() => void) | null = null;
+    private readonly fixedUndo: HTMLButtonElement;
 
     constructor(ui: HTMLElement, private readonly host: PanelHost) {
         const root = el('section', 'course-editor interactive');
@@ -134,26 +139,48 @@ export class EditorPanel {
         this.again.type = 'button';
         this.again.hidden = true;
         this.again.addEventListener('click', () => host.saveMine(this.name.value, this.title.value));
-        // lane edit4s (E7): a refused Save offers to make the small corrections itself (fixes.ts)
+        // lane n-save (the owner's wish 1; edit4s's offer box): Save with warnings asks once: the count, one line per kind,
+        // Fix all automatically (main), Save as it is, Show me; the cross closes it and nothing is saved
         this.offer = el('div', 'ce-fix-offer');
         this.offer.hidden = true;
+        this.offer.dataset.testid = 'save-warnings';
         this.offer.setAttribute('role', 'alertdialog');
         this.offerText = el('p', 'ce-fix-text');
-        this.offerYes = el('button', 'ce-fix-yes');
-        this.offerYes.type = 'button';
-        this.offerYes.addEventListener('click', () => this.answer('yes'));
-        const show = el('button', 'ce-fix-show', t(OFFER_KEYS.show));
-        show.type = 'button';
-        show.addEventListener('click', () => this.answer('show'));
-        const close = el('button', 'ce-fix-close', '×');
-        close.type = 'button';
-        close.setAttribute('aria-label', t(OFFER_KEYS.close));
-        close.title = t(OFFER_KEYS.close);
-        close.addEventListener('click', () => this.answer('close'));
+        this.offerList = el('ul', 'ce-fix-list');
+        const button = (cls: string, key: string, a: FixAnswer, id: string): HTMLButtonElement => {
+            const b = el('button', cls, t(key));
+            b.type = 'button';
+            b.dataset.testid = id;
+            b.addEventListener('click', () => this.answer(a));
+            return b;
+        };
+        this.offerYes = button('ce-fix-yes', SAVE_ASK_KEYS.fixAll, 'fix', 'save-fix-all');
+        const asIs = button('ce-fix-show', SAVE_ASK_KEYS.asIs, 'as-is', 'save-as-is');
+        const show = button('ce-fix-show', SAVE_ASK_KEYS.show, 'show', 'save-show-me');
+        const close = button('ce-fix-close', SAVE_ASK_KEYS.close, 'close', 'save-warnings-close');
+        close.textContent = '×';
+        close.setAttribute('aria-label', t(SAVE_ASK_KEYS.close));
+        close.title = t(SAVE_ASK_KEYS.close);
         const buttons = el('div', 'ce-fix-buttons');
-        buttons.append(this.offerYes, show);
-        this.offer.append(this.offerText, buttons, close);
-        save.append(this.name, this.title, this.rule, this.mine, this.offer, this.again, this.all, this.admin);
+        buttons.append(this.offerYes, asIs, show);
+        this.offer.append(this.offerText, this.offerList, buttons, close);
+        // the line after Fix all: how many gates moved, what was left as it is, and Undo (every gate back, one step)
+        this.fixed = el('div', 'ce-fix-offer ce-fixed');
+        this.fixed.hidden = true;
+        this.fixed.dataset.testid = 'save-fixed';
+        this.fixed.setAttribute('role', 'status');
+        this.fixedText = el('p', 'ce-fix-text');
+        const undo = el('button', 'ce-fix-yes', t(FIXED_KEYS.undo));
+        this.fixedUndo = undo;
+        undo.type = 'button';
+        undo.dataset.testid = 'save-undo';
+        undo.addEventListener('click', () => {
+            const on = this.onUndo;
+            this.fixedLine(null);
+            on?.();
+        });
+        this.fixed.append(this.fixedText, undo);
+        save.append(this.name, this.title, this.rule, this.mine, this.offer, this.fixed, this.again, this.all, this.admin);
         root.append(save);
 
         // lane edit4s (E6): the drafts this browser kept, each with a way back (parts/keep.ts)
@@ -207,27 +234,38 @@ export class EditorPanel {
     }
 
     /**
-     * Lane edit4s (E7): the offer of small corrections (its sentence, the yes button's words), answered once by `on`; null
-     * takes it away. The window opens so it is seen, and the yes button takes the focus (key Enter answers it).
+     * Lane n-save: the Save dialog (its count line and one line per warning kind), answered once by `on`; null takes it
+     * away. The window opens so it is seen, and Fix all automatically takes the focus (key Enter answers it).
      */
-    offerFixes(offer: { text: string; yes: string } | null, on: ((a: FixAnswer) => void) | null = null): void {
-        this.offerAnswer = offer ? on : null;
-        this.offer.hidden = offer === null;
-        if (!offer) return;
-        this.offerText.textContent = offer.text;
-        this.offerYes.textContent = offer.yes;
+    askSave(ask: { title: string; lines: readonly string[] } | null, on: ((a: FixAnswer) => void) | null = null): void {
+        this.offerAnswer = ask ? on : null;
+        this.offer.hidden = ask === null;
+        if (!ask) return;
+        this.fixedLine(null);
+        this.offerText.textContent = ask.title;
+        this.offerList.replaceChildren(...ask.lines.map((l) => el('li', undefined, l)));
         this.root.classList.add('ce-open');
         this.offerYes.focus();
     }
 
-    /** true while the offer of corrections waits for its answer */
+    /** the line after Fix all with its Undo (`undo` runs once, then the line goes); null takes it away */
+    fixedLine(text: string | null, undo: (() => void) | null = null): void {
+        this.onUndo = text === null ? null : undo;
+        this.fixed.hidden = text === null;
+        this.fixedText.textContent = text ?? '';
+        // nothing moved: no Undo (no button that does nothing)
+        this.fixedUndo.hidden = this.onUndo === null;
+        if (text !== null) this.root.classList.add('ce-open');
+    }
+
+    /** true while the Save dialog waits for its answer */
     offering(): boolean {
         return !this.offer.hidden;
     }
 
     private answer(a: FixAnswer): void {
         const on = this.offerAnswer;
-        this.offerFixes(null);
+        this.askSave(null);
         on?.(a);
     }
 

@@ -25,6 +25,7 @@ import { assertWalls } from '../bake';
 import { wallsState } from '../flightwalls';
 import type { WallsState } from '../flightwalls';
 import { SessionLoader, firstWalls, wallsPlaces } from './loader';
+import { deviceSplatLimit, openCheck } from './open-error';
 import { LoadCancelled, abortable } from '../app/scene-load';
 import type { WallsFrom } from './loader';
 import type { LoadProgress } from './loader';
@@ -381,6 +382,12 @@ export class FlightSession {
         const tr = built ? null : o.transform;
         this.transform = tr ? f32(tr.v && tr.v !== this.scene.version ? { s: tr.s, t: [0, 0, 0] } : tr) : IDENTITY;
         this.renderer.setSceneTransform(this.transform.s, [...this.transform.t]);
+        // lane n-scan: a single SOG too large for this device, gone or in a newer version says so before it loads
+        // (also with ?render=off): one plain line, never an endless loader (open-error.ts)
+        if (!built) {
+            const room = { maxTextureSize: this.renderer.app?.graphicsDevice?.maxTextureSize ?? 0, memoryGB: (globalThis.navigator as { deviceMemory?: number } | undefined)?.deviceMemory };
+            await abortable(openCheck(this.scene, (u) => fetch(u, signal ? { signal } : {}), deviceSplatLimit(room)), signal);
+        }
         const splatLoad = this.drawScan ? this.loadContent() : Promise.resolve(null);
         // the walls download beside the scan, not before it: one slow host no longer holds up the other
         // (a built-in world's are in memory already)

@@ -97,7 +97,8 @@ export const VY_AVG_TAU_S = 0.3;
 /**
  * The motors stop only at the bottom of a hop: within this much of the lowest clearance seen while resting. Cut at
  * the top of a hop (4 cm on the Mach R5) the drone falls and its body spheres slap the floor at 1.8 m/s, six
- * times the speed it landed at.
+ * times the speed it landed at. Nor on the rise of a hop (vertical speed above zero): with prop wash on every craft the
+ * Mach R5 from 20 m at slow sat within this band at +0.27 m/s, rose on and touched at 1.42 m/s when cut there.
  */
 export const LANDED_SETTLE_M = 0.012;
 /** A lesson bump whose normal is this far from vertical or more (its share on the ground) is a wall's (GameAssist.bump). */
@@ -449,7 +450,7 @@ export class GameAssist {
         const resting = keys.lift < 0 && gm !== null && gm < LANDED_M && Math.abs(this.vyAvg) < LANDED_MPS;
         this.landedFor = resting ? this.landedFor + dtc : 0;
         this.lowM = resting ? Math.min(this.lowM, gm) : Infinity;
-        this.landed = this.landedFor >= LANDED_S && gm !== null && gm <= this.lowM + LANDED_SETTLE_M;
+        this.landed = this.landedFor >= LANDED_S && gm !== null && gm <= this.lowM + LANDED_SETTLE_M && s[S.vy] <= 0;
         return { roll, pitch, yaw, throttle };
     }
 }

@@ -8,6 +8,7 @@ import { parseSceneLink, toggleFavourite, getFilter, setFilter, posterUrl, known
 import type { CatalogCollection, CatalogScene, FilterKey, PickerRow, PickerTabId, SceneCatalog, SceneFacts, SceneFilter } from '@gsfpv/scenes';
 import { h, clear } from './dom';
 import { t, locale } from '../i18n';
+import { failureText } from '../session/open-error';
 import { creditFacts } from '../scene-facts';
 import { openSharePanel } from '../share/panel';
 import { shareIcon } from '../share/icon';
@@ -127,8 +128,8 @@ export class ScenePicker {
     }
 
     showError(code: string, msg?: string): void {
-        // a scene in a format we cannot open yet is not "missing": its text lives with the picker
-        this.err.textContent = code === 'unsupported' ? t('scenes.unsupported') : t(`error.${code}`, { msg: msg ?? '' });
+        // one plain line with what to do next (session/open-error.ts: the four reasons, GSAF, the other codes)
+        this.err.textContent = failureText(code, msg ?? '', t);
     }
 
     /**

@@ -1,6 +1,6 @@
 {
   "set.physics.propWash": "Prop wash (estela propia)",
-  "set.physics.propWash.help": "Cuánto empuje pierde el dron, y cuánto tiembla, mientras se hunde en su propia corriente descendente (al frenar una caída o un picado). 1 = el preset, 0 = apagado. Los whoops no tienen prop wash en el simulador.",
+  "set.physics.propWash.help": "Cuánto empuje pierde el dron, y cuánto tiembla, mientras se hunde en su propia corriente descendente (al frenar una caída o un picado). Todos los drones lo tienen, según su peso, sus hélices y sus ductos. 1 = como en la realidad, 0 = apagado, 2 = el doble.",
   "set.drone.tune": "¿Vuelas este dron de verdad y aquí su física no te convence? Envía a Andrii tu diff all de Betaflight, un log de blackbox y unas palabras, o pide un dron que falte.",
   "set.drone.tuneButton": "Ayuda a ajustar este dron",
   "drone.tune.lead": "Estos drones están hechos con cifras publicadas y estimaciones. ¿Vuelas uno de verdad y aquí se siente distinto? Envía tu diff all de Betaflight, un log de blackbox y unas palabras: así mejoran. ¿Falta tu dron? Pídelo.",

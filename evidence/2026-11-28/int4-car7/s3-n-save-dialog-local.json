@@ -1,0 +1,241 @@
+{
+ "address": "http://localhost:6180/en",
+ "live": true,
+ "scan": "70b50d42",
+ "size": [
+  1536,
+  730
+ ],
+ "dsf": 1.25,
+ "date": "2026-11-28T19:43:44.603Z",
+ "steps": {
+  "open": {
+   "ok": true,
+   "status": "ready",
+   "lock": "CANVAS",
+   "open": true,
+   "ms": 2093,
+   "gates": 13
+  },
+  "build": {
+   "ok": true,
+   "gates": 3,
+   "added": [
+    0,
+    1,
+    1
+   ],
+   "cOff": {
+    "at": [
+     768,
+     365,
+     10
+    ],
+    "apart": 2
+   },
+   "pull": {
+    "look": {
+     "up0": 108,
+     "steps": [
+      85,
+      0
+     ]
+    },
+    "ok": false,
+    "tries": [
+     {
+      "n": 0,
+      "ax": "x",
+      "px": 40,
+      "moved": 0.7,
+      "tip": "head:x",
+      "along": 106,
+      "hit": "CANVAS."
+     },
+     {
+      "n": 1,
+      "ax": "z",
+      "tip": null
+     },
+     {
+      "n": 2,
+      "ax": "y",
+      "tip": null
+     },
+     {
+      "n": 3,
+      "ax": "x",
+      "px": -40,
+      "moved": 0.7,
+      "tip": "head:x",
+      "along": 106,
+      "hit": "CANVAS."
+     },
+     {
+      "n": 4,
+      "ax": "z",
+      "tip": null
+     },
+     {
+      "n": 5,
+      "ax": "y",
+      "tip": null
+     },
+     {
+      "n": 7,
+      "ax": "z",
+      "tip": null
+     },
+     {
+      "n": 8,
+      "ax": "y",
+      "tip": null
+     },
+     {
+      "n": 10,
+      "ax": "z",
+      "tip": null
+     },
+     {
+      "n": 11,
+      "ax": "y",
+      "tip": null
+     },
+     {
+      "n": 13,
+      "ax": "z",
+      "tip": null
+     },
+     {
+      "n": 14,
+      "ax": "y",
+      "tip": null
+     },
+     {
+      "n": 16,
+      "ax": "z",
+      "tip": null
+     },
+     {
+      "n": 17,
+      "ax": "y",
+      "tip": null
+     },
+     {
+      "n": 19,
+      "ax": "z",
+      "tip": null
+     },
+     {
+      "n": 20,
+      "ax": "y",
+      "tip": null
+     },
+     {
+      "n": 22,
+      "ax": "z",
+      "tip": null
+     },
+     {
+      "n": 23,
+      "ax": "y",
+      "tip": null
+     }
+    ],
+    "apart": 2.000010999969751
+   },
+   "pair": [
+    0,
+    1
+   ],
+   "pairApart": 2,
+   "low": null,
+   "bury": {
+    "ok": true,
+    "tries": []
+   },
+   "problems": [
+    {
+     "code": "gate-wall",
+     "gate": 0
+    },
+    {
+     "code": "gate-wall",
+     "gate": 1
+    }
+   ],
+   "line": "Selected. Gate 1 of 3: square, 1.5 m"
+  },
+  "dialog": {
+   "ok": true,
+   "t0": 1795895048434,
+   "pressed": true,
+   "typed": {
+    "title": true,
+    "name": true
+   },
+   "dialog": {
+    "text": "Warnings: 2. You can still save the course as it is.In a wall of the scan or outside it (gates: 1, 2)Fix all automaticallySave as it isShow me\u00d7",
+    "order": [
+     "save-fix-all",
+     "save-as-is",
+     "save-show-me"
+    ]
+   },
+   "line": "Warnings: 2. You can still save the course as it is.",
+   "kinds": [
+    "in-scan"
+   ]
+  },
+  "asIs.saved": {
+   "ok": false,
+   "why": "the dialog came",
+   "line": "Warnings: 2. You can still save the course as it is.",
+   "said": "Warnings: 2. You can still save the course as it is.",
+   "aborted": [
+    {
+     "aborted": "http://localhost:6180/api/e",
+     "method": "POST"
+    },
+    {
+     "aborted": "http://localhost:6180/api/e",
+     "method": "POST"
+    },
+    {
+     "aborted": "http://localhost:6180/api/e",
+     "method": "POST"
+    }
+   ]
+  }
+ },
+ "posts": [
+  {
+   "aborted": "http://localhost:6180/api/e",
+   "method": "POST"
+  },
+  {
+   "aborted": "http://localhost:6180/api/e",
+   "method": "POST"
+  },
+  {
+   "aborted": "http://localhost:6180/api/e",
+   "method": "POST"
+  }
+ ],
+ "notRun": [
+  "build.samePlace: the nearest two gates stand 2 m apart (Add gate keeps 2 m)",
+  "asIs.reload",
+  "showMe",
+  "fixAll",
+  "fixAll.undo",
+  "reload"
+ ],
+ "shots": [
+  "U:\\Temp\\gsfpv-train4\\shots\\n-save-dialog.png"
+ ],
+ "error": "Error: LIVE: stopped before any save",
+ "fails": [
+  "asIs.saved"
+ ],
+ "log": []
+}

@@ -23,6 +23,8 @@
       "source": "manufacturer",
       "ref": "https://betafpv.com/products/pavo-pico-brushless-whoop-quadcopter"
     },
+    "prop_diameter_mm": { "value": 45, "source": "manufacturer", "note": "Gemfan 45 mm; the rotor disk of the prop wash model (sim-core wake.ts)" },
+    "ducted": { "value": true, "source": "manufacturer", "note": "whoop: every prop runs in a duct; the prop wash band moves by WAKE_DUCT_SHIFT (sim-core wake.ts)" },
     "dry_mass_g": {
       "value": 72,
       "source": "measured:public review",

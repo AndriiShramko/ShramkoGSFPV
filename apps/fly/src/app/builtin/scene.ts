@@ -1,7 +1,7 @@
 // The scene flown: the credit line (a catalogue scene, or a scan whose facts the SuperSplat tab
 // showed when it was picked, carries title, author and licence; a pasted scene links to its original)
 // with the takedown link, the flight counted in the scene history on the first arm, and the menu's
-// "Change scene" (the picker over the flight, app/scene-host.ts). sceneCredit() is what every credit
+// "Choose a scan" (the picker over the flight, app/scene-host.ts). sceneCredit() is what every credit
 // of this scene starts from: the share picture and caption, the video's burned-in line, the notice.
 import { recordFlight, sceneFacts } from '@gsfpv/scenes';
 import { modeFromChannel } from '@gsfpv/sim-core';
@@ -41,7 +41,8 @@ export const scene: Feature = {
             if (e.type === 'arm') { beacon('arm', {}, { scene_id: ctx.scene.id, mode: ctx.session.sim ? modeFromChannel(ctx.session.sim.ch[5]) : undefined }); recordFlight(ctx.scene.id); }
         });
 
-        // the picker over the flight (E.4): a picked scene loads in the page, the radio stays connected
-        ctx.menu.add({ id: 'pause.scene', action: null, labelKey: 'pause.scene', order: 30, section: 'scene', run: () => ctx.scenes.openPicker() });
+        // the picker over the flight (E.4): a picked scene loads in the page, the radio stays connected. The item
+        // wears the catalogue's own title (scenes.title, "Choose a scan"), as the crash card's button does (w2-pilot)
+        ctx.menu.add({ id: 'pause.scene', action: null, labelKey: 'scenes.title', order: 30, section: 'scene', run: () => ctx.scenes.openPicker() });
     }
 };

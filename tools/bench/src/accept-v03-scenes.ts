@@ -216,7 +216,7 @@ if (want('S3')) {
     const panelSwitch = await switched(p);
     const panelAfter = await hook(p, 'return { scene: s.scene.id, sameFake: window.__fake === h.fake, panel: !!document.querySelector(\'[data-testid="crash-panel"]\'), controlsScreen: !!document.querySelector(".screen.radio") };');
     const panel = { crashed: panelCrashed, row, switch: panelSwitch, after: panelAfter,
-        ok: panelCrashed && row.map((r: Any) => `${r.action}:${r.keys}`).join() === 'scene-next:N,scene-random:Shift+N,scene-favourite:Shift+F' && panelSwitch.state === 'done' && panelSwitch.reason === 'next' && panelAfter.scene !== A && panelAfter.sameFake && !panelAfter.panel && !panelAfter.controlsScreen };
+        ok: panelCrashed && row.map((r: Any) => `${r.action}:${r.keys}`).join() === 'scene-pick:null,scene-next:N,scene-random:Shift+N,scene-favourite:Shift+F' && panelSwitch.state === 'done' && panelSwitch.reason === 'next' && panelAfter.scene !== A && panelAfter.sameFake && !panelAfter.panel && !panelAfter.controlsScreen };
     // back to A (its spawn drop crashes at 2 m/s) for the automatic switch
     await hook(p, `h.sceneSwitch = null; h.scenes.load('${A}', 'pick'); return 0;`);
     await switched(p);

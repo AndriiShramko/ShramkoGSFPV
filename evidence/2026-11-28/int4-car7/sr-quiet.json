@@ -1,0 +1,68 @@
+{
+ "base": "http://localhost:6180/pl",
+ "runs": {
+  "plain-before": {
+   "paused": true,
+   "open": [
+    "walls-panel",
+    "school-panel"
+   ],
+   "after": {
+    "paused": false,
+    "reasons": null
+   }
+  },
+  "plain": {
+   "url": "http://localhost:6180/pl/fly/?scene=887f27aa&nowarn=1&set.input.howToFly=false&render=off",
+   "flyS": 8,
+   "liveChanges": 2,
+   "perSecond": 0.21,
+   "sample": [
+    {
+     "t": 9953,
+     "text": "Crash przy 5.2 m/s. Dron wr\u00f3ci sam. Enter: zosta\u0144 tutaj.Crash 5.2 m/s \u00b7 na start",
+     "path": "div.crash-toast[crash-toast]"
+    },
+    {
+     "t": 16871,
+     "text": "Crash przy 7.7 m/s. Dron wr\u00f3ci sam. Enter: zosta\u0144 tutaj.Crash 7.7 m/s \u00b7 na start",
+     "path": "div.crash-toast[crash-toast]"
+    }
+   ],
+   "trText": "12.6 V  6.3 s",
+   "paused": false,
+   "trHidden": "true",
+   "uiLive": "polite"
+  },
+  "sound-before": {
+   "paused": true,
+   "open": [
+    "walls-panel",
+    "school-panel"
+   ],
+   "after": {
+    "paused": false,
+    "reasons": null
+   }
+  },
+  "sound": {
+   "url": "http://localhost:6180/pl/fly/?scene=887f27aa&nowarn=1&set.input.howToFly=false&render=off",
+   "flyS": 8,
+   "liveChanges": 0,
+   "perSecond": 0,
+   "sample": [],
+   "trText": "12.4 V  14.8 s",
+   "paused": false,
+   "trHidden": "true",
+   "uiLive": "off"
+  },
+  "startScreen": {
+   "keysList": {
+    "text": "Klawisze\n\nKlawisze lotu na klawiaturze.\n\nSpacja: w g\u00f3r\u0119. Przytrzymaj, aby wznosi\u0107.\nShift: w d\u00f3\u0142. Przytrzymaj, aby opada\u0107 i l\u0105dowa\u0107.\nW albo strza\u0142ka w g\u00f3r\u0119: do przodu. S albo strza\u0142ka w d\u00f3\u0142: do ty\u0142u.\nA i D: bokiem w lewo i w prawo.\nStrza\u0142ki w lewo i w prawo albo Q i E: obr\u00f3t w miejscu.\nPu\u015b\u0107 wszystkie klawisze, a dron zatrzyma si\u0119 i zawi\u015bnie w miejscu.\n\nW lekcji naci\u015bnij K, aby us\u0142ysze\u0107 wszystkie klawisze trybu.",
+    "hidden": false,
+    "visible": true
+   }
+  }
+ },
+ "errors": []
+}

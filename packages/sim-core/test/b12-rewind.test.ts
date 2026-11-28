@@ -27,7 +27,7 @@ import type { VoxelCollision, VoxelMetadata } from '../../collision/src/index';
 import { BotPilot } from '../../input/src/sim/bot';
 import { Scenario } from '../../input/src/sim/scenario';
 import { makePlan } from '../../input/src/sim/plan';
-import { PRESET, attachDirector } from './log-kit';
+import { PRESET, attachDirector, wakeOffHeader } from './log-kit';
 
 const FIX = join(__dirname, '..', '..', '..', 'fixtures', '39e63ce9');
 let COL: VoxelCollision;
@@ -87,7 +87,8 @@ function b12(dash: 'control' | 'crash', leadS: number): { crashes: Crash[]; cont
 
 function recordedLife(): { life: Life; deps: ReplayDeps } {
     const bytes = new Uint8Array(Buffer.from(REC.life.b64, 'base64'));
-    const life: Life = { header: REC.life.header, bytes: () => bytes, endTick: REC.life.endTick, traceHash: REC.life.hash, hashFrom: REC.life.hashFrom };
+    // recorded by sim-core/0.2.0: replayed by today's model with the prop wash off (log-kit wakeOffHeader)
+    const life: Life = { header: wakeOffHeader(REC.life.header, PRESET), bytes: () => bytes, endTick: REC.life.endTick, traceHash: REC.life.hash, hashFrom: REC.life.hashFrom };
     const world = new VoxelContactWorld(COL);
     return { life, deps: { preset: () => REC.life.header.presetJson ?? null, world: () => world } };
 }

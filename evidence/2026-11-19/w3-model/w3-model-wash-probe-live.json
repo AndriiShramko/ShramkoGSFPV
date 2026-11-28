@@ -1,0 +1,78 @@
+{
+ "base": "https://gsfpv.flyreelstudio.eu/en",
+ "scene": "39e63ce9",
+ "runs": {
+  "default": {
+   "status": "ready",
+   "preset": "pavo20pro-3s",
+   "setting": 1,
+   "overridesWake": null,
+   "life": {
+    "wakeLoss": 0,
+    "wakeShake": 0,
+    "wakeArea": 0
+   },
+   "flight": {
+    "armed": true,
+    "hoverStick": 0.3031,
+    "vyAtCatch": -9.84,
+    "sinkM": 4.72,
+    "washMax": 0,
+    "washMs": 0,
+    "wobbleDps": 0
+   }
+  },
+  "x0": {
+   "status": "ready",
+   "preset": "pavo20pro-3s",
+   "setting": 0,
+   "overridesWake": 0,
+   "life": {
+    "wakeLoss": 0,
+    "wakeShake": 0,
+    "wakeArea": 0
+   },
+   "flight": {
+    "armed": true,
+    "hoverStick": 0.3031,
+    "vyAtCatch": -9.84,
+    "sinkM": 4.72,
+    "washMax": 0,
+    "washMs": 0,
+    "wobbleDps": 0
+   }
+  },
+  "x2": {
+   "status": "ready",
+   "preset": "pavo20pro-3s",
+   "setting": 2,
+   "overridesWake": 2,
+   "life": {
+    "wakeLoss": 0,
+    "wakeShake": 0,
+    "wakeArea": 0
+   },
+   "flight": {
+    "armed": true,
+    "hoverStick": 0.3031,
+    "vyAtCatch": -9.84,
+    "sinkM": 4.72,
+    "washMax": 0,
+    "washMs": 0,
+    "wobbleDps": 0
+   }
+  }
+ },
+ "checks": {
+  "loaded": "PASS",
+  "default craft": "PASS",
+  "default setting 1 reaches the life": "FAIL",
+  "setting 0 reaches the life": "PASS",
+  "setting 0: no wash at all": "PASS",
+  "setting 1: wash in the catch": "FAIL",
+  "setting 1 sinks deeper than 0": "FAIL",
+  "setting 2 sinks deeper than 1": "FAIL"
+ },
+ "errors": [],
+ "verdict": "FAIL"
+}

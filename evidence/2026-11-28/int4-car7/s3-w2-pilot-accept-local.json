@@ -1,0 +1,275 @@
+{
+ "probe": "w2-pilot-accept",
+ "base": "http://localhost:6180",
+ "browser": "system-chrome",
+ "view": "1536x730@1.25",
+ "at": "2026-11-28T19:43:36.476Z",
+ "pass": true,
+ "steps": {
+  "capture": {
+   "pass": true,
+   "controls": true,
+   "pointerLock": true
+  },
+  "pausePick": {
+   "pass": true,
+   "menu": true,
+   "key": "Escape",
+   "label": "Choose a scan",
+   "viaPause": {
+    "shown": true,
+    "cards": 4,
+    "id": "7a475d38",
+    "loaded": true,
+    "rec": {
+     "from": "39e63ce9",
+     "to": "7a475d38",
+     "reason": "pick",
+     "ok": true,
+     "ms": 1913
+    },
+    "pickerGone": true,
+    "captured": true,
+    "climbed": 1.55,
+    "flies": true
+   }
+  },
+  "gentle": {
+   "pass": true,
+   "scene": "7a475d38",
+   "touch": {
+    "type": "contact",
+    "speed": 6.59,
+    "ny": 0.96
+   },
+   "groundCrash": [],
+   "slope": [],
+   "tries": [
+    {
+     "run": 0,
+     "rest": true,
+     "model": {
+      "vCrash": 4,
+      "vCrashGround": 7,
+      "lastCrash": null,
+      "groundTouch": {
+       "type": "contact",
+       "speed": 6.59,
+       "ny": 0.96
+      }
+     },
+     "h": 0.5,
+     "peak": 1.37,
+     "driftCut": 0,
+     "driftEnd": 0.67,
+     "climbed": 0.63,
+     "impact": 4.17,
+     "crashed": false,
+     "armed": true,
+     "crashes": 0,
+     "crashesBefore": 0,
+     "alt": 0.13
+    }
+   ]
+  },
+  "hard": {
+   "pass": true,
+   "scene": "887f27aa",
+   "hard": {
+    "model": {
+     "vCrash": 4,
+     "vCrashGround": 7,
+     "lastCrash": {
+      "speed": 8.6,
+      "ny": 1
+     },
+     "groundTouch": {
+      "type": "crash",
+      "speed": 8.6,
+      "ny": 1
+     }
+    },
+    "h": 2.5,
+    "peak": 3.47,
+    "driftCut": 0,
+    "driftEnd": 0.13,
+    "climbed": 2.51,
+    "impact": 8.17,
+    "crashed": true,
+    "armed": false,
+    "crashes": 1,
+    "crashesBefore": 0,
+    "alt": -2.07
+   }
+  },
+  "cardPick": {
+   "pass": true,
+   "crashed": true,
+   "toast": "Crash at 8.6 m/s. The drone comes back by itself. Enter: stay here.Crash 8.6 m/s \u00b7 back 5 s in 1.5 sEnterStayRBack to startNNext sceneShift+FFavourite",
+   "card": true,
+   "row": [
+    {
+     "action": "scene-pick",
+     "text": "Choose a scan"
+    },
+    {
+     "action": "scene-next",
+     "text": "Next sceneN"
+    },
+    {
+     "action": "scene-random",
+     "text": "Random sceneShift+N"
+    },
+    {
+     "action": "scene-favourite",
+     "text": "Next favourite sceneShift+F"
+    }
+   ],
+   "viaCard": {
+    "shown": true,
+    "cards": 4,
+    "id": "39e63ce9",
+    "loaded": true,
+    "rec": {
+     "from": "887f27aa",
+     "to": "39e63ce9",
+     "reason": "pick",
+     "ok": true,
+     "ms": 1115
+    },
+    "pickerGone": true,
+    "captured": false,
+    "climbed": 0.88,
+    "flies": true
+   }
+  },
+  "cameraEn": {
+   "pass": true,
+   "line": {
+    "text": "Camera angle: key O opens Settings, then Camera, Camera uptilt.",
+    "top": 556,
+    "bottom": 577,
+    "h": 22,
+    "font": "15px"
+   }
+  },
+  "cameraPl": {
+   "pass": true,
+   "line": {
+    "text": "K\u0105t kamery: klawisz O otwiera Ustawienia, potem Kamera, K\u0105t nachylenia kamery.",
+    "top": 556,
+    "bottom": 599,
+    "h": 44,
+    "font": "15px"
+   }
+  }
+ },
+ "errors": [],
+ "sent": {
+  "count": 34,
+  "outsideApi": [
+   {
+    "method": "HEAD",
+    "url": "https://d28zzqy0iyovbz.cloudfront.net/39e63ce9/v1/lod-meta.json",
+    "api": false
+   },
+   {
+    "method": "HEAD",
+    "url": "https://d28zzqy0iyovbz.cloudfront.net/39e63ce9/v1/meta.json",
+    "api": false
+   },
+   {
+    "method": "HEAD",
+    "url": "https://d28zzqy0iyovbz.cloudfront.net/39e63ce9/v1/scene.voxel.json",
+    "api": false
+   },
+   {
+    "method": "HEAD",
+    "url": "https://d28zzqy0iyovbz.cloudfront.net/7a475d38/v1/lod-meta.json",
+    "api": false
+   },
+   {
+    "method": "HEAD",
+    "url": "https://d28zzqy0iyovbz.cloudfront.net/7a475d38/v1/meta.json",
+    "api": false
+   },
+   {
+    "method": "HEAD",
+    "url": "https://d28zzqy0iyovbz.cloudfront.net/7a475d38/v1/scene.voxel.json",
+    "api": false
+   },
+   {
+    "method": "HEAD",
+    "url": "https://d28zzqy0iyovbz.cloudfront.net/7a475d38/v1/lod-meta.json",
+    "api": false
+   },
+   {
+    "method": "HEAD",
+    "url": "https://d28zzqy0iyovbz.cloudfront.net/7a475d38/v1/meta.json",
+    "api": false
+   },
+   {
+    "method": "HEAD",
+    "url": "https://d28zzqy0iyovbz.cloudfront.net/7a475d38/v1/scene.voxel.json",
+    "api": false
+   },
+   {
+    "method": "HEAD",
+    "url": "https://d28zzqy0iyovbz.cloudfront.net/887f27aa/v1/lod-meta.json",
+    "api": false
+   },
+   {
+    "method": "HEAD",
+    "url": "https://d28zzqy0iyovbz.cloudfront.net/887f27aa/v1/meta.json",
+    "api": false
+   },
+   {
+    "method": "HEAD",
+    "url": "https://d28zzqy0iyovbz.cloudfront.net/887f27aa/v1/scene.voxel.json",
+    "api": false
+   },
+   {
+    "method": "HEAD",
+    "url": "https://d28zzqy0iyovbz.cloudfront.net/39e63ce9/v1/lod-meta.json",
+    "api": false
+   },
+   {
+    "method": "HEAD",
+    "url": "https://d28zzqy0iyovbz.cloudfront.net/39e63ce9/v1/meta.json",
+    "api": false
+   },
+   {
+    "method": "HEAD",
+    "url": "https://d28zzqy0iyovbz.cloudfront.net/39e63ce9/v1/scene.voxel.json",
+    "api": false
+   }
+  ],
+  "first": [
+   {
+    "method": "POST",
+    "url": "http://localhost:6180/api/e",
+    "api": true
+   },
+   {
+    "method": "HEAD",
+    "url": "https://d28zzqy0iyovbz.cloudfront.net/39e63ce9/v1/lod-meta.json",
+    "api": false
+   },
+   {
+    "method": "HEAD",
+    "url": "https://d28zzqy0iyovbz.cloudfront.net/39e63ce9/v1/meta.json",
+    "api": false
+   },
+   {
+    "method": "HEAD",
+    "url": "https://d28zzqy0iyovbz.cloudfront.net/39e63ce9/v1/scene.voxel.json",
+    "api": false
+   },
+   {
+    "method": "POST",
+    "url": "http://localhost:6180/api/e",
+    "api": true
+   }
+  ]
+ }
+}

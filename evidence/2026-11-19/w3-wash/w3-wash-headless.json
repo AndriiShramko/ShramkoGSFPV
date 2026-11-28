@@ -1,0 +1,419 @@
+{
+  "name": "w3-wash-headless",
+  "context": {
+    "date": "2026-11-26T17:38:02.826Z",
+    "gitHead": "078805f0",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "defaultPreset": "pavo20pro-3s",
+  "lightestPreset": "air65-1s",
+  "reference": "nazgulf5v3-6s",
+  "a6": {
+    "reference": "1d01ca5b16aef6edce77d10de52517cbb609ace4fa05e47c3dccdf13111fff65",
+    "shipped": "1d01ca5b16aef6edce77d10de52517cbb609ace4fa05e47c3dccdf13111fff65",
+    "shippedHolds": true,
+    "withTerm": "7ada5f20be706c45de1e07188eef47a45e59f755d2ccd6b842c7c113c4419717",
+    "withTermHolds": false
+  },
+  "crafts": [
+    {
+      "id": "pavo20pro-3s",
+      "massG": 151,
+      "shippedTerm": {
+        "wakeLoss": 0,
+        "wakeShake": 0,
+        "wakeAreaM2": 0
+      },
+      "onTerm": {
+        "borrowed": true,
+        "wakeLoss": 0.25,
+        "wakeShake": 0.3,
+        "propMm": 55.9,
+        "hoverInducedMps": 7.85
+      },
+      "off": {
+        "M1": {
+          "descent": {
+            "vyMps": -3.64,
+            "washPeak": 0,
+            "washMean": 0,
+            "washMs": 0,
+            "lossMean": 0,
+            "lossPeak": 0,
+            "thrustMeanN": 1.334,
+            "rmsRateDps": 0,
+            "rmsRateInWashDps": 0,
+            "maxTiltDeg": 0
+          },
+          "catch": {
+            "heightLostM": 0.311,
+            "washPeak": 0,
+            "washMean": 0,
+            "washMs": 0,
+            "lossMean": 0,
+            "lossPeak": 0,
+            "thrustMeanN": 1.753,
+            "rmsRateDps": 0,
+            "rmsRateInWashDps": 0,
+            "maxTiltDeg": 0
+          }
+        },
+        "M2": {
+          "atPunch": {
+            "vyMps": -9.96,
+            "horizontalMps": 0
+          },
+          "washPeak": 0,
+          "washMean": 0,
+          "washMs": 0,
+          "lossMean": 0,
+          "lossPeak": 0,
+          "thrustMeanN": 7.242,
+          "rmsRateDps": 0,
+          "rmsRateInWashDps": 0,
+          "maxTiltDeg": 0
+        },
+        "M2b": {
+          "atPunch": {
+            "vyMps": -4.24,
+            "horizontalMps": 3.46
+          },
+          "washPeak": 0,
+          "washMean": 0,
+          "washMs": 0,
+          "lossMean": 0,
+          "lossPeak": 0,
+          "thrustMeanN": 7.208,
+          "rmsRateDps": 37.23,
+          "rmsRateInWashDps": 0,
+          "maxTiltDeg": 16.57
+        }
+      },
+      "on": {
+        "M1": {
+          "descent": {
+            "vyMps": -3.85,
+            "washPeak": 0.239,
+            "washMean": 0.227,
+            "washMs": 1500,
+            "lossMean": 0.057,
+            "lossPeak": 0.06,
+            "thrustMeanN": 1.312,
+            "rmsRateDps": 2.1,
+            "rmsRateInWashDps": 2.1,
+            "maxTiltDeg": 0.11
+          },
+          "catch": {
+            "heightLostM": 0.333,
+            "washPeak": 0.239,
+            "washMean": 0,
+            "washMs": 5,
+            "lossMean": 0,
+            "lossPeak": 0.06,
+            "thrustMeanN": 1.768,
+            "rmsRateDps": 0.1,
+            "rmsRateInWashDps": 1.09,
+            "maxTiltDeg": 0.03
+          }
+        },
+        "M2": {
+          "atPunch": {
+            "vyMps": -9.97,
+            "horizontalMps": 0
+          },
+          "washPeak": 1,
+          "washMean": 0.035,
+          "washMs": 113,
+          "lossMean": 0.009,
+          "lossPeak": 0.25,
+          "thrustMeanN": 7.176,
+          "rmsRateDps": 2.32,
+          "rmsRateInWashDps": 6.66,
+          "maxTiltDeg": 0.26
+        },
+        "M2b": {
+          "atPunch": {
+            "vyMps": -4.24,
+            "horizontalMps": 3.46
+          },
+          "washPeak": 0.113,
+          "washMean": 0.001,
+          "washMs": 5,
+          "lossMean": 0,
+          "lossPeak": 0.028,
+          "thrustMeanN": 7.208,
+          "rmsRateDps": 37.23,
+          "rmsRateInWashDps": 3.05,
+          "maxTiltDeg": 16.57
+        }
+      }
+    },
+    {
+      "id": "air65-1s",
+      "massG": 24.3,
+      "shippedTerm": {
+        "wakeLoss": 0,
+        "wakeShake": 0,
+        "wakeAreaM2": 0
+      },
+      "onTerm": {
+        "borrowed": true,
+        "wakeLoss": 0.25,
+        "wakeShake": 0.3,
+        "propMm": 31,
+        "hoverInducedMps": 5.68
+      },
+      "off": {
+        "M1": {
+          "descent": {
+            "vyMps": -3.25,
+            "washPeak": 0,
+            "washMean": 0,
+            "washMs": 0,
+            "lossMean": 0,
+            "lossPeak": 0,
+            "thrustMeanN": 0.202,
+            "rmsRateDps": 0,
+            "rmsRateInWashDps": 0,
+            "maxTiltDeg": 0
+          },
+          "catch": {
+            "heightLostM": 0.332,
+            "washPeak": 0,
+            "washMean": 0,
+            "washMs": 0,
+            "lossMean": 0,
+            "lossPeak": 0,
+            "thrustMeanN": 0.277,
+            "rmsRateDps": 0,
+            "rmsRateInWashDps": 0,
+            "maxTiltDeg": 0
+          }
+        },
+        "M2": {
+          "atPunch": {
+            "vyMps": -8.16,
+            "horizontalMps": 0
+          },
+          "washPeak": 0,
+          "washMean": 0,
+          "washMs": 0,
+          "lossMean": 0,
+          "lossPeak": 0,
+          "thrustMeanN": 0.823,
+          "rmsRateDps": 0,
+          "rmsRateInWashDps": 0,
+          "maxTiltDeg": 0
+        },
+        "M2b": {
+          "atPunch": {
+            "vyMps": -4.52,
+            "horizontalMps": 2.73
+          },
+          "washPeak": 0,
+          "washMean": 0,
+          "washMs": 0,
+          "lossMean": 0,
+          "lossPeak": 0,
+          "thrustMeanN": 0.82,
+          "rmsRateDps": 37.41,
+          "rmsRateInWashDps": 0,
+          "maxTiltDeg": 16.57
+        }
+      },
+      "on": {
+        "M1": {
+          "descent": {
+            "vyMps": -3.71,
+            "washPeak": 0.536,
+            "washMean": 0.504,
+            "washMs": 1500,
+            "lossMean": 0.126,
+            "lossPeak": 0.134,
+            "thrustMeanN": 0.191,
+            "rmsRateDps": 5.59,
+            "rmsRateInWashDps": 5.59,
+            "maxTiltDeg": 0.35
+          },
+          "catch": {
+            "heightLostM": 0.398,
+            "washPeak": 0.536,
+            "washMean": 0.002,
+            "washMs": 16,
+            "lossMean": 0,
+            "lossPeak": 0.134,
+            "thrustMeanN": 0.282,
+            "rmsRateDps": 0.23,
+            "rmsRateInWashDps": 1.33,
+            "maxTiltDeg": 0.09
+          }
+        },
+        "M2": {
+          "atPunch": {
+            "vyMps": -8.16,
+            "horizontalMps": 0
+          },
+          "washPeak": 1,
+          "washMean": 0.075,
+          "washMs": 184,
+          "lossMean": 0.019,
+          "lossPeak": 0.25,
+          "thrustMeanN": 0.805,
+          "rmsRateDps": 4.84,
+          "rmsRateInWashDps": 11.22,
+          "maxTiltDeg": 0.67
+        },
+        "M2b": {
+          "atPunch": {
+            "vyMps": -4.52,
+            "horizontalMps": 2.73
+          },
+          "washPeak": 0.18,
+          "washMean": 0.002,
+          "washMs": 12,
+          "lossMean": 0,
+          "lossPeak": 0.045,
+          "thrustMeanN": 0.82,
+          "rmsRateDps": 37.4,
+          "rmsRateInWashDps": 25.32,
+          "maxTiltDeg": 16.57
+        }
+      }
+    },
+    {
+      "id": "nazgulf5v3-6s",
+      "massG": 736,
+      "shippedTerm": {
+        "wakeLoss": 0.25,
+        "wakeShake": 0.3,
+        "wakeAreaM2": 0.05268529419886423
+      },
+      "onTerm": {
+        "borrowed": false,
+        "wakeLoss": 0.25,
+        "wakeShake": 0.3,
+        "propMm": 129.5,
+        "hoverInducedMps": 7.48
+      },
+      "off": {
+        "M1": {
+          "descent": {
+            "vyMps": -3.83,
+            "washPeak": 0,
+            "washMean": 0,
+            "washMs": 0,
+            "lossMean": 0,
+            "lossPeak": 0,
+            "thrustMeanN": 6.759,
+            "rmsRateDps": 0,
+            "rmsRateInWashDps": 0,
+            "maxTiltDeg": 0
+          },
+          "catch": {
+            "heightLostM": 0.187,
+            "washPeak": 0,
+            "washMean": 0,
+            "washMs": 0,
+            "lossMean": 0,
+            "lossPeak": 0,
+            "thrustMeanN": 8.624,
+            "rmsRateDps": 0,
+            "rmsRateInWashDps": 0,
+            "maxTiltDeg": 0
+          }
+        },
+        "M2": {
+          "atPunch": {
+            "vyMps": -11.49,
+            "horizontalMps": 0
+          },
+          "washPeak": 0,
+          "washMean": 0,
+          "washMs": 0,
+          "lossMean": 0,
+          "lossPeak": 0,
+          "thrustMeanN": 56.356,
+          "rmsRateDps": 0,
+          "rmsRateInWashDps": 0,
+          "maxTiltDeg": 0
+        },
+        "M2b": {
+          "atPunch": {
+            "vyMps": -2.51,
+            "horizontalMps": 4.32
+          },
+          "washPeak": 0,
+          "washMean": 0,
+          "washMs": 0,
+          "lossMean": 0,
+          "lossPeak": 0,
+          "thrustMeanN": 56.18,
+          "rmsRateDps": 37.4,
+          "rmsRateInWashDps": 0,
+          "maxTiltDeg": 16.57
+        }
+      },
+      "on": {
+        "M1": {
+          "descent": {
+            "vyMps": -4.06,
+            "washPeak": 0.302,
+            "washMean": 0.299,
+            "washMs": 1500,
+            "lossMean": 0.075,
+            "lossPeak": 0.076,
+            "thrustMeanN": 6.684,
+            "rmsRateDps": 2.67,
+            "rmsRateInWashDps": 2.67,
+            "maxTiltDeg": 0.14
+          },
+          "catch": {
+            "heightLostM": 0.202,
+            "washPeak": 0.302,
+            "washMean": 0,
+            "washMs": 5,
+            "lossMean": 0,
+            "lossPeak": 0.076,
+            "thrustMeanN": 8.704,
+            "rmsRateDps": 0.12,
+            "rmsRateInWashDps": 1.3,
+            "maxTiltDeg": 0.04
+          }
+        },
+        "M2": {
+          "atPunch": {
+            "vyMps": -11.5,
+            "horizontalMps": 0
+          },
+          "washPeak": 0.994,
+          "washMean": 0.026,
+          "washMs": 79,
+          "lossMean": 0.007,
+          "lossPeak": 0.249,
+          "thrustMeanN": 56.012,
+          "rmsRateDps": 2.43,
+          "rmsRateInWashDps": 7.9,
+          "maxTiltDeg": 0.3
+        },
+        "M2b": {
+          "atPunch": {
+            "vyMps": -2.51,
+            "horizontalMps": 4.32
+          },
+          "washPeak": 0.017,
+          "washMean": 0,
+          "washMs": 0,
+          "lossMean": 0,
+          "lossPeak": 0.004,
+          "thrustMeanN": 56.18,
+          "rmsRateDps": 37.4,
+          "rmsRateInWashDps": 0,
+          "maxTiltDeg": 16.57
+        }
+      }
+    }
+  ]
+}

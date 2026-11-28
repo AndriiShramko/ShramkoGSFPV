@@ -99,7 +99,7 @@ describe('int4 car 3: edit4b Course menu Generate x gen4b Generate dialog (t7-ba
         expect(open).toMatch(/genDialog\.open\(\{[^}]*\bunsaved \}\)/);
     });
     it('a build asked from the editor opens the editor again on the new course', () => {
-        const at = course.indexOf('build: (r) => {');
+        const at = course.indexOf('build: (r, add) => {'); // w1-dialog: the build also says Add here
         const build = course.slice(at, course.indexOf('cancel: () => {', at));
         expect(build).toMatch(/if \(f\?\.from === 'editor'\) \{[^}]*reopenAfter = true;/);
     });

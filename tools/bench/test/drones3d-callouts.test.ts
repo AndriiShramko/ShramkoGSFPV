@@ -153,8 +153,8 @@ describe('legend rows in four languages', () => {
                 else if (!r.none) expect(r.ref, `${id} ${r.id}`).toMatch(/^https:\/\//);
             }
         }
-        // what the makers do not say: the connector of three packs, and the racer's camera model
-        expect(typical).toEqual({ 'pavopico-2s': ['battery'], 'nazgulf5v3-6s': ['battery'], 'machr5sport-6s': ['battery', 'camera'] });
+        // what the makers do not say: the connector of four packs, the racer's camera model, the Air65 II's video
+        expect(typical).toEqual({ 'pavopico-2s': ['battery'], 'air65iichamp-1s': ['battery', 'camera', 'vtx'], 'nazgulf5v3-6s': ['battery'], 'machr5sport-6s': ['battery', 'camera'] });
         const racerCam = calloutRows(buildFor(preset('machr5sport-6s')), say).find((r) => r.id === 'camera')!;
         expect(racerCam.basis).toBe('typical');
         expect(calloutRows(buildFor(preset('machr5sport-6s')), say).find((r) => r.id === 'vtx')!.basis).toBe('maker');

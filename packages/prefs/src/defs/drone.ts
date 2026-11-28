@@ -11,7 +11,7 @@ import type { SettingDef } from '../schema';
  * picker's order: the whoops, then (v0.8, docs/research/drones-v08.md) a 5-inch freestyle quad, a
  * 5-inch race quad and an X8 cinelifter carrying a cinema camera.
  */
-export const DRONE_IDS: readonly string[] = ['pavo20pro-3s', 'pavo20pro2-3s', 'pavo20pro2-4s', 'pavopico-2s', 'meteor65pro-1s', 'air65-1s', 'nazgulf5v3-6s', 'machr5sport-6s', 'taurusx8-komodo-6s'];
+export const DRONE_IDS: readonly string[] = ['pavo20pro-3s', 'pavo20pro2-3s', 'pavo20pro2-4s', 'pavopico-2s', 'meteor65pro-1s', 'air65-1s', 'air65champ-1s', 'air65iichamp-1s', 'nazgulf5v3-6s', 'machr5sport-6s', 'taurusx8-komodo-6s'];
 
 /**
  * The camera loads of the cinelifter (v0.9 lane D, docs/research/drone-models.md section 4): the RED KOMODO 6K rig the
@@ -37,8 +37,8 @@ export const DRONE_DEFS: readonly SettingDef[] = [
     // rotor and duct momentum drag (H.2 item 1); presets gain the field with W1-3
     { id: 'physics.ductDrag', group: 'drone', scope: 'drone', type: 'number', min: 0, max: 1.5, step: 0.05, unit: 'per_s', default: { preset: 'rotor_drag_per_s', fallback: 0.6 }, apply: 'life', shown: ['settings'], advanced: true, status: 'shipped', since: 1, items: [21] },
     { id: 'physics.propInertia', group: 'drone', scope: 'drone', type: 'number', min: 0, max: 3, step: 0.1, unit: 'x', default: 1, apply: 'life', shown: ['settings'], advanced: true, status: 'shipped', since: 1, items: [21] },
-    // v0.8 (docs/wip/v08-d.md): prop wash, sim-core wake.ts; a multiplier on the preset's wake_loss and
-    // wake_shake (ParamOverrides.wake). The whoop presets have no prop wash (their ducts), so it does nothing there.
+    // prop wash, sim-core wake.ts (ParamOverrides.wake; docs/wip/w3-model.md "## Design"): on every craft, sized by
+    // its own mass, rotor disk and duct; 0 = off (the base flight bit for bit), 1 = the size the sources give, 2 = double.
     { id: 'physics.propWash', group: 'drone', scope: 'drone', type: 'number', min: 0, max: 2, step: 0.1, unit: 'x', default: 1, apply: 'life', shown: ['settings'], advanced: true, status: 'shipped', since: 2 },
     // presets store motor_idle as a fraction (0.055 = Betaflight dshot_idle_value 550)
     { id: 'physics.idlePct', group: 'drone', scope: 'drone', type: 'number', min: 0, max: 15, step: 0.1, unit: 'pct', default: { preset: 'motor_idle', scale: 100, fallback: 5.5 }, apply: 'life', shown: ['settings'], advanced: true, status: 'shipped', since: 1, items: [21] }

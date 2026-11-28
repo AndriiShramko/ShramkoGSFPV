@@ -331,7 +331,19 @@ run tails4-start-moved locked node scripts/tails4-review-start.mjs "$SITE/en" "$
 # draws splats and over 5 % of the picture differs from the clear colour, with no console error and no CSP report.
 # Streamed v3 f924b0f5, 593f8c06; single v3 a39abad1 (the owner's), 28ad27ed, 98f74d54; v2 controls 143e76b0, 70b50d42.
 # On the engine 2.23.2 the v3 ids fail (streamed: ready over a black scene; single: endless loader).
-run scans-open locked env MAXS=120 SHOTS="$OUT/scans-open" PREFIX=live node scripts/hot-sog3-scans.mjs "$SITE/en" "$OUT/scans-open.json" f924b0f5,593f8c06,a39abad1,28ad27ed,98f74d54,143e76b0,70b50d42
+# n-scan (docs/wip/n-scan.md): the compressed PLY scans a5d25fb4 and c67edb74 are drawn too; then n-scan-accept.mjs with
+# render off (no GPU) walks every storage kind of packages/scenes/test/fixtures/superspl-kinds.json, a39abad1 first, by
+# the mouse (Keyboard on the Controls screen, a click into the scene; nothing saved or sent): each id reaches its first
+# flown frame, or the GSAF scan 5012e205 shows the line scenes.unsupported. Before n-scan both PLY ids say "older PLY
+# format" and 5012e205 says "does not exist".
+scans_open() {
+  locked env MAXS=120 SHOTS="$OUT/scans-open" PREFIX=live node scripts/hot-sog3-scans.mjs "$SITE/en" "$OUT/scans-open.json" f924b0f5,593f8c06,a39abad1,28ad27ed,98f74d54,143e76b0,70b50d42,a5d25fb4,c67edb74
+  local a=$?
+  RENDER=off MAXS=120 node scripts/n-scan-accept.mjs "$SITE/en" "$OUT/scans-open-kinds.json"
+  local b=$?
+  [ $a -eq 0 ] && [ $b -eq 0 ]
+}
+run scans-open scans_open
 # head4 (deploy/nginx.conf, after the nginx reload): only the simulator page may ask for the camera; every other page keeps
 # camera=() (two HEAD requests).
 head4headers() {
@@ -398,8 +410,11 @@ run sound6-quick-walk env SITE="$SITE" npx tsx src/sonic-quick-walk.ts "$OUT/sou
 # Train 4 integration, car 3 (t7-base: gap-gen with gen4a and gen4b, gap-save, gap-sound). Each probe's header: render
 # off, no GPU lock; read-only on any site (no save button is pressed; a generated course, the Scene size and the sound
 # progress live only in the probe's own browser profile; nothing is saved, sent or created on the site).
-# gen4-accept-probe.mjs: Shift+G opens the Generate dialog (level, spread), Build lays a course of that level.
+# gen4-accept-probe.mjs: Shift+G opens the Generate dialog (level, where: Here pressed, Whole scan), Build lays a course of that level.
+# w1-dialog-accept.mjs (train 5): Here, Add here after 30 m of flight (the old gates stay), the link of both parts in a fresh
+# context, Whole scan replaces and spreads, the dialog by keys alone, the Polish texts. Read only, as the probes above.
 run gen4-generate-dialog node scripts/gen4-accept-probe.mjs "$SITE/en" "$OUT/gen4-generate-dialog.json"
+run w1-dialog-where node scripts/w1-dialog-accept.mjs "$SITE/en" "$OUT/w1-dialog-where.json"
 # gap-gen-accept.mjs: asked courses on small and scaled scans (x15 at the skull), a room's course adopted with the
 # asker's level and spread (step 5).
 run gap-gen-asked-course node scripts/gap-gen-accept.mjs "$SITE/en" "$OUT/gap-gen-asked-course.json"
@@ -425,6 +440,26 @@ run n-share-sound-link env ROWS=sound TEMP_DIR="$OUT/n-share-tmp" node scripts/n
 # 15 m of it; 30 m away, paused, Build lays gate 1 within 15 m of the drone; Share's address names the course with its
 # anchor; that address in a fresh context lays the same gates. Exit 1 on a failed step.
 run w1-anchor-accept node scripts/w1-anchor-accept.mjs "$SITE/en" "$OUT/w1-anchor-accept.json"
+# Train 5 integration, car 7 (n-scan, n-save, w2-pilot, w3-model, w1-dialog; n-scan extends scans-open, w1-dialog
+# w1-dialog-where and gen4-generate-dialog above). Each probe's header: render off, no GPU lock, new throwaway browser
+# profiles; read-only on any site (every request but GET to /api/ is aborted and listed; no send, save or create button
+# is pressed). Each exits non-zero on a failed step.
+# w2-pilot-accept.mjs: a drop onto the floor at 4.6-6.9 m/s leaves the craft whole (ground crash speed 7 m/s, was 4),
+# a fall above 7 m/s crashes; the crash card's first scene button and the pause item read "Choose a scan" and open the
+# catalogue, another scene loads; "Before you fly" names the camera angle (key O, Settings) in en and pl.
+run w2-pilot-accept node scripts/w2-pilot-accept.mjs "$SITE" "$OUT/w2-pilot-accept.json"
+# w3-model-wash-probe.mjs: the Prop wash setting (physics.propWash) at 0, 1 (the default) and 2 on the page's own Sim:
+# 0 gives no wash, 1 and 2 give wash and more sink in a fast drop and catch, 2 more than 1.
+run w3-model-wash node scripts/w3-model-wash-probe.mjs "$SITE/en" "$OUT/w3-model-wash.json"
+# n-save-accept.mjs with an address (not a dist folder) runs its read-only form: by the mouse in the course editor two
+# gates on one spot and one in a wall, Save: the dialog names the count and offers Fix all automatically, Save as it is,
+# Show me (the old page refused the save). It stops there, before any save; its step asIs.saved is judged false on
+# purpose in that form, so the check passes when that is the only failed step and the dialog step passed.
+nsavedialog() {
+  node scripts/n-save-accept.mjs "$SITE/en" 70b50d42 "$OUT/n-save-dialog.json"
+  node -e 'const r=JSON.parse(require("fs").readFileSync(process.argv[1],"utf8"));const ok=r.steps.dialog&&r.steps.dialog.ok&&JSON.stringify(r.fails)===JSON.stringify(["asIs.saved"])&&r.posts.every((p)=>!!p.aborted);console.log("dialog",!!(r.steps.dialog&&r.steps.dialog.ok),"fails",JSON.stringify(r.fails));process.exit(ok?0:1)' "$OUT/n-save-dialog.json"
+}
+run n-save-dialog nsavedialog
 
 if [ "$FAILED" = 0 ]; then echo "LIVE CHECKS: PASS"; exit 0; fi
 echo "LIVE CHECKS: FAIL"

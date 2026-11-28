@@ -119,6 +119,7 @@ export function mirrorWarned(store: PrefsStore | null = pagePrefs()): void {
  */
 const PARAM_FIELDS: Readonly<Record<string, (o: ParamOverrides, v: unknown) => void>> = {
     'physics.vCrash': (o, v) => { o.vCrash = v as number; },
+    'physics.vCrashGround': (o, v) => { o.vCrashGround = v as number; },
     'physics.gravity': (o, v) => { o.gravity = v as number; },
     'physics.gravityMode': (o, v) => { o.gravityMode = v as GravityMode; },
     'physics.twr': (o, v) => { o.twr = v as number; },
@@ -126,7 +127,7 @@ const PARAM_FIELDS: Readonly<Record<string, (o: ParamOverrides, v: unknown) => v
     'physics.dragScale': (o, v) => { o.cdaScale = v as number; },
     'physics.ductDrag': (o, v) => { o.ductDrag = v as number; },
     'physics.propInertia': (o, v) => { o.propInertia = v as number; },
-    // v0.8: prop wash, a multiplier on the preset's (sim-core wake.ts); presets without prop wash ignore it
+    // prop wash multiplier on every preset (sim-core wake.ts): 0 off, 1 the size the sources give, 2 doubled
     'physics.propWash': (o, v) => { o.wake = v as number; },
     // v0.9 lane D: the cinelifter's camera load in grams (sim-core payloadG); a preset without a camera load ignores it
     'drone.payload': (o, v) => { const p = Object.hasOwn(PAYLOADS, v as string) ? PAYLOADS[v as PayloadId] : undefined; if (p) o.payloadG = p.loadG; },
@@ -145,12 +146,19 @@ const PARAM_FIELDS: Readonly<Record<string, (o: ParamOverrides, v: unknown) => v
     'level.horizonStrength': (o, v) => { o.level = { ...o.level, horizonStrength: v as number }; }
 };
 
+/**
+ * Settings whose default is not what the preset alone compiles to, so they go into the overrides (and every life header)
+ * even at their default. physics.vCrashGround (train 5): sim-core crashes on the ground from vCrash when the header has no
+ * vCrashGround (every log before it), the page flies with the softer 7 m/s.
+ */
+const ALWAYS_IN_HEADER: ReadonlySet<string> = new Set(['physics.vCrashGround']);
+
 /** The settings that build the flight model (overridesFor), by id. */
 export const FLIGHT_MODEL_SETTINGS: readonly string[] = Object.keys(PARAM_FIELDS);
 
 /**
  * The flight model's overrides for `drone`, from the store (A.6, A.7). Only what differs from the
- * drone's preset goes in: a value the pilot chose, or one the URL set for this load. The preset
+ * drone's preset goes in: a value the pilot chose, one the URL set for this load, or one of ALWAYS_IN_HEADER. The preset
  * fills the rest, so the log header lists exactly the pilot's changes. Per-drone values are this
  * drone's own: one drone's tune never reaches another (D-c; review findings C1, C10).
  */
@@ -161,7 +169,7 @@ export function overridesFor(store: PrefsStore, drone: string): ParamOverrides {
         if (!store.schema.byId.has(id)) continue;
         const v = store.get(id, ctx);
         if (v === null || v === undefined) continue; // a tune of null: the preset's own
-        if (!store.isExplicit(id, ctx) && canonicalJson(v) === canonicalJson(store.defaultOf(id, ctx))) continue;
+        if (!ALWAYS_IN_HEADER.has(id) && !store.isExplicit(id, ctx) && canonicalJson(v) === canonicalJson(store.defaultOf(id, ctx))) continue;
         put(o, v);
     }
     return o;

@@ -1,0 +1,132 @@
+{
+  "base": "http://localhost:6940/en",
+  "at": "2026-11-21T16:09:48.665Z",
+  "drawn": true,
+  "browser": {
+    "kind": "system-chrome",
+    "version": "157.0.8103.52"
+  },
+  "maxS": 200,
+  "ids": {
+    "5c0f892e": {
+      "kind": "sog-v2-heavy",
+      "expect": {
+        "flies": true,
+        "lines": [
+          "This scan is too large for this device. Pick a lighter scan, or open this one on a computer."
+        ]
+      },
+      "pass": false,
+      "why": "no flight and no line in 200 s (status loading, null, splats drawn null): an endless loader or an empty screen",
+      "outcome": null,
+      "errors": [],
+      "csp": [],
+      "seconds": 201,
+      "atOpen": {
+        "status": "loading",
+        "errorCode": null,
+        "error": null,
+        "line": null,
+        "drawn": null,
+        "tick": null,
+        "paused": null,
+        "locked": false
+      }
+    },
+    "a5d25fb4": {
+      "kind": "compressed-ply",
+      "expect": {
+        "flies": true,
+        "lines": []
+      },
+      "pass": false,
+      "why": "picture empty: 1.3 % of pixels differ from the clear colour",
+      "outcome": "flown",
+      "errors": [],
+      "csp": [],
+      "seconds": 12,
+      "atOpen": {
+        "status": "ready",
+        "errorCode": null,
+        "error": null,
+        "line": null,
+        "drawn": 152746,
+        "tick": 2974,
+        "paused": true,
+        "locked": false
+      },
+      "flight": {
+        "keyboardClicked": true,
+        "lockedAfterClick": true,
+        "tick0": 4496,
+        "tick1": 5996,
+        "paused": false
+      },
+      "picture": {
+        "clear": [
+          102,
+          102,
+          102
+        ],
+        "w": 1920,
+        "h": 913,
+        "lit": 0.013415023731288792
+      }
+    },
+    "c67edb74": {
+      "kind": "compressed-ply-large",
+      "expect": {
+        "flies": true,
+        "lines": []
+      },
+      "pass": false,
+      "why": "no flight and no line in 200 s (status loading, null, splats drawn null): an endless loader or an empty screen",
+      "outcome": null,
+      "errors": [],
+      "csp": [],
+      "seconds": 200,
+      "atOpen": {
+        "status": "loading",
+        "errorCode": null,
+        "error": null,
+        "line": null,
+        "drawn": null,
+        "tick": null,
+        "paused": null,
+        "locked": false
+      }
+    },
+    "5012e205": {
+      "kind": "gsaf",
+      "expect": {
+        "flies": false,
+        "lines": [
+          "This scan is in a SuperSplat format the simulator cannot open yet (an animated scan). Choose another scan: scans in the usual formats open."
+        ]
+      },
+      "pass": true,
+      "why": null,
+      "outcome": "line",
+      "errors": [],
+      "csp": [],
+      "seconds": 2,
+      "atOpen": {
+        "status": "error",
+        "errorCode": "unsupported",
+        "error": "scene 5012e205 v1 is GSAF (scene.gsaf), a format the engine does not read",
+        "line": "This scan is in a SuperSplat format the simulator cannot open yet (an animated scan). Choose another scan: scans in the usual formats open.",
+        "drawn": null,
+        "tick": null,
+        "paused": null,
+        "locked": false
+      }
+    }
+  },
+  "pass": false,
+  "summary": {
+    "5c0f892e": "FAIL no flight and no line in 200 s (status loading, null, splats drawn null): an endless loader or an empty screen",
+    "a5d25fb4": "FAIL picture empty: 1.3 % of pixels differ from the clear colour",
+    "c67edb74": "FAIL no flight and no line in 200 s (status loading, null, splats drawn null): an endless loader or an empty screen",
+    "5012e205": "PASS line"
+  }
+}

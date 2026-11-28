@@ -4,10 +4,10 @@
 // navigator.gpu to workers). One worker per build step: terminating it is the only way to stop a step
 // (the library has no abort), and it frees the step's memory and GPU buffers at once.
 import { bakeCollision, bakeErrorToWire } from './bake';
-import type { BakeOptions, BakeResult } from './bake';
+import type { BakeKind, BakeOptions, BakeResult } from './bake';
 import { gzip, wallsSha } from './wallcache';
 
-export interface BakeRequest { contentUrl: string; kind: 'meta' | 'lod-meta'; o: BakeOptions }
+export interface BakeRequest { contentUrl: string; kind: BakeKind; o: BakeOptions }
 export type BakeReply =
     | { type: 'stage'; stage: 'size' | 'read' | 'voxelize' | 'done' }
     | { type: 'done'; r: BakeResult }

@@ -8,6 +8,11 @@ export const CRASH_DEFS: readonly SettingDef[] = [
     // a flag, not vCrash = Infinity: JSON turns Infinity into null (C.7)
     { id: 'crash.enabled', group: 'crash', scope: 'global', type: 'bool', default: true, apply: 'life', shown: ['settings', 'crash'], status: 'shipped', since: 1, items: [3, 23] },
     { id: 'physics.vCrash', group: 'crash', scope: 'drone', type: 'number', min: 2, max: 10, step: 0.5, unit: 'mps', default: { preset: 'v_crash_ms', fallback: 4 }, apply: 'life', shown: ['settings'], status: 'shipped', since: 1, items: [20] },
+    // train 5 (a pilot: the drone breaks too soon when it touches the ground): a landing or a skid crashes only from
+    // this speed (7 m/s: a free fall from 2.5 m, which a small FPV quad survives); walls and gates keep physics.vCrash.
+    // The strict rule: set it to the crash threshold. Not a preset field: presets are pinned by sha256 in every saved
+    // log, so the app writes this value into every life header (apps/fly app/prefs.ts ALWAYS_IN_HEADER).
+    { id: 'physics.vCrashGround', group: 'crash', scope: 'drone', type: 'number', min: 2, max: 12, step: 0.5, unit: 'mps', default: 7, apply: 'life', shown: ['settings'], status: 'shipped', since: 1 },
     { id: 'respawn.auto', group: 'crash', scope: 'global', type: 'bool', default: true, apply: 'live', shown: ['settings', 'crash'], status: 'shipped', since: 1, items: [23] },
     { id: 'respawn.delayS', group: 'crash', scope: 'global', type: 'number', min: 0.5, max: 10, step: 0.5, unit: 's', default: 2, apply: 'live', shown: ['settings'], status: 'shipped', since: 1, items: [23] },
     { id: 'respawn.target', group: 'crash', scope: 'global', type: 'enum', options: ['rewind', 'start'], default: 'rewind', apply: 'live', shown: ['settings'], status: 'shipped', since: 1, items: [23] },

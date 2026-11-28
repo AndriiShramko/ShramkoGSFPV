@@ -1,0 +1,60 @@
+{
+ "base": "http://localhost:6180/en",
+ "viewport": "1536x730@1.25",
+ "steps": [
+  {
+   "step": 1,
+   "name": "skull: Scene size x15 by the menu slider",
+   "pass": true,
+   "detail": {
+    "lock": true,
+    "menu": true,
+    "slider": true,
+    "size": 15.032363891601562
+   }
+  },
+  {
+   "step": 2,
+   "name": "skull x15 beginner Here: a course, no refusal, >= 5 gates, the start and gate 1 at the drone",
+   "pass": true,
+   "detail": {
+    "dialog": true,
+    "pressed": [
+     true,
+     true,
+     true
+    ],
+    "gates": 8,
+    "refusal": null,
+    "texts": [
+     "V: off → over the scan → voxels only · C: walls on / off",
+     "Click to fly, or press W or Space to take off",
+     "Gates: 8. The start gate is 42 m away: follow the arrow. Key Shift+T hides the course"
+    ],
+    "ms": 3915,
+    "scale": 15.032363891601562,
+    "reach": 12,
+    "laid": {
+     "startM": 798.264,
+     "gate1M": 791.151,
+     "droneToGate1M": 9.891,
+     "droneToStartM": 1.417
+    },
+    "stats": {
+     "kind": "room",
+     "gates": 8,
+     "startToCoreM": 791.149,
+     "finishToCoreM": 791.149,
+     "outside": 0,
+     "goodShare": 0
+    },
+    "shrunk": false
+   }
+  }
+ ],
+ "errors": [],
+ "verdict": {
+  "pass": true,
+  "failed": []
+ }
+}

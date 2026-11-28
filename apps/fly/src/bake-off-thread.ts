@@ -3,7 +3,7 @@
 // A browser that gives a worker no WebGPU builds on the page as before (bakeCollision with the renderer's device).
 import type { GraphicsDevice } from 'playcanvas';
 import { BakeTimeoutError, bakeCollision, bakeErrorFromWire, gpuLimitsOf, markCounted, memCapGb } from './bake';
-import type { BakeOptions, BakeResult } from './bake';
+import type { BakeKind, BakeOptions, BakeResult } from './bake';
 import type { BakeReply, BakeRequest } from './bake-worker';
 
 /** where the current (or last) build runs: 'worker', or 'page' when a worker has no WebGPU (the box's note and the hook read it) */
@@ -19,7 +19,7 @@ export function offThreadStoppable(): boolean {
  * The worker's request: only data (bakeBase passes its whole option bag, with `bake`, `onStep` and `stepTimeout`
  * functions, which a worker message cannot carry: "could not be cloned", seen on Wroclaw in the F1 proof).
  */
-export function workerRequest(contentUrl: string, kind: 'meta' | 'lod-meta', o: BakeOptions, pageHref: string, limits: BakeOptions['limits'], capGb: number): BakeRequest {
+export function workerRequest(contentUrl: string, kind: BakeKind, o: BakeOptions, pageHref: string, limits: BakeOptions['limits'], capGb: number): BakeRequest {
     return {
         contentUrl: new URL(contentUrl, pageHref).href,
         kind,
@@ -27,7 +27,7 @@ export function workerRequest(contentUrl: string, kind: 'meta' | 'lod-meta', o: 
     };
 }
 
-export function bakeOffThread(contentUrl: string, kind: 'meta' | 'lod-meta', device: GraphicsDevice, onStage: (stage: 'size' | 'read' | 'voxelize' | 'done') => void, o: BakeOptions & { signal?: AbortSignal } = {}): Promise<BakeResult> {
+export function bakeOffThread(contentUrl: string, kind: BakeKind, device: GraphicsDevice, onStage: (stage: 'size' | 'read' | 'voxelize' | 'done') => void, o: BakeOptions & { signal?: AbortSignal } = {}): Promise<BakeResult> {
     const page = (): Promise<BakeResult> => { lastBakeWhere = 'page'; return bakeCollision(contentUrl, kind, device, onStage, o); };
     if (noWorkerGpu !== null || typeof Worker === 'undefined') return page();
     // the worker's device has the same adapter: the limits and the memory budget are read here, once

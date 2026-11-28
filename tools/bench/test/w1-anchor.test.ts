@@ -36,7 +36,7 @@ describe('the anchor of a course asked now', () => {
         const request = { seed: 99, level: 'medium' as const, spread: 'compact' as const, anyQuality: false, anchor: pilotAnchor(s, SPAWN) };
         const id = courseLinkId(request);
         expect(id).toBe('g2.2r.mc.0.1.-123');
-        expect(parseCourseLink(id)).toEqual({ kind: 'request', request });
+        expect(parseCourseLink(id)).toEqual({ kind: 'request', request, adds: [] });
     });
 
     it('a shared link (Share) keeps a course whose anchor is negative; the browser that opens it reads the same course', () => {
@@ -45,6 +45,6 @@ describe('the anchor of a course asked now', () => {
         const place = readFlightLink(`?scene=eb5f51dc&course=${id}`);
         expect(place?.course).toEqual({ kind: 'generated', link: id });
         expect(courseToken({ kind: 'generated', link: id })).toBe(id);
-        expect(courseOfLink(`?scene=eb5f51dc&course=${id}`)).toEqual({ kind: 'request', request: { seed: 99, level: 'medium', spread: 'compact', anyQuality: false, anchor: [12, -3, -540] } });
+        expect(courseOfLink(`?scene=eb5f51dc&course=${id}`)).toEqual({ kind: 'request', request: { seed: 99, level: 'medium', spread: 'compact', anyQuality: false, anchor: [12, -3, -540] }, adds: [] });
     });
 });

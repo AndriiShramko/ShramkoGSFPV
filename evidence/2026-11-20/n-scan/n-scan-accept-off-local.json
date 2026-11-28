@@ -1,0 +1,353 @@
+{
+  "base": "http://localhost:6940/en",
+  "at": "2026-11-21T15:51:14.611Z",
+  "drawn": false,
+  "browser": {
+    "kind": "system-chrome",
+    "version": "157.0.8103.52"
+  },
+  "maxS": 90,
+  "ids": {
+    "a39abad1": {
+      "kind": "sog-v3",
+      "expect": {
+        "flies": true,
+        "lines": []
+      },
+      "pass": true,
+      "why": null,
+      "outcome": "flown",
+      "errors": [],
+      "csp": [],
+      "seconds": 5,
+      "atOpen": {
+        "status": "ready",
+        "errorCode": null,
+        "error": null,
+        "line": null,
+        "drawn": 0,
+        "tick": 699,
+        "paused": true,
+        "locked": false
+      },
+      "flight": {
+        "keyboardClicked": true,
+        "lockedAfterClick": true,
+        "tick0": 2215,
+        "tick1": 3748,
+        "paused": false
+      }
+    },
+    "98f74d54": {
+      "kind": "sog-v3",
+      "expect": {
+        "flies": true,
+        "lines": []
+      },
+      "pass": true,
+      "why": null,
+      "outcome": "flown",
+      "errors": [],
+      "csp": [],
+      "seconds": 5,
+      "atOpen": {
+        "status": "ready",
+        "errorCode": null,
+        "error": null,
+        "line": null,
+        "drawn": 0,
+        "tick": 602,
+        "paused": true,
+        "locked": false
+      },
+      "flight": {
+        "keyboardClicked": true,
+        "lockedAfterClick": true,
+        "tick0": 2151,
+        "tick1": 3651,
+        "paused": false
+      }
+    },
+    "143e76b0": {
+      "kind": "sog-v2",
+      "expect": {
+        "flies": true,
+        "lines": []
+      },
+      "pass": true,
+      "why": null,
+      "outcome": "flown",
+      "errors": [],
+      "csp": [],
+      "seconds": 7,
+      "atOpen": {
+        "status": "ready",
+        "errorCode": null,
+        "error": null,
+        "line": null,
+        "drawn": 0,
+        "tick": 583,
+        "paused": true,
+        "locked": false
+      },
+      "flight": {
+        "keyboardClicked": true,
+        "lockedAfterClick": true,
+        "tick0": 2133,
+        "tick1": 3632,
+        "paused": false
+      }
+    },
+    "f924b0f5": {
+      "kind": "streamed-sog-v3",
+      "expect": {
+        "flies": true,
+        "lines": []
+      },
+      "pass": true,
+      "why": null,
+      "outcome": "flown",
+      "errors": [],
+      "csp": [],
+      "seconds": 9,
+      "atOpen": {
+        "status": "ready",
+        "errorCode": null,
+        "error": null,
+        "line": null,
+        "drawn": 0,
+        "tick": 640,
+        "paused": true,
+        "locked": false
+      },
+      "flight": {
+        "keyboardClicked": true,
+        "lockedAfterClick": true,
+        "tick0": 2170,
+        "tick1": 3670,
+        "paused": false
+      }
+    },
+    "593f8c06": {
+      "kind": "streamed-sog-v3",
+      "expect": {
+        "flies": true,
+        "lines": []
+      },
+      "pass": true,
+      "why": null,
+      "outcome": "flown",
+      "errors": [],
+      "csp": [],
+      "seconds": 9,
+      "atOpen": {
+        "status": "ready",
+        "errorCode": null,
+        "error": null,
+        "line": null,
+        "drawn": 0,
+        "tick": 588,
+        "paused": true,
+        "locked": false
+      },
+      "flight": {
+        "keyboardClicked": true,
+        "lockedAfterClick": true,
+        "tick0": 2137,
+        "tick1": 3670,
+        "paused": false
+      }
+    },
+    "70b50d42": {
+      "kind": "streamed-sog-v2",
+      "expect": {
+        "flies": true,
+        "lines": []
+      },
+      "pass": true,
+      "why": null,
+      "outcome": "flown",
+      "errors": [],
+      "csp": [],
+      "seconds": 6,
+      "atOpen": {
+        "status": "ready",
+        "errorCode": null,
+        "error": null,
+        "line": null,
+        "drawn": 0,
+        "tick": 707,
+        "paused": true,
+        "locked": false
+      },
+      "flight": {
+        "keyboardClicked": true,
+        "lockedAfterClick": true,
+        "tick0": 2158,
+        "tick1": 3691,
+        "paused": false
+      }
+    },
+    "2f1ddf5f": {
+      "kind": "streamed-sog-v2-huge",
+      "expect": {
+        "flies": true,
+        "lines": []
+      },
+      "pass": true,
+      "why": null,
+      "outcome": "flown",
+      "errors": [],
+      "csp": [],
+      "seconds": 8,
+      "atOpen": {
+        "status": "ready",
+        "errorCode": null,
+        "error": null,
+        "line": null,
+        "drawn": 0,
+        "tick": 691,
+        "paused": true,
+        "locked": false
+      },
+      "flight": {
+        "keyboardClicked": true,
+        "lockedAfterClick": true,
+        "tick0": 2109,
+        "tick1": 3643,
+        "paused": false
+      }
+    },
+    "5c0f892e": {
+      "kind": "sog-v2-heavy",
+      "expect": {
+        "flies": true,
+        "lines": [
+          "This scan is too large for this device. Pick a lighter scan, or open this one on a computer."
+        ]
+      },
+      "pass": true,
+      "why": null,
+      "outcome": "flown",
+      "errors": [],
+      "csp": [],
+      "seconds": 4,
+      "atOpen": {
+        "status": "ready",
+        "errorCode": null,
+        "error": null,
+        "line": null,
+        "drawn": 0,
+        "tick": 711,
+        "paused": true,
+        "locked": false
+      },
+      "flight": {
+        "keyboardClicked": true,
+        "lockedAfterClick": true,
+        "tick0": 2189,
+        "tick1": 3689,
+        "paused": false
+      }
+    },
+    "a5d25fb4": {
+      "kind": "compressed-ply",
+      "expect": {
+        "flies": true,
+        "lines": []
+      },
+      "pass": true,
+      "why": null,
+      "outcome": "flown",
+      "errors": [],
+      "csp": [],
+      "seconds": 4,
+      "atOpen": {
+        "status": "ready",
+        "errorCode": null,
+        "error": null,
+        "line": null,
+        "drawn": 0,
+        "tick": 715,
+        "paused": true,
+        "locked": false
+      },
+      "flight": {
+        "keyboardClicked": true,
+        "lockedAfterClick": true,
+        "tick0": 2154,
+        "tick1": 3654,
+        "paused": false
+      }
+    },
+    "c67edb74": {
+      "kind": "compressed-ply-large",
+      "expect": {
+        "flies": true,
+        "lines": []
+      },
+      "pass": true,
+      "why": null,
+      "outcome": "flown",
+      "errors": [],
+      "csp": [],
+      "seconds": 5,
+      "atOpen": {
+        "status": "ready",
+        "errorCode": null,
+        "error": null,
+        "line": null,
+        "drawn": 0,
+        "tick": 718,
+        "paused": true,
+        "locked": false
+      },
+      "flight": {
+        "keyboardClicked": true,
+        "lockedAfterClick": true,
+        "tick0": 2159,
+        "tick1": 3692,
+        "paused": false
+      }
+    },
+    "5012e205": {
+      "kind": "gsaf",
+      "expect": {
+        "flies": false,
+        "lines": [
+          "This scan is in a SuperSplat format the simulator cannot open yet (an animated scan). Choose another scan: scans in the usual formats open."
+        ]
+      },
+      "pass": true,
+      "why": null,
+      "outcome": "line",
+      "errors": [],
+      "csp": [],
+      "seconds": 6,
+      "atOpen": {
+        "status": "error",
+        "errorCode": "unsupported",
+        "error": "scene 5012e205 v1 is GSAF (scene.gsaf), a format the engine does not read",
+        "line": "This scan is in a SuperSplat format the simulator cannot open yet (an animated scan). Choose another scan: scans in the usual formats open.",
+        "drawn": null,
+        "tick": null,
+        "paused": null,
+        "locked": false
+      }
+    }
+  },
+  "pass": true,
+  "summary": {
+    "a39abad1": "PASS flown",
+    "98f74d54": "PASS flown",
+    "143e76b0": "PASS flown",
+    "f924b0f5": "PASS flown",
+    "593f8c06": "PASS flown",
+    "70b50d42": "PASS flown",
+    "2f1ddf5f": "PASS flown",
+    "5c0f892e": "PASS flown",
+    "a5d25fb4": "PASS flown",
+    "c67edb74": "PASS flown",
+    "5012e205": "PASS line"
+  }
+}

@@ -2,9 +2,11 @@
 // device scale 1.25. Built on gen4-accept-probe.mjs (its page reader and its mouse path to the Generate dialog).
 // Steps (each {step, name, pass, detail}):
 //   1 the skull 5dfeb49b: a click into the scene (pointer lock), Escape, Scene size x15 with the pause menu's own slider
-//   2 the menu's 'Generate a course', Beginner, Compact, Build: a course comes, no 'no course fits' text, >= 5 gates, the
-//     start pose and gate 1 within REACH_M of the skull (read from the laid track, CourseHook.saveCheck, so the live site
-//     is judged the same way: the skull's flown place is SKULL_SCAN x T[0] + T[1..3], the distance across the ground)
+//   2 the menu's 'Generate a course', Beginner, Here (compact), Build: a course comes, no 'no course fits' text, >= 5
+//     gates, the start pose and gate 1 within REACH_M of the drone (read from the laid track, CourseHook.saveCheck, so the
+//     live site is judged the same way). Since w1-anchor (train 5 car 6, the owner's rule) a course is laid where the
+//     drone is, not at the scan's core: at x15 the drone stays at the scene spawn, about 800 m from the skull, so the
+//     skull's distance (SKULL_SCAN x T[0] + T[1..3], across the ground) is reported, not judged (int4 car 7)
 //   3 the micro-greens ab5efa0e at x15 the same way: a course, no refusal, >= 5 gates, gates under the leaves' top
 //     (plan stats underTopShare >= 0.8)
 //   4 Hallstatt 1994c65c at x1: Pro, Whole scene (wide), Build: a course, no refusal
@@ -132,7 +134,10 @@ async function generate(page, level, spread, menuOpen) {
     const dialog = await page.waitForSelector('[data-testid=gen-dialog]', { timeout: 4000 }).then(() => true, () => false);
     const pressed = [];
     if (dialog) {
-        for (const act of [`gen-level-${level}`, `gen-spread-${spread}`, 'gen-build']) {
+        // lane w1-dialog: the spread row became WHERE (Here = compact, Whole scan = wide); a build before it still has gen-spread
+        const where = (await page.locator('[data-testid=gen-dialog] [data-action^="gen-where-"]').count()) > 0;
+        const spreadAct = where ? `gen-where-${spread === 'wide' ? 'scan' : 'here'}` : `gen-spread-${spread}`;
+        for (const act of [`gen-level-${level}`, spreadAct, 'gen-build']) {
             const b = page.locator(`[data-testid=gen-dialog] [data-action="${act}"]`);
             const n = await b.count();
             if (n) { await b.first().click(); await sleep(250); }
@@ -169,8 +174,10 @@ try {
         const skull = T ? [0, 1, 2].map((k) => SKULL_SCAN[k] * T[0] + T[k + 1]) : null;
         const toSkull = (q) => (q && skull ? r3(Math.hypot(q[0] - skull[0], q[2] - skull[2])) : null);
         const laid = L && { startM: toSkull(L.start), gate1M: toSkull(L.gate1), droneToGate1M: L.gate1 && L.spawn ? r3(Math.hypot(L.gate1[0] - L.spawn[0], L.gate1[2] - L.spawn[2])) : null };
-        const near = !!laid && laid.startM !== null && laid.startM <= reach && laid.gate1M !== null && laid.gate1M <= reach;
-        check(2, 'skull x15 beginner compact: a course, no refusal, >= 5 gates, the start and gate 1 at the skull',
+        const toDrone = (q) => (q && L.spawn ? r3(Math.hypot(q[0] - L.spawn[0], q[2] - L.spawn[2])) : null);
+        if (laid) laid.droneToStartM = toDrone(L.start);
+        const near = !!laid && laid.droneToStartM !== null && laid.droneToStartM <= reach && laid.droneToGate1M !== null && laid.droneToGate1M <= reach;
+        check(2, 'skull x15 beginner Here: a course, no refusal, >= 5 gates, the start and gate 1 at the drone',
             !g.refusal && g.s.gates >= GATES_MIN && g.s.drawn > 0 && near,
             { dialog: g.dialog, pressed: g.pressed, gates: g.s.gates, refusal: g.refusal, texts: g.s.texts, ms: g.ms, scale: g.s.scale, reach, laid,
               stats: st && { kind: st.kind, gates: st.gates, startToCoreM: r3(st.startToCoreM), finishToCoreM: r3(st.finishToCoreM), outside: st.outside, goodShare: r3(st.goodShare) },

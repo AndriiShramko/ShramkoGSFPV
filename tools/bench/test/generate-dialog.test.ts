@@ -9,9 +9,12 @@ vi.hoisted(() => {
     g.document ??= { cookie: '', documentElement: { lang: '' } };
 });
 import { LEVELS, VOXEL_VIEW_GATES } from '@gsfpv/tracks';
-import { dialogKey, dialogModel, levelLine, pressAction, turnDeg, type DialogState } from '../../../apps/fly/src/course/generate-dialog';
+import { DEFAULT_WHERE, dialogKey, dialogModel, levelLine, pressAction, turnDeg, type DialogState } from '../../../apps/fly/src/course/generate-dialog';
 import { fakeDocument } from './helpers/fake-dom';
 import en from '../../../packages/i18n/locales/fly/course/en.json';
+import es from '../../../packages/i18n/locales/fly/course/es.json';
+import pl from '../../../packages/i18n/locales/fly/course/pl.json';
+import ru from '../../../packages/i18n/locales/fly/course/ru.json';
 
 const DICT = en as Record<string, string>;
 const t = (key: string, vars?: Record<string, string | number>): string => {
@@ -19,13 +22,13 @@ const t = (key: string, vars?: Record<string, string | number>): string => {
     if (vars) for (const [k, v] of Object.entries(vars)) s = s.split(`{${k}}`).join(String(v));
     return s;
 };
-const base: DialogState = { level: 'medium', spread: 'compact', voxelsOnly: false, shownGates: 0, unsaved: false };
+const base: DialogState = { level: 'medium', where: 'here', voxelsOnly: false, shownGates: 0, unsaved: false };
 
 describe('gen4b B1: the Generate dialog', () => {
     it('a press with a saved course shown asks first: the dialog, not a course', () => {
         expect(pressAction({ busy: false, sonic: false })).toBe('dialog');
         const m = dialogModel({ ...base, shownGates: 9 }, t);
-        expect(m.replaces).toBe('Replaces the current course (9 gates)');
+        expect(m.replaces).toBe('Here and Whole scan replace the current course (9 gates). Add here keeps it');
         expect(m.main).toBe('Replace with a new course');
         expect(m.lost).toBeNull();
     });
@@ -52,18 +55,76 @@ describe('gen4b B1: the Generate dialog', () => {
             expect(m.levelLine).toBe(levelLine(level, t));
             expect(m.levelLine).toContain(`${r.gatesMin} to ${r.gatesMax} gates`);
             expect(m.request).toEqual({ level, spread: 'compact', anyQuality: false });
-            const all = [m.title, m.levelLine, m.spreadLine, m.main, m.cancel, ...m.levels.map((b) => b.label), ...m.spreads.map((b) => b.label)];
+            const all = [m.title, m.levelLine, m.whereLine, m.hint, m.main, m.cancel, ...m.levels.map((b) => b.label), ...m.wheres.map((b) => b.label)];
             for (const s of all) expect(s.startsWith('?')).toBe(false);
         }
         expect([turnDeg(LEVELS.beginner.turnCosMin), turnDeg(LEVELS.medium.turnCosMin), turnDeg(LEVELS.pro.turnCosMin)]).toEqual([60, 105, 150]);
     });
 
-    it('the spread: Compact or Whole scene; the voxels-only view sets the whole scene at any quality and says so', () => {
-        expect(dialogModel({ ...base, spread: 'wide' }, t).request).toEqual({ level: 'medium', spread: 'wide', anyQuality: false });
+    it('the where: Here or Whole scan; the voxels-only view sets the whole scene at any quality and says so', () => {
+        expect(dialogModel({ ...base, where: 'scan' }, t).request).toEqual({ level: 'medium', spread: 'wide', anyQuality: false });
         const v = dialogModel({ ...base, voxelsOnly: true }, t);
-        expect(v.spreads).toEqual([]);
+        expect(v.wheres).toEqual([]);
         expect(v.request).toEqual({ level: 'medium', spread: 'wide', anyQuality: true });
-        expect(v.spreadLine).toContain(String(VOXEL_VIEW_GATES));
+        expect(v.whereLine).toContain(String(VOXEL_VIEW_GATES));
+    });
+
+    // lane w1-dialog (R2 of designs/w1-diag.md, the owner's brief line 667 b and d). NEG: the old dialog offered Compact and
+    // Whole scene of 'the best scanned part' and never said where the course is laid.
+    it('w1-dialog: WHERE is Here (the default, a compact course round the drone) or Whole scan (from the drone over the scan)', () => {
+        expect(DEFAULT_WHERE).toBe('here');
+        const m = dialogModel({ ...base, where: DEFAULT_WHERE }, t);
+        expect(m.wheres.map((b) => [b.id, b.label, b.pressed])).toEqual([['here', 'Here', true], ['scan', 'Whole scan', false]]);
+        expect(m.request).toEqual({ level: 'medium', spread: 'compact', anyQuality: false });
+        expect(m.whereLine).toBe('Gates close together round the drone, start and finish side by side');
+        const w = dialogModel({ ...base, where: 'scan' }, t);
+        expect(w.whereLine).toBe('Starts at the drone and spreads over the whole well scanned part of the scan');
+        // idea d without a question that stops the pilot: one line says how to have the course elsewhere
+        for (const x of [m, w, dialogModel({ ...base, voxelsOnly: true }, t)]) {
+            expect(x.hint).toBe('The course is laid where the drone is. For another place, fly there, press key Esc, then key Shift+G');
+        }
+    });
+
+    it('w1-dialog: every where text has the same keys in en, es, pl and ru', () => {
+        const keys = ['course.gen.whereTitle', 'course.gen.where.here', 'course.gen.where.scan', 'course.gen.whereLine.here', 'course.gen.whereLine.scan', 'course.gen.whereVoxels', 'course.gen.whereHint'];
+        for (const d of [en, es, pl, ru] as Record<string, string>[]) {
+            for (const k of keys) expect(typeof d[k] === 'string' && d[k]!.length > 0 ? k : `missing ${k}`).toBe(k);
+            expect(Object.keys(d).some((k) => k.startsWith('course.gen.spread'))).toBe(false);
+            expect(d['course.gen.whereVoxels']).toContain('{n}');
+            expect(d['course.gen.whereHint']).toContain('Shift+G');
+        }
+    });
+
+    // lane w1-dialog S2 (the owner's idea c). NEG: the dialog of S1 had no Add here and its line over a course said only
+    // 'Replaces the current course'.
+    it('w1-dialog: Add here only over a course; it keeps the course, and the line says Here and Whole scan replace it', () => {
+        expect(dialogModel(base, t).wheres.map((b) => b.id)).toEqual(['here', 'scan']);
+        // a stale 'add' with no course shown lays Here
+        const none = dialogModel({ ...base, where: 'add' }, t);
+        expect([none.add, none.wheres.find((b) => b.pressed)?.id, none.request.spread]).toEqual([false, 'here', 'compact']);
+        const over = dialogModel({ ...base, shownGates: 9 }, t);
+        expect(over.wheres.map((b) => [b.id, b.label, b.pressed])).toEqual([['here', 'Here', true], ['scan', 'Whole scan', false], ['add', 'Add here', false]]);
+        expect(over.replaces).toBe('Here and Whole scan replace the current course (9 gates). Add here keeps it');
+        expect([over.add, over.main]).toEqual([false, 'Replace with a new course']);
+        const add = dialogModel({ ...base, shownGates: 9, where: 'add' }, t);
+        expect([add.add, add.main, add.replaces, add.whereLine]).toEqual([true, 'Add the gates', 'Keeps all 9 gates of the current course', 'Keeps the course and adds gates round the drone, joined into one ring']);
+        expect(add.request).toEqual({ level: 'medium', spread: 'compact', anyQuality: false });
+        // the voxels-only view has no where row: it replaces, and says so without naming the buttons it does not show
+        const vox = dialogModel({ ...base, shownGates: 9, where: 'add', voxelsOnly: true }, t);
+        expect([vox.add, vox.wheres.length, vox.replaces]).toEqual([false, 0, 'Replaces the current course (9 gates)']);
+    });
+
+    it('w1-dialog: the Add here texts have the same keys in en, es, pl and ru; the failure line says what to press', () => {
+        const keys = ['course.gen.where.add', 'course.gen.whereLine.add', 'course.gen.replaces', 'course.gen.replacesVoxels', 'course.gen.keeps', 'course.gen.add', 'course.addNone'];
+        for (const d of [en, es, pl, ru] as Record<string, string>[]) {
+            for (const k of keys) expect(typeof d[k] === 'string' && d[k]!.length > 0 ? k : `missing ${k}`).toBe(k);
+            for (const k of ['course.gen.replaces', 'course.gen.replacesVoxels', 'course.gen.keeps']) expect(d[k]).toContain('{n}');
+            expect(d['course.addNone']).toContain('Shift+G');
+            // the line names the buttons by their own labels
+            expect(d['course.gen.replaces']).toContain(d['course.gen.where.here']!);
+            expect(d['course.gen.replaces']).toContain(d['course.gen.where.scan']!);
+            expect(d['course.gen.replaces']).toContain(d['course.gen.where.add']!);
+        }
     });
 
     it('Enter builds and Esc cancels by e.code (every keyboard layout)', () => {
@@ -96,8 +157,9 @@ describe('gen4b B1: the Generate dialog', () => {
             expect([built.length, cancelled, d.isOpen]).toEqual([0, 1, false]);
             d.open({ ...base, shownGates: 7 });
             q('[data-action=gen-level-beginner]')!.click();
-            q('[data-action=gen-spread-wide]')!.click();
-            expect(picks).toEqual([{ level: 'beginner' }, { spread: 'wide' }]);
+            expect(q('[data-testid=gen-where-hint]')).not.toBeNull();
+            q('[data-action=gen-where-scan]')!.click();
+            expect(picks).toEqual([{ level: 'beginner' }, { where: 'scan' }]);
             expect(d.model()!.levels.find((b) => b.pressed)!.id).toBe('beginner');
             const ev = { code: 'Enter', repeat: false, preventDefault: () => undefined, stopImmediatePropagation: () => undefined };
             for (const f of [...keys]) f(ev);
@@ -111,6 +173,23 @@ describe('gen4b B1: the Generate dialog', () => {
             expect([built.length, prevented, d.isOpen]).toEqual([1, 0, true]);
             for (const f of [...keys]) f(at('[data-action=gen-build]'));
             expect([built.length, d.isOpen]).toEqual([2, false]);
+            // w1-dialog S3 (probe step 5): a choice pressed by the keyboard keeps the focus through the repaint, so Tab goes
+            // on from it (the old repaint dropped the focus and Tab began at the page's start, never reaching Cancel)
+            d.open({ ...base, shownGates: 7 });
+            const btn = q('[data-action=gen-where-add]') as unknown as Record<string, unknown>;
+            const proto = Object.getPrototypeOf(btn) as Record<string, unknown>;
+            const keepFocus = proto.focus;
+            proto.focus = function (this: unknown) { doc.activeElement = this as null; };
+            try {
+                doc.activeElement = btn as unknown as null;
+                (btn as unknown as { click: () => void }).click();
+                const now = q('[data-action=gen-where-add]');
+                expect([d.model()!.add, now !== (btn as unknown), doc.activeElement === now]).toEqual([true, true, true]);
+            } finally {
+                proto.focus = keepFocus;
+                doc.activeElement = null;
+            }
+            d.close();
         } finally {
             Object.assign(g, keep);
         }

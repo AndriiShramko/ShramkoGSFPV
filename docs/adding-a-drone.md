@@ -38,7 +38,7 @@ is skipped.
    (everyone's default: full stick, hold, release; it must stop at the limit and not swing past level). A preset whose
    step response rings with the Betaflight default PID gets its own tune (and a control showing the default rings);
    check angle mode again after any PID change (the cinelifter's acro tune made its angle mode overshoot, review R4).
-5. **A6 stays**: `tools/bench/test/a6-reference.test.ts` (the default drone's trace hash `1d01ca5b...`).
+5. **A6 stays**: `tools/bench/test/a6-reference.test.ts` (the default drone's trace hash `9cb46a35...` since sim-core/0.3.0; `1d01ca5b...` before).
 6. **Settings ranges**: `packages/prefs/test/defs.test.ts` "every preset default resolves inside its range" fails
    when a number is outside a setting's range; widen the range in `defs/drone.ts` (no schema bump).
 7. **Catalogue**: `node --import tsx scripts/gen-catalog.ts` (landing, `docs/settings.md`, README, llms.txt).

@@ -1,0 +1,236 @@
+{
+ "probe": "w2-pilot-accept",
+ "base": "https://gsfpv.flyreelstudio.eu",
+ "browser": "system-chrome",
+ "view": "1536x730@1.25",
+ "at": "2026-11-28T19:45:01.728Z",
+ "pass": false,
+ "steps": {
+  "capture": {
+   "pass": true,
+   "controls": true,
+   "pointerLock": true
+  },
+  "pausePick": {
+   "pass": false,
+   "menu": true,
+   "key": "Escape",
+   "label": "Change scan",
+   "viaPause": {
+    "shown": true,
+    "cards": 14,
+    "id": "887f27aa",
+    "loaded": true,
+    "rec": {
+     "from": "39e63ce9",
+     "to": "887f27aa",
+     "reason": "pick",
+     "ok": true,
+     "ms": 1376
+    },
+    "pickerGone": true,
+    "captured": true,
+    "climbed": 4.67,
+    "flies": true
+   }
+  },
+  "gentle": {
+   "pass": false,
+   "scene": "7a475d38",
+   "touch": {
+    "type": "crash",
+    "speed": 5.62,
+    "ny": 0.94
+   },
+   "groundCrash": [
+    {
+     "speed": 5.62,
+     "ny": 0.94
+    }
+   ],
+   "slope": [],
+   "tries": [
+    {
+     "run": 0,
+     "rest": true,
+     "model": {
+      "vCrash": 4,
+      "vCrashGround": null,
+      "lastCrash": {
+       "speed": 5.62,
+       "ny": 0.94
+      },
+      "groundTouch": {
+       "type": "crash",
+       "speed": 5.62,
+       "ny": 0.94
+      }
+     },
+     "h": 0.5,
+     "peak": 1.35,
+     "driftCut": 0,
+     "driftEnd": 0.69,
+     "climbed": 0.78,
+     "impact": 5.63,
+     "crashed": true,
+     "armed": false,
+     "crashes": 1,
+     "crashesBefore": 0,
+     "alt": -1.18
+    }
+   ]
+  },
+  "hard": {
+   "pass": true,
+   "scene": "887f27aa",
+   "hard": {
+    "model": {
+     "vCrash": 4,
+     "vCrashGround": null,
+     "lastCrash": {
+      "speed": 9.04,
+      "ny": 1
+     },
+     "groundTouch": {
+      "type": "crash",
+      "speed": 9.04,
+      "ny": 1
+     }
+    },
+    "h": 2.5,
+    "peak": 4.36,
+    "driftCut": 0,
+    "driftEnd": 0.13,
+    "climbed": 2.69,
+    "impact": 8.93,
+    "crashed": true,
+    "armed": false,
+    "crashes": 1,
+    "crashesBefore": 0,
+    "alt": -2.07
+   }
+  },
+  "cardPick": {
+   "pass": false,
+   "crashed": true,
+   "toast": "Crash at 9.0 m/s. The drone comes back by itself. Enter: stay here.Crash 9.0 m/s \u00b7 back 5 s in 1.7 sEnterStayRBack to startNNext sceneShift+FFavourite",
+   "card": true,
+   "row": [
+    {
+     "action": "scene-next",
+     "text": "Next sceneN"
+    },
+    {
+     "action": "scene-random",
+     "text": "Random sceneShift+N"
+    },
+    {
+     "action": "scene-favourite",
+     "text": "Next favourite sceneShift+F"
+    }
+   ],
+   "viaCard": null
+  },
+  "cameraEn": {
+   "pass": false,
+   "line": null
+  },
+  "cameraPl": {
+   "pass": false,
+   "line": null
+  }
+ },
+ "errors": [],
+ "sent": {
+  "count": 29,
+  "outsideApi": [
+   {
+    "method": "HEAD",
+    "url": "https://d28zzqy0iyovbz.cloudfront.net/39e63ce9/v1/lod-meta.json",
+    "api": false
+   },
+   {
+    "method": "HEAD",
+    "url": "https://d28zzqy0iyovbz.cloudfront.net/39e63ce9/v1/meta.json",
+    "api": false
+   },
+   {
+    "method": "HEAD",
+    "url": "https://d28zzqy0iyovbz.cloudfront.net/39e63ce9/v1/scene.voxel.json",
+    "api": false
+   },
+   {
+    "method": "HEAD",
+    "url": "https://d28zzqy0iyovbz.cloudfront.net/887f27aa/v1/lod-meta.json",
+    "api": false
+   },
+   {
+    "method": "HEAD",
+    "url": "https://d28zzqy0iyovbz.cloudfront.net/887f27aa/v1/meta.json",
+    "api": false
+   },
+   {
+    "method": "HEAD",
+    "url": "https://d28zzqy0iyovbz.cloudfront.net/887f27aa/v1/scene.voxel.json",
+    "api": false
+   },
+   {
+    "method": "HEAD",
+    "url": "https://d28zzqy0iyovbz.cloudfront.net/7a475d38/v1/lod-meta.json",
+    "api": false
+   },
+   {
+    "method": "HEAD",
+    "url": "https://d28zzqy0iyovbz.cloudfront.net/7a475d38/v1/meta.json",
+    "api": false
+   },
+   {
+    "method": "HEAD",
+    "url": "https://d28zzqy0iyovbz.cloudfront.net/7a475d38/v1/scene.voxel.json",
+    "api": false
+   },
+   {
+    "method": "HEAD",
+    "url": "https://d28zzqy0iyovbz.cloudfront.net/887f27aa/v1/lod-meta.json",
+    "api": false
+   },
+   {
+    "method": "HEAD",
+    "url": "https://d28zzqy0iyovbz.cloudfront.net/887f27aa/v1/meta.json",
+    "api": false
+   },
+   {
+    "method": "HEAD",
+    "url": "https://d28zzqy0iyovbz.cloudfront.net/887f27aa/v1/scene.voxel.json",
+    "api": false
+   }
+  ],
+  "first": [
+   {
+    "method": "POST",
+    "url": "https://gsfpv.flyreelstudio.eu/api/e",
+    "api": true
+   },
+   {
+    "method": "HEAD",
+    "url": "https://d28zzqy0iyovbz.cloudfront.net/39e63ce9/v1/lod-meta.json",
+    "api": false
+   },
+   {
+    "method": "HEAD",
+    "url": "https://d28zzqy0iyovbz.cloudfront.net/39e63ce9/v1/meta.json",
+    "api": false
+   },
+   {
+    "method": "HEAD",
+    "url": "https://d28zzqy0iyovbz.cloudfront.net/39e63ce9/v1/scene.voxel.json",
+    "api": false
+   },
+   {
+    "method": "POST",
+    "url": "https://gsfpv.flyreelstudio.eu/api/e",
+    "api": true
+   }
+  ]
+ }
+}

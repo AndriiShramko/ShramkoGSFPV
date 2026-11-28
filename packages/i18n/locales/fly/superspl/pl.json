@@ -41,6 +41,7 @@
   "superspl.badge.walkable": "Ze ścianami",
   "superspl.badge.downloadable": "Do pobrania",
   "superspl.badge.old": "Stary format",
+  "superspl.badge.unsupported": "Jeszcze się nie otwiera",
   "superspl.fav": "Dodaj „{title}” do ulubionych",
   "superspl.unfav": "Usuń „{title}” z ulubionych",
   "superspl.credit": "Sceny, autorzy i licencje tak, jak podaje je SuperSplat."

@@ -162,11 +162,12 @@ describe('resolveScene against the recorded CDN', () => {
         expect(c.settingsAsked().sort((a, b) => a - b)).toEqual(Array.from({ length: last }, (_, i) => i + 1));
     });
 
-    it.each(['8830149e', '528c3eea'])('legacy compressed PLY %s is "unsupported", not "does not exist"', async (id) => {
+    it.each(['8830149e', '528c3eea'])('legacy compressed PLY %s opens as its scene.compressed.ply (lane n-scan S2)', async (id) => {
         const c = cdn();
-        const { error } = await c.run(resolveScene(id, c.f));
-        expect(error!.code).toBe('unsupported');
-        expect(error!.message).toMatch(/compressed PLY/);
+        const { s, error } = await c.run(resolveScene(id, c.f));
+        expect(error).toBeUndefined();
+        expect(s!.contentKind).toBe('ply');
+        expect(s!.contentUrl).toMatch(/\/scene\.compressed\.ply$/);
     });
 
     it('invalid ids and taken-down scenes are refused before any request', async () => {

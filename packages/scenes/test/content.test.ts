@@ -13,8 +13,8 @@ function firstConfirmed(seen: Record<ContentKind, ContentSeen>): ContentKind[] {
 }
 
 describe('contentOrder', () => {
-    it('levels of detail come first in the table', () => {
-        expect(CONTENT_FILES.map((c) => c.file)).toEqual(['lod-meta.json', 'meta.json']);
+    it('levels of detail come first in the table, the 2025 PLY last', () => {
+        expect(CONTENT_FILES.map((c) => c.file)).toEqual(['lod-meta.json', 'meta.json', 'scene.compressed.ply']);
     });
 
     it.each([

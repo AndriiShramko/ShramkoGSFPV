@@ -14,5 +14,5 @@ export * from './contracts';
 export * from './wind';
 export * from './wake';
 
-/** Bumped whenever the model changes in a way that alters traces. Part of the log header. */
-export const SIM_CORE_VERSION = 'sim-core/0.2.0';
+/** Bumped whenever the model changes in a way that alters traces. Part of the log header. 0.3.0: prop wash on every craft (w3-model). */
+export const SIM_CORE_VERSION = 'sim-core/0.3.0';

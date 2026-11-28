@@ -1,0 +1,231 @@
+{
+ "address": "https://gsfpv.flyreelstudio.eu/en",
+ "live": true,
+ "scan": "70b50d42",
+ "size": [
+  1536,
+  730
+ ],
+ "dsf": 1.25,
+ "date": "2026-11-28T19:45:10.511Z",
+ "steps": {
+  "open": {
+   "ok": true,
+   "status": "ready",
+   "lock": "CANVAS",
+   "open": true,
+   "ms": 4059,
+   "gates": 13
+  },
+  "build": {
+   "ok": true,
+   "gates": 3,
+   "added": [
+    0,
+    1,
+    1
+   ],
+   "cOff": {
+    "at": [
+     768,
+     365,
+     10
+    ],
+    "apart": 2
+   },
+   "pull": {
+    "look": {
+     "up0": 108,
+     "steps": [
+      85,
+      0
+     ]
+    },
+    "ok": false,
+    "tries": [
+     {
+      "n": 0,
+      "ax": "x",
+      "px": 40,
+      "moved": 0.7,
+      "tip": "head:x",
+      "along": 106,
+      "hit": "CANVAS."
+     },
+     {
+      "n": 1,
+      "ax": "z",
+      "tip": null
+     },
+     {
+      "n": 2,
+      "ax": "y",
+      "tip": null
+     },
+     {
+      "n": 3,
+      "ax": "x",
+      "px": -40,
+      "moved": 0.7,
+      "tip": "head:x",
+      "along": 106,
+      "hit": "CANVAS."
+     },
+     {
+      "n": 4,
+      "ax": "z",
+      "tip": null
+     },
+     {
+      "n": 5,
+      "ax": "y",
+      "tip": null
+     },
+     {
+      "n": 7,
+      "ax": "z",
+      "tip": null
+     },
+     {
+      "n": 8,
+      "ax": "y",
+      "tip": null
+     },
+     {
+      "n": 10,
+      "ax": "z",
+      "tip": null
+     },
+     {
+      "n": 11,
+      "ax": "y",
+      "tip": null
+     },
+     {
+      "n": 13,
+      "ax": "z",
+      "tip": null
+     },
+     {
+      "n": 14,
+      "ax": "y",
+      "tip": null
+     },
+     {
+      "n": 16,
+      "ax": "z",
+      "tip": null
+     },
+     {
+      "n": 17,
+      "ax": "y",
+      "tip": null
+     },
+     {
+      "n": 19,
+      "ax": "z",
+      "tip": null
+     },
+     {
+      "n": 20,
+      "ax": "y",
+      "tip": null
+     },
+     {
+      "n": 22,
+      "ax": "z",
+      "tip": null
+     },
+     {
+      "n": 23,
+      "ax": "y",
+      "tip": null
+     }
+    ],
+    "apart": 2.000010999969751
+   },
+   "pair": [
+    0,
+    1
+   ],
+   "pairApart": 2,
+   "low": null,
+   "bury": {
+    "ok": true,
+    "tries": []
+   },
+   "problems": [
+    {
+     "code": "gate-wall",
+     "gate": 0
+    },
+    {
+     "code": "gate-wall",
+     "gate": 1
+    }
+   ],
+   "line": "Selected. Gate 1 of 3: square, 1.5 m"
+  },
+  "dialog": {
+   "ok": false,
+   "t0": 1795895162959,
+   "pressed": true,
+   "typed": {
+    "title": true,
+    "name": true
+   },
+   "dialog": null,
+   "line": "Before saving: gate 1 touches a wall; gate 2 touches a wall. Make these small corrections and save?",
+   "kinds": null
+  },
+  "asIs.saved": {
+   "ok": false,
+   "why": "no Save dialog: the page refused the save",
+   "line": "Before saving: gate 1 touches a wall; gate 2 touches a wall. Make these small corrections and save?",
+   "said": "Before saving: gate 1 touches a wall; gate 2 touches a wall. Make these small corrections and save?",
+   "aborted": [
+    {
+     "aborted": "https://gsfpv.flyreelstudio.eu/api/e",
+     "method": "POST"
+    },
+    {
+     "aborted": "https://gsfpv.flyreelstudio.eu/api/e",
+     "method": "POST"
+    },
+    {
+     "aborted": "https://gsfpv.flyreelstudio.eu/api/e",
+     "method": "POST"
+    }
+   ]
+  }
+ },
+ "posts": [
+  {
+   "aborted": "https://gsfpv.flyreelstudio.eu/api/e",
+   "method": "POST"
+  },
+  {
+   "aborted": "https://gsfpv.flyreelstudio.eu/api/e",
+   "method": "POST"
+  },
+  {
+   "aborted": "https://gsfpv.flyreelstudio.eu/api/e",
+   "method": "POST"
+  }
+ ],
+ "notRun": [
+  "build.samePlace: the nearest two gates stand 2 m apart (Add gate keeps 2 m)",
+  "asIs.reload",
+  "showMe",
+  "fixAll",
+  "fixAll.undo",
+  "reload"
+ ],
+ "shots": [],
+ "error": "Error: LIVE: stopped before any save",
+ "fails": [
+  "dialog",
+  "asIs.saved"
+ ],
+ "log": []
+}
