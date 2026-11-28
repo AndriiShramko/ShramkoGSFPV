@@ -541,6 +541,34 @@ Car 6 (since car 5's head 3cc6b51b; fix-fly is tools/bench only, so the seams ar
   15 m with step 2 also asking gate 1 nearer the drone than the spawn (269d00be); three runs and one drawn run PASS on the
   same build; the live site's 492.6 m still fails it.
 
+Car 7 (since origin/main 6d57d2c4; car 6's head 94727c6c is in it)
+
+- w2-pilot's softer ground (physics.vCrashGround 7 m/s, expert) against w3-model's prop wash on every craft: the wash band
+  starts at 0.4 x the hover induced velocity (2.3 to 3.1 m/s of sink on the presets), so a slow landing never meets it.
+  Measured on every preset at wash x0, x1, x2 (packages/sim-core/test/int4-car7-landing.test.ts, 8 tests, 87ff1c55, NEG OK
+  on origin/main's sim-core): a slow flown landing and a brisk 5 m/s descent with a flare at 3 m (wash 0.65 to 1.0 on the
+  way down) touch at 0.6 m/s on every craft at x1 and x2; no flare, the throttle held at 90 % of the hover from 10 m:
+  every craft whole at x1 and x2 (at most 5.9 m/s); held at 85 %: whole on every craft at the default x1 (at most 6.4 m/s,
+  Mach R5), and the wash makes each touch faster than at x0 (the control). At the setting's maximum x2 that careless
+  descent breaks the two 5-inch craft (Mach R5 7.49 m/s, Nazgul 7.05 m/s against 7): pinned in the test as the control
+  that the check can fire; not a gentle landing, and on the live site (one threshold, 4 m/s) every 85 % descent above
+  breaks. No product change.
+- w1-dialog's Add here against n-save's saving: the joined course (the kept gates and the ring round the drone, its id
+  the link of both parts, g2.<first>_<part>) passes the page's check before Save for everyone (validateServerTrack, the
+  mirror of tracks.py; the id is not checked against the server id pattern there, the server gives its own id) and,
+  opened in the editor with the page's margin (marginOf), has no wall problem and no Save blocker
+  (packages/tracks/test/int4-car7-add-save.test.ts, 2 tests, 73c6eeee, NEG OK on origin/main plan.ts and generate.ts:
+  the old code lays a new course, not the joined one). Add here never passes the server's 60 gates (extend.ts addRoom).
+  A saved course travels by its server id (unchanged by these lanes); the link of both parts relays the course
+  (w1-dialog's add-here.test.ts and w1-dialog-accept on the build).
+- w2-pilot's "Choose a scan" in the pause menu: only the label of the existing item pause.scene changed (labelKey
+  scenes.title); its id, order, section and level ('first') stay, so the course item and every probe that opens it by
+  data-action keep working; sr-quiet's HUD and keys (hud.ts, voxels.ts, sonic key hints) share no file or key with it.
+  The crash card's pick has no key (a button that opens the catalogue), no new key anywhere.
+- The settings rows: w2-pilot adds physics.vCrashGround (Crashes, expert) and moves camera.uptiltDeg to 'first' (the
+  camera line of Before you fly names it at every level); w3-model changes physics.propWash's meaning (on every craft)
+  and adds two drones (air65champ-1s, air65iichamp-1s: DRONE_IDS, presets.ts, drones3d/equipment.ts). No row in both.
+
 ## Deploy order
 
 Car 1 (from the merged lanes' 'For the lead' and `git diff origin/main HEAD -- apps/api deploy packages/sonic-fpv`)
