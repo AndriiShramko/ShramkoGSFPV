@@ -11,7 +11,7 @@
 //   3 link      the pause menu's Share: the address names both parts (g2.<first>_<added>); a fresh context opens it and lays
 //               the same gates (positions to 1 cm)
 //   4 wholeScan back in the first tab, the course item, Whole scan, the main button: the course is replaced (not all old gates
-//               kept), the ask is wide, and it spreads farther than the Here course of step 1
+//               kept), the ask is wide, and its gates reach farther from the drone than the Here ring Add here laid there
 //   5 keys      keys alone: Shift+G in flight, Tab reaches Here, Whole scan, Add here, Cancel and the main button; Space on Add
 //               here presses it; Tab to Cancel, Enter: the dialog closes and the course is the same; the dialog is a named
 //               dialog (read out by a screen reader) with its title
@@ -60,7 +60,7 @@ const READ = () => {
     return {
         status: g.status, lock: !!document.pointerLockElement, gates: c ? c.gates : 0, drawn: c ? c.drawn : 0,
         poses: poses.map((p) => p.pos.map((v) => Math.round(v * 100) / 100)),
-        request: c ? c.request ?? null : null, plan: c && c.plan ? { ok: c.plan.ok, stats: c.plan.stats ?? null } : null,
+        request: c ? c.request ?? null : null, plan: c && c.plan ? { ok: c.plan.ok, stats: c.plan.stats ?? null, eased: c.plan.eased ?? null } : null,
         spawn: ses && ses.spawn ? [ses.spawn[0], ses.spawn[1], ses.spawn[2]] : null,
         drone: sim ? [sim[0], sim[1], sim[2]] : null,
         pause: !!document.querySelector('.pause-menu'),
@@ -99,6 +99,7 @@ const courseUp = (s) => s.gates > 0 && s.drawn > 0;
 const same = (a, b) => Math.abs(a[0] - b[0]) <= 0.011 && Math.abs(a[1] - b[1]) <= 0.011 && Math.abs(a[2] - b[2]) <= 0.011;
 const keptOf = (old, now) => old.filter((p) => now.some((q) => same(p, q))).length;
 const span = (poses) => { let m = 0; for (const a of poses) for (const b of poses) m = Math.max(m, flat(a, b)); return m; };
+const reach = (poses, at) => poses.reduce((m, p) => Math.max(m, flat(p, at)), 0);
 const fill = (s, n) => s.replace('{n}', String(n));
 
 async function poll(page, ms, ok) {
@@ -268,9 +269,9 @@ try {
     const s4 = await poll(page, COURSE_MS, (q) => courseUp(q) && digest(q) !== d2);
     check(4, 'wholeScan: the course is replaced, the ask is wide, it spreads farther than Here',
         how4.dialog && pScan && pressedWhere(q4) === 'scan' && q4.dialog.whereLine === EN['course.gen.whereLine.scan'] && pMain4 && courseUp(s4) && digest(s4) !== d2 &&
-        keptOf(both, s4.poses) < both.length && !!s4.request && s4.request.spread === 'wide' && span(s4.poses) > span1,
+        keptOf(both, s4.poses) < both.length && !!s4.request && s4.request.spread === 'wide' && reach(s4.poses, there) > reach(added, there),
         { how: how4, pressed: pressedWhere(q4), whereLine: q4.dialog && q4.dialog.whereLine, gates: s4.gates, keptOfOld: keptOf(both, s4.poses), oldGates: both.length,
-          spanM: span(s4.poses), hereSpanM: span1, request: s4.request, ms: s4.ms });
+          reachM: reach(s4.poses, there), hereReachM: reach(added, there), spanM: span(s4.poses), hereSpanM: span1, eased: s4.plan && s4.plan.eased, request: s4.request, ms: s4.ms });
     const d4 = digest(s4);
 
     // 5 keys alone

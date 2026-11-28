@@ -210,8 +210,18 @@ export class GenerateDialog {
             h('div', { class: 'gen-actions' },
                 h('button', { type: 'button', class: 'btn gen-cancel', 'data-action': 'gen-cancel', onclick: () => this.cancel() }, m.cancel),
                 h('button', { type: 'button', class: 'btn primary gen-main', 'data-action': 'gen-build', 'aria-keyshortcuts': 'Enter', title: `${m.main} (${this.t('course.gen.enter')})`, onclick: () => this.build() }, m.main)));
+        // lane w1-dialog S3: a pick repaints the dialog; the focus stays on the button of the same action, so a pilot on keys
+        // alone goes on with Tab from the choice made (the browser would else put the focus back at the page's start)
+        const focused = this.root ? focusedAction(this.root) : null;
         this.root?.remove();
         this.parent.append(root);
         this.root = root;
+        if (focused) Array.from(root.querySelectorAll('button')).find((b) => b.getAttribute('data-action') === focused)?.focus();
     }
+}
+
+/** the data-action of the dialog's button that holds the keyboard focus, null when the focus is elsewhere */
+function focusedAction(root: HTMLElement): string | null {
+    const el = typeof document !== 'undefined' ? (document.activeElement as HTMLElement | null) : null;
+    return el && root.contains(el) ? el.getAttribute('data-action') : null;
 }

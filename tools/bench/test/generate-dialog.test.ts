@@ -173,6 +173,23 @@ describe('gen4b B1: the Generate dialog', () => {
             expect([built.length, prevented, d.isOpen]).toEqual([1, 0, true]);
             for (const f of [...keys]) f(at('[data-action=gen-build]'));
             expect([built.length, d.isOpen]).toEqual([2, false]);
+            // w1-dialog S3 (probe step 5): a choice pressed by the keyboard keeps the focus through the repaint, so Tab goes
+            // on from it (the old repaint dropped the focus and Tab began at the page's start, never reaching Cancel)
+            d.open({ ...base, shownGates: 7 });
+            const btn = q('[data-action=gen-where-add]') as unknown as Record<string, unknown>;
+            const proto = Object.getPrototypeOf(btn) as Record<string, unknown>;
+            const keepFocus = proto.focus;
+            proto.focus = function (this: unknown) { doc.activeElement = this as null; };
+            try {
+                doc.activeElement = btn as unknown as null;
+                (btn as unknown as { click: () => void }).click();
+                const now = q('[data-action=gen-where-add]');
+                expect([d.model()!.add, now !== (btn as unknown), doc.activeElement === now]).toEqual([true, true, true]);
+            } finally {
+                proto.focus = keepFocus;
+                doc.activeElement = null;
+            }
+            d.close();
         } finally {
             Object.assign(g, keep);
         }
