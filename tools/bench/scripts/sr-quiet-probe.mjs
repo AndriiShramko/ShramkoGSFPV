@@ -101,6 +101,8 @@ try {
     out.errors.push(String(e).slice(0, 300));
 } finally {
     await browser.close();
-    writeFileSync(outFile, JSON.stringify(out, null, 1));
+    // ASCII JSON (B18: evidence holds no non-English letters; the Polish texts of a /pl run are escaped, the values unchanged)
+    const ascii = (s) => s.replace(/[^\x00-\x7f]/g, (c) => `\\u${c.charCodeAt(0).toString(16).padStart(4, '0')}`);
+    writeFileSync(outFile, ascii(JSON.stringify(out, null, 1)));
     console.log(JSON.stringify({ plain: out.runs.plain?.liveChanges, sound: out.runs.sound?.liveChanges, keysList: !!out.runs.startScreen?.keysList, errors: out.errors.length }));
 }

@@ -30,7 +30,7 @@ describe('int4 car 6: w1-anchor\'s course token x n-share\'s shared sound link',
         const q = new URLSearchParams(search);
         const req = parseSonicParam(q.get('sonic'), q);
         expect(req).toMatchObject({ kind: 'scan', sceneId: 'eb5f51dc', course: NEW });
-        expect(courseOfLink(search)).toEqual({ kind: 'request', request: { seed: 99, level: 'medium', spread: 'compact', anyQuality: false, anchor: [12, -3, -540] } });
+        expect(courseOfLink(search)).toEqual({ kind: 'request', request: { seed: 99, level: 'medium', spread: 'compact', anyQuality: false, anchor: [12, -3, -540] }, adds: [] });
     });
 
     it('the old form: the same course as before (anchor null: the core)', () => {
@@ -38,7 +38,7 @@ describe('int4 car 6: w1-anchor\'s course token x n-share\'s shared sound link',
         const q = new URLSearchParams(search);
         expect(readFlightLink(search)?.course).toEqual({ kind: 'generated', link: OLD });
         expect(parseSonicParam(q.get('sonic'), q)).toMatchObject({ kind: 'scan', course: OLD });
-        expect(courseOfLink(search)).toEqual({ kind: 'request', request: { seed: 99, level: 'medium', spread: 'compact', anyQuality: false, anchor: null } });
+        expect(courseOfLink(search)).toEqual({ kind: 'request', request: { seed: 99, level: 'medium', spread: 'compact', anyQuality: false, anchor: null }, adds: [] });
     });
 
     it('the generate dialog asks no place: the page adds the pilot\'s at the press', async () => {
