@@ -12,6 +12,10 @@ Design proposal, point R2. The owner's brief line 667 (ideas b, c, d). Temp fold
   - [x] gap-gen-accept.mjs presses gen-where-here/scan (gen-spread-* on an older build)
   - [x] NEG OK on w1-anchor (`-t "w1-dialog"`: missing course.gen.whereTitle, DEFAULT_WHERE undefined)
 - [ ] S2 Add here: the old gates kept as occupied places, the new part from the drone, the ring closed; tests with NEG; the link after Add here
+  - [x] packages/tracks: CoursePlace.occupied, extend.ts joinCourses (splice at one leg of each ring), PlanInput.keep,
+    planCourse answers 'no-join'; the link 'g2.<first>_<seed>.<ls>.<x>.<y>.<z>' (addedLinkId, parseCourseLink adds)
+  - [x] add-here.test.ts 9 passed; NEG OK on w1-anchor
+  - [ ] the page: dialog Add here, the worker's keep, the link's parts laid in turn, locales, tests
 - [ ] S3 acceptance by mouse at 1536x730@1.25 on a local release build (en, pl; keys alone); gen4-generate-dialog live check and probe; gates.py
 
 ## Design vs code

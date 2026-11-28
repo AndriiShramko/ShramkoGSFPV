@@ -25,7 +25,7 @@ describe('course link of a request', () => {
                     const r: CourseRequest = { seed, level, ...s, anchor: null };
                     const id = courseLinkId(r);
                     expect(id).toMatch(/^g2\.[0-9a-z]{1,7}\.[bmp][cwv]$/);
-                    expect(parseCourseLink(id)).toEqual({ kind: 'request', request: r });
+                    expect(parseCourseLink(id)).toEqual({ kind: 'request', request: r, adds: [] });
                     ids.add(id);
                 }
             }
@@ -57,7 +57,7 @@ describe('course link of a request', () => {
                     expect(id).toMatch(/^g2\.[0-9a-z]{1,7}\.[bmp][cwv]\.-?\d+\.-?\d+\.-?\d+$/);
                     // a track's id (TRACK_ID: at most 80) and a room's course (rooms protocol COURSE_RE: at most 64)
                     expect(id.length).toBeLessThanOrEqual(64);
-                    expect(parseCourseLink(id)).toEqual({ kind: 'request', request: r });
+                    expect(parseCourseLink(id)).toEqual({ kind: 'request', request: r, adds: [] });
                 }
         // the page rounds before it asks; a request that was not rounded is written rounded, -0 as 0
         expect(courseLinkId({ seed: 7, level: 'medium', spread: 'compact', anyQuality: false, anchor: [-0.4, 2.5, -540.6] })).toBe('g2.7.mc.0.3.-541');
@@ -77,7 +77,7 @@ describe('course link of a request', () => {
         ];
         for (const [link, world, request, gates, hash] of golden) {
             const parsed = parseCourseLink(link);
-            expect(parsed).toEqual({ kind: 'request', request });
+            expect(parsed).toEqual({ kind: 'request', request, adds: [] });
             const r = planCourse({ walls: world(), transform: IDENTITY, spawn: [0, 1, 0], scene: { id: 'abcdef12', version: 1 }, created: '2026-11-19T00:00:00.000Z', craftRadiusM: 0.0425, request, elements: true });
             expect(r.ok).toBe(true);
             if (!r.ok) continue;
