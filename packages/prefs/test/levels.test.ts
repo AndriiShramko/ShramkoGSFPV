@@ -9,16 +9,16 @@ const shippedAt = (level: MenuLevel): string[] =>
     SCHEMA.defs.filter((d) => d.status === 'shipped' && d.level !== undefined && levelShows(level, d.level)).map((d) => d.id).sort();
 
 /** the plan's table 1.5, level first: what a pilot who never flew sees */
-const FIRST = ['ui.menuLevel', 'crash.enabled', 'display.reducedMotion', 'drone.current', 'input.altitudeHelp', 'input.gameSpeed', 'input.howToFly', 'input.mouseSensitivity', 'input.play', 'sound.volume', 'ui.language'];
+const FIRST = ['ui.menuLevel', 'camera.uptiltDeg', 'crash.enabled', 'display.reducedMotion', 'drone.current', 'input.altitudeHelp', 'input.gameSpeed', 'input.howToFly', 'input.mouseSensitivity', 'input.play', 'sound.volume', 'ui.language'];
 /** the plan's table 1.5, level sim on top of first */
-const SIM = ['course.lapSplash', 'battery.refill', 'camera.fovDeg', 'camera.uptiltDeg', 'crosshair.shape', 'display.hud', 'flight.mode', 'input.haptics', 'input.mouseInvertY', 'input.stickMode', 'input.throttleStyle', 'recording.auto', 'recording.resolution', 'respawn.auto', 'respawn.keepArmed', 'respawn.target', 'scene.ceiling', 'scene.walls', 'scenes.autoSwitch', 'sound.motors', 'tune.rates', 'tune.throttle', 'wind.mode', 'wind.speed'];
+const SIM = ['course.lapSplash', 'battery.refill', 'camera.fovDeg', 'crosshair.shape', 'display.hud', 'flight.mode', 'input.haptics', 'input.mouseInvertY', 'input.stickMode', 'input.throttleStyle', 'recording.auto', 'recording.resolution', 'respawn.auto', 'respawn.keepArmed', 'respawn.target', 'scene.ceiling', 'scene.walls', 'scenes.autoSwitch', 'sound.motors', 'tune.rates', 'tune.throttle', 'wind.mode', 'wind.speed'];
 
 describe('menu levels of the settings', () => {
-    it('every def has a level; the shipped settings split 11 / 35 / 79 by level', () => {
+    it('every def has a level; the shipped settings split 12 / 35 / 79 by level', () => {
         expect(SCHEMA.defs.filter((d) => d.level === undefined).map((d) => d.id)).toEqual([]);
         expect(shippedAt('first')).toEqual([...FIRST].sort());
         expect(shippedAt('sim')).toEqual([...FIRST, ...SIM].sort());
-        expect(shippedAt('first')).toHaveLength(11);
+        expect(shippedAt('first')).toHaveLength(12);
         expect(shippedAt('sim')).toHaveLength(35);
         expect(shippedAt('expert')).toHaveLength(79);
         expect(shippedAt('expert')).toEqual(SCHEMA.defs.filter((d) => d.status === 'shipped').map((d) => d.id).sort());
@@ -56,7 +56,7 @@ describe('menu levels of the settings', () => {
 
     it('control: a level table row naming no setting is refused, a moved level changes the counts', () => {
         expect(() => withLevels([plain({})], { 'menu.typo': 'first' })).toThrow(/menu.typo/);
-        const moved = withLevels(SCHEMA.defs, { ...LEVEL_TABLE, 'camera.uptiltDeg': 'first' });
-        expect(moved.filter((d) => d.status === 'shipped' && d.level === 'first')).toHaveLength(12);
+        const moved = withLevels(SCHEMA.defs, { ...LEVEL_TABLE, 'camera.fovDeg': 'first' });
+        expect(moved.filter((d) => d.status === 'shipped' && d.level === 'first')).toHaveLength(13);
     });
 });

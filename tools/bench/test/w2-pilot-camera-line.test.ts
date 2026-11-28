@@ -36,6 +36,17 @@ describe('Before you fly names the camera angle and where it is set', () => {
         expect(line?.textContent).toBe(`K${A_OGONEK}t kamery: klawisz O otwiera Ustawienia, potem Kamera, K${A_OGONEK}t nachylenia kamery.`);
     });
 
+    it('the row it names is on the Settings screen at every level the screen offers (review: not only from sim up)', async () => {
+        const { SCHEMA } = await import('../../../packages/prefs/src');
+        const { rowShow } = await import('../../../apps/fly/src/ui/settings/model');
+        const { LEVEL_ANSWERS } = await import('../../../apps/fly/src/ui/panels');
+        const def = SCHEMA.byId.get('camera.uptiltDeg');
+        expect(def?.group).toBe('camera');
+        for (const { level } of LEVEL_ANSWERS) {
+            expect(rowShow(def!, level, { all: false, searching: false, hit: true, explicit: false }).shown, level).toBe(true);
+        }
+    });
+
     it('every locale has the line with the key, the screen, the group and the row', () => {
         for (const lang of ['en', 'es', 'pl', 'ru']) {
             const s = (JSON.parse(readFileSync(join(LOCALES, 'menu', `${lang}.json`), 'utf8')) as Record<string, string>)['menu.level.camera'];

@@ -86,7 +86,7 @@ describe('Settings rows by level', () => {
     const show = (d: SettingDef, level: MenuLevel, o: Partial<{ all: boolean; searching: boolean; hit: boolean; explicit: boolean }> = {}) =>
         rowShow(d, level, { all: false, searching: false, hit: true, explicit: false, ...o });
     const count = (level: MenuLevel, o: Parameters<typeof show>[2] = {}): number => defs.filter((d) => show(d, level, o).shown).length;
-    const uptilt = SCHEMA.byId.get('camera.uptiltDeg') as SettingDef;
+    const fov = SCHEMA.byId.get('camera.fovDeg') as SettingDef;
 
     it('three different lists, every row at expert; "Show all settings" shows every row', () => {
         const [first, sim, expert] = [count('first'), count('sim'), count('expert')];
@@ -98,14 +98,14 @@ describe('Settings rows by level', () => {
     });
 
     it('a search finds a row above the level and marks it "In the full menu"; a miss stays hidden', () => {
-        expect(show(uptilt, 'first')).toEqual({ shown: false, mark: null });
-        expect(show(uptilt, 'first', { searching: true, hit: true })).toEqual({ shown: true, mark: 'inFull' });
-        expect(show(uptilt, 'sim', { searching: true, hit: true })).toEqual({ shown: true, mark: null });
-        expect(show(uptilt, 'first', { searching: true, hit: false }).shown).toBe(false);
+        expect(show(fov, 'first')).toEqual({ shown: false, mark: null });
+        expect(show(fov, 'first', { searching: true, hit: true })).toEqual({ shown: true, mark: 'inFull' });
+        expect(show(fov, 'sim', { searching: true, hit: true })).toEqual({ shown: true, mark: null });
+        expect(show(fov, 'first', { searching: true, hit: false }).shown).toBe(false);
     });
 
     it('a changed value above the level stays in sight, marked "Changed"', () => {
-        expect(show(uptilt, 'first', { explicit: true })).toEqual({ shown: true, mark: 'changed' });
-        expect(show(uptilt, 'first', { explicit: true, all: true })).toEqual({ shown: true, mark: null });
+        expect(show(fov, 'first', { explicit: true })).toEqual({ shown: true, mark: 'changed' });
+        expect(show(fov, 'first', { explicit: true, all: true })).toEqual({ shown: true, mark: null });
     });
 });
