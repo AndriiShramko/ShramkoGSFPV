@@ -331,7 +331,19 @@ run tails4-start-moved locked node scripts/tails4-review-start.mjs "$SITE/en" "$
 # draws splats and over 5 % of the picture differs from the clear colour, with no console error and no CSP report.
 # Streamed v3 f924b0f5, 593f8c06; single v3 a39abad1 (the owner's), 28ad27ed, 98f74d54; v2 controls 143e76b0, 70b50d42.
 # On the engine 2.23.2 the v3 ids fail (streamed: ready over a black scene; single: endless loader).
-run scans-open locked env MAXS=120 SHOTS="$OUT/scans-open" PREFIX=live node scripts/hot-sog3-scans.mjs "$SITE/en" "$OUT/scans-open.json" f924b0f5,593f8c06,a39abad1,28ad27ed,98f74d54,143e76b0,70b50d42
+# n-scan (docs/wip/n-scan.md): the compressed PLY scans a5d25fb4 and c67edb74 are drawn too; then n-scan-accept.mjs with
+# render off (no GPU) walks every storage kind of packages/scenes/test/fixtures/superspl-kinds.json, a39abad1 first, by
+# the mouse (Keyboard on the Controls screen, a click into the scene; nothing saved or sent): each id reaches its first
+# flown frame, or the GSAF scan 5012e205 shows the line scenes.unsupported. Before n-scan both PLY ids say "older PLY
+# format" and 5012e205 says "does not exist".
+scans_open() {
+  locked env MAXS=120 SHOTS="$OUT/scans-open" PREFIX=live node scripts/hot-sog3-scans.mjs "$SITE/en" "$OUT/scans-open.json" f924b0f5,593f8c06,a39abad1,28ad27ed,98f74d54,143e76b0,70b50d42,a5d25fb4,c67edb74
+  local a=$?
+  RENDER=off MAXS=120 node scripts/n-scan-accept.mjs "$SITE/en" "$OUT/scans-open-kinds.json"
+  local b=$?
+  [ $a -eq 0 ] && [ $b -eq 0 ]
+}
+run scans-open scans_open
 # head4 (deploy/nginx.conf, after the nginx reload): only the simulator page may ask for the camera; every other page keeps
 # camera=() (two HEAD requests).
 head4headers() {

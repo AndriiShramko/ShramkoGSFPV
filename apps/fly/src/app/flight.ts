@@ -2,7 +2,7 @@
 // then start the input (a test mode, or the pilot's own). docs/architecture-v03.md 1.1.
 import type { ParamOverrides } from '@gsfpv/sim-core';
 import type { PrefsStore } from '@gsfpv/prefs';
-import { recordOpen, SceneError } from '@gsfpv/scenes';
+import { recordOpen } from '@gsfpv/scenes';
 import type { CatalogCollection, SceneLink } from '@gsfpv/scenes';
 import { parseImpl } from '@gsfpv/render-pc';
 import type { SplatRenderer } from '@gsfpv/render-pc';
@@ -22,6 +22,7 @@ import { Hud } from '../ui/hud';
 import { LoadingScreen } from '../ui/loading';
 import type { ShowcaseScene } from '../ui/scenes';
 import { t, locale } from '../i18n';
+import { failureCode } from '../session/open-error';
 import { Bus } from './context';
 import type { AppEvents, FlightContext, PauseReason, SceneRef, SceneSwitcher, WallsHost } from './context';
 import { SceneHost } from './scene-host';
@@ -179,6 +180,8 @@ export async function fly(ui: HTMLElement, canvas: HTMLCanvasElement, link: Scen
         next: controlsNext ? t('loading.next') : null,
         onRetry: () => location.reload(),
         onBack: () => { location.search = ''; },
+        // n-scan review: a heavy scan downloads for minutes without a stall, so the card's Cancel (key Esc) is the way on
+        onCancel: () => { location.search = ''; },
         onFlyNow: () => flyNow.press()
     });
     const tLoad = performance.now();
@@ -226,7 +229,7 @@ export async function fly(ui: HTMLElement, canvas: HTMLCanvasElement, link: Scen
         });
     } catch (e) {
         loading?.remove();
-        const code = e instanceof SceneError ? e.code : 'generic';
+        const code = failureCode(e);
         hook.error = String((e as Error)?.message ?? e);
         onFail(code, hook.error);
         void resumed.then(release);

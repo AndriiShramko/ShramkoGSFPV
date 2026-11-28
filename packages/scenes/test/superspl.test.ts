@@ -444,12 +444,12 @@ describe('pickRandomTopRated', () => {
 
 describe('formats the API does not name (review C9)', () => {
     // c67edb74 "Gothic Church - Kefermarkt": the best-liked walkable scene on 2026-10-01; the API gives its format
-    // as '' and the CDN has only scene.compressed.ply for it (resolveScene: 'unsupported')
+    // as '' and the CDN has only scene.compressed.ply for it (resolveScene: kind 'ply'; never picked at random)
     const tier = items(20, (i) => (i === 0 ? { id: 'c67edb74', format: '' } : {}));
 
     it('only sog, ssog and sogs count as known; the pure picker never draws an unknown one', () => {
         expect(['sog', 'ssog', 'sogs', 'compressed.ply', '', 'ply', 'SOG'].map(formatVerdict))
-            .toEqual(['opens', 'opens', 'opens', 'unsupported', 'unknown', 'unknown', 'unknown']);
+            .toEqual(['opens', 'opens', 'opens', 'legacy', 'unknown', 'unknown', 'unknown']);
         const count = (o: Partial<Parameters<typeof pickRandomTopRated>[1]>) => {
             const rng = mulberry32(3);
             let n = 0;
@@ -484,6 +484,17 @@ describe('formats the API does not name (review C9)', () => {
         const unsure = new SuperSplatCatalog({ fetch: proxy(pageOf(pool)).fetch });
         const r = await unsure.randomTopRated({ rng: () => 0, check: async () => 'unknown' });
         expect(r!.item.id).toBe(id(2)); // no clear answer: not this time, the next scene of the tier instead
+    });
+
+    it('randomTopRated never draws a legacy compressed PLY or a GSAF scan (they open only when the pilot picks them)', async () => {
+        // n-scan review: 'legacy' (compressed.ply: one file up to 163 MB, no levels) is not a random pick
+        const pool = Array.from({ length: 40 }, (_, i) => wire(i, i === 0 ? { format: 'compressed.ply' } : i === 1 ? { format: 'gsaf' } : {}));
+        const cat = new SuperSplatCatalog({ fetch: proxy(pageOf(pool)).fetch });
+        const got: string[] = [];
+        for (let k = 0; k < 40; k++) got.push((await cat.randomTopRated({ rng: () => (k + 0.5) / 40 }))!.item.id);
+        expect(got).not.toContain(id(0));
+        expect(got).not.toContain(id(1));
+        expect(got).toContain(id(2)); // control: the next scene of the tier is drawn
     });
 });
 

@@ -5,7 +5,8 @@
 //   - lod-meta.json  streamed SOG ("ssog"): an octree of SOG files in several levels of detail; the
 //                    engine streams the levels the view needs (the scene's own LOD);
 //   - meta.json      one SOG file ("sog"/"sogs"): everything at once, no levels;
-//   - scene.compressed.ply  the 2025 format, not supported (resolveScene says 'unsupported').
+//   - scene.compressed.ply  the 2025 format (one compressed PLY, no levels); the engine parses it, so it
+//                    opens like a single SOG; it is asked only when the folder holds neither JSON file.
 // The best file comes first: levels of detail on every device (SuperSplat's viewer streams lod-meta.json
 // on phones too, with a smaller splat budget: @gsfpv/render-pc drawing.ts). SuperSplat is moving its
 // uploads to streamed SOG (2026-10-16: 25 of the 48 newest public scenes) and a folder may one day hold
@@ -13,12 +14,13 @@
 // lod-meta.json. A new file name SuperSplat introduces is one more row of CONTENT_FILES, best first.
 
 /** How the renderer opens a content file (render-pc SplatRenderer.loadSplat reads the file name). */
-export type ContentKind = 'lod-meta' | 'meta';
+export type ContentKind = 'lod-meta' | 'meta' | 'ply';
 
 /** The content files of a scene folder, best first. */
 export const CONTENT_FILES: ReadonlyArray<{ readonly file: string; readonly kind: ContentKind }> = [
     { file: 'lod-meta.json', kind: 'lod-meta' },
-    { file: 'meta.json', kind: 'meta' }
+    { file: 'meta.json', kind: 'meta' },
+    { file: 'scene.compressed.ply', kind: 'ply' }
 ];
 
 /**
@@ -42,11 +44,13 @@ export interface SceneContent {
  * to meta.json when it does not open). Empty when nothing is confirmed: the caller decides between "the
  * CDN did not answer" and "no content" (resolveScene).
  */
-export function contentOrder(dir: string, seen: Readonly<Record<ContentKind, ContentSeen>>): SceneContent[] {
+export function contentOrder(dir: string, asked: Readonly<Partial<Record<ContentKind, ContentSeen>>>): SceneContent[] {
     const base = dir.endsWith('/') ? dir : `${dir}/`;
-    if (!CONTENT_FILES.some((c) => seen[c.kind] === 'yes')) return [];
+    // a file not asked about is not in the list (resolveScene asks for the PLY only when both JSON files are missing)
+    const seen = (k: ContentKind): ContentSeen => asked[k] ?? 'no';
+    if (!CONTENT_FILES.some((c) => seen(c.kind) === 'yes')) return [];
     return CONTENT_FILES
-        .filter((c) => seen[c.kind] !== 'no')
-        .map((c) => ({ url: `${base}${c.file}`, kind: c.kind, verified: seen[c.kind] === 'yes' }));
+        .filter((c) => seen(c.kind) !== 'no')
+        .map((c) => ({ url: `${base}${c.file}`, kind: c.kind, verified: seen(c.kind) === 'yes' }));
 }
 

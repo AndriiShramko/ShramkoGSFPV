@@ -20,7 +20,7 @@
 // A load can be stopped (train 4, lane ux4b; app/scene-load.ts): Cancel on the card (or key Esc) stops every fetch,
 // await and walls bake of it and opens the picker (closing it brings the scene left back); a new pick or key N
 // during a load replaces it at once (LoadSlot: the last pick wins, one load on the renderer at a time).
-import { SUPERSPLAT_READ_MS, SceneError, SceneRotation, flyQueryString, getLibrary, legacyLibraryStore, mergeLibraries, orderFor, parseSceneLink, recordFailure, recordOpen, sameRender, useLibraryStore, writeSceneQuery } from '@gsfpv/scenes';
+import { SUPERSPLAT_READ_MS, SceneRotation, flyQueryString, getLibrary, legacyLibraryStore, mergeLibraries, orderFor, parseSceneLink, recordFailure, recordOpen, sameRender, useLibraryStore, writeSceneQuery } from '@gsfpv/scenes';
 import type { CatalogCollection, RotationRules, RotationSource, RotationOrder, SceneLibraryData, SceneRender, SceneTour, TourFrom } from '@gsfpv/scenes';
 import type { PrefsStore } from '@gsfpv/prefs';
 import { FlightSession, FlyNow } from '../session';
@@ -42,6 +42,8 @@ import { drawingFor } from './drawing';
 import { noteNextUsed } from './next-used';
 import { pageTour } from './tour';
 import { LoadSlot, abortable, afterCancel, isCancelled } from './scene-load';
+import { failureCode, openMessage } from '../session/open-error';
+import { tell } from '../ui/messages';
 import type { LoadRun } from './scene-load';
 
 /** A SuperSplat read that has taken this long says "looking for the next scene" (an answer in the blink of an eye says nothing). */
@@ -342,7 +344,10 @@ export class SceneHost implements SceneSwitcher {
                 hook.sceneSwitch = { state: 'cancelled', from, to: id, reason, why: run.why, ms: Math.round(performance.now() - t0) };
                 return { kind: 'cancelled', from, fromRender, fromTitle };
             }
-            const code = e instanceof SceneError ? e.code : 'generic';
+            const code = failureCode(e);
+            // lane n-scan: the reason in one plain line with what to do next (ux4a's message service)
+            const line = openMessage(code, t);
+            if (line) tell(line);
             recordFailure(id, code);
             this.log.push({ from, to: id, reason, ok: false, ms: Math.round(performance.now() - t0), code });
             hook.sceneSwitch = { state: 'failed', from, to: id, reason, code };

@@ -19,6 +19,14 @@ const STORE_FILTERS = 'gsfpv.superspl.filters.v1';
 const STORE_FAILED = 'gsfpv.superspl.failed.v1';
 const SEARCH_DELAY_MS = 450;
 
+/** A card's format badge: an old format that opens, or one that does not open yet (formatVerdict). */
+function badgeOfFormat(format: string): HTMLElement | null {
+    const v = formatVerdict(format);
+    if (v === 'legacy') return h('span', { class: 'ss-badge old' }, t('superspl.badge.old'));
+    if (v === 'unsupported') return h('span', { class: 'ss-badge old' }, t('superspl.badge.unsupported'));
+    return null;
+}
+
 function session(): Storage | null {
     try {
         const s = window.sessionStorage;
@@ -148,7 +156,7 @@ function mount(host: HTMLElement, ctx: PickerTabHost): () => void {
         const badges = h('span', { class: 'ss-badges' },
             it.walkable ? h('span', { class: 'ss-badge walk' }, t('superspl.badge.walkable')) : null,
             it.downloadable ? h('span', { class: 'ss-badge dl' }, t('superspl.badge.downloadable')) : null,
-            formatVerdict(it.format) === 'unsupported' ? h('span', { class: 'ss-badge old' }, t('superspl.badge.old')) : null
+            badgeOfFormat(it.format)
         );
         const btn = h('button', { type: 'button', class: 'scene-card ss-card', 'data-scene': it.id, onclick: () => pickItem(ctx, it, 'superspl') },
             img, badges,

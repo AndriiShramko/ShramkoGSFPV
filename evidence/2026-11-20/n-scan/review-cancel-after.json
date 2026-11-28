@@ -1,0 +1,58 @@
+{
+  "base": "http://localhost:6941/en",
+  "scan": "c67edb74",
+  "at": "2026-11-21T17:28:29.544Z",
+  "steps": {
+    "during": {
+      "status": "loading",
+      "errorCode": null,
+      "scene": null,
+      "loaded": 278662,
+      "cancel": true,
+      "cards": 0,
+      "line": null,
+      "drawn": null,
+      "tick": null,
+      "sw": null
+    },
+    "afterCancel": {
+      "status": "loading",
+      "errorCode": null,
+      "scene": null,
+      "loaded": null,
+      "cancel": false,
+      "cards": 0,
+      "line": null,
+      "drawn": null,
+      "tick": null,
+      "sw": null
+    },
+    "card": {
+      "id": null,
+      "how": "opened by the page"
+    },
+    "opened": {
+      "status": "loading",
+      "errorCode": null,
+      "scene": null,
+      "loaded": null,
+      "cancel": false,
+      "cards": 0,
+      "line": null,
+      "drawn": null,
+      "tick": null,
+      "sw": null
+    },
+    "flight": {
+      "keyboard": false,
+      "tick0": null,
+      "tick1": null
+    }
+  },
+  "errors": [],
+  "pass": false,
+  "why": [
+    "the catalog scene did not open: {\"status\":\"loading\",\"errorCode\":null,\"scene\":null,\"loaded\":null,\"cancel\":false,\"cards\":0,\"line\":null,\"drawn\":null,\"tick\":null,\"sw\":null}",
+    "not flown: tick null -> null"
+  ]
+}

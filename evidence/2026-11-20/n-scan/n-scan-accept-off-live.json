@@ -1,0 +1,339 @@
+{
+  "base": "https://gsfpv.flyreelstudio.eu/en",
+  "at": "2026-11-21T15:53:01.527Z",
+  "drawn": false,
+  "browser": {
+    "kind": "system-chrome",
+    "version": "157.0.8103.52"
+  },
+  "maxS": 90,
+  "ids": {
+    "a39abad1": {
+      "kind": "sog-v3",
+      "expect": {
+        "flies": true,
+        "lines": []
+      },
+      "pass": true,
+      "why": null,
+      "outcome": "flown",
+      "errors": [],
+      "csp": [],
+      "seconds": 8,
+      "atOpen": {
+        "status": "ready",
+        "errorCode": null,
+        "error": null,
+        "line": null,
+        "drawn": 0,
+        "tick": 713,
+        "paused": true,
+        "locked": false
+      },
+      "flight": {
+        "keyboardClicked": true,
+        "lockedAfterClick": true,
+        "tick0": 2203,
+        "tick1": 3703,
+        "paused": false
+      }
+    },
+    "98f74d54": {
+      "kind": "sog-v3",
+      "expect": {
+        "flies": true,
+        "lines": []
+      },
+      "pass": true,
+      "why": null,
+      "outcome": "flown",
+      "errors": [],
+      "csp": [],
+      "seconds": 8,
+      "atOpen": {
+        "status": "ready",
+        "errorCode": null,
+        "error": null,
+        "line": null,
+        "drawn": 0,
+        "tick": 696,
+        "paused": true,
+        "locked": false
+      },
+      "flight": {
+        "keyboardClicked": true,
+        "lockedAfterClick": true,
+        "tick0": 2153,
+        "tick1": 3653,
+        "paused": false
+      }
+    },
+    "143e76b0": {
+      "kind": "sog-v2",
+      "expect": {
+        "flies": true,
+        "lines": []
+      },
+      "pass": true,
+      "why": null,
+      "outcome": "flown",
+      "errors": [],
+      "csp": [],
+      "seconds": 8,
+      "atOpen": {
+        "status": "ready",
+        "errorCode": null,
+        "error": null,
+        "line": null,
+        "drawn": 0,
+        "tick": 699,
+        "paused": true,
+        "locked": false
+      },
+      "flight": {
+        "keyboardClicked": true,
+        "lockedAfterClick": true,
+        "tick0": 2154,
+        "tick1": 3654,
+        "paused": false
+      }
+    },
+    "f924b0f5": {
+      "kind": "streamed-sog-v3",
+      "expect": {
+        "flies": true,
+        "lines": []
+      },
+      "pass": true,
+      "why": null,
+      "outcome": "flown",
+      "errors": [],
+      "csp": [],
+      "seconds": 8,
+      "atOpen": {
+        "status": "ready",
+        "errorCode": null,
+        "error": null,
+        "line": null,
+        "drawn": 0,
+        "tick": 705,
+        "paused": true,
+        "locked": false
+      },
+      "flight": {
+        "keyboardClicked": true,
+        "lockedAfterClick": true,
+        "tick0": 2159,
+        "tick1": 3659,
+        "paused": false
+      }
+    },
+    "593f8c06": {
+      "kind": "streamed-sog-v3",
+      "expect": {
+        "flies": true,
+        "lines": []
+      },
+      "pass": true,
+      "why": null,
+      "outcome": "flown",
+      "errors": [],
+      "csp": [],
+      "seconds": 9,
+      "atOpen": {
+        "status": "ready",
+        "errorCode": null,
+        "error": null,
+        "line": null,
+        "drawn": 0,
+        "tick": 588,
+        "paused": true,
+        "locked": false
+      },
+      "flight": {
+        "keyboardClicked": true,
+        "lockedAfterClick": true,
+        "tick0": 2138,
+        "tick1": 3638,
+        "paused": false
+      }
+    },
+    "70b50d42": {
+      "kind": "streamed-sog-v2",
+      "expect": {
+        "flies": true,
+        "lines": []
+      },
+      "pass": true,
+      "why": null,
+      "outcome": "flown",
+      "errors": [],
+      "csp": [],
+      "seconds": 58,
+      "atOpen": {
+        "status": "ready",
+        "errorCode": null,
+        "error": null,
+        "line": null,
+        "drawn": 0,
+        "tick": 706,
+        "paused": true,
+        "locked": false
+      },
+      "flight": {
+        "keyboardClicked": true,
+        "lockedAfterClick": true,
+        "tick0": 2147,
+        "tick1": 3647,
+        "paused": false
+      }
+    },
+    "2f1ddf5f": {
+      "kind": "streamed-sog-v2-huge",
+      "expect": {
+        "flies": true,
+        "lines": []
+      },
+      "pass": true,
+      "why": null,
+      "outcome": "flown",
+      "errors": [],
+      "csp": [],
+      "seconds": 77,
+      "atOpen": {
+        "status": "ready",
+        "errorCode": null,
+        "error": null,
+        "line": null,
+        "drawn": 0,
+        "tick": 720,
+        "paused": true,
+        "locked": false
+      },
+      "flight": {
+        "keyboardClicked": true,
+        "lockedAfterClick": true,
+        "tick0": 2160,
+        "tick1": 3660,
+        "paused": false
+      }
+    },
+    "5c0f892e": {
+      "kind": "sog-v2-heavy",
+      "expect": {
+        "flies": true,
+        "lines": [
+          "This scan is too large for this device. Pick a lighter scan, or open this one on a computer."
+        ]
+      },
+      "pass": true,
+      "why": null,
+      "outcome": "flown",
+      "errors": [],
+      "csp": [],
+      "seconds": 8,
+      "atOpen": {
+        "status": "ready",
+        "errorCode": null,
+        "error": null,
+        "line": null,
+        "drawn": 0,
+        "tick": 685,
+        "paused": true,
+        "locked": false
+      },
+      "flight": {
+        "keyboardClicked": true,
+        "lockedAfterClick": true,
+        "tick0": 2110,
+        "tick1": 3644,
+        "paused": false
+      }
+    },
+    "a5d25fb4": {
+      "kind": "compressed-ply",
+      "expect": {
+        "flies": true,
+        "lines": []
+      },
+      "pass": false,
+      "why": "the line is \"This scene is stored in SuperSplat's older PLY format, which the simulator cannot open yet. Scenes in the current format open fine.\" (unsupported), expected a flight",
+      "outcome": "line",
+      "errors": [],
+      "csp": [],
+      "seconds": 5,
+      "atOpen": {
+        "status": "error",
+        "errorCode": "unsupported",
+        "error": "scene a5d25fb4 v1 is a legacy compressed PLY, not supported yet",
+        "line": "This scene is stored in SuperSplat's older PLY format, which the simulator cannot open yet. Scenes in the current format open fine.",
+        "drawn": null,
+        "tick": null,
+        "paused": null,
+        "locked": false
+      }
+    },
+    "c67edb74": {
+      "kind": "compressed-ply-large",
+      "expect": {
+        "flies": true,
+        "lines": []
+      },
+      "pass": false,
+      "why": "the line is \"This scene is stored in SuperSplat's older PLY format, which the simulator cannot open yet. Scenes in the current format open fine.\" (unsupported), expected a flight",
+      "outcome": "line",
+      "errors": [],
+      "csp": [],
+      "seconds": 5,
+      "atOpen": {
+        "status": "error",
+        "errorCode": "unsupported",
+        "error": "scene c67edb74 v1 is a legacy compressed PLY, not supported yet",
+        "line": "This scene is stored in SuperSplat's older PLY format, which the simulator cannot open yet. Scenes in the current format open fine.",
+        "drawn": null,
+        "tick": null,
+        "paused": null,
+        "locked": false
+      }
+    },
+    "5012e205": {
+      "kind": "gsaf",
+      "expect": {
+        "flies": false,
+        "lines": [
+          "This scan is in a SuperSplat format the simulator cannot open yet (an animated scan). Choose another scan: scans in the usual formats open."
+        ]
+      },
+      "pass": false,
+      "why": "the line is \"This scene does not exist on SuperSplat or is not public.\" (not-found), expected  \"This scan is in a SuperSplat format the simulator cannot open yet (an animated scan). Choose another scan: scans in the usual formats open.\"",
+      "outcome": "line",
+      "errors": [],
+      "csp": [],
+      "seconds": 5,
+      "atOpen": {
+        "status": "error",
+        "errorCode": "not-found",
+        "error": "scene 5012e205 v1 has no splat content on the CDN",
+        "line": "This scene does not exist on SuperSplat or is not public.",
+        "drawn": null,
+        "tick": null,
+        "paused": null,
+        "locked": false
+      }
+    }
+  },
+  "pass": false,
+  "summary": {
+    "a39abad1": "PASS flown",
+    "98f74d54": "PASS flown",
+    "143e76b0": "PASS flown",
+    "f924b0f5": "PASS flown",
+    "593f8c06": "PASS flown",
+    "70b50d42": "PASS flown",
+    "2f1ddf5f": "PASS flown",
+    "5c0f892e": "PASS flown",
+    "a5d25fb4": "FAIL the line is \"This scene is stored in SuperSplat's older PLY format, which the simulator cannot open yet. Scenes in the current format open fine.\" (unsupported), expected a flight",
+    "c67edb74": "FAIL the line is \"This scene is stored in SuperSplat's older PLY format, which the simulator cannot open yet. Scenes in the current format open fine.\" (unsupported), expected a flight",
+    "5012e205": "FAIL the line is \"This scene does not exist on SuperSplat or is not public.\" (not-found), expected  \"This scan is in a SuperSplat format the simulator cannot open yet (an animated scan). Choose another scan: scans in the usual formats open.\""
+  }
+}

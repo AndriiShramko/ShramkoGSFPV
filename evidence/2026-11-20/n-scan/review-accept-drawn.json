@@ -1,0 +1,172 @@
+{
+  "base": "http://localhost:6941/en",
+  "at": "2026-11-21T17:17:57.075Z",
+  "drawn": true,
+  "browser": {
+    "kind": "system-chrome",
+    "version": "157.0.8103.52"
+  },
+  "maxS": 150,
+  "ids": {
+    "a39abad1": {
+      "kind": "sog-v3",
+      "expect": {
+        "flies": true,
+        "lines": []
+      },
+      "pass": true,
+      "why": null,
+      "outcome": "flown",
+      "errors": [],
+      "csp": [],
+      "samples": [
+        {
+          "s": 20,
+          "status": "loading",
+          "stage": "download",
+          "loaded": 7001133,
+          "total": 17136366,
+          "drawn": null
+        },
+        {
+          "s": 40,
+          "status": "ready",
+          "stage": "done",
+          "loaded": 17136366,
+          "total": 17136366,
+          "drawn": 996301
+        }
+      ],
+      "seconds": 42,
+      "atOpen": {
+        "status": "ready",
+        "errorCode": null,
+        "error": null,
+        "line": null,
+        "nums": null,
+        "cancel": false,
+        "drawn": 996301,
+        "stage": "done",
+        "loaded": 17136366,
+        "total": 17136366,
+        "tick": 95,
+        "paused": true,
+        "locked": false
+      },
+      "flight": {
+        "keyboardClicked": true,
+        "lockedAfterClick": true,
+        "tick0": 1644,
+        "tick1": 3144,
+        "paused": false
+      },
+      "picture": {
+        "clear": [
+          0,
+          0,
+          0
+        ],
+        "w": 1920,
+        "h": 913,
+        "lit": 0.9870208105147864,
+        "shot": "U:\\Temp\\gsfpv-train4\\shots\\n-scan-a39abad1.png"
+      }
+    },
+    "a5d25fb4": {
+      "kind": "compressed-ply",
+      "expect": {
+        "flies": true,
+        "lines": []
+      },
+      "pass": true,
+      "why": null,
+      "outcome": "flown",
+      "errors": [],
+      "csp": [],
+      "seconds": 12,
+      "atOpen": {
+        "status": "ready",
+        "errorCode": null,
+        "error": null,
+        "line": null,
+        "nums": null,
+        "cancel": false,
+        "drawn": 152746,
+        "stage": "done",
+        "loaded": 2487574,
+        "total": 2487574,
+        "tick": 2742,
+        "paused": true,
+        "locked": false
+      },
+      "flight": {
+        "keyboardClicked": true,
+        "lockedAfterClick": true,
+        "tick0": 4291,
+        "tick1": 5791,
+        "paused": false
+      },
+      "picture": {
+        "clear": [
+          102,
+          102,
+          102
+        ],
+        "w": 1920,
+        "h": 913,
+        "lit": 0.013416164658634539
+      }
+    },
+    "143e76b0": {
+      "kind": "sog-v2",
+      "expect": {
+        "flies": true,
+        "lines": []
+      },
+      "pass": true,
+      "why": null,
+      "outcome": "flown",
+      "errors": [],
+      "csp": [],
+      "seconds": 12,
+      "atOpen": {
+        "status": "ready",
+        "errorCode": null,
+        "error": null,
+        "line": null,
+        "nums": null,
+        "cancel": false,
+        "drawn": 300000,
+        "stage": "done",
+        "loaded": 3775102,
+        "total": 3775102,
+        "tick": 456,
+        "paused": true,
+        "locked": false
+      },
+      "flight": {
+        "keyboardClicked": true,
+        "lockedAfterClick": true,
+        "tick0": 1924,
+        "tick1": 3424,
+        "paused": false
+      },
+      "picture": {
+        "clear": [
+          20,
+          23,
+          26
+        ],
+        "w": 1920,
+        "h": 913,
+        "lit": 0.21404367469879518
+      }
+    }
+  },
+  "pass": true,
+  "summary": {
+    "a39abad1": "PASS flown",
+    "a5d25fb4": "PASS flown",
+    "143e76b0": "PASS flown"
+  }
+}
