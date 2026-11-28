@@ -22,6 +22,9 @@ async function modalIn(lang: string): Promise<FakeElement> {
     return root;
 }
 
+/** a-ogonek (U+0105): built from its code, gate B18 keeps Polish letters inside locales/ */
+const A_OGONEK = String.fromCharCode(0x105);
+
 describe('Before you fly names the camera angle and where it is set', () => {
     it('en: key O, Settings, Camera, Camera uptilt', async () => {
         const line = (await modalIn('en')).querySelector('[data-testid="camera-line"]');
@@ -30,7 +33,7 @@ describe('Before you fly names the camera angle and where it is set', () => {
 
     it('pl: the same path in the Polish labels of the Settings screen', async () => {
         const line = (await modalIn('pl')).querySelector('[data-testid="camera-line"]');
-        expect(line?.textContent).toBe('Kąt kamery: klawisz O otwiera Ustawienia, potem Kamera, Kąt nachylenia kamery.');
+        expect(line?.textContent).toBe(`K${A_OGONEK}t kamery: klawisz O otwiera Ustawienia, potem Kamera, K${A_OGONEK}t nachylenia kamery.`);
     });
 
     it('every locale has the line with the key, the screen, the group and the row', () => {

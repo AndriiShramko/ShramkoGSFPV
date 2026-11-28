@@ -137,7 +137,7 @@
   "cardPick": {
    "pass": true,
    "crashed": true,
-   "toast": "Crash at 9.1 m/s. The drone comes back by itself. Enter: stay here.Crash 9.1 m/s · back 5 s in 1.5 sEnterStayRBack to startNNext sceneShift+FFavourite",
+   "toast": "Crash at 9.1 m/s. The drone comes back by itself. Enter: stay here.Crash 9.1 m/s \u00b7 back 5 s in 1.5 sEnterStayRBack to startNNext sceneShift+FFavourite",
    "card": true,
    "row": [
     {
@@ -188,7 +188,7 @@
   "cameraPl": {
    "pass": true,
    "line": {
-    "text": "Kąt kamery: klawisz O otwiera Ustawienia, potem Kamera, Kąt nachylenia kamery.",
+    "text": "K\u0105t kamery: klawisz O otwiera Ustawienia, potem Kamera, K\u0105t nachylenia kamery.",
     "top": 556,
     "bottom": 599,
     "h": 44,

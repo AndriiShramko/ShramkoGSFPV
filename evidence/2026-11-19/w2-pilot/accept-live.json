@@ -113,7 +113,7 @@
   "cardPick": {
    "pass": false,
    "crashed": true,
-   "toast": "Crash at 9.0 m/s. The drone comes back by itself. Enter: stay here.Crash 9.0 m/s · back 5 s in 1.6 sEnterStayRBack to startNNext sceneShift+FFavourite",
+   "toast": "Crash at 9.0 m/s. The drone comes back by itself. Enter: stay here.Crash 9.0 m/s \u00b7 back 5 s in 1.6 sEnterStayRBack to startNNext sceneShift+FFavourite",
    "card": true,
    "row": [
     {

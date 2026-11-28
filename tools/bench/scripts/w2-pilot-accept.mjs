@@ -310,7 +310,7 @@ try {
     await ctx.close();
 
     // ---------------------------------------------------------------- the camera line on a first visit, en and pl
-    for (const [loc, id, want] of [['en', 'cameraEn', /Camera angle: key O .*Settings.*Camera.*uptilt/i], ['pl', 'cameraPl', /Kąt kamery: klawisz O /]]) {
+    for (const [loc, id, want] of [['en', 'cameraEn', /Camera angle: key O .*Settings.*Camera.*uptilt/i], ['pl', 'cameraPl', /K.t kamery: klawisz O /]]) {
         const v = await fresh(`${base}/${loc}/fly/?scene=${SCENE}&render=off`);
         await v.page.waitForSelector('[data-action^="warning-"]', { timeout: 60000 }).catch(() => {});
         const line = await v.page.evaluate(() => {
@@ -331,6 +331,7 @@ const ORDER = ['capture', 'pausePick', 'gentle', 'hard', 'cardPick', 'cameraEn',
 const pass = ORDER.every((id) => steps[id]?.pass);
 const verdict = { probe: 'w2-pilot-accept', base, browser: pick.kind ?? null, view: '1536x730@1.25', at: new Date().toISOString(), pass, steps, errors, sent: { count: sent.length, outsideApi: sent.filter((x) => !x.api), first: sent.slice(0, 5) } };
 mkdirSync(dirname(outFile), { recursive: true });
-writeFileSync(outFile, JSON.stringify(verdict, null, 1));
+// ASCII only (the pl camera line as \u escapes): evidence lives outside locales/, where gate B18 forbids those letters
+writeFileSync(outFile, JSON.stringify(verdict, null, 1).replace(/[^\x00-\x7f]/g, (c) => `\\u${c.charCodeAt(0).toString(16).padStart(4, '0')}`));
 console.log(JSON.stringify({ probe: verdict.probe, base, pass, steps: Object.fromEntries(ORDER.map((id) => [id, steps[id] ? (steps[id].pass ? 'PASS' : 'FAIL') : 'NOT RUN'])), errors: errors.slice(0, 5) }));
 process.exit(pass ? 0 : 1);

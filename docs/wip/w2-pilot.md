@@ -9,7 +9,7 @@ the ground (a lower sensitivity near the ground by default). His fourth point (b
 - [x] S1 A, the ground: measurement, the softer default, the test, the negative control (25635abf)
 - [x] S2 B, the camera line in the first-minute menu; the entry points of C and its plan (ten lines below) (79fc5cdb)
 - [x] S3 C, "Choose a scan" on the crash card and as the pause item's label, with a test (this commit)
-- [ ] S4 the acceptance by mouse (local build PASS, live FAIL), gates once, For the lead
+- [x] S4 the acceptance by mouse (local build 7/7 PASS, live FAILs the built steps) (09235b60), gates once, For the lead (this commit)
 
 ## A. The measurement (origin/main 1bda96d3)
 
@@ -76,7 +76,18 @@ breaks on landing sees most; and "Change scan" / "Zmien skan" does not say "choo
 
 ## What the owner does
 
-(S4)
+1. Open /en/fly/ (or /pl/fly/) in a fresh browser: "Before you fly" shows, under the three answers, the line "Camera
+   angle: key O opens Settings, then Camera, Camera uptilt." ("Kat kamery: klawisz O otwiera Ustawienia, ..." in pl).
+2. Fly and land hard on the floor (a free fall from about 2 m): the drone bounces and flies on. Dive into the ground from
+   4 m or more, or hit a wall at 4 m/s: it still crashes. Settings, Crashes, "Ground touch threshold" (7 m/s; expert
+   level): set it to the crash threshold (4) for the old strict ground.
+3. In flight, Escape: the pause menu's item reads "Choose a scan"; a click opens the start page's catalogue; a click on a
+   scan loads it and he flies there.
+4. After a crash: Enter (Stay) on the toast, then the crash card's scene row starts with "Choose a scan" (the same
+   catalogue), then Next, Random, Next favourite.
+
+The acceptance itself: `node tools/bench/scripts/w2-pilot-accept.mjs <base without locale> <out.json>` (headless, 1536x730
+at 1.25, about 2 minutes; it aborts every POST to the site's /api/, so it sends nothing).
 
 ## Claims
 
@@ -94,14 +105,45 @@ breaks on landing sees most; and "Change scan" / "Zmien skan" does not say "choo
    `npx vitest run tools/bench/test/w2-pilot-scene-pick.test.ts`: 3 passed; neg_control.py on origin/main (crash-overlay.ts,
    crash.ts, scene.ts, fly/{en,es,pl,ru}.json): NEG OK; `npx vitest run --changed origin/main`: 2307 passed;
    `pnpm --filter ./apps/fly typecheck`: 0 errors.
+5. By mouse at 1536x730 at 1.25 on a local release build of f0a97616: the pointer taken by a click; Escape, "Choose a
+   scan", another scan loads and the craft climbs there; a ground touch at 5.42 m/s leaves it whole; a fall from 4.6 m
+   crashes on the ground at 9.03 m/s; Enter on the crash toast, the card's first scene button "Choose a scan", another
+   scan, flying; the camera line in en and pl inside the view. The same probe on the live site FAILS gentle (a 5.43 m/s
+   ground touch crashes), cardPick (row: Next, Random, Next favourite), pausePick (label "Change scan"), cameraEn,
+   cameraPl; capture and hard PASS there, as they should.
+   `node tools/bench/scripts/w2-pilot-accept.mjs http://localhost:7401 <out>`: 7/7 PASS; the same with
+   https://gsfpv.flyreelstudio.eu: 5 FAIL (evidence/2026-11-19/w2-pilot/accept-local.json, accept-live.json).
+6. The repository gates hold. `gates.py --only typecheck,vitest,architecture,i18n,b18,leaks,catalog`: typecheck, vitest,
+   architecture, i18n, leaks PASS; catalog was stale for physics.vCrashGround (S1) and b18 found Polish letters in
+   three lane files: regenerated (scripts/gen-catalog.ts) and written as character codes, then `--only typecheck,catalog,b18`:
+   typecheck PASS, catalog PASS, b18 FAIL naming only docs/wip/train5-lead.md (the lead note, see Not verified).
 
 ## Not verified
 
-(S4)
+- No person, phone, radio or gamepad took part: the drops are the keyboard's pilot keys (set.input.play=pilot, W/S
+  throttle) in a headless page with ?render=off; nothing was looked at in a picture (no screenshot taken).
+- The gentle drop is not scripted to one speed: the keyboard climb varies, the touches measured on the local build were
+  5.0 to 6.6 m/s (survived), and twice above 7 m/s when the craft spun (crashed, as the rule says). One landing touched
+  the ground at 5.4 m/s, then bounced into a wall (ny 0) at 4.5 m/s and crashed: walls stay strict. The step judges the
+  rule (no ground crash below 7 m/s, one whole landing at 4.6..6.9), up to 3 fresh profiles.
+- Gamepad and radio sticks were not flown; the rule is in sim-core, the same for every input.
+- Fresh lanes on origin/main after 1bda96d3 (54 commits) are not merged into this branch.
+- Gate b18 FAILS naming only docs/wip/train5-lead.md: the lead note on a base older than its repair on origin/main
+  (not this lane's file; not repaired, not merged for it).
 
 ## For the lead
 
-(S4)
+- A: a ground touch (normal within 45 deg of up) crashes from 7 m/s, was 4.0 (Pavo20 Pro; every contact alike); walls,
+  gates, ceilings still from vCrash 4.0. Setting physics.vCrashGround (Crashes, 2..12, expert). a6 hash holds, no version bump.
+- B: "Before you fly" names the camera angle: key O, Settings, Camera, Camera uptilt (en/es/pl/ru).
+- C: "Choose a scan" is the pause item's label (it already opened the start page's ScenePicker) and the crash card's
+  first scene button; next, random, favourite stay.
+- Files outside apps/fly: packages/sim-core (sim.ts, params.ts, a test), packages/prefs (defs/crash.ts, defs/levels.ts,
+  tests), packages/i18n/locales/fly, tools/bench (accept-v03-scenes.ts, 3 tests, scripts/w2-pilot-accept.mjs). Page only.
+- Live check after deploy: w2-pilot-accept.mjs against the site turns 7/7 PASS (today 5 FAIL, evidence accept-live.json).
+- Not done: a crash with respawn.auto (default) shows a toast naming only N and Shift+F; "Choose a scan" is one Enter
+  away (the card) or Escape. A toast hint for it would close the pilot's point fully.
+- Not verified: no person, radio or gamepad; a scan's floor may lie 1-2 m under the spawn disc (platform.ts).
 
 ## Cost notes
 
@@ -112,3 +154,6 @@ breaks on landing sees most; and "Change scan" / "Zmien skan" does not say "choo
   neg_control.py needs `npx.cmd`, not `npx`, on Windows.
 - S3: most replies went to the fake DOM (no descendant selectors, no global addEventListener for app/diagnostics.ts);
   reading tools/bench/test/helpers/fake-dom.ts querySelectorAll first would have saved two runs.
+- S4: most replies went to making a keyboard drop land at a known speed on a real scan (the spawn's one-way disc, low
+  ceilings, a noisy climb in a headless page); reading platform.ts and judging the sim's own contact events from the
+  first run would have saved about ten probe runs. Routing every request in Playwright stalls the scan downloads.

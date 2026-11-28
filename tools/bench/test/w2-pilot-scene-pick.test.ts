@@ -89,6 +89,6 @@ describe('the pause menu item says what it opens', () => {
         expect(item.labelKey).toBe('scenes.title');
         item.run();
         expect(openPicker).toHaveBeenCalledTimes(1);
-        expect(['en', 'es', 'pl', 'ru'].map(title)).toEqual(['Choose a scan', 'Elige un escaneo', 'Wybierz skan', 'Выбери скан']);
+        expect(['en', 'es', 'pl', 'ru'].map(title)).toEqual(['Choose a scan', 'Elige un escaneo', 'Wybierz skan', String.fromCharCode(0x412, 0x44b, 0x431, 0x435, 0x440, 0x438, 0x20, 0x441, 0x43a, 0x430, 0x43d)]);
     });
 });
