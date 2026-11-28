@@ -1,0 +1,224 @@
+{
+ "probe": "w1-dialog-accept",
+ "base": "http://localhost:6180/en",
+ "scene": "eb5f51dc",
+ "render": false,
+ "viewport": "1536x730@1.25",
+ "steps": [
+  {
+   "step": 1,
+   "name": "here: Shift+G offers Here (pressed) and Whole scan, the hint, it fits; Here + Build: gate 1 within 10 m of the drone",
+   "pass": true,
+   "detail": {
+    "lock": true,
+    "wheres": [
+     {
+      "id": "here",
+      "label": "Here",
+      "pressed": true
+     },
+     {
+      "id": "scan",
+      "label": "Whole scan",
+      "pressed": false
+     }
+    ],
+    "hint": "The course is laid where the drone is. For another place, fly there, press key Esc, then key Shift+G",
+    "fit": {
+     "ok": true,
+     "parts": 12,
+     "overlaps": [],
+     "outside": [],
+     "small": []
+    },
+    "pressed": [
+     true,
+     true
+    ],
+    "gates": 14,
+    "ms": 945,
+    "gate1ToDroneM": 1.2,
+    "spanM": 33,
+    "request": {
+     "seed": 671988761,
+     "level": "medium",
+     "spread": "compact",
+     "anyQuality": false,
+     "anchor": [
+      -9,
+      6,
+      -21
+     ]
+    }
+   }
+  },
+  {
+   "step": 2,
+   "name": "addHere: 30 m away, paused, Add here: every old gate stands, new gates round the drone, the ring closed",
+   "pass": true,
+   "detail": {
+    "flownM": 30.4,
+    "droneToSpawnM": 30.4,
+    "how": {
+     "item": true,
+     "dialog": true
+    },
+    "wheres": [
+     {
+      "id": "here",
+      "label": "Here",
+      "pressed": true
+     },
+     {
+      "id": "scan",
+      "label": "Whole scan",
+      "pressed": false
+     },
+     {
+      "id": "add",
+      "label": "Add here",
+      "pressed": false
+     }
+    ],
+    "replaces": "Here and Whole scan replace the current course (14 gates). Add here keeps it",
+    "afterAdd": {
+     "pressed": "add",
+     "keeps": "Keeps all 14 gates of the current course",
+     "main": "Add the gates"
+    },
+    "oldGates": 14,
+    "gates": 28,
+    "kept": 14,
+    "added": 14,
+    "nearestNewToDroneM": 1.7,
+    "stats": {
+     "closed": true,
+     "outside": 0
+    },
+    "ms": 4982,
+    "request": {
+     "seed": 1732938855,
+     "level": "medium",
+     "spread": "compact",
+     "anyQuality": false,
+     "anchor": [
+      -38,
+      15,
+      -12
+     ]
+    }
+   }
+  },
+  {
+   "step": 3,
+   "name": "link: the address names both parts; a fresh context lays the same gates",
+   "pass": true,
+   "detail": {
+    "share": true,
+    "course": "g2.b431uh.mc.-9.6.-21_snqw6f.mc.-38.15.-12",
+    "gates": 28,
+    "same": true,
+    "ms": 2854
+   }
+  },
+  {
+   "step": 4,
+   "name": "wholeScan: the course is replaced, the ask is wide, it spreads farther than Here",
+   "pass": false,
+   "detail": {
+    "how": {
+     "item": true,
+     "dialog": true
+    },
+    "pressed": "scan",
+    "whereLine": "Starts at the drone and spreads over the whole well scanned part of the scan",
+    "gates": 14,
+    "keptOfOld": 0,
+    "oldGates": 28,
+    "reachM": 24.6,
+    "hereReachM": 30.6,
+    "spanM": 32.6,
+    "hereSpanM": 33,
+    "eased": null,
+    "request": {
+     "seed": 1439179370,
+     "level": "medium",
+     "spread": "wide",
+     "anyQuality": false,
+     "anchor": [
+      -43,
+      15,
+      -12
+     ]
+    },
+    "ms": 4384
+   }
+  },
+  {
+   "step": 5,
+   "name": "keys: Tab reaches every choice, Space picks Add here, Tab to Cancel and Enter keep the course; a named dialog",
+   "pass": true,
+   "detail": {
+    "opened": true,
+    "order": [
+     "gen-x",
+     "gen-level-beginner",
+     "gen-level-medium",
+     "gen-level-pro",
+     "gen-where-here",
+     "gen-where-scan",
+     "gen-where-add",
+     "gen-cancel",
+     "gen-build"
+    ],
+    "pressedAfterSpace": "add",
+    "focused": "gen-cancel",
+    "closed": true,
+    "same": true,
+    "role": "dialog",
+    "label": "Generate a course"
+   }
+  },
+  {
+   "step": 6,
+   "name": "polish: Polish title, Here, Whole scan, the hint; it fits; Enter builds; Dodaj tutaj and the replace line over the course",
+   "pass": true,
+   "detail": {
+    "title": "Wygeneruj tor",
+    "labels": "Tutaj|Ca\u0142y skan",
+    "hint": "Tor powstaje tam, gdzie jest dron. Aby by\u0142 gdzie indziej, le\u0107 tam, naci\u015bnij klawisz Esc, potem klawisz Shift+G",
+    "fit": {
+     "ok": true,
+     "parts": 12,
+     "overlaps": [],
+     "outside": [],
+     "small": []
+    },
+    "gates": 14,
+    "ms": 1837,
+    "labelsOver": "Tutaj|Ca\u0142y skan|Dodaj tutaj",
+    "replaces": "Tutaj i Ca\u0142y skan zast\u0119puj\u0105 obecny tor (14 bramek). Dodaj tutaj go zostawia"
+   }
+  }
+ ],
+ "blocked": [
+  "POST http://localhost:6180/api/e",
+  "POST http://localhost:6180/api/e",
+  "POST http://localhost:6180/api/e",
+  "POST http://localhost:6180/api/e",
+  "POST http://localhost:6180/api/share",
+  "POST http://localhost:6180/api/e",
+  "POST http://localhost:6180/api/e",
+  "POST http://localhost:6180/api/e",
+  "POST http://localhost:6180/api/e",
+  "POST http://localhost:6180/api/e",
+  "POST http://localhost:6180/api/e"
+ ],
+ "errors": [],
+ "verdict": {
+  "pass": false,
+  "failed": [
+   4
+  ]
+ }
+}

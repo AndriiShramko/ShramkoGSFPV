@@ -156,12 +156,15 @@ if (want('B6')) {
     // errors: unknown id and a foreign domain, in Russian (message must be in the page language)
     const ru = dict('ru');
     const errs: Record<string, unknown>[] = [];
-    for (const [input, code] of [['00000000', 'not-found'], ['https://example.com/scene/39e63ce9', 'invalid-link']] as const) {
+    // an unknown id: since n-scan (train 5) the page names it 'gone' with its plain line scene.open.gone (session/open-error.ts:
+    // SceneError 'not-found' -> 'gone'), no longer error.not-found; a foreign domain keeps error.invalid-link
+    for (const [input, code, key] of [['00000000', 'gone', 'scene.open.gone'], ['https://example.com/scene/39e63ce9', null, 'error.invalid-link']] as const) {
         errors.length = 0;
         await page.goto(fly('ru', `scene=${encodeURIComponent(input)}&nowarn=1`));
         const h = await waitReady(page, 60000);
         const text = await page.locator('.scene-error').textContent();
-        errs.push({ input, status: h.status, errorCode: (await hookEval<string>(page, 'return h.errorCode;')), text, expected: ru[`error.${code}`], ok: (h.status === 'picker' || h.status === 'error') && text === ru[`error.${code}`], pageerrors: [...errors] });
+        const errorCode = await hookEval<string>(page, 'return h.errorCode;');
+        errs.push({ input, status: h.status, errorCode, text, expected: ru[key], ok: (h.status === 'picker' || h.status === 'error') && text === ru[key] && (code === null || errorCode === code), pageerrors: [...errors] });
     }
     // negative control of "frame not empty": a blank page must fail the same check
     await page.goto('about:blank');

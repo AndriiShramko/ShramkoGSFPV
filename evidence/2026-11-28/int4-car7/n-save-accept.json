@@ -1,0 +1,407 @@
+{
+ "address": "http://localhost:6181/en",
+ "live": false,
+ "scan": "70b50d42",
+ "size": [
+  1536,
+  730
+ ],
+ "dsf": 1.25,
+ "date": "2026-11-28T18:32:30.154Z",
+ "steps": {
+  "open": {
+   "ok": true,
+   "status": "ready",
+   "lock": "CANVAS",
+   "open": true,
+   "ms": 4061,
+   "gates": 14
+  },
+  "build": {
+   "ok": true,
+   "gates": 3,
+   "added": [
+    0,
+    1,
+    1
+   ],
+   "cOff": {
+    "at": [
+     768,
+     365,
+     10
+    ],
+    "apart": 2
+   },
+   "pull": {
+    "look": {
+     "up0": 108,
+     "steps": [
+      85,
+      0
+     ]
+    },
+    "ok": false,
+    "tries": [
+     {
+      "n": 0,
+      "ax": "x",
+      "px": 40,
+      "moved": 0.7,
+      "tip": "head:x",
+      "along": 106,
+      "hit": "CANVAS."
+     },
+     {
+      "n": 1,
+      "ax": "z",
+      "tip": null
+     },
+     {
+      "n": 2,
+      "ax": "y",
+      "tip": null
+     },
+     {
+      "n": 3,
+      "ax": "x",
+      "px": -40,
+      "moved": 0.7,
+      "tip": "head:x",
+      "along": 106,
+      "hit": "CANVAS."
+     },
+     {
+      "n": 4,
+      "ax": "z",
+      "tip": null
+     },
+     {
+      "n": 5,
+      "ax": "y",
+      "tip": null
+     },
+     {
+      "n": 7,
+      "ax": "z",
+      "tip": null
+     },
+     {
+      "n": 8,
+      "ax": "y",
+      "tip": null
+     },
+     {
+      "n": 10,
+      "ax": "z",
+      "tip": null
+     },
+     {
+      "n": 11,
+      "ax": "y",
+      "tip": null
+     },
+     {
+      "n": 13,
+      "ax": "z",
+      "tip": null
+     },
+     {
+      "n": 14,
+      "ax": "y",
+      "tip": null
+     },
+     {
+      "n": 16,
+      "ax": "z",
+      "tip": null
+     },
+     {
+      "n": 17,
+      "ax": "y",
+      "tip": null
+     },
+     {
+      "n": 19,
+      "ax": "z",
+      "tip": null
+     },
+     {
+      "n": 20,
+      "ax": "y",
+      "tip": null
+     },
+     {
+      "n": 22,
+      "ax": "z",
+      "tip": null
+     },
+     {
+      "n": 23,
+      "ax": "y",
+      "tip": null
+     }
+    ],
+    "apart": 2.000010999969751
+   },
+   "pair": [
+    0,
+    1
+   ],
+   "pairApart": 2,
+   "low": null,
+   "bury": {
+    "ok": true,
+    "tries": []
+   },
+   "problems": [
+    {
+     "code": "gate-wall",
+     "gate": 0
+    },
+    {
+     "code": "gate-wall",
+     "gate": 1
+    }
+   ],
+   "line": "Selected. Gate 1 of 3: square, 1.5 m"
+  },
+  "dialog": {
+   "ok": true,
+   "t0": 1795890781349,
+   "pressed": true,
+   "typed": {
+    "title": true,
+    "name": true
+   },
+   "dialog": {
+    "text": "Warnings: 2. You can still save the course as it is.In a wall of the scan or outside it (gates: 1, 2)Fix all automaticallySave as it isShow me×",
+    "order": [
+     "save-fix-all",
+     "save-as-is",
+     "save-show-me"
+    ]
+   },
+   "line": "Warnings: 2. You can still save the course as it is.",
+   "kinds": [
+    "in-scan"
+   ]
+  },
+  "asIs.saved": {
+   "ok": true,
+   "pressed": true,
+   "posts": [
+    201
+   ],
+   "id": "70b50d42-1a4c9683",
+   "stored": {
+    "version": 1,
+    "same": true
+   },
+   "line": "Saved as your course: n-save as is, version 1. It is in Courses on the top bar"
+  },
+  "asIs.reload": {
+   "ok": true,
+   "open": {
+    "status": "ready",
+    "lock": "CANVAS",
+    "open": true,
+    "ms": 4068,
+    "gates": 14
+   },
+   "row": {
+    "title": "n-save as is",
+    "id": "70b50d42-1a4c9683",
+    "row": true,
+    "pressed": true,
+    "ms": 3,
+    "seen": [
+     {
+      "hit": "BUTTON.ce-open",
+      "line": "Editor open. Every key is under Keys."
+     }
+    ]
+   },
+   "gates": 3,
+   "same": true,
+   "line": "Editor open. Every key is under Keys."
+  },
+  "showMe": {
+   "ok": true,
+   "dialog": true,
+   "selected": 0,
+   "warned": [
+    0,
+    1
+   ],
+   "posts": [],
+   "answer": "show",
+   "line": "Not saved yet. Gate 1 stands in a wall. Pull its arrows to move it out into the open, or delete it with the cross on its bar."
+  },
+  "fixAll": {
+   "ok": true,
+   "line": "Gates moved to free places: 2 (gates 1, 2). Their old places are shown dashed.Undo",
+   "moved": [
+    1,
+    2
+   ],
+   "left": 0,
+   "posts": [
+    201
+   ],
+   "stored": {
+    "version": 2,
+    "same": true
+   },
+   "places": {
+    "before": [
+     [
+      -2.398,
+      3.124,
+      -16.308
+     ],
+     [
+      -3.756,
+      3.042,
+      -17.774
+     ],
+     [
+      -6.429,
+      2.88,
+      -20.659
+     ]
+    ],
+    "after": [
+     [
+      -2.539,
+      3.124,
+      -16.167
+     ],
+     [
+      -4.11,
+      3.042,
+      -17.42
+     ],
+     [
+      -6.429,
+      2.88,
+      -20.659
+     ]
+    ]
+   }
+  },
+  "fixAll.undo": {
+   "ok": true,
+   "pressed": true,
+   "back": true,
+   "undone": true,
+   "line": "Every moved gate is back. Press Save to keep the course this way."
+  },
+  "reload": {
+   "ok": true,
+   "open": {
+    "status": "ready",
+    "lock": "CANVAS",
+    "open": true,
+    "ms": 3033,
+    "gates": 3
+   },
+   "row": {
+    "title": "n-save fixed",
+    "id": "70b50d42-1a4c9683",
+    "row": true,
+    "pressed": true,
+    "ms": 2,
+    "seen": [
+     {
+      "hit": "BUTTON.ce-open",
+      "line": "The changes are not saved. Do it again to drop them"
+     },
+     {
+      "again": true,
+      "line": "Your unsaved course from 19:33 is back (Versions: 4 kept). Key Ctrl+Z takes it away."
+     }
+    ]
+   },
+   "gates": 3,
+   "pageSameAsFixed": false,
+   "draftBack": true,
+   "stored": {
+    "version": 2,
+    "same": true
+   },
+   "line": "Your unsaved course from 19:33 is back (Versions: 4 kept). Key Ctrl+Z takes it away."
+  },
+  "own.handAfterFix": {
+   "ok": true,
+   "handMoved": true,
+   "undoShownAfterHandMove": false,
+   "ways": [
+    "Ctrl+Z",
+    "Ctrl+Z"
+   ],
+   "back": true,
+   "line": "undo. Gate 1 of 3: square, 1.5 m"
+  },
+  "own2.undoThenAsIs": {
+   "ok": true,
+   "fixSaved": true,
+   "moved": [
+    1,
+    2
+   ],
+   "undo": true,
+   "back": true,
+   "savePressed": true,
+   "dialogAgain": true,
+   "asIsSaved": true,
+   "stored": {
+    "version": 5,
+    "same": true
+   },
+   "line": "Saved as your course: n-save undo then as is, version 5. It is in Courses on the top bar",
+   "said": "Saved as your course: n-save undo then as is, version 5. It is in Courses on the top bar"
+  }
+ },
+ "posts": [
+  {
+   "path": "/api/tracks",
+   "status": 201,
+   "at": 1795890783079,
+   "token": false
+  },
+  {
+   "path": "/api/tracks/70b50d42-1a4c9683/versions",
+   "status": 201,
+   "at": 1795890817333,
+   "token": true
+  },
+  {
+   "path": "/api/tracks/70b50d42-1a4c9683/versions",
+   "status": 201,
+   "at": 1795890853703,
+   "token": true
+  },
+  {
+   "path": "/api/tracks/70b50d42-1a4c9683/versions",
+   "status": 201,
+   "at": 1795890859120,
+   "token": true
+  },
+  {
+   "path": "/api/tracks/70b50d42-1a4c9683/versions",
+   "status": 201,
+   "at": 1795890861139,
+   "token": true
+  }
+ ],
+ "notRun": [
+  "build.samePlace: the nearest two gates stand 2 m apart (Add gate keeps 2 m)"
+ ],
+ "shots": [
+  "U:\\Temp\\gsfpv-train4\\shots\\n-save-dialog.png",
+  "U:\\Temp\\gsfpv-train4\\shots\\n-save-ghosts.png"
+ ],
+ "fails": [],
+ "log": []
+}

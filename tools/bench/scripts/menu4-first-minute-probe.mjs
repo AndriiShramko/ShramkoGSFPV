@@ -13,7 +13,8 @@
 //            round to Continue (without the skip the focus sticks on "More")
 //   more     a click on "More (n)" shows the n items
 //   settings a click on Settings: fewer rows than the full list and a "Show all settings (n more)" button
-//   search   a click into search and "uptilt": the camera uptilt row shows, marked "In the full menu"
+//   search   a click into search and "field of view": the camera field of view row shows, marked "In the full menu"
+//            (it was "uptilt": w2-pilot shows Camera uptilt at every level, so Before you fly can name it; int4 car 7)
 //   showAll  clearing the search and a click on "Show all settings": every row shows
 //   close    the cross of Settings is at least 44 px and closes it; a click into the scene takes the mouse again
 // Pilots "sim" and "expert" (fresh profiles): their answer, then P and Settings: the shown counts of the three pilots
@@ -136,8 +137,8 @@ const settingsLook = (page) => page.evaluate(() => {
         cross: xr ? { w: Math.round(xr.width), h: Math.round(xr.height) } : null
     };
 });
-const uptiltRow = (page) => page.evaluate(() => {
-    const r = document.querySelector('[data-testid="setting-camera.uptiltDeg"]');
+const fovRow = (page) => page.evaluate(() => {
+    const r = document.querySelector('[data-testid="setting-camera.fovDeg"]');
     if (!r) return { found: false };
     const m = r.querySelector('[data-testid=setting-mark]');
     return { found: true, shown: !r.hidden && r.getBoundingClientRect().height > 0, mark: m && !m.hidden ? m.textContent.trim() : null };
@@ -199,10 +200,10 @@ const out = { what: "a new pilot's first minute with the mouse (menu4-first-minu
     if (shotDir) await page.screenshot({ path: `${shotDir}/menu4-settings-first.png` });
     const search = page.locator('[data-testid=settings-search]');
     await search.click().catch(() => {});
-    await page.keyboard.type('uptilt');
+    await page.keyboard.type('field of view');
     await settle(page);
-    r.search = await uptiltRow(page);
-    check('search: "uptilt" shows the camera uptilt row marked "In the full menu"', r.search.shown && !!r.search.mark, r.search);
+    r.search = await fovRow(page);
+    check('search: "field of view" shows the camera field of view row marked "In the full menu"', r.search.shown && !!r.search.mark, r.search);
     await search.fill('').catch(() => {});
     await settle(page, 300);
     await page.locator('[data-action=settings-show-all]').click({ timeout: 3000 }).catch(() => {});
