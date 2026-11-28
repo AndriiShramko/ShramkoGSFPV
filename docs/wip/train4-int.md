@@ -281,6 +281,22 @@ cover what changed since car 5's head.)
       as in Live checks, held n-save, n-scan, w2-pilot, w1-dialog, w3-model: the lead's order, the generator's repair
       goes live first).
 
+Car 7 (job int4-car7, train 5, work copy C:/dev/gsfpv-v13-int, branch train4 on car 6's head
+94727c6c37eaeb92d9954a8956fd74068b88f83d (the `sha` of int4-car6.json) and origin/main 6d57d2c4 (sr-quiet 8e65a181,
+a supporters entry, the leads' notes). Lanes: n-scan, n-save (with fix-n-save), w2-pilot, w3-model (branch w3-wash),
+w1-dialog. The seams, the full check, Deploy order, Live checks and the hand-over cover what changed since origin/main
+6d57d2c4.)
+
+- [x] S1 the merges: origin/main 6d57d2c4 (fast-forward); 78c85818 n-scan, b2697108 n-save, 2e74c78d w2-pilot,
+      7790d21c w3-wash, 795ab8a7 w1-dialog (all five reviews 'Verdict: SHIP' when S1 started; n-save's newest review is
+      reviews/n-save.md, there is no reviews/fix-n-save.md, and fix-n-save is on the n-save branch). Every lane head is an
+      ancestor of HEAD (n-scan 108da80f, n-save 4172a80b, w2-pilot 79a60d27, w3-wash 8fea1c1d, w1-dialog 75c9249c).
+      `git diff origin/main HEAD -- packages/sonic-fpv apps/api` is empty (package_sha '', api []). gen-catalog up to
+      date on 795ab8a7; pnpm install --frozen-lockfile rc 0; pnpm -r typecheck rc 0 after the w3-wash merge and on
+      795ab8a7. Held: none.
+- [ ] S2 the seams and the one full check
+- [ ] S3 the hand-over
+
 ## Progress
 
 Car 1 (one line a lane, in the merge order)
@@ -330,6 +346,15 @@ Car 6 (job int4-car6, on car 5's head 3cc6b51b and origin/main 5a4d4a0d; one lin
 - fix-fly: merged 0b0cd554 (review SHIP; tools/bench only: accept-fly waits for the page's own readiness), no conflict
 - w1-anchor: merged 683d7faa (review SHIP; stands on w1-diag, whose measuring script and notes come with it), no conflict; pnpm -r typecheck rc 0
 - held: n-save, n-scan, w2-pilot, w1-dialog, w3-model (the lead's order: the generator's repair goes live first)
+
+Car 7 (job int4-car7, on car 6's head 94727c6c and origin/main 6d57d2c4; one line a lane, in the merge order)
+
+- n-scan: merged 78c85818 (review SHIP); one conflict, evidence/2026-11-21/b-repo-b18.json (add/add, a gate's output): n-scan's file taken whole, S2's gates write it again
+- n-save: merged b2697108 (review SHIP of 6873adf1, after fix-n-save; branch head 4172a80b); one conflict, the @gsfpv/tracks imports of apps/fly/src/app/builtin/course.ts: both sides joined (w1-anchor's CourseAsk, FROM_PILOT, pilotAnchor; n-save's courseWarnings, fixAll, saveVerdict and types), canSave dropped (n-save replaced its only use); apps/fly typecheck rc 0
+- w2-pilot: merged 2e74c78d (review SHIP), no conflict
+- w3-model: merged 7790d21c (branch w3-wash, review reviews/w3-model.md SHIP); only generated files conflicted (README.md, llms.txt, apps/site/public/llms.txt, apps/site/src/generated/features.json, docs/settings.md): ours, then gen-catalog; pnpm -r typecheck rc 0
+- w1-dialog: merged 795ab8a7 (review SHIP), no conflict; pnpm -r typecheck rc 0
+- held: none
 
 ## Seams
 
@@ -1042,3 +1067,5 @@ Car 6
   file's PATH line; run a random-seed probe three times before judging its threshold.
 - Car 6 S3 (~15 calls): the most went to finding the Car 5 end of each hand-over section in the long status file.
   Cheaper: `grep -n "^Car\|^## "` once, then edit before each next '## ' anchor without reading the sections.
+- Car 7 S1 (~14 calls): five merges, two real conflicts (gate evidence, course.ts imports) and the generated files;
+  the most went to reading the long status file to find the car 6 ends. Cheaper: as car 6 said, grep the anchors once.
