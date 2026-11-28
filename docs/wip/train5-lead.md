@@ -240,6 +240,49 @@ gate B18 for every lane; name a vault note by words, not by its Russian file nam
 - THIS CHAT IS AT 51 % OF ITS WINDOW (511 thousand tokens): it hands over now and leaves no watcher. The next lead
   is a new chat started by this one.
 
+### 2026-11-28 16:25 UTC (real clock): lead 3 took over; car 9 is queued whole
+
+- LEAD 3 is a new chat (top level, checked). Its watcher: `LEAD_WATCH_QUIET=1 bash lead_watch.sh 0 5`, in its
+  background. State at 16:21: w1-dialog (S1 done), w2-pilot (S2 done), w6-mode3 (S1 done) run; r-w3-model is done.
+- CAR 9 IS QUEUED: 10 jobs, prompts C:/dev/.gsfpv-lanes/prompts/t10-<job>.md, the car's header t10-car9-header.txt.
+  The chain in copy C:/dev/gsfpv-t7-n-route, each branch on the one before:
+  w1-gentest (the generator's test system: one command `tools/bench/src/gen-quality.ts`, sets quick and full, anchors
+  at the spawn and at flown places, thresholds with an exit code, the ledger evidence/gen-quality/ledger.jsonl, the
+  reference docs/gen-quality.md; base origin/main, no dependency, priority 6), then
+  w1-forbid (R3: a mass map from the splats forbids poor tiles; the roughness no longer filters or scores; the link
+  says that the map was used; it merges the dialog of car 7 first), then
+  n-route2 (branch n-route2 from the failed n-route: the merge of w1-forbid, the anchor and the score, the page asks
+  for the route, the old S5b left list with an open course before the walk, n-path merged in its S5 with the seam;
+  up to 10 runs).
+  fix-sonic-probe in copy C:/dev/gsfpv-t7-n-scan (opus, effort medium): the flight before the press without timing.
+  Each lane has its check r-<lane>. car9 waits for the four checks and ship-car8; ship-car9 is ship_handover.py with
+  U:/Temp/gsfpv-train4/int4-car9.json.
+- DECISIONS. (1) The test system goes FIRST: R3 and n-route2 are judged by one command against the ledger; a
+  threshold that the generator breaks is a finding and is never softened. (2) The judge's splat measure (tools/bench)
+  and the generator's map (packages/tracks/src/splat-density.ts) do not import each other. (3) n-path (SHIP since
+  train 4) rides inside n-route2: the car must not merge n-route or n-path by themselves. (4) The old n-level (the
+  three-way level switch in the pause menu and the chip) is NOT queued: plan it as car 10 from n-route2's 'For the
+  lead'; its prompt t7-n-level.md is older than car 7's dialog and must be written again. (5) One car for the four
+  lanes: one more car costs a full check and a release.
+- A LANE THAT STANDS ON ANOTHER WAITS FOR ITS SHIP, not for the end of its check: the conductor counts a check that
+  said HOLD as done. So the checks r-w1-dialog, r-w1-gentest and r-w1-forbid write
+  U:/Temp/gsfpv-train4/reviews/<lane>.ship when they say SHIP (and delete it on HOLD); w1-forbid waits for
+  w1-gentest.ship and w1-dialog.ship, n-route2 for w1-forbid.ship. On a HOLD: the repair lane in the same copy, the
+  check reset (`set --state wait --reset-runs --after-add fix-<lane>`); the next lane starts by itself when the
+  .ship file comes. The conductor does not keep two jobs out of one work copy: jobs of one copy are chained by
+  --after (they are).
+- AFTER r-w1-gentest says SHIP: the lead writes references/gen-quality.md of the gsfpv skill from the lane's 'For the
+  lead' (ten lines) and names it in SKILL.md (the vault's .claude/rules/skills.md; run the lint).
+- w5-inv has priority 2 now (one sonnet run, it writes the inventory note into the vault project folder,
+  research/). When the note is there: W5 by the project-kickoff skill, no building: two research agents with the
+  web (sonnet), one design of the staged plan (opus), one critic (agent gs-critic, opus); the plan is a vault note.
+  While the lead's agents run, narrow the train (`plan --max-parallel N`, three agents at once in all) and put 3 back.
+- The pilot's Facebook item RR-2026-11-28-01 was still `open` at 16:22 UTC (it was written about 16:10). Look
+  again at each wake; no `sent` by 2026-11-29 16:00 UTC: find with the fb-engage skill why the reply job did not
+  take the line.
+- The week: 57 % at 16:21 UTC. A run costs about 1.5 USD by the CLI's count (median 8 minutes, 40 replies); the
+  queue to car 9 is about 55 runs.
+
 ## How the lead works (the owner's economy rule; written into the skills on 2026-11-26, W4 done)
 
 - The lead runs on the top model (Fable); every worker is Opus or Sonnet. NEVER leave `model` out of an Agent call or
