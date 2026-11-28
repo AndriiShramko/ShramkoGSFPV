@@ -4,7 +4,7 @@
 
 import {
     Runner, RespawnDirector, StateHistory, DEFAULT_RESPAWN_POLICY, MODE_CHANNEL, SIM_CORE_VERSION, S,
-    compileParams, hoverSolve, lifeSim, makeLifeHeader, presetSha256
+    compileParams, hoverSolve, lifeConfigHash, lifeSim, makeLifeHeader, presetSha256
 } from '../src/index';
 import type {
     ContactOut, ContactWorld, LifeHeader, LifeHeaderInput, ParamOverrides, PresetJson, ReplayDeps, RespawnOpts,
@@ -19,6 +19,26 @@ import air65 from '../presets/air65-1s.json';
 export const PRESET = pavo20pro as unknown as PresetJson;
 const PRESETS = [pavo20pro, pavo20pro2, air65] as unknown as PresetJson[];
 const BY_SHA = new Map(PRESETS.map((p) => [presetSha256(p), p]));
+
+/** The two preset fields sim-core/0.3.0 added for the prop wash on every craft (w3-model, wake.ts). */
+const WAKE_FIELDS = ['prop_diameter_mm', 'ducted'] as const;
+
+/**
+ * A life recorded by sim-core/0.2.0 (no prop wash on the Pavo20), re-headed for this model with the term off: the
+ * preset is today's, which must equal the recorded one but for the two fields 0.3.0 added (else it throws), and the
+ * overrides gain wake 0. The page refuses such a life (apps/fly/src/session/replay.ts: another simCore); this lets a
+ * test prove on a real old recording that today's model with physics.propWash 0 is the old flight bit for bit.
+ */
+export function wakeOffHeader(h: LifeHeader, now: PresetJson): LifeHeader {
+    const old = JSON.parse(JSON.stringify(now)) as PresetJson;
+    for (const k of WAKE_FIELDS) delete old.fields[k];
+    if (presetSha256(old) !== h.presetSha256) throw new Error(`preset ${now.id} differs from the recorded one beyond ${WAKE_FIELDS.join(', ')}`);
+    const overrides: ParamOverrides = { ...h.overrides, wake: 0 };
+    const presetSha = presetSha256(now);
+    const out: LifeHeader = { ...h, presetSha256: presetSha, overrides, configHash: lifeConfigHash(presetSha, overrides, h.simCore) };
+    if (h.presetJson) out.presetJson = JSON.parse(JSON.stringify(now)) as PresetJson;
+    return out;
+}
 
 /** Solid half-spaces n . p < d (n points into free space). Stateless, so a replay may share it. */
 export class PlaneWorld implements ContactWorld {

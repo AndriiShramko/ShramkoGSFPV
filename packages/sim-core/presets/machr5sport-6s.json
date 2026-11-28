@@ -41,7 +41,6 @@
     "throttle": { "value": { "mid": 50, "expo": 0 }, "source": "bf-default" },
     "rotor_drag_per_s": { "value": 0.59, "source": "estimate", "ref": "https://arxiv.org/abs/1712.02402", "min": 0.4, "max": 0.8, "note": "momentum theory sqrt(g rho A_rotors / m) = 1.08 1/s times 0.55, the share Faessler et al. 2018 measured on an open-prop quad (0.24-0.54 1/s on a heavier one)" },
     "rotor_inertia_kgm2": { "value": 6e-6, "source": "estimate", "min": 3e-6, "max": 9e-6, "note": "4.2 g prop (about 0.2 m R^2) + 2207 bell (about 14 g at 11 mm)" },
-    "wake_loss": { "value": 0.25, "source": "estimate", "min": 0, "max": 0.5, "note": "share of thrust lost at the worst point of a descent through the rotors' own wake (vortex-ring band of momentum theory); sim-core wake.ts" },
-    "wake_shake": { "value": 0.3, "source": "estimate", "min": 0, "max": 0.6, "note": "turbulent roll/pitch torque in the wake, as a share of one rotor's thrust times the arm (rotor thrust fluctuates by tens of per cent in the vortex-ring state)" }
+    "ducted": { "value": false, "source": "manufacturer", "note": "open props, no ducts; prop wash band of an open rotor (sim-core wake.ts)" }
   }
 }

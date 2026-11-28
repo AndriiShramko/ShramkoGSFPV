@@ -8,6 +8,8 @@
     "motor": { "value": "LAVA 1104 7200KV", "source": "manufacturer", "ref": "https://betafpv.com/products/pavo20-pro-brushless-whoop-quadcopter" },
     "motor_kv": { "value": 7200, "source": "manufacturer" },
     "prop": { "value": "Gemfan 2218, 3-blade", "source": "manufacturer" },
+    "prop_diameter_mm": { "value": 55.9, "source": "manufacturer", "note": "Gemfan 2218: 2.2 inch; the rotor disk of the prop wash model (sim-core wake.ts)" },
+    "ducted": { "value": true, "source": "manufacturer", "note": "whoop: every prop runs in a duct; the prop wash band moves by WAKE_DUCT_SHIFT (sim-core wake.ts)" },
     "dry_mass_g": { "value": 108, "source": "measured:Oscar Liang", "ref": "https://oscarliang.com/betafpv-pavo20-pro/", "note": "with DJI O3 air unit; 70.1 g without O3" },
     "battery": { "value": "3S 550 mAh LAVA 75C", "source": "manufacturer" },
     "battery_cells": { "value": 3, "source": "manufacturer" },

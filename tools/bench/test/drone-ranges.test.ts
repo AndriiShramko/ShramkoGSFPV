@@ -1,18 +1,17 @@
 // Every drone can be flown at every end of every flight-model setting (review R5 of lane D, docs/wip/v08-d.md).
 // The rule: for every preset in packages/sim-core/presets, with each preset field that documents a fitting
-// range ("min"/"max": twr, motor_tau_ms, rotor drag and inertia, wake_loss, wake_shake) at its value and at
+// range ("min"/"max": twr, motor_tau_ms, rotor drag and inertia, wake_scale where a preset has one) at its value and at
 // both ends of that range, and with each numeric setting that builds the flight model (app/prefs.ts
 // FLIGHT_MODEL_SETTINGS) at both ends the store allows, the app's own path (store -> overridesFor ->
 // compileParams) builds a flight model with finite numbers. A preset fitted to a pilot's report anywhere in
 // its documented range must never become a drone the app cannot build because a pilot moved a slider.
-// The case that broke: a preset's wake_loss at its documented max 0.5 times the prop wash setting's max 2
-// threw a RangeError in sim-core's wakeOf; the product is now capped at WAKE_LOSS_MAX.
-// Negative control: the same predicate on a broken preset copy (wake_loss documented up to 0.95, past the
-// model's cap) reports it, so the rule can fail.
+// The case that broke (v0.8): a preset's wake_loss at its documented max 0.5 times the prop wash setting's max 2
+// threw a RangeError in sim-core's wakeOf; the product is capped at WAKE_LOSS_MAX (train 5: wake_scale x setting).
+// Negative control: the same predicate on a broken preset copy (wake_scale documented down to -1) reports it.
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { WAKE_LOSS_MAX, compileParams } from '@gsfpv/sim-core';
+import { WAKE_LOSS_MAX, WAKE_LOSS_PEAK, compileParams } from '@gsfpv/sim-core';
 import type { PresetJson } from '@gsfpv/sim-core';
 import { FakeStorage, REPO } from '../../../packages/prefs/test/helpers';
 import { MemoryBackend, PrefsStore, SCHEMA } from '../../../packages/prefs/src';
@@ -87,20 +86,21 @@ describe('every drone builds at every end of its documented ranges and of every 
         expect(unbuildable(Object.values(PR.PRESETS))).toEqual([]);
     });
 
-    it('the case that threw: the cinelifter fitted to wake_loss 0.5 (its documented max) at prop wash 2x flies with the loss capped', () => {
+    it('the case that threw, today: a preset whose sourced wake_scale is 4.5 (its documented max) at prop wash 2x flies with the loss capped', () => {
         const cine = PR.PRESETS['taurusx8-komodo-6s'];
-        expect(cine.fields.wake_loss.max).toBe(0.5);
-        const fitted = withValue(cine, 'wake_loss', 0.5);
-        expect(compileParams(fitted, { wake: 2 }).wakeLoss).toBe(WAKE_LOSS_MAX);
-        expect(compileParams(fitted, { wake: 1 }).wakeLoss).toBe(0.5);
+        const scaled = structuredClone(cine);
+        scaled.fields.wake_scale = { value: 4.5, source: 'estimate', min: 0, max: 4.5 };
+        expect(compileParams(scaled, { wake: 2 }).wakeLoss).toBe(WAKE_LOSS_MAX);
+        expect(compileParams(scaled, { wake: 1 }).wakeLoss).toBeCloseTo(4.5 * WAKE_LOSS_PEAK, 12);
+        expect(unbuildable([scaled])).toEqual([]);
     });
 
-    it('control: a preset documenting wake_loss up to 0.95 (past the model\'s cap) is reported by the same predicate', () => {
+    it('control: a preset documenting wake_scale down to -1 (a multiplier the model refuses) is reported by the same predicate', () => {
         const cine = PR.PRESETS['taurusx8-komodo-6s'];
         const broken = structuredClone(cine);
-        broken.fields.wake_loss = { ...broken.fields.wake_loss, max: 0.95 };
+        broken.fields.wake_scale = { value: 1, source: 'estimate', min: -1, max: 2 };
         const found = unbuildable([broken]);
         expect(found.length).toBeGreaterThan(0);
-        expect(found.every((s) => s.startsWith('taurusx8-komodo-6s wake_loss=max 0.95'))).toBe(true);
+        expect(found.every((s) => s.startsWith('taurusx8-komodo-6s wake_scale=min -1'))).toBe(true);
     });
 });

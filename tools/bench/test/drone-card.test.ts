@@ -24,7 +24,7 @@ const showsFullPack = (card: number, s: SimParams): boolean => Math.abs(card - h
 
 describe('drone card hover throttle (review R3)', () => {
     it('every drone: full pack and near empty from sim-core\'s hover solution, full below near empty', () => {
-        expect(PRESETS.length).toBe(9);
+        expect(PRESETS.length).toBe(11);
         for (const p of PRESETS) {
             const s = sp(p.id);
             const c = cardHover(s);

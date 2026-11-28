@@ -84,6 +84,7 @@ const BETA = {
     pavo20ii: 'https://betafpv.com/products/pavo20-pro-ii-brushless-whoop-quadcopter',
     pico: 'https://betafpv.com/products/pavo-pico-brushless-whoop-quadcopter',
     air65: 'https://betafpv.com/products/air65-brushless-whoop-quadcopter',
+    air65ii: 'https://betafpv.com/products/air65-ii-brushless-whoop-quadcopter',
     meteor: 'https://www.getfpv.com/drone-brands/betafpv/betafpv-meteor65-pro-brushless-whoop-quadcopter-2022.html'
 };
 const IFLIGHT = {
@@ -98,7 +99,7 @@ const pavo20Pro = (name: string, ref: string, motor: string): Equipment => ({
     family: 'cinewhoop',
     frame: { name, geometry: 'x', materials: ['pa12', 'carbon'], basis: 'maker', ref },
     motor: { name: motor, stator: [11, 4], basis: 'maker', ref },
-    prop: { name: 'Gemfan 2218', blades: 3, pitchRatio: 0.8, diameterMm: 55.9, basis: 'maker', ref },
+    prop: { name: 'Gemfan 2218', blades: 3, pitchRatio: 0.8, basis: 'maker', ref },
     battery: { connector: 'XT30', mount: 'top', basis: 'maker', ref },
     video: { kind: 'dji-o4-pro', name: 'DJI O4 Air Unit Pro', tilt: [0, 40], records: true, basis: 'maker', ref },
     antennas: 1
@@ -107,13 +108,13 @@ const pavo20Pro = (name: string, ref: string, motor: string): Equipment => ({
 /** Keyed by preset id (packages/sim-core/presets); a test keeps the keys equal to DRONE_IDS. */
 export const EQUIPMENT: Readonly<Record<string, Equipment>> = {
     'pavo20pro-3s': pavo20Pro('Pavo20 Pro', BETA.pavo20, 'LAVA 1104'),
-    'pavo20pro2-3s': { ...pavo20Pro('Pavo20 Pro II', BETA.pavo20ii, 'LAVA 1104'), prop: { name: 'Gemfan D2.2', blades: 3, pitchRatio: 0.8, diameterMm: 55.9, basis: 'maker', ref: BETA.pavo20ii } },
-    'pavo20pro2-4s': { ...pavo20Pro('Pavo20 Pro II', BETA.pavo20ii, 'LAVA 1104'), prop: { name: 'Gemfan D2.2', blades: 3, pitchRatio: 0.8, diameterMm: 55.9, basis: 'maker', ref: BETA.pavo20ii } },
+    'pavo20pro2-3s': { ...pavo20Pro('Pavo20 Pro II', BETA.pavo20ii, 'LAVA 1104'), prop: { name: 'Gemfan D2.2', blades: 3, pitchRatio: 0.8, basis: 'maker', ref: BETA.pavo20ii } },
+    'pavo20pro2-4s': { ...pavo20Pro('Pavo20 Pro II', BETA.pavo20ii, 'LAVA 1104'), prop: { name: 'Gemfan D2.2', blades: 3, pitchRatio: 0.8, basis: 'maker', ref: BETA.pavo20ii } },
     'pavopico-2s': {
         family: 'cinewhoop',
         frame: { name: 'Pavo Pico', geometry: 'x', materials: ['pa12', 'carbon'], basis: 'maker', ref: BETA.pico },
         motor: { name: '1102', stator: [11, 2], basis: 'maker', ref: BETA.pico },
-        prop: { name: 'Gemfan 45 mm', blades: 3, pitchRatio: 0.8, diameterMm: 45, basis: 'maker', ref: BETA.pico },
+        prop: { name: 'Gemfan 45 mm', blades: 3, pitchRatio: 0.8, basis: 'maker', ref: BETA.pico },
         battery: { connector: 'XT30', mount: 'top', basis: 'typical' },
         video: { kind: 'dji-o3', name: 'DJI O3 Air Unit', tilt: [0, 30], records: true, basis: 'maker', ref: BETA.pico },
         antennas: 1
@@ -122,7 +123,7 @@ export const EQUIPMENT: Readonly<Record<string, Equipment>> = {
         family: 'tiny-whoop',
         frame: { name: 'Meteor65 Pro', geometry: 'x', materials: ['plastic'], basis: 'listing', ref: BETA.meteor },
         motor: { name: '0802SE', stator: [8, 2], basis: 'listing', ref: BETA.meteor },
-        prop: { name: '35 mm', blades: 3, pitchRatio: 0.8, diameterMm: 35, basis: 'listing', ref: BETA.meteor },
+        prop: { name: '35 mm', blades: 3, pitchRatio: 0.8, basis: 'listing', ref: BETA.meteor },
         battery: { connector: 'BT2.0', mount: 'bottom', basis: 'listing', ref: BETA.meteor },
         video: { kind: 'analog', name: 'C03', vtx: 'M03 25-350 mW', tilt: [20, 30], records: false, basis: 'listing', ref: BETA.meteor },
         antennas: 1
@@ -131,9 +132,27 @@ export const EQUIPMENT: Readonly<Record<string, Equipment>> = {
         family: 'tiny-whoop',
         frame: { name: 'Air65', geometry: 'x', materials: ['plastic'], basis: 'maker', ref: BETA.air65 },
         motor: { name: '0702SE II', stator: [7, 2], basis: 'maker', ref: BETA.air65 },
-        prop: { name: 'HQ 31 mm Ultralight', blades: 3, pitchRatio: 0.8, diameterMm: 31, basis: 'maker', ref: BETA.air65 },
+        prop: { name: 'HQ 31 mm Ultralight', blades: 3, pitchRatio: 0.8, basis: 'maker', ref: BETA.air65 },
         battery: { connector: 'BT2.0', mount: 'bottom', basis: 'maker', ref: BETA.air65 },
         video: { kind: 'analog', name: 'C03', vtx: '5.8G 25-400 mW', tilt: [25, 50], records: false, basis: 'maker', ref: BETA.air65 },
+        antennas: 1
+    },
+    'air65champ-1s': {
+        family: 'tiny-whoop',
+        frame: { name: 'Air65', geometry: 'x', materials: ['plastic'], basis: 'maker', ref: BETA.air65 },
+        motor: { name: '0702 II 30000KV', stator: [7, 2], basis: 'maker', ref: BETA.air65 },
+        prop: { name: 'Gemfan 1219S', blades: 3, pitchRatio: 0.8, basis: 'maker', ref: BETA.air65 },
+        battery: { connector: 'BT2.0', mount: 'bottom', basis: 'maker', ref: BETA.air65 },
+        video: { kind: 'analog', name: 'C03', vtx: '5.8G 25-400 mW', tilt: [25, 50], records: false, basis: 'maker', ref: BETA.air65 },
+        antennas: 1
+    },
+    'air65iichamp-1s': {
+        family: 'tiny-whoop',
+        frame: { name: 'Air65 II', geometry: 'x', materials: ['plastic'], basis: 'maker', ref: BETA.air65ii },
+        motor: { name: '0702 36000KV', stator: [7, 2], basis: 'maker', ref: BETA.air65ii },
+        prop: { name: 'Gemfan 1207', blades: 3, pitchRatio: 0.6, basis: 'maker', ref: BETA.air65ii },
+        battery: { connector: 'BT2.0', mount: 'bottom', basis: 'typical' },
+        video: { kind: 'analog', name: 'C03', vtx: '5.8G 25-400 mW', tilt: [25, 50], records: false, basis: 'typical' },
         antennas: 1
     },
     'nazgulf5v3-6s': {

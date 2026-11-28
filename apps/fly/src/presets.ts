@@ -5,6 +5,8 @@ import pavo20pro24s from '@gsfpv/sim-core/presets/pavo20pro2-4s.json';
 import pavopico2s from '@gsfpv/sim-core/presets/pavopico-2s.json';
 import meteor65pro1s from '@gsfpv/sim-core/presets/meteor65pro-1s.json';
 import air651s from '@gsfpv/sim-core/presets/air65-1s.json';
+import air65champ1s from '@gsfpv/sim-core/presets/air65champ-1s.json';
+import air65iichamp1s from '@gsfpv/sim-core/presets/air65iichamp-1s.json';
 import nazgulf5v36s from '@gsfpv/sim-core/presets/nazgulf5v3-6s.json';
 import machr5sport6s from '@gsfpv/sim-core/presets/machr5sport-6s.json';
 import taurusx8komodo6s from '@gsfpv/sim-core/presets/taurusx8-komodo-6s.json';
@@ -18,6 +20,8 @@ export const PRESETS: Record<string, PresetJson> = {
     'pavopico-2s': pavopico2s as PresetJson,
     'meteor65pro-1s': meteor65pro1s as PresetJson,
     'air65-1s': air651s as PresetJson,
+    'air65champ-1s': air65champ1s as PresetJson,
+    'air65iichamp-1s': air65iichamp1s as PresetJson,
     'nazgulf5v3-6s': nazgulf5v36s as PresetJson,
     'machr5sport-6s': machr5sport6s as PresetJson,
     'taurusx8-komodo-6s': taurusx8komodo6s as PresetJson

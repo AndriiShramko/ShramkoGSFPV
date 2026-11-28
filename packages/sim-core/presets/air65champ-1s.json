@@ -1,0 +1,232 @@
+{
+  "id": "air65champ-1s",
+  "name": "BetaFPV Air65 Champion class, 1S",
+  "class": "65 mm brushless tiny whoop",
+  "notes": "The Air65 Champion (V1, 2025): the Air65 frame and canopy with 0702 II 30000KV motors. Numbers read on betafpv.com on 2026-11-26; every field without a source of its own is the Air65's estimate.",
+  "fields": {
+    "wheelbase_mm": {
+      "value": 65,
+      "source": "manufacturer",
+      "ref": "https://betafpv.com/products/air65-brushless-whoop-quadcopter"
+    },
+    "motor": {
+      "value": "0702 II 30000KV, dual ball bearings",
+      "source": "manufacturer",
+      "ref": "https://betafpv.com/products/air65-brushless-whoop-quadcopter"
+    },
+    "motor_kv": {
+      "value": 30000,
+      "source": "manufacturer",
+      "ref": "https://betafpv.com/products/air65-brushless-whoop-quadcopter"
+    },
+    "prop": {
+      "value": "Gemfan 1219S 3-blade (PEEK)",
+      "source": "manufacturer",
+      "ref": "https://betafpv.com/products/air65-brushless-whoop-quadcopter"
+    },
+    "prop_diameter_mm": {
+      "value": 31,
+      "source": "manufacturer",
+      "note": "GF 1219S 3-blade and HQ 31 mm Ultralight: 31 mm; the rotor disk of the prop wash model (sim-core wake.ts)"
+    },
+    "ducted": {
+      "value": true,
+      "source": "manufacturer",
+      "note": "whoop: every prop runs in a duct; the prop wash band moves by WAKE_DUCT_SHIFT (sim-core wake.ts)"
+    },
+    "dry_mass_g": {
+      "value": 17.4,
+      "source": "manufacturer",
+      "ref": "https://betafpv.com/products/air65-brushless-whoop-quadcopter",
+      "note": "17.4 +- 0.15 g by the maker (PEEK props, 0.3 g above the Air65); a review's 17.9 g (https://oscarliang.com/betafpv-air65-champion) is community and loses to the maker"
+    },
+    "battery": {
+      "value": "LAVA 1S 260 mAh",
+      "source": "manufacturer",
+      "ref": "https://betafpv.com/products/air65-brushless-whoop-quadcopter"
+    },
+    "battery_cells": {
+      "value": 1,
+      "source": "manufacturer"
+    },
+    "battery_capacity_mah": {
+      "value": 260,
+      "source": "manufacturer"
+    },
+    "battery_mass_g": {
+      "value": 7.11,
+      "source": "manufacturer",
+      "ref": "https://betafpv.com/products/lava-1s-260mah-80c-battery-5pcs",
+      "note": "LAVA 1S 260 mAh 80C, 7.11 g each (was 7, estimate)"
+    },
+    "auw_g": {
+      "value": 24.5,
+      "source": "manufacturer",
+      "ref": "https://betafpv.com/products/air65-brushless-whoop-quadcopter",
+      "note": "17.4 g dry + 7.11 g LAVA 1S 260 mAh"
+    },
+    "twr": {
+      "value": 6.4,
+      "source": "manufacturer",
+      "ref": "https://betafpv.com/products/air65-brushless-whoop-quadcopter",
+      "note": "claimed by the maker, 6.4:1. Check: the 0702 II 30000KV load table (GF 1219S-3) gives 37.2 g at 100 % (read from a search result, the page answered 429), 4 x 37.2 / 24.5 = 6.07",
+      "min": 6.0,
+      "max": 6.4
+    },
+    "inertia_roll_pitch_kgm2": {
+      "value": 8e-06,
+      "source": "estimate"
+    },
+    "inertia_yaw_kgm2": {
+      "value": 1.25e-05,
+      "source": "estimate"
+    },
+    "motor_tau_ms": {
+      "value": 9,
+      "source": "estimate",
+      "min": 6,
+      "max": 30
+    },
+    "motor_kappa_m": {
+      "value": 0.0045,
+      "source": "estimate",
+      "note": "reaction torque / thrust"
+    },
+    "motor_idle": {
+      "value": 0.055,
+      "source": "bf-default",
+      "note": "dshot_idle_value 550"
+    },
+    "rpm_loaded_fraction": {
+      "value": 0.75,
+      "source": "estimate",
+      "note": "loaded rpm / (KV * V), only used for battery current"
+    },
+    "cda_horizontal_cm2": {
+      "value": 18,
+      "source": "estimate"
+    },
+    "cda_vertical_cm2": {
+      "value": 50,
+      "source": "estimate"
+    },
+    "collider_duct_radius_mm": {
+      "value": 0,
+      "source": "estimate",
+      "note": "single sphere: ducts are not modelled separately on 65 mm whoops"
+    },
+    "collider_duct_offset_mm": {
+      "value": 0,
+      "source": "estimate"
+    },
+    "collider_body_radius_mm": {
+      "value": 42.5,
+      "source": "estimate"
+    },
+    "v_bounce_ms": {
+      "value": 1.5,
+      "source": "estimate"
+    },
+    "v_crash_ms": {
+      "value": 4.0,
+      "source": "estimate"
+    },
+    "pack_resistance_per_cell_ohm": {
+      "value": 0.05,
+      "source": "estimate"
+    },
+    "efficiency": {
+      "value": 0.7,
+      "source": "estimate"
+    },
+    "flight_time": {
+      "value": "about 3 min (300 mAh)",
+      "source": "measured:Oscar Liang",
+      "ref": "https://oscarliang.com/betafpv-air65-champion"
+    },
+    "camera_uptilt_deg": {
+      "value": 25,
+      "source": "manufacturer",
+      "ref": "https://betafpv.com/products/air65-brushless-whoop-quadcopter",
+      "note": "Air Canopy camera angle 25 to 50 degrees: the lowest setting (was 20, estimate, below the range)"
+    },
+    "camera_fov_deg": {
+      "value": 115,
+      "source": "estimate",
+      "note": "horizontal field of view of the simulated camera"
+    },
+    "rates": {
+      "value": {
+        "type": "ACTUAL",
+        "roll": [
+          7,
+          67,
+          0
+        ],
+        "pitch": [
+          7,
+          67,
+          0
+        ],
+        "yaw": [
+          7,
+          67,
+          0
+        ],
+        "rate_limit": 1998
+      },
+      "source": "bf-default",
+      "note": "Betaflight 4.5 defaults, rc_rate/srate/expo as CLI integers"
+    },
+    "pid_roll": {
+      "value": [
+        45,
+        80,
+        40,
+        120
+      ],
+      "source": "bf-default",
+      "note": "P, I, D, F"
+    },
+    "pid_pitch": {
+      "value": [
+        47,
+        84,
+        46,
+        125
+      ],
+      "source": "bf-default"
+    },
+    "pid_yaw": {
+      "value": [
+        45,
+        80,
+        0,
+        120
+      ],
+      "source": "bf-default"
+    },
+    "throttle": {
+      "value": {
+        "mid": 50,
+        "expo": 0
+      },
+      "source": "bf-default"
+    },
+    "rotor_drag_per_s": {
+      "value": 0.83,
+      "source": "estimate",
+      "ref": "https://arxiv.org/abs/1712.02402",
+      "min": 0.42,
+      "max": 1.22,
+      "note": "rotor and duct momentum drag at hover rotor speed: momentum theory sqrt(g rho A_rotors / m) = 1.22 1/s, scaled like the Pavo20 Pro (0.6 = 0.68 of its 0.88 1/s ideal)"
+    },
+    "rotor_inertia_kgm2": {
+      "value": 1.2e-08,
+      "source": "estimate",
+      "min": 6e-09,
+      "max": 1.8e-08,
+      "note": "31 mm prop (about 0.2 g at 5.6 mm) + 0702 bell (about 0.45 g at 3.5 mm); drives the yaw reaction to motor speed changes"
+    }
+  }
+}
