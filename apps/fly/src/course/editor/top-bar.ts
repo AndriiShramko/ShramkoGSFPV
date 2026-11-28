@@ -21,6 +21,9 @@ export interface TopBarHost {
     fly(on: boolean): void;
     /** lane edit4b: the items of a top bar menu as they are now (the parts fill them through the editor seam) */
     menu(id: 'course'): readonly MenuItem[];
+    /** fix-n-save: a line the bar cut to two rows (an ellipsis) that is not a refusal (a refusal is told there already):
+     * the page says it whole in the Messages list, once per text */
+    cut?(text: string): void;
 }
 
 export class TopBar {
@@ -77,7 +80,7 @@ export class TopBar {
         this.host = host;
         this.line = line;
         this.hold = new LineHold((text, refused) => {
-            this.setLine(text ?? t(this.isAdding ? 'course.edit.bar.addHint' : 'course.edit.flyHint'));
+            this.setLine(text ?? t(this.isAdding ? 'course.edit.bar.addHint' : 'course.edit.flyHint'), refused);
             this.line.classList.toggle('refused', refused);
         });
         window.addEventListener('keydown', this.onAct, true);
@@ -133,10 +136,18 @@ export class TopBar {
         }
     };
 
-    /** D6: one line, at most 420 px with an ellipsis (editor.css); the full text in its title */
-    private setLine(text: string): void {
+    /** the texts already said whole in the Messages list (host.cut), each once */
+    private readonly cutSaid = new Set<string>();
+
+    /** lane n-save: 16 px; fix-n-save: at most two rows of 420 px, a longer text ends with an ellipsis (editor.css), so the
+     * bar never reaches the centres of the page's top-row buttons. The full text is in its title, and a cut text that is
+     * not a refusal (refusals are in the Messages list already, course.ts say) goes there through host.cut */
+    private setLine(text: string, refused = false): void {
         this.line.textContent = text;
         this.line.title = text;
+        if (refused || this.cutSaid.has(text) || !(this.line.scrollHeight > this.line.clientHeight + 1)) return;
+        this.cutSaid.add(text);
+        this.host.cut?.(text);
     }
 
     /** Add gate is armed: the button stays pressed and the line says where to click */

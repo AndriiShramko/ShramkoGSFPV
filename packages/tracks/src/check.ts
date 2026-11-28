@@ -71,6 +71,28 @@ export function insideGrid(col: VoxelCollision, p: Vec3): boolean {
     return true;
 }
 
+/** Lane n-save (Decision 6): the editor's reach past the walls' grid, flown m; a gate in the free air this near the grid
+ *  is no problem (the owner's gates just past the scan were all red 'outside the scanned space'). An estimate. */
+export const NEAR_GRID_M = 10;
+
+/** How far `p` lies outside the walls' voxel grid, m (0 inside it; flipped as insideGrid). */
+export function gridDistance(col: VoxelCollision, p: Vec3): number {
+    const f = col.flipXY ? -1 : 1;
+    const q = [f * p[0], f * p[1], p[2]];
+    const min = [col.gridMinX, col.gridMinY, col.gridMinZ];
+    const n = [col.numVoxelsX, col.numVoxelsY, col.numVoxelsZ];
+    let sum = 0;
+    for (let i = 0; i < 3; i++) {
+        const lo = min[i]!, hi = lo + n[i]! * col.voxelResolution;
+        const v = q[i]!;
+        // NaN is outside at any reach
+        if (!(v === v)) return Infinity;
+        const e = v < lo ? lo - v : v > hi ? v - hi : 0;
+        sum += e * e;
+    }
+    return Math.sqrt(sum);
+}
+
 /** The walls as the session flies them: the scan's octree under T(p) = s * p + t. */
 export function flownCollision(base: VoxelCollision, transform: readonly [number, number, number, number]): VoxelCollision {
     return transformCollision(base, transform[0], [transform[1], transform[2], transform[3]]);
@@ -244,12 +266,14 @@ export function flownStart(track: TrackFile, transform: readonly [number, number
  * K1 sweep of the turn after a gate (path.ts gateExit to the next gate): a rule of the generator only (review T2-3), so a
  * saved or served course keeps the acceptance it was saved under.
  */
-export function checkTrack(track: TrackFile, col: VoxelCollision, transform: readonly [number, number, number, number], marginM = MARGIN_M, measure = true, exitTurns = false): TrackReport {
+export function checkTrack(track: TrackFile, col: VoxelCollision, transform: readonly [number, number, number, number], marginM = MARGIN_M, measure = true, exitTurns = false, nearGridM = 0): TrackReport {
     const gates = trackToObjects(track, { transform });
     const start = flownStart(track, transform);
     // lane review TR-3: outside the walls' grid counts as free to the sweeps, and a gate far out made them run for minutes;
-    // a course is proven only inside the grid, and one that leaves it is refused before any sweep
-    const out = [...(start ? [{ id: 'start', p: start.pos }] : []), ...gates.map((g) => ({ id: g.id, p: g.pos }))].filter((x) => !insideGrid(col, x.p));
+    // a course is proven only inside the grid, and one that leaves it is refused before any sweep. Lane n-save (Decision 6):
+    // the editor passes nearGridM (NEAR_GRID_M): a gate in the free air within that of the grid is no problem (the sweeps
+    // stay short there); the generator's calls keep 0, the strict rule.
+    const out = [...(start ? [{ id: 'start', p: start.pos }] : []), ...gates.map((g) => ({ id: g.id, p: g.pos }))].filter((x) => gridDistance(col, x.p) > nearGridM);
     if (out.length > 0) {
         const issues = out.slice(0, 4).map((x) => `${x.id}: outside the walls' grid`);
         return { marginM, ok: false, startClear: false, startFreeM: 0, gates: [], legs: [], pathM: 0, minGapM: 0, minFreeM: 0, issues, outside: out.map((x) => x.id) };

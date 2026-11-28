@@ -1,0 +1,76 @@
+{
+ "address": "http://localhost:6912/en",
+ "live": false,
+ "scan": "70b50d42",
+ "size": [
+  1536,
+  730
+ ],
+ "dsf": 1.25,
+ "date": "2026-11-21T17:32:11.218Z",
+ "steps": {
+  "open": {
+   "ok": true,
+   "status": "ready",
+   "lock": "CANVAS",
+   "open": true,
+   "ms": 4199,
+   "gates": 12
+  }
+ },
+ "posts": [],
+ "notRun": [],
+ "shots": [],
+ "measureTop": {
+  "bar": [
+   305,
+   8,
+   1231,
+   78
+  ],
+  "line": "Editor open. Keys W A S D move the view, key E up, key Q down. Drag with the left mouse button on empty space to circle round, with Shift to slide; the wheel goes towards the cursor; hold the right button to look around. Click a gate: the arrows move it, the rings turn it, the boxes size it; key F or a double click brings the view to it, key Home shows the whole course. Space or your controller's arm switch flies the course (hold Space to climb); a short Space or the switch again goes back to editing. Key Esc leaves",
+  "lineH": 60,
+  "under": [
+   {
+    "name": "Motor sound: on — tu",
+    "top": 38,
+    "h": 44,
+    "coveredPx": 40,
+    "centreReaches": false
+   },
+   {
+    "name": "Full screen (F)",
+    "top": 38,
+    "h": 44,
+    "coveredPx": 40,
+    "centreReaches": false
+   },
+   {
+    "name": "Messages (Shift+J)",
+    "top": 38,
+    "h": 44,
+    "coveredPx": 40,
+    "centreReaches": false
+   },
+   {
+    "name": "Share this scene (L)",
+    "top": 38,
+    "h": 44,
+    "coveredPx": 40,
+    "centreReaches": false
+   },
+   {
+    "name": "Settings (O)",
+    "top": 38,
+    "h": 44,
+    "coveredPx": 40,
+    "centreReaches": true
+   }
+  ]
+ },
+ "error": "Error: STOP after measure",
+ "fails": [
+  "error"
+ ],
+ "log": []
+}

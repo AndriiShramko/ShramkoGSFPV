@@ -1,19 +1,16 @@
 // Lane edit4s (E7): the small corrections a refused Save offers to make for the pilot. Pure: the walls come in, the fixes go
-// out; the page asks, shows the overview, applies them as one undo step and saves (course.ts, saveFlow).
-import { AXIS_TOLERANCE_DEG, checkTrack, gateAxis, reportProblems, toTrackV1 } from '@gsfpv/tracks';
-import type { Course, CourseCheck, CourseProblem } from '@gsfpv/tracks';
-import type { VoxelCollision } from '@gsfpv/collision';
-import { quatMultiply, quatNormalize, yawQuat } from '@shramko/sonic-fpv';
-import type { Quat, Vec3 } from '@shramko/sonic-fpv';
+// out; the page asks, shows the overview, applies them as one undo step and saves (course.ts, saveFlow). Lane n-save S2:
+// a gate's turn and its move out of a wall are fixAll's (packages/tracks autofix.ts) for that one gate, the one repair the
+// Save dialog's 'Fix all automatically' makes for every gate.
+import { REQUEST_DEFAULTS, checkTrack, fixAll, reportProblems, toTrackV1 } from '@gsfpv/tracks';
+import type { Course, CourseCheck, CourseLevel, CourseProblem, FixWalls, GatePose } from '@gsfpv/tracks';
+import type { Vec3 } from '@shramko/sonic-fpv';
+
+export type { FixWalls, GatePose } from '@gsfpv/tracks';
 
 export type FixKind = 'face-line' | 'nudge' | 'lift';
-/** the pilot's answer to the offer: make them (and save when all are made), point at the first, or not now */
-export type FixAnswer = 'yes' | 'show' | 'close';
-/** a gate's place and turn in the course's own frame (as TrackGate.pos and .quat) */
-export interface GatePose {
-    readonly pos: Vec3;
-    readonly quat: Quat;
-}
+/** lane n-save: the Save dialog's answers (panel.ts askSave): Fix all, Save as it is, Show me, the cross */
+export type FixAnswer = 'fix' | 'as-is' | 'show' | 'close';
 /** one gate changed by one correction */
 export interface FixedGate {
     readonly index: number;
@@ -28,13 +25,6 @@ export interface Fix {
     /** the change in words (key and arguments; gates from 1), for the line that lists what changed */
     readonly words: { readonly key: string; readonly args: Record<string, number> };
 }
-/** what the fixer sees of the scan: the flown walls, the flown transform, the check's margin */
-export interface FixWalls {
-    readonly col: VoxelCollision;
-    readonly transform: readonly [number, number, number, number];
-    readonly margin: number;
-}
-
 /** flown metres a nudge or a lift steps by, and the most it goes (estimates: a correction stays small) */
 export const FIX_STEP_M = 0.1;
 export const FIX_MAX_M = 1;
@@ -69,20 +59,7 @@ export const OFFER_WORDS = {
     legStart: 'course.fix.found.legStart'
 } as const;
 
-const DEG = Math.PI / 180;
 const keyOf = (p: CourseProblem): string => (p.code === 'leg-wall' ? `leg:${p.from}>${p.to}` : 'gate' in p ? `${p.code}:${p.gate}` : p.code);
-const horizontalYaw = (v: Vec3): number | null => (Math.hypot(v[0], v[2]) < 1e-9 ? null : Math.atan2(v[0], -v[2]) / DEG);
-const angleDeg = (a: Vec3, b: Vec3): number => {
-    const la = Math.hypot(a[0], a[1], a[2]);
-    const lb = Math.hypot(b[0], b[1], b[2]);
-    if (la < 1e-12 || lb < 1e-12) return 0;
-    const c = (a[0] * b[0] + a[1] * b[1] + a[2] * b[2]) / (la * lb);
-    return Math.acos(Math.max(-1, Math.min(1, c))) / DEG;
-};
-const unit = (v: Vec3): Vec3 => {
-    const l = Math.hypot(v[0], v[1], v[2]) || 1;
-    return [v[0] / l, v[1] / l, v[2] / l];
-};
 const r3 = (v: number): number => Math.round(v * 1000) / 1000 || 0;
 const withGates = (c: Course, poses: readonly FixedGate[]): Course => {
     const at = new Map(poses.map((p) => [p.index, p.after]));
@@ -115,85 +92,8 @@ function clears(c: Course, from: number, to: number, target: CourseProblem, befo
     return !got.includes(t) && got.every((k) => before.has(k));
 }
 
-/** the turn about the vertical that points the gate's axis along `yawDeg`, kept only if it does */
-function facedAlong(q: Quat, yawDeg: number): Quat {
-    const now = horizontalYaw(gateAxis(q)) ?? yawDeg;
-    let best: Quat = q;
-    let bestOff = Infinity;
-    for (const sign of [1, -1]) {
-        const t = quatNormalize(quatMultiply(yawQuat(sign * (yawDeg - now)), q));
-        const off = Math.abs(((((horizontalYaw(gateAxis(t)) ?? yawDeg) - yawDeg) % 360) + 540) % 360 - 180);
-        if (off < bestOff) {
-            bestOff = off;
-            best = t;
-        }
-    }
-    return best;
-}
-
-function faceLine(c: Course, i: number, p: CourseProblem, before: ReadonlySet<string>, w: FixWalls): Fix | null {
-    const g = c.gates[i]!;
-    const prev: Vec3 | null = i > 0 ? c.gates[i - 1]!.pos : c.start ? c.start.pos : null;
-    if (!prev) return null;
-    const legIn: Vec3 = unit([g.pos[0] - prev[0], g.pos[1] - prev[1], g.pos[2] - prev[2]]);
-    const next = c.gates[i + 1];
-    const legOut: Vec3 | null = next ? unit([next.pos[0] - g.pos[0], next.pos[1] - g.pos[1], next.pos[2] - g.pos[2]]) : null;
-    // between the leg in and the leg out first (the generator's own way), then straight along the leg in
-    const aims: Vec3[] = legOut ? [unit([legIn[0] + legOut[0], legIn[1] + legOut[1], legIn[2] + legOut[2]]), legIn] : [legIn];
-    for (const aim of aims) {
-        const yaw = horizontalYaw(aim);
-        if (yaw === null) continue;
-        const quat = facedAlong(g.quat, yaw);
-        if (angleDeg(gateAxis(quat), legIn) > AXIS_TOLERANCE_DEG) continue;
-        const moved: FixedGate = { index: i, before: { pos: g.pos, quat: g.quat }, after: { pos: g.pos, quat } };
-        if (!clears(withGates(c, [moved]), i, i, p, before, w)) continue;
-        const deg = Math.round(angleDeg(gateAxis(g.quat), gateAxis(quat)));
-        return { kind: 'face-line', problem: p, gates: [moved], words: { key: FIX_WORDS['face-line'], args: { g: i + 1, deg } } };
-    }
-    return null;
-}
-
 /** flown metres of the step `k` as course units along `dir` */
 const stepped = (pos: Vec3, dir: Vec3, m: number, s: number): Vec3 => [r3(pos[0] + (dir[0] * m) / s), r3(pos[1] + (dir[1] * m) / s), r3(pos[2] + (dir[2] * m) / s)];
-
-/** how far (flown m) the walls reach a ray from the centre: farther than this counts as open */
-const NUDGE_REACH_M = 40;
-
-/**
- * The 26 ways a gate can be moved (the cube's faces, edges and corners), the way away from the nearest wall first. A ray
- * from the gate's centre often meets the floor or a corner first while the frame touches a side wall, so each way is tried.
- */
-export function nudgeWays(col: VoxelCollision, centre: Vec3): Vec3[] {
-    const ways: { dir: Vec3; wallM: number }[] = [];
-    for (let x = -1; x <= 1; x++) {
-        for (let y = -1; y <= 1; y++) {
-            for (let z = -1; z <= 1; z++) {
-                if (x === 0 && y === 0 && z === 0) continue;
-                const d = unit([x, y, z]);
-                const h = col.queryRay(centre[0], centre[1], centre[2], d[0], d[1], d[2], NUDGE_REACH_M);
-                // moving away from a wall met at distance m: the way opposite the ray
-                ways.push({ dir: [-d[0], -d[1], -d[2]], wallM: h ? Math.hypot(h.x - centre[0], h.y - centre[1], h.z - centre[2]) : Infinity });
-            }
-        }
-    }
-    return ways.sort((a, b) => a.wallM - b.wallM).map((x) => x.dir);
-}
-
-/** the smallest move (0.1 m steps up to 1 m) in any of the 26 ways that clears the gate's wall problem and adds nothing */
-function nudge(c: Course, i: number, p: CourseProblem, before: ReadonlySet<string>, w: FixWalls): Fix | null {
-    const g = c.gates[i]!;
-    const [s, tx, ty, tz] = w.transform;
-    const ways = nudgeWays(w.col, [g.pos[0] * s + tx, g.pos[1] * s + ty, g.pos[2] * s + tz]);
-    for (let k = 1; k * FIX_STEP_M <= FIX_MAX_M + 1e-9; k++) {
-        const m = k * FIX_STEP_M;
-        for (const away of ways) {
-            const moved: FixedGate = { index: i, before: { pos: g.pos, quat: g.quat }, after: { pos: stepped(g.pos, away, m, s), quat: g.quat } };
-            if (!clears(withGates(c, [moved]), i, i, p, before, w)) continue;
-            return { kind: 'nudge', problem: p, gates: [moved], words: { key: FIX_WORDS.nudge, args: { g: i + 1, cm: Math.round(m * 100) } } };
-        }
-    }
-    return null;
-}
 
 function lift(c: Course, p: Extract<CourseProblem, { code: 'leg-wall' }>, before: ReadonlySet<string>, w: FixWalls): Fix | null {
     const a = c.gates.findIndex((g) => g.id === p.from);
@@ -215,14 +115,22 @@ function lift(c: Course, p: Extract<CourseProblem, { code: 'leg-wall' }>, before
     return null;
 }
 
+/** a turn where the gate stands (gate-direction) or a move of at most FIX_MAX_M (gate-wall): fixAll for gate `i` alone */
+function oneGate(c: Course, i: number, p: Extract<CourseProblem, { code: 'gate-direction' | 'gate-wall' }>, w: FixWalls, level: CourseLevel): Fix | null {
+    const m = fixAll(c, w, level, { only: i, maxM: p.code === 'gate-direction' ? 0 : FIX_MAX_M }).moves[0];
+    if (!m) return null;
+    const gates: FixedGate[] = [{ index: i, before: m.before, after: m.after }];
+    if (p.code === 'gate-direction') return { kind: 'face-line', problem: p, gates, words: { key: FIX_WORDS['face-line'], args: { g: i + 1, deg: m.turnedDeg } } };
+    return { kind: 'nudge', problem: p, gates, words: { key: FIX_WORDS.nudge, args: { g: i + 1, cm: Math.round(m.movedM * 100) } } };
+}
+
 /**
- * The small corrections for `problems` of `c`: a gate facing the wrong way is turned along the line (gate-direction), a gate
- * touching a wall is moved the least way out, in 0.1 m steps up to 1 m, away from the nearest wall first (gate-wall), a leg touching a wall has both
- * its gates lifted the same way (leg-wall). Each is found on the course with the ones before it applied and is kept only if
- * the check around it shows the problem gone and nothing new. Problems with no small correction are left (the caller says
- * what to do about them).
+ * The small corrections for `problems` of `c`: a gate facing the wrong way is turned along the line where it stands
+ * (gate-direction), a gate touching a wall is moved the shortest way out, at most FIX_MAX_M (gate-wall): both are fixAll's
+ * repair of that one gate; a leg touching a wall has both its gates lifted the same way (leg-wall). Each is found on the
+ * course with the ones before it applied. Problems with no small correction are left (the caller says what to do about them).
  */
-export function proposeFixes(c: Course, problems: readonly CourseProblem[], w: FixWalls): Fix[] {
+export function proposeFixes(c: Course, problems: readonly CourseProblem[], w: FixWalls, level: CourseLevel = REQUEST_DEFAULTS.level): Fix[] {
     const before = new Set(problems.map(keyOf));
     const order: Record<string, number> = { 'gate-direction': 0, 'gate-wall': 1, 'leg-wall': 2 };
     const todo = problems.filter((p) => p.code in order).sort((x, y) => order[x.code]! - order[y.code]!).slice(0, FIX_MAX_PROBLEMS);
@@ -234,7 +142,7 @@ export function proposeFixes(c: Course, problems: readonly CourseProblem[], w: F
         else if (p.code === 'gate-direction' || p.code === 'gate-wall') {
             const i = now.gates.findIndex((g) => g.id === p.gate);
             if (i < 0) continue;
-            f = p.code === 'gate-direction' ? faceLine(now, i, p, before, w) : nudge(now, i, p, before, w);
+            f = oneGate(now, i, p, w, level);
         }
         if (!f) continue;
         fixes.push(f);

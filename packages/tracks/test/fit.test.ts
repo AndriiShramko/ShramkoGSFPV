@@ -72,7 +72,8 @@ describe('fitCourse in a tiny room (4 x 3 x 4 m)', () => {
         expect(ed.problems, JSON.stringify(ed.problems)).toEqual([]);
         expect(canSave(ed)).toBe(true);
         // control: the same course at the plan's margin has problems (the editor showed red gates and refused Enter)
-        expect(canSave(openEditor(upgradeTrack(t), wallsCheck(walls, IDENTITY), 0))).toBe(false);
+        // (lane n-save: problems are warnings now and no longer refuse Save)
+        expect(openEditor(upgradeTrack(t), wallsCheck(walls, IDENTITY), 0).problems.length).toBeGreaterThan(0);
     });
 
     it('review T2-6: with a course in hand fitCourse does not start a try that would end past its deadline', () => {

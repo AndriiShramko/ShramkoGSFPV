@@ -126,17 +126,16 @@ describe('lane edit4s: the corrections a refused Save offers (E7)', () => {
         expect(o.eye[1]).toBeGreaterThan(o.at[1]);
     });
 
-    it('the page asks before it corrects: a refused Save goes through the offer, the window has its 44 px cross', () => {
+    // lane n-save (t7-plan Decision 1): the offer became the Save dialog (save-dialog.test.ts): the page asks before it
+    // corrects, the corrections are fixAll's as one undo step, the window keeps its 44 px cross
+    it('the page asks before it corrects: Save with warnings goes through the dialog, the window has its 44 px cross', () => {
         const page = readFileSync(join(root, 'apps/fly/src/app/builtin/course.ts'), 'utf8');
-        expect(page).toMatch(/return refusedSave\(\(\) => void saveMine\(nameIn, titleIn\)\)/);
-        expect(page).toMatch(/proposeFixes\(from, problems, w\)/);
-        expect(page).toMatch(/panel\.offerFixes\(/);
-        // one undo step, the overview first
-        expect(page).toMatch(/restoredState\(ed, r\.course/);
-        expect(page).toMatch(/courseOverview\(/);
+        expect(page).toMatch(/return askSave\(v, \(\) => void saveMine\(nameIn, titleIn, true\)\)/);
+        expect(page).toMatch(/panel\.askSave\(/);
+        expect(page).toMatch(/applyEdit\(\{ kind: 'replace', gates: r\.course\.gates/);
         const css = readFileSync(join(root, 'apps/fly/src/course/editor/keep.css'), 'utf8');
         expect(css).toMatch(/\.ce-fix-close \{[^}]*width: 44px; height: 44px/);
-        expect(readFileSync(join(root, 'apps/fly/src/course/editor/panel.ts'), 'utf8')).toMatch(/offerFixes\(offer: \{ text: string; yes: string \} \| null/);
+        expect(readFileSync(join(root, 'apps/fly/src/course/editor/panel.ts'), 'utf8')).toMatch(/askSave\(ask: \{ title: string; lines: readonly string\[\] \} \| null/);
     });
 
     it('the offer and the change list have their words in en, es, pl, ru, with the gates named', () => {

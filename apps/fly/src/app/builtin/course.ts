@@ -38,8 +38,8 @@ import { sayVia } from '../say-via';
 import type { CueEvent } from '@shramko/sonic-fpv';
 import { soundCourseSeed } from './sonic-flight';
 import { S } from '@gsfpv/sim-core';
-import { MAX_GATES_EDIT, REQUEST_DEFAULTS, canSave, courseLinkId, checkTrack, edit, flownCollision, flownStart, marginOf, nearestWall, openEditor, pieceSpec, toTrackV1, upgradeTrack, wallsCheck } from '@gsfpv/tracks';
-import type { CourseAsk, CourseRequest } from '@gsfpv/tracks';
+import { MAX_GATES_EDIT, REQUEST_DEFAULTS, courseLinkId, courseWarnings, fixAll, saveVerdict, checkTrack, edit, flownCollision, flownStart, marginOf, nearestWall, openEditor, pieceSpec, toTrackV1, upgradeTrack, wallsCheck } from '@gsfpv/tracks';
+import type { CourseAsk, CourseRequest, FixWalls, SaveVerdict, StoreBlocker } from '@gsfpv/tracks';
 import { FROM_PILOT, pilotAnchor } from '../../course/anchor';
 import type { AnchorFrom } from '../../course/anchor';
 import { COURSE_LEVELS, COURSE_SPREADS, GenerateDialog, pressAction, type GenerateFrom } from '../../course/generate-dialog';
@@ -48,7 +48,8 @@ import { CheckQueue, checkOnPage } from '../../course/editor/check-core';
 import type { FromCheckWorker } from '../../course/editor/check-core';
 import { aimAt, gateCamera, type GateView } from '../../course/editor/camera';
 import { FRAME_GLIDE_MS, frameGate } from '../../course/editor/frame';
-import { FIX_SHOW_MS, OFFER_KEYS, confirmFixes, courseOverview, foundWords, proposeFixes, type FixResult } from '../../course/editor/fixes';
+import type { FixAnswer } from '../../course/editor/fixes';
+import { GateGhosts } from '../../course/editor/flash';
 import type { RayFn } from '../../course/editor/camera';
 import { EditView } from '../../course/editor/view-mouse';
 import { GateBar } from '../../course/editor/gate-bar';
@@ -75,7 +76,7 @@ import type { Handle } from '../../course/editor/handle-look';
 import type { CourseCheck, EditorState, PieceKind } from '@gsfpv/tracks';
 import { myTokens, myVotes, rememberToken, rememberVote, voterId } from '../../course/store';
 import { NETWORK_PROBLEM, answerProblem, type SaveProblem } from '../../course/store';
-import { saveProblemWords, type SaveAgain } from '../../course/editor/save-words';
+import { FIXED_KEYS, SAVE_ASK_KEYS, blockerWords, fixedWords, saveAskWords, saveProblemWords, type SaveAgain } from '../../course/editor/save-words';
 import { EditorPanel } from '../../course/editor/panel';
 import { DraftKeeper } from '../../course/editor/parts/keep';
 import { restoredState } from '../../course/editor/drafts';
@@ -287,8 +288,11 @@ export const course: Feature = {
         const markChanged = (by: string): void => {
             edChanged = true;
             keeper?.changed(by);
-            // lane edit4s (E7): an offer of corrections made for the course before this change is taken away
-            if (by !== 'fix') panel?.offerFixes(null);
+            // lane edit4s (E7), n-save: the Save dialog and the line after Fix all, made for the course before this change, go
+            if (by !== 'fix') {
+                panel?.askSave(null);
+                panel?.fixedLine(null);
+            }
         };
         /** the step that dropping unsaved changes was asked for ('exit', 'regen', 'row:<id>'); doing it again goes on */
         let askedFor: string | null = null;
@@ -537,6 +541,14 @@ export const course: Feature = {
                 }
                 // a course that does not fit the pilot's own walls is never shown (the server cannot see walls); TR-3: the next
                 // saved course is tried instead of stopping at the newest
+                // lane n-save: a course the pilot named (a row's Open, a link) is shown even so: it was saved as it is with
+                // warnings (the owner's wish 1 of 2026-11-20); the editor names them and Save fixes them in one press
+                if (!m.ok && why.only) {
+                    setTrack(tr, 'server', tr.generator?.seed ?? null);
+                    dropLink();
+                    tell({ text: t('course.edit.saveOpenedWarned', { n: tr.gates.length }), kind: 'info', key: COURSE_LINE });
+                    return;
+                }
                 if (!m.ok) {
                     if (!why.only && why.index + 1 < rows.length) return void loadServer(why.index + 1);
                     return fail(`refused: ${m.issues.join('; ') || 'not clear'}`.slice(0, 200), t('course.server.refused'));
@@ -1039,68 +1051,104 @@ export const course: Feature = {
             if (!ed || showWrong(SAVE_FIX_KEY)) return;
             say(t('course.edit.saveRefused', { why: problemsLine(ed) }), true);
         };
-        /**
-         * Lane edit4s (E7): a refused Save first looks for small corrections (fixes.ts) and offers them in the window: yes ->
-         * the overview of the whole course, the gates corrected in front of the pilot as one undo step, the change listed, and
-         * the save `retry` made when nothing is left; Show me -> the first wrong gate; the cross -> the refusal as before.
-         */
-        const refusedSave = async (retry: () => void): Promise<void> => {
+        /** lane n-save: the walls the fixer and the warnings see (null before the scan's walls are in) */
+        const fixWalls = (): FixWalls | null => {
             const col = ctx.session.collision;
-            // an empty course has nothing to correct: pointAtWrong says what to do (lane edit4b E4)
-            if (!ed || !col || !panel || ed.course.gates.length === 0) return pointAtWrong();
+            return col ? { col, transform: flownTransform(), margin: edMargin } : null;
+        };
+        /**
+         * Lane n-save (the owner's wish 1, t7-plan Decision 1): the Save verdict of the course where it stands. Blockers are
+         * only what the server refuses (saveVerdict); the warnings are the editor's problems and every gate's warnings
+         * (autofix courseWarnings: under the ground, two on one spot, too close). Warnings never block a save.
+         */
+        const verdictNow = (names?: { name?: string; title?: string }): SaveVerdict | null => {
+            if (!ed) return null;
+            const w = fixWalls();
+            const gateWarnings = (w ? courseWarnings(ed.course, w) : []).flatMap((x) => (x.kind === 'leg-blocked' || x.kind === 'blocked-start' ? [] : x.gates.map((gate) => ({ code: x.kind, gate }))));
+            return saveVerdict(ed.course, ed.problems, gateWarnings, names);
+        };
+        /** the probes' record of the last Save dialog: its kinds, the answer, the gates Fix all moved (from 1), what was left */
+        let fixHook: { kinds: string[]; answer: FixAnswer | null; moved: number[] | null; left: number | null; undone: boolean } = { kinds: [], answer: null, moved: null, left: null, undone: false };
+        /** a blocker: one plain line with its way out (the field outlined, the gate pointed at); no button that cannot work */
+        const blockedSave = (b: StoreBlocker): void => {
+            if (!ed) return;
+            if (b.kind === 'no-gates') return pointAtWrong();
+            const w = blockerWords(b, ed.course.gates.map((g) => g.id));
+            saveHook = { problem: null, key: w.key, again: null };
+            if (w.field) panel?.markField(w.field);
+            if (w.gate !== null && w.gate <= ed.course.gates.length) bus?.call('pointAt', w.gate - 1, 'problem');
+            say(t(w.key, w.args), true);
+        };
+        /** Show me: the first wrong gate selected and named (pointAtWrong's flow); a gate only a warning names: that one */
+        const showMe = (v: SaveVerdict): void => {
+            if (!ed) return;
+            if (showWrong(SAVE_FIX_KEY)) return;
+            const ids = ed.course.gates.map((g) => g.id);
+            const first = v.warnings.find((x) => x.gates.some((id) => ids.includes(id)));
+            const index = first ? ids.indexOf(first.gates.find((id) => ids.includes(id))!) : -1;
+            if (!first || index < 0) return pointAtWrong();
+            bus?.call('pointAt', index, 'problem');
+            const line = saveAskWords([first], ids).lines[0]!;
+            say(t(line.key, line.args), true);
+        };
+        /**
+         * Save with warnings (t7-plan Decision 1): one dialog with the count, one line per kind and three buttons. Fix all
+         * automatically moves every offending gate and saves; Save as it is saves (`save`); Show me points at the first wrong
+         * gate; the cross saves nothing and says so.
+         */
+        const askSave = (v: SaveVerdict, save: () => void): void => {
+            if (!ed || !panel) return save();
             const from = ed.course;
-            const problems = [...ed.problems];
-            say(t(OFFER_KEYS.looking));
-            // the line is painted before the whole course's check (seconds on a big scan) holds the page
-            await new Promise<void>((done) => requestAnimationFrame(() => setTimeout(done, 0)));
-            if (!ed || ed.course !== from) return;
-            const w = { col, transform: flownTransform(), margin: edMargin };
-            const r = confirmFixes(from, problems, proposeFixes(from, problems, w), (c) => checkOnPage(col, w.transform, w.margin, c));
-            fixHook = { offered: r.fixes.map((f) => ({ kind: f.kind, gates: f.gates.map((g) => g.index + 1) })), answer: null, left: r.problems.length };
-            if (r.fixes.length === 0) return pointAtWrong();
-            const all = r.problems.length === 0;
-            const what = r.fixes.map((f) => foundWords(from, f.problem)).filter((x) => x !== null).map((x) => t(x.key, x.args)).join('; ');
-            say(t(all ? OFFER_KEYS.all : OFFER_KEYS.some, { what }), true);
-            panel.offerFixes({ text: t(all ? OFFER_KEYS.all : OFFER_KEYS.some, { what }), yes: t(all ? OFFER_KEYS.yes : OFFER_KEYS.yesOnly) }, (a) => {
+            const words = saveAskWords(v.warnings, from.gates.map((g) => g.id));
+            fixHook = { kinds: words.lines.map((l) => l.kind), answer: null, moved: null, left: null, undone: false };
+            const title = t(words.title.key, words.title.args);
+            say(title, true);
+            panel.askSave({ title, lines: words.lines.map((l) => t(l.key, l.args)) }, (a) => {
                 fixHook = { ...fixHook, answer: a };
                 if (!ed || ed.course !== from) return;
-                if (a === 'show') return pointAtWrong();
-                if (a === 'close') return say(t('course.edit.saveRefused', { why: problemsLine(ed) }), true);
-                void applyFixes(r, all ? retry : null);
+                if (a === 'fix') return fixAllAndSave(save);
+                if (a === 'as-is') return save();
+                if (a === 'show') return showMe(v);
+                say(t(SAVE_ASK_KEYS.closed));
             });
         };
-        /** the probes' record of the last offer (gates from 1) and its answer */
-        let fixHook: { offered: { kind: string; gates: number[] }[]; answer: string | null; left: number; done?: string } = { offered: [], answer: null, left: 0 };
-        /** the corrections made where the pilot sees them: the overview first, then the gates change, then the save */
-        const applyFixes = async (r: FixResult, then: (() => void) | null): Promise<void> => {
-            if (!ed) return;
-            const at = ed.course;
-            keeper?.beforeLoss('fix');
+        /**
+         * Fix all automatically (packages/tracks fixAll): every offending gate the shortest way to a valid place as one undo
+         * step, the old places shown a few seconds as ghosts (flash.ts), the line with how many gates moved and Undo (every
+         * gate back, one step), then the save; what could not be repaired is named and saved as it is.
+         */
+        const fixAllAndSave = (save: () => void): void => {
+            const w = fixWalls();
+            if (!ed || !w) return save();
+            const before = ed.course;
+            const r = fixAll(before, w, REQUEST_DEFAULTS.level);
+            const words = fixedWords(r.moves, r.leftovers, before.gates.map((g) => g.id));
+            const left = words.left.map((l) => t(l.key, l.args)).join('; ');
+            const text = `${t(words.moved.key, words.moved.args)}${left ? ` ${t(FIXED_KEYS.left, { what: left })}` : ''}`;
+            fixHook = { ...fixHook, moved: r.moves.map((m) => m.index + 1), left: r.leftovers.length };
+            if (r.moves.length === 0) {
+                panel?.fixedLine(text, null);
+                return save();
+            }
+            applyEdit({ kind: 'replace', gates: r.course.gates, selected: r.moves[0]!.index }, 'fix');
+            const fixed = ed.course;
             const tr = flownTransform();
-            const o = view ? courseOverview(ed.course.gates.map((g) => gateFlownPose(g, tr).pos), viewTanHalfV(), camRay) : null;
-            if (o && view) {
-                view.glideTo(camFrom(o.eye, o.at, view.cam.speed));
-                // the course before, seen whole for a moment, then the corrections
-                await new Promise((done) => setTimeout(done, FRAME_GLIDE_MS + FIX_SHOW_MS));
-            }
-            if (!ed || ed.course !== at) return;
-            const fixed = r.problems;
-            ed = { ...restoredState(ed, r.course, () => [...fixed]), selected: r.fixes[0]!.gates[0]!.index };
-            okCourse = ed.course;
-            markChanged('fix');
-            askedFor = null;
-            showEd();
-            const list = r.fixes.map((f) => t(f.words.key, f.words.args)).join('; ');
-            fixHook = { ...fixHook, done: list };
-            say(t(OFFER_KEYS.done, { list }));
-            if (!then) {
-                // what is left has no small correction: its gate is selected and named after the list
-                pointAtWrong();
-                return say(`${t(OFFER_KEYS.done, { list })} ${edHook.said ?? ''}`.trim(), true);
-            }
-            await new Promise((done) => setTimeout(done, FIX_SHOW_MS));
-            if (ed && ed.course === r.course) then();
+            ghosts ??= new GateGhosts(ctx.ui, project);
+            ghosts.show(r.moves.map((m) => {
+                const was = gateFlownPose(before.gates[m.index]!, tr);
+                return { was: was.pos, now: gateFlownPose(fixed.gates[m.index]!, tr).pos, opening: was.opening };
+            }));
+            panel?.fixedLine(text, () => {
+                if (!ed || ed.course !== fixed) return;
+                applyEdit({ kind: 'undo' }, 'fix');
+                ghosts?.show([]);
+                fixHook = { ...fixHook, undone: true };
+                say(t(FIXED_KEYS.undone));
+            });
+            save();
         };
+        /** the old places of the gates Fix all moved (flash.ts) */
+        let ghosts: GateGhosts | null = null;
         const renderList = (): void => {
             edHook.votes = myVotes();
             const lapped = lappedIds(readBests());
@@ -1244,7 +1292,9 @@ export const course: Feature = {
                 add: () => toggleAdd(),
                 // lane edit4b (E5): Fly the course / Back to editing
                 fly: (on) => bus?.call('testFlight', on),
-                menu: (id) => [...(menus.get(id) ?? []), ...COURSE_MENU_HUB.map((m) => ({ id: m.id, labelKey: m.labelKey, run: () => panel?.reveal(m.id) }))]
+                menu: (id) => [...(menus.get(id) ?? []), ...COURSE_MENU_HUB.map((m) => ({ id: m.id, labelKey: m.labelKey, run: () => panel?.reveal(m.id) }))],
+                // fix-n-save: a line the bar cut to two rows is said whole in the Messages list
+                cut: (text) => tell({ text, kind: 'info', from: 'course-editor' })
             });
             // lane edit4b: the editor seam and its parts (course/editor/parts/*.ts)
             bus = new SeamBus();
@@ -1842,18 +1892,23 @@ export const course: Feature = {
             panel?.offerAgain(w.again);
             say(t(w.key, w.args), true);
         };
-        const saveMine = async (nameIn: string, titleIn: string): Promise<void> => {
+        /** `asIs`: the pilot answered the Save dialog (Save as it is, or Fix all made its moves): the warnings are not asked again */
+        const saveMine = async (nameIn: string, titleIn: string, asIs = false): Promise<void> => {
             if (!ed || !edSource || saving) return;
             await checked();
             if (!ed || !edSource) return;
-            if (!canSave(ed)) return refusedSave(() => void saveMine(nameIn, titleIn));
             const name = nameIn.trim().normalize('NFC');
             // lane edit4s (E9): an emptied title keeps the course's own (as the admin's save does), it is no refusal
             const title = titleIn.trim().normalize('NFC') || edSource.title;
-            const edited = toTrackV1(ed.course);
             const serverId = hook.saved ?? (hook.source === 'server' ? edSource.id : null);
             // review TK-10: an unchanged course already on the server is not posted again (a new title is a change)
             if (!edChanged && serverId !== null && title === edSource.title) return say(t('course.edit.nothing'), true);
+            // lane n-save: only what the server refuses stops the save; warnings ask once (askSave)
+            const v = verdictNow({ name, title });
+            if (!v) return;
+            if (v.blockers.length > 0) return blockedSave(v.blockers[0]!);
+            if (v.warnings.length > 0 && !asIs) return askSave(v, () => void saveMine(nameIn, titleIn, true));
+            const edited = toTrackV1(ed.course);
             const baseVersion = hook.track?.version ?? edSource.version;
             const token = serverId ? myTokens()[serverId] ?? null : null;
             const author = { kind: 'person' as const, name };
@@ -1894,15 +1949,19 @@ export const course: Feature = {
             } else if (lastSaveProblem) saveFailed(lastSaveProblem, 'save');
         };
         /** stage F1-finish (R6/R8): the admin's edit of the gates as a new version of the served course, marked edited by the admin */
-        const saveAdmin = async (titleIn: string): Promise<void> => {
+        const saveAdmin = async (titleIn: string, asIs = false): Promise<void> => {
             if (!ed || !edSource || saving || !adminLive) return;
             await checked();
             if (!ed || !edSource) return;
-            if (!canSave(ed)) return refusedSave(() => void saveAdmin(titleIn));
             const serverId = hook.saved ?? (hook.source === 'server' ? edSource.id : null);
             if (serverId === null) return say(t('course.edit.adminFirst'), true);
             const title = titleIn.trim().normalize('NFC') || edSource.title;
             if (!edChanged && title === edSource.title) return say(t('course.edit.nothing'), true);
+            // lane n-save: the same verdict and dialog as the pilot's own save
+            const v = verdictNow({ title });
+            if (!v) return;
+            if (v.blockers.length > 0) return blockedSave(v.blockers[0]!);
+            if (v.warnings.length > 0 && !asIs) return askSave(v, () => void saveAdmin(titleIn, true));
             const base = hook.track?.version ?? edSource.version;
             const body = adminVersionBody(toTrackV1(ed.course), serverId, base, title);
             saving = true;

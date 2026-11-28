@@ -95,7 +95,8 @@ createServer((req, res) => {
         const target = process.env.API_PROXY;
         if (!target) { res.writeHead(204).end(); return; }
         const headers = { 'x-forwarded-for': '198.51.100.1' };
-        for (const k of ['content-type', 'content-length', 'cookie', 'x-csrf', 'if-none-match']) if (req.headers[k] && !(session?.noCookie && k === 'cookie')) headers[k] = req.headers[k];
+        for (const k of ['content-type', 'content-length', 'cookie', 'x-csrf', 'if-none-match', 'x-track-token']) if (req.headers[k] && !(session?.noCookie && k === 'cookie')) headers[k] = req.headers[k];
+        // X-Track-Token: the owner's token of a course's new version (nginx passes it, proxy_pass's default; lane n-save)
         // /api/session/ in nginx clears Cookie and Authorization and passes every other header (proxy_pass's default): the upload's
         // X-Session-Token and X-Chunk-Sha256 must reach the API here as they do there
         if (session) for (const [k, v] of Object.entries(req.headers)) if (v !== undefined && !(k in headers) && !HOP.has(k) && k !== 'cookie' && k !== 'authorization') headers[k] = v;

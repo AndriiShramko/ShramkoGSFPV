@@ -128,12 +128,12 @@ describe('the course editor', () => {
         expect(edit(s, { kind: 'order', step: -1 }, off)).toMatchObject({ ok: false, reason: { code: 'order-edge' } });
     });
 
-    it('a problem the course already has does not block other edits, and blocks saving', () => {
+    it('a problem the course already has does not block other edits, nor saving (lane n-save: a warning)', () => {
         const g = course.gates[0]!;
         const broken = run(openEditor(course, off), [{ kind: 'move', axis: 1, steps: -Math.round(g.pos[1] / 0.1) }]).course;
         const s = openEditor(broken, check, 2);
         expect(s.problems.length).toBeGreaterThan(0);
-        expect(canSave(s)).toBe(false);
+        expect(canSave(s)).toBe(true);
         const moved = edit(s, { kind: 'move', axis: 0, steps: 1 }, check);
         expect(moved.ok).toBe(true);
         // control: on the sound course the same gate's fall is refused (the first test), so the pass here is the rule

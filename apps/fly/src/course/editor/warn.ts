@@ -3,7 +3,7 @@
 // the gate `index` stands at `pose` (flown frame, the gizmo's stand-in), the rest of the course where it is; the walls are
 // the flown-frame walls (or null before they load: then no wall warning). A warning never refuses anything.
 import { quatRotate } from '@shramko/sonic-fpv';
-import { AXIS_TOLERANCE_DEG, MARGIN_M, MAX_LEG_M, entryDeg, freeRadius, sweepFree } from '@gsfpv/tracks';
+import { APART_GAP_M, AXIS_TOLERANCE_DEG, MARGIN_M, MAX_LEG_M, entryDeg, freeRadius, sweepFree } from '@gsfpv/tracks';
 import type { Course } from '@gsfpv/tracks';
 import type { VoxelCollision } from '@gsfpv/collision';
 import { openingOf, type Flown, type FlownPose, type V3 } from './drag';
@@ -16,7 +16,7 @@ import { openingOf, type Flown, type FlownPose, type V3 } from './drag';
  */
 export const SHARP_TURN_DEG = AXIS_TOLERANCE_DEG;
 /** two gates' frames nearer than this to each other (beyond their half openings) stand too close, flown m (an estimate) */
-export const CLOSE_GAP_M = 0.2;
+export const CLOSE_GAP_M = APART_GAP_M;
 /** the leg longest a course may have: the server's rule (packages/tracks server.ts) */
 export const LEG_LONG_M = MAX_LEG_M;
 

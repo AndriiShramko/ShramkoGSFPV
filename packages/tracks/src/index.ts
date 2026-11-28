@@ -14,6 +14,7 @@ export * from './fly';
 export * from './server';
 export * from './format';
 export * from './editor';
+export * from './autofix';
 export * from './pieces';
 export * from './request';
 export * from './scan';
