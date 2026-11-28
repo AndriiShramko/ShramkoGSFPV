@@ -317,7 +317,12 @@ w1-dialog. The seams, the full check, Deploy order, Live checks and the hand-ove
       test's wash-0 control. Pictures (2, each looked at once): int4-car7-add-here.png (Add here: 28 gates, the start
       gate 36 m ahead and the arrow), int4-car7-large-text-dialog.png (the large-text moment, see Seams). dist stays for
       S3 (delete it after S3: S3 may need the build if origin/main brings code).
-- [ ] S3 the hand-over
+- [x] S3 the hand-over: `git fetch origin` found no new commit on origin/main (6d57d2c4 is in HEAD; nothing to merge,
+      no rebuild needed). Three read-only live checks added (8edd2a25: w2-pilot-accept, w3-model-wash, n-save-dialog),
+      PASS on the release build of a979ba4f, FAIL on the live site before the release (the negative control). Deploy
+      order (page only), Live checks, What the owner should try (with the part for the answer to the pilots), Not
+      verified written; gates b18 on the final tree; U:/Temp/gsfpv-train4/int4-car7.json written for this head; dist
+      deleted.
 
 ## Progress
 
@@ -704,6 +709,23 @@ re-baked walls)
 5. nginx: no (deploy/nginx.conf unchanged since car 5's head).
 6. Walls: no new walls (the S2 build used the nine release walls); deploy/release-walls.sh need not run.
 
+Car 7 (what changed since origin/main 6d57d2c4, which car 6's head 94727c6c37eaeb92d9954a8956fd74068b88f83d is in:
+`git diff origin/main HEAD -- apps/api apps/rooms deploy packages/sonic-fpv nginx compose*` gives deploy/live-checks.sh
+only; origin/main had no new commit at S3's fetch, so the hand-over's sha is this branch's head, no merge was needed)
+
+1. Walls: no new walls (no held gap lane; the S2 build used the nine release walls); deploy/release-walls.sh need not run.
+2. The sound package: nothing. The pin of packages/sonic-fpv stays 9ac7876dee42b8a874e51e6d46eb7cf8d70c3a48 (already
+   live: release.json of the site says sonic 9ac7876); package_sha is empty.
+3. The API files: none (apps/api unchanged since origin/main; n-save changed only page code and
+   tools/bench/scripts/serve-csp.mjs, a local test server). Nothing restarts.
+4. Rooms: no (apps/rooms and apps/api/rooms unchanged). A room after Add here lays only the last part (w1-dialog's Not
+   verified, below).
+5. nginx: no (deploy/nginx.conf unchanged).
+6. The page: one release of this head (apps/fly with n-scan, n-save, w2-pilot, w3-model, w1-dialog; packages sim-core
+   (sim-core/0.3.0: prop wash on every craft, the ground touch threshold, the presets Air65 Champion and Air65 II
+   Champion), prefs, tracks, scenes, render-pc, i18n; the site and the generated catalogue), built with packages/sonic-fpv
+   at 9ac7876d. Old replays of sim-core/0.2.0 refuse cleanly (the version check), they do not diverge.
+
 ## Live checks
 
 Car 1. After the release and the nginx reload: `LIVE_ONLY=<names> bash deploy/live-checks.sh <outdir>` with the names
@@ -873,6 +895,45 @@ deploy/live-checks.sh as spelled; none was left out.
 live_only (int4-car6.json, one line): accept-fly,w1-anchor-accept,gen4-generate-dialog,one-course,course-path-wroclaw,
 gate-guide-wroclaw,sonic-course-wroclaw,n-share-sound-link,tutor-air-first-flight
 
+Car 7. After the page: `LIVE_ONLY=<names> bash deploy/live-checks.sh <outdir>` with the names below (the hand-over's
+live_only), then the whole file as usual.
+
+New in deploy/live-checks.sh (8edd2a25; read-only, render off, no GPU lock, new throwaway browser profiles; each honours
+LIVE_ONLY through run(); a failed step exits non-zero, which FAILs its line):
+- w2-pilot-accept (w2-pilot's named check): w2-pilot-accept.mjs by the mouse at 1536x730, scale 1.25: a drop at
+  4.6-6.9 m/s leaves the craft whole, a fall above 7 m/s crashes, the crash card and the pause item "Choose a scan" open
+  the catalogue and load another scene, "Before you fly" shows the camera line in en and pl. Every non-GET to /api/ and
+  the usage counter are aborted.
+- w3-model-wash (w3-model's named check): w3-model-wash-probe.mjs, the Prop wash setting at 0, 1, 2 on the page's own
+  Sim: 0 no wash, 1 and 2 more sink, 2 more than 1. It loads pages only.
+- n-save-dialog (n-save names no live check; this is the read-only form of its acceptance): n-save-accept.mjs with an
+  address, scan 70b50d42: the editor by the mouse, two gates on one spot and one in a wall, Save: the warnings dialog
+  with Fix all automatically, Save as it is, Show me. The probe stops before any save (every non-GET to /api/ aborted);
+  the wrapper passes only when the dialog step passed, the only failed step is the never-run asIs.saved, and every
+  listed request was aborted.
+Positive side: all three PASS against the release build of a979ba4f on :6180 (S3; U:/Temp/gsfpv-train4/int4/
+live-car7-local; evidence/2026-11-28/int4-car7/s3-*-local.json): w2-pilot 7/7, w3 sink x0 4.72 / x1 4.862 / x2 5.034 m.
+Negative side against the live site before the release (release 8e65a181, sonic 9ac7876; live-car7-live,
+s3-*-live-neg.json): all three FAIL: w2-pilot-accept pausePick, gentle, cardPick, cameraEn, cameraPl FAIL (5 of 7, as
+the lane found); w3-model-wash FAIL (sink 4.72 m at x0, x1 and x2: no wash on the old page); n-save-dialog FAIL
+(dialog false: the old page refuses the save).
+
+Existing names that cover what changed (each in deploy/live-checks.sh as spelled): accept-fly (B6-B16: the flight with
+prop wash, n-scan's 'gone' line in B6), w1-anchor-accept, gen4-generate-dialog (updated by w1-dialog: Here pressed, the
+where row), w1-dialog-where (w1-dialog's new probe: Here, Add here, the link of both parts, Whole scan, keys, Polish),
+gap-gen-asked-course (w1-dialog names it), scans-open (n-scan extends it with n-scan-accept.mjs; its first half is a
+drawn run under the GPU lock), one-course, sonic-course-wroclaw (if it fails once, run it again before calling it a
+finding: car 6 saw one timing failure), n-share-sound-link, tutor-air-first-flight, menu4-first-minute (w2-pilot shows
+Camera uptilt at every level). On the release build of a979ba4f in S2: accept-fly B6-B16, w1-anchor-accept,
+gen4-generate-dialog, one-course, sonic-course-wroclaw, n-share-sound-link, tutor-air-first-flight PASS; w1-dialog-where
+6/6 PASS (5bf7f102, step 4's reach reported, judged only with STRICT_REACH=1); menu4-first-minute and gap-gen steps 1-2
+PASS after the probes' repairs (8d9d3178; gap-gen's first full run failed only step 2); n-scan-accept PASS (render off);
+scans-open's drawn half (hot-sog3-scans.mjs) was not run in car 7.
+
+live_only (int4-car7.json, one line): accept-fly,w1-anchor-accept,gen4-generate-dialog,w1-dialog-where,
+gap-gen-asked-course,one-course,sonic-course-wroclaw,n-share-sound-link,tutor-air-first-flight,menu4-first-minute,
+scans-open,n-save-dialog,w2-pilot-accept,w3-model-wash
+
 ## What the owner should try
 
 Car 1, in the order of his messages (tails4: train 2's leftovers; menu4: brief line 373; head4: the head tracking plan;
@@ -1008,6 +1069,51 @@ Car 6 (the generator's repair: the gates come back round the pilot)
 4. The dialog that asks Here, Whole scan or Add here comes with the next car (w1-dialog), with n-save, n-scan, w2-pilot
    and w3-model.
 
+Car 7 (by lane; the site is https://gsfpv.flyreelstudio.eu after the release)
+
+w1-dialog, the generate dialog asks where:
+1. Open a scan (for example /en/fly/?scene=eb5f51dc), click into the scene, press key Shift+G. The dialog shows Level and
+   Where: Here is already pressed, Whole scan beside it, and one line says the course is laid where the drone is. Press
+   the main button: the gates stand round the drone.
+2. Fly about 30 m away, press key Esc, the menu's course item: a third choice, Add here, appears. Click it, then "Add the
+   gates": every old gate stays, new ones stand round the drone, one closed ring.
+3. Key Esc, Share: the copied address lays both parts in another browser. Key Shift+G, Whole scan: the course is
+   replaced by one that starts at the drone and spreads over the scan.
+n-save, Save never refuses:
+4. Key Shift+B (the editor), Course menu, New empty course; add two gates on one spot and pull one into a wall; Save: one
+   dialog with the count of warnings and three buttons. "Save as it is" stores it as built; "Fix all automatically" moves
+   the bad gates, says how many, and Undo puts them back; "Show me" selects the first warned gate.
+5. Add here and Save together: a course grown with Add here saves like any other (the seam test of car 7).
+n-scan, every scan opens or says why:
+6. Open /en/fly/?scene=a5d25fb4 (an older compressed PLY upload): it opens and flies (before: "older PLY format").
+   Open ?scene=5012e205 (an animated scan): one line says the format cannot be opened yet and to choose another scan.
+w2-pilot, the pilot's three wishes:
+7. In a fresh browser, "Before you fly" shows the line about the camera angle: key O, Settings, Camera, Camera uptilt.
+8. Fly up about 2 m and cut the throttle: the drone touches the floor and flies on (it broke before). A dive from 4 m or
+   more still breaks it.
+9. In flight, key Esc: the pause menu's item "Choose a scan" opens the catalogue of scans; click one, you fly there.
+   After a crash, Enter (Stay), the crash card's first scene button is "Choose a scan" too.
+w3-model, prop wash and the new whoops:
+10. Fly the default drone, climb, cut the throttle for about 1.5 s and catch with half throttle: the drop ends a little
+    lower and the picture trembles for a moment, as a real quad in its own downwash.
+11. Escape, Drone: pick "BetaFPV Air65 Champion class, 1S" or "BetaFPV Air65 II Champion class, 1S" and fly them; a slow
+    sink of 4 to 5 m/s shakes a whoop most.
+
+For the answer to the pilots (where each new thing is; the menu level, first / sim / expert, is the answer to "Have you
+flown FPV before?" and can be changed in Settings, Display, Menu):
+- Choose a scan: the pause menu (key Esc), its item "Choose a scan" (every level); after a crash, the crash card's first
+  scene button.
+- The camera line: "Before you fly" on a first visit: key O opens Settings, then Camera, Camera uptilt (Camera uptilt
+  is shown at every menu level now).
+- The ground default: Settings, Crashes, "Ground touch threshold": 7 m/s by default (expert level); set it to 4 for the
+  old strict ground. Walls, gates and ceilings still break the drone from 4 m/s.
+- Prop wash: Settings, Drone, "Prop wash" (expert level): 0 off, 1 the default on every drone, 2 twice as strong; the
+  change applies when Settings close.
+- The new whoops: the pause menu's Drone item (menu level Sim or higher): Air65 Champion and Air65 II Champion, beside
+  the corrected Air65.
+- The dialog's three choices: key Shift+G or the pause menu's course item: Here (the default, round the drone), Whole
+  scan (from the drone over the scan), Add here (only when a course is already flown: keeps it and adds round the drone).
+
 ## Not verified
 
 Car 1
@@ -1094,6 +1200,23 @@ Car 6
   anchor does not travel that way (as before car 6; for the lead).
 - No phone, no touch, no Firefox or Safari for the new probe (Chromium only); render off but the one drawn run.
 
+Car 7
+- No person, no screen reader, no phone, no radio or gamepad and no real ears took part: every step was a headless probe
+  (Chromium only) or a unit test. The landing with prop wash on every craft was proved in the simulation (seam test
+  87ff1c55) and on the page for the default craft only (w2-pilot-accept 'gentle'), which failed in 2 of 6 page runs (the first
+  S2 round, and once with prop wash off at a touch of 7.49 m/s) by the probe's own spread of touch speeds (see S2); the
+  S3 run passed 7/7. The pilots who asked, and the owner's walk above, are the real check.
+- The prop wash numbers rest on the research note and the makers' pages; no blackbox log of a real whoop exists yet
+  (w3-model's Not verified). The two new Champion presets reuse the Air65's estimates for inertia, drag and colliders.
+- w1-dialog: a room after Add here lays only the last part (rooms/race.ts, not changed); Whole scan's reach with the
+  release walls is reported, not judged (it was 26.2 m against Here 31.1 m in the passing run), and not walked on a
+  large scan.
+- n-save: the read-only live check stops at the dialog; Save as it is, Fix all and the reload were proved only with the
+  local API (S2 n-save-accept PASS), never on the live server (that would store a course).
+- n-scan: scans-open's drawn half was not run in car 7; the 163 MB PLY c67edb74 was not timed on a slow line.
+- w2-pilot's open point: after a crash with the automatic respawn (the default) the toast names only N and Shift+F;
+  "Choose a scan" is one Enter away (the crash card) or Escape.
+
 ## Cost notes
 
 - S1 (car 1): about 20 replies; the most went to deciding whether gen4b stands without gen4a (its status file and the
@@ -1149,3 +1272,7 @@ Car 6
   a probe writing Polish letters into evidence) and to the large-text picture (no probe takes one: a scratch script).
   Cheaper: seam tests pin the fields they mean (toMatchObject), every probe writes ASCII JSON from one shared helper,
   and the dialog probes take an optional 200 % zoom size.
+- Car 7 S3 (~35 calls): the most went to finding where each new setting lives for the pilots' answer (labels spread
+  over many locale folders) and to n-save's probe, which has no read-only pass form (a wrapper judges its JSON).
+  Cheaper: each lane writes the place of its setting (menu, group, label, level) in 'For the lead', and every
+  acceptance probe takes a LIVE mode that passes on a released site without storing anything.
