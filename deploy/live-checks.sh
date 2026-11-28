@@ -440,6 +440,26 @@ run n-share-sound-link env ROWS=sound TEMP_DIR="$OUT/n-share-tmp" node scripts/n
 # 15 m of it; 30 m away, paused, Build lays gate 1 within 15 m of the drone; Share's address names the course with its
 # anchor; that address in a fresh context lays the same gates. Exit 1 on a failed step.
 run w1-anchor-accept node scripts/w1-anchor-accept.mjs "$SITE/en" "$OUT/w1-anchor-accept.json"
+# Train 5 integration, car 7 (n-scan, n-save, w2-pilot, w3-model, w1-dialog; n-scan extends scans-open, w1-dialog
+# w1-dialog-where and gen4-generate-dialog above). Each probe's header: render off, no GPU lock, new throwaway browser
+# profiles; read-only on any site (every request but GET to /api/ is aborted and listed; no send, save or create button
+# is pressed). Each exits non-zero on a failed step.
+# w2-pilot-accept.mjs: a drop onto the floor at 4.6-6.9 m/s leaves the craft whole (ground crash speed 7 m/s, was 4),
+# a fall above 7 m/s crashes; the crash card's first scene button and the pause item read "Choose a scan" and open the
+# catalogue, another scene loads; "Before you fly" names the camera angle (key O, Settings) in en and pl.
+run w2-pilot-accept node scripts/w2-pilot-accept.mjs "$SITE" "$OUT/w2-pilot-accept.json"
+# w3-model-wash-probe.mjs: the Prop wash setting (physics.propWash) at 0, 1 (the default) and 2 on the page's own Sim:
+# 0 gives no wash, 1 and 2 give wash and more sink in a fast drop and catch, 2 more than 1.
+run w3-model-wash node scripts/w3-model-wash-probe.mjs "$SITE/en" "$OUT/w3-model-wash.json"
+# n-save-accept.mjs with an address (not a dist folder) runs its read-only form: by the mouse in the course editor two
+# gates on one spot and one in a wall, Save: the dialog names the count and offers Fix all automatically, Save as it is,
+# Show me (the old page refused the save). It stops there, before any save; its step asIs.saved is judged false on
+# purpose in that form, so the check passes when that is the only failed step and the dialog step passed.
+nsavedialog() {
+  node scripts/n-save-accept.mjs "$SITE/en" 70b50d42 "$OUT/n-save-dialog.json"
+  node -e 'const r=JSON.parse(require("fs").readFileSync(process.argv[1],"utf8"));const ok=r.steps.dialog&&r.steps.dialog.ok&&JSON.stringify(r.fails)===JSON.stringify(["asIs.saved"])&&r.posts.every((p)=>!!p.aborted);console.log("dialog",!!(r.steps.dialog&&r.steps.dialog.ok),"fails",JSON.stringify(r.fails));process.exit(ok?0:1)' "$OUT/n-save-dialog.json"
+}
+run n-save-dialog nsavedialog
 
 if [ "$FAILED" = 0 ]; then echo "LIVE CHECKS: PASS"; exit 0; fi
 echo "LIVE CHECKS: FAIL"
