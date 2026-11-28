@@ -202,6 +202,44 @@ gate B18 for every lane; name a vault note by words, not by its Russian file nam
   while that goes on, and the hook stops all work outside publications at 83 %. The lead does not lift the line by
   himself: which pipeline gets the week is the owner's call. He was told in the report of 2026-11-27 00:00 UTC.
 
+### 2026-11-28 16:30 UTC: the owner's message 81; the lead's own line starved the train for 43 hours; the queue is set to car 8
+
+- THE STALL. From 2026-11-26 21:11 to 2026-11-28 16:04 UTC nothing ran: the daily share stood on the TOTAL weekly
+  reading, and other pipelines (the stock pipeline first) raised it from 35 % to 57 %. The owner (message 81, the end
+  of the vault brief): why did you stop, where is the automatic continuation until all is done, repair the skills.
+  DONE: `plan --share-off` (the plan's stop stays 80; the hook's border is 85 % today). The skills say it now (gsfpv
+  2.3.0, limit-safe-work 2.8.0, vault commit e7c95c9): the queue is set up whole and ahead; the line only when the
+  queue is bigger than the rest of the week.
+- THE QUEUE RUNS BY ITSELF TO CAR 8; a lead is needed only on FAILED, HOLD and a release.
+  Car 7: n-scan, n-save, w2-pilot, w3-model, w1-dialog. Job car7 (prompts/t10-car7.md) waits for r-w1-dialog,
+  r-w2-pilot and r-w3-model; then ship-car7.
+  Car 8: w6-mode3 (stick modes 1 to 4, default 2; copy gsfpv-t7-hot) and w6-latency (video and control latency, off
+  by default, presets by FPV system; the same copy, on top of w6-mode3; released by the file
+  U:/Temp/gsfpv-train4/w6-latency-research.done, which exists), their checks (prompts t10-r-w6-mode3.md and
+  t10-r-w6-latency.md). Job car8 (prompts/t10-car8.md) waits for r-w6-latency and ship-car7; then ship-car8.
+  From before: w1-dialog (started 16:04 UTC), r-w3-model, w2-pilot (S3 and S4 left), w3-bbl, w5-inv.
+- NOT QUEUED YET; the next lead queues it at once and ahead, as car 9, from C:/dev/.gsfpv-lanes/designs/w1-diag.md:
+  W1's R3 (a forbid map from the splats; large), n-route rebased on the anchor, the generator's test system (one
+  command, a ledger, a reference for the gsfpv skill; its seed is tools/bench/src/w1-diag-measure.ts), a repair of
+  the flaky probe sonic-course-wroclaw. W5 after w5-inv: two web research agents (sonnet), one opus design of the
+  staged plan, one critic (agent gs-critic, model opus); the plan is a vault note; no building.
+- THE PILOT ON FACEBOOK (message 81): group TINY WHOOP, post 4719458264941818. The engage job had answered him once
+  (thanks, use the form). The reply 'taken into work' by the owner's word is item RR-2026-11-28-01 (open) in the
+  vault, FB groups area, campaigns/gsfpv/reply-requests.md; the engage job's prompt
+  (.claude/tools/fb/engage_prompt.md) reads `open` lines now (vault commit 04bf037). NOT verified that the reply was
+  posted: look for `sent` in that item. The reply 'it is live' is automatic: after ship-car8 append to his line in
+  the FB groups area, reports/feature-requests.md: `; shipped <date> <release>: <where the settings are, how to
+  change them>` (the words: docs/wip/train4-int.md, Car 8, 'For the answer to the pilot').
+- Research notes in the vault (project folder, research/): prop wash and whoops; the latency of FPV links (presets:
+  analog 20 ms measured, HDZero 15 the maker's model, Walksnail 25 community, DJI O3 30 the maker, DJI O4 28
+  measured; control 7 ms is an estimate; no other simulator was found to have such a setting).
+- Another session releases on this repository too: lane sr-quiet went live on 2026-11-27 (8e65a181, on top of car 6).
+  Cars merge origin/main first; ship_handover.py stops with exit 40 when origin/main holds code the candidate lacks.
+- The week: 58 % at 16:00 UTC (the top model alone 11 %); the reset is 2026-12-03 12:00 UTC. The queue to car 8 is
+  about 30 runs. Disk C: 45 GB free.
+- THIS CHAT IS AT 51 % OF ITS WINDOW (511 thousand tokens): it hands over now and leaves no watcher. The next lead
+  is a new chat started by this one.
+
 ## How the lead works (the owner's economy rule; written into the skills on 2026-11-26, W4 done)
 
 - The lead runs on the top model (Fable); every worker is Opus or Sonnet. NEVER leave `model` out of an Agent call or
