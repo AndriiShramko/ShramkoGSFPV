@@ -202,3 +202,19 @@ of earlier lanes, docs/research/drones-v08.md (a v0.8 statement).
 - S3: about 30 replies; the most went to finding how a probe sets a setting and reads the life (the set.<id> URL
   form and window.__gsfpv.session.runner.sim); a note in docs/agent-map.md on those two would save five replies.
   The first bench catch was closed loop and hid the extra sink: measure catches with a fixed stick.
+- Review: about 20 replies; the most went to reading the research note's long lines by slice. neg_control.py
+  needs npx.cmd (not npx) on Windows; a short English digest of the note's numbers would save three replies.
+
+## Review
+
+Verdict: SHIP (independent check, 2026-11-28, head eb3510a9). No PROVEN finding, nothing repaired.
+- Constants checked against the research note: WAKE_LO 0.4, WAKE_HI 1.7, WAKE_PEAK 1.25, WAKE_LOSS_PEAK 0.20,
+  WAKE_SHAKE_PEAK 0.10 sourced; WAKE_DUCT_SHIFT, WAKE_SIDE_FADE, WAKE_NOISE_TICKS marked ESTIMATE as the note says.
+  Preset fields of the three Air65 presets match the note's maker addendum.
+- model-wake, a6-reference, log-v2-compat, b12-rewind: 16 passed; neg_control.py on 078805f0: NEG OK.
+  w3-wash-run.ts repeats the "## Numbers (S3)" table bit for bit. A6 with propWash 0 still gives 1d01ca5b.
+- Own check: held descent at the peak with side speed mu 0 / 0.5 / 1 / 2 / 3 gives loss 19.9 / 9.9 / 4.0 / 1.2 /
+  0.5 % on the Pavo20 Pro, Air65 and Nazgul F5 (design 20 / (1 + 4 mu^2)); a 0.3 v_h descent loses exactly 0.
+- DOUBT (not holding): the shake knots put most content below about 60 Hz (comment says 10 to 100 Hz); the duct
+  keeps open-rotor v_i; a fixed WAKE_SEED, not one per life; air65-1s prop_diameter_mm has no ref link.
+- Not rerun: the page probe and the build, app-game.test.ts, the full gates (only b18 for this file).
