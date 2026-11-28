@@ -1,11 +1,15 @@
 // Lane gen4b, stage B3 (design gen4.md section 6): the pilot's own path to a generated course, with the MOUSE, at 1536x730
 // with device scale 1.25. The pointer lock first (a click into the scene), then Escape, the pause menu's 'Course: a new random
-// course', the 'Generate a course' dialog (Beginner, Compact, Build), the progress box until the course is there, the line
+// course', the 'Generate a course' dialog (Beginner, Here, Build), the progress box until the course is there, the line
 // where the start gate is, the dialog again (Cancel keeps the course, Replace makes a new one), the same dialog at 844x390,
 // and the scan of Lublin (2f1ddf5f) for the ground rule.
+// Lane w1-dialog (train 5): the spread row became WHERE (Here, the default, and Whole scan; Add here only over a course):
+// step 2 reads the row and the line 'laid where the drone is', step 3 clicks Here (gen-where-here). w1-dialog-accept.mjs
+// checks Add here, Whole scan and the link.
 // Steps (each {step, name, pass, detail}):
-//   1 open the scene at Scene size x1      2 menu -> dialog visible, inside the viewport, its cross 44 px, no course built
-//   3 click Beginner, Compact, Build       4 progress box: font >= 16 px, in view, percent never back, there until the answer
+//   1 open the scene at Scene size x1      2 menu -> dialog visible, inside the viewport, its cross 44 px, no course built,
+//                                            Here pressed and Whole scan, the hint line
+//   3 click Beginner, Here, Build      4 progress box: font >= 16 px, in view, percent never back, there until the answer
 //   5 course shown: gates >= 1, the plan's stats outside 0, closed   6 the start line visible >= 8 s (or the craft at gate 1)
 //   7 dialog again: 'Replaces' line; Cancel -> same course            8 again -> Replace -> a new course
 //   9 Lublin: stats underGround 0, nearGroundShare <= 0.2 (pass null when the stats are not measured: planCourse stub)
@@ -140,10 +144,15 @@ try {
     await sleep(1500);
     s = await page.evaluate(READ);
     const x = s.dialog && s.dialog.x;
-    check(2, 'menu -> dialog in view, cross 44 px, nothing built', !!s.dialog && inView(s.dialog.rect, s.W, s.H) && !!x && x.w >= 44 && x.h >= 44 && s.gates === 0, { how, dialog: s.dialog, gates: s.gates, W: s.W, H: s.H });
+    // lane w1-dialog: the where row (Here pressed, Whole scan; no Add here without a course) and the line of idea d
+    const where2 = await page.evaluate(() => ({
+        wheres: [...document.querySelectorAll('[data-testid=gen-dialog] [data-action^="gen-where-"]')].map((b) => `${b.getAttribute('data-action').slice(10)}${b.getAttribute('aria-pressed') === 'true' ? '*' : ''}`).join(','),
+        hint: !!document.querySelector('[data-testid=gen-dialog] [data-testid=gen-where-hint]')
+    }));
+    check(2, 'menu -> dialog in view, cross 44 px, Here pressed and Whole scan, the hint, nothing built', !!s.dialog && inView(s.dialog.rect, s.W, s.H) && !!x && x.w >= 44 && x.h >= 44 && s.gates === 0 && where2.wheres === 'here*,scan' && where2.hint, { how, dialog: s.dialog, where: where2, gates: s.gates, W: s.W, H: s.H });
 
     // 3 Beginner, Compact, Build
-    const p3 = [await press(page, 'gen-level-beginner'), await press(page, 'gen-spread-compact')];
+    const p3 = [await press(page, 'gen-level-beginner'), await press(page, 'gen-where-here')];
     p3.push(await press(page, 'gen-build'));
     const after3 = await page.evaluate(READ);
     check(3, 'click Beginner, Compact, Build', p3.every(Boolean) && !after3.dialog, { pressed: p3, dialogGone: !after3.dialog, request: after3.request });
