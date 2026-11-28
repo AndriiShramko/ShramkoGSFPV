@@ -283,6 +283,28 @@ gate B18 for every lane; name a vault note by words, not by its Russian file nam
 - The week: 57 % at 16:21 UTC. A run costs about 1.5 USD by the CLI's count (median 8 minutes, 40 replies); the
   queue to car 9 is about 55 runs.
 
+### 2026-11-28 16:55 UTC: W5's staged plan is written; its cheap probes are queued; the train is at 3 again
+
+- W5 (message 79), no building: the inventory (job w5-inv, one sonnet run), two web research agents (sonnet), the
+  design of the staged plan (opus), an independent critic (agent gs-critic, opus): ten findings, all accepted by the
+  designer after a check against the code. In the vault's project folder: the plan note (its name starts with
+  'ShramkoGSFPV', then 'objects and MCP', then 'plan of stages', in Russian) and three notes in research/. Vault
+  commit 7eb75e2; the lead's decision stands under message 79 of the brief.
+- The plan in short. Stage 0: a setting 'Debris: off / real / exaggerated': cubes of the wall's colour fly from the
+  hit point, in their own Rapier world; nothing is needed from the owner. Stage 1: the wall really breaks (inside the
+  1 kHz step, in the replay log, SIM_CORE_VERSION goes up). 2: a named room. 3: a read-only MCP server. 4: objects
+  break. 5: an agent edits through OAuth. 6: streets and parts. The main risk: the label 'splat to object' may not
+  survive the LOD stream and the SOG packing.
+- QUEUED: job w5-probes (opus, effort medium, priority 6, its own limit_stop 75, copy C:/dev/gsfpv-t7-n-path read
+  only, prompt t10-w5-probes.md): the plan's probes P7, P1, P6, P2, P5. It writes one vault note in research/
+  ('probes before building') and runs only when a slot is idle.
+- NOT QUEUED: the building of stage 0. The lead's decision: it waits for the probes' note and for the owner's word
+  on the plan (a new direction; the week is narrow). With both: stage 0 as a small train of 6 to 10 runs.
+- While the lead's agents ran, the train stood at max_parallel 2 (16:27 to 16:44 UTC); it is 3 again.
+- The lead's chat stood at 31 % of its window at 16:35 UTC, after queueing car 9 (nine prompts). The week: 60 %,
+  Fable alone 13 %: the lead's own turns cost about 2 points of the week in 35 minutes. Keep the lead's turns short
+  and its thinking small; hand over at 50 %.
+
 ## How the lead works (the owner's economy rule; written into the skills on 2026-11-26, W4 done)
 
 - The lead runs on the top model (Fable); every worker is Opus or Sonnet. NEVER leave `model` out of an Agent call or
