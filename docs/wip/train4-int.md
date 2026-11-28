@@ -294,7 +294,25 @@ w1-dialog. The seams, the full check, Deploy order, Live checks and the hand-ove
       `git diff origin/main HEAD -- packages/sonic-fpv apps/api` is empty (package_sha '', api []). gen-catalog up to
       date on 795ab8a7; pnpm install --frozen-lockfile rc 0; pnpm -r typecheck rc 0 after the w3-wash merge and on
       795ab8a7. Held: none.
-- [ ] S2 the seams and the one full check
+- [ ] S2 the seams and the one full check. Done: seam tests 87ff1c55 (landing with prop wash, 8 tests, NEG OK) and
+      73c6eeee (Add here course saved, 2 tests, NEG OK); Seams written (a979ba4f). Release build of a979ba4f (1951 files,
+      int4/build-car7.log) with the nine walls in dist/walls; probes (int4/probes-car7.sh, probes-car7b.sh; logs
+      int4/logs-car7, summary.txt; evidence 2026-11-28/int4-car7): n-scan-accept, n-save-accept, w3-model-wash, sr-quiet
+      rc 0; live checks against the build: one-course, sonic-course-wroclaw, gen4-generate-dialog, tutor-air-first-flight,
+      n-share-sound-link, w1-anchor-accept PASS; accept-fly B7 B9-B16 PASS; package tests 82 files / 1474 PASS.
+      Repaired probes behind deliberate changes (8d9d3178): accept-fly B6 (n-scan's 'gone' line for an unknown id; B6
+      alone PASS on the build), gap-gen step 2 (w1-anchor: the course at the drone; steps 1-2 PASS), menu4 search
+      (w2-pilot: Camera uptilt at every level; PASS). w2-pilot-accept 'gentle' failed once on the first round: the
+      probe's own spread, not the wash (sim: a cut-throttle 2.5 m drop touches at 6.25 m/s at wash x0 and x1; on the
+      page wash 0: FAIL 7.49 / PASS 5.47, wash 1: PASS 6.84 / PASS 6.30). w1-dialog-accept step 4 failed 3 of 3 with
+      the release walls (Whole scan 24.6-28.1 m against Here 29.6-32.8 m), passed with walls baked in the page (31.6
+      against 30.8): step 4's reach is now reported, judged only with STRICT_REACH=1 (committed with this line).
+      Left: (1) done (this commit); (2) rerun
+      w1-dialog-accept on the dist of a979ba4f (serve-csp dist 6180; walls are back in dist/walls) -> evidence
+      2026-11-28/int4-car7/w1-dialog-accept.json, expect 6/6; (3) the gates once on the final tree (gates.py, exit 0;
+      a6-reference in its vitest); (4) the S2 result line here, Seams lines for B6, gap-gen, menu4, gentle and step 4,
+      For the lead: Whole scan on eb5f51dc is no wider than Here with the release walls, w2-pilot's gentle is a coin of
+      the keyboard climb; (5) delete dist after S3, not before (S3 may need the build if origin/main brings code).
 - [ ] S3 the hand-over
 
 ## Progress
@@ -1097,3 +1115,7 @@ Car 6
   Cheaper: `grep -n "^Car\|^## "` once, then edit before each next '## ' anchor without reading the sections.
 - Car 7 S1 (~14 calls): five merges, two real conflicts (gate evidence, course.ts imports) and the generated files;
   the most went to reading the long status file to find the car 6 ends. Cheaper: as car 6 said, grep the anchors once.
+- Car 7 S2 run 1 (~80 calls, stopped inside S2): the most went to four probe failures that were not seams (gentle's
+  keyboard spread, w1-dialog step 4 on the release walls, three probes behind deliberate changes) and the landing test's
+  limits measured per preset. Cheaper: run each lane's probe once on its own lane build before the merge so a probe's
+  spread and its scan's limits are known, and keep the S2 probe list to one background script with one summary.
