@@ -1,0 +1,152 @@
+{
+ "base": "http://localhost:7520/en",
+ "scene": "5dfeb49b",
+ "lublin": "2f1ddf5f",
+ "render": false,
+ "viewport": "1536x730@1.25",
+ "steps": [
+  {
+   "step": 1,
+   "name": "open the scene at x1",
+   "pass": true,
+   "detail": {
+    "scale": 1,
+    "gates": 0
+   }
+  },
+  {
+   "step": 2,
+   "name": "menu -> dialog in view, cross 44 px, nothing built",
+   "pass": true,
+   "detail": {
+    "how": {
+     "lock": true,
+     "menu": true,
+     "item": true
+    },
+    "dialog": {
+     "rect": {
+      "x": 488,
+      "y": 188,
+      "w": 560,
+      "h": 354
+     },
+     "x": {
+      "x": 987,
+      "y": 205,
+      "w": 44,
+      "h": 44
+     },
+     "replaces": null
+    },
+    "gates": 0,
+    "W": 1536,
+    "H": 730
+   }
+  },
+  {
+   "step": 3,
+   "name": "click Beginner, Compact, Build",
+   "pass": false,
+   "detail": {
+    "pressed": [
+     true,
+     false,
+     true
+    ],
+    "dialogGone": true,
+    "request": {
+     "seed": 741776715,
+     "level": "beginner",
+     "spread": "compact",
+     "anyQuality": false,
+     "anchor": [
+      2,
+      1,
+      3
+     ]
+    }
+   }
+  },
+  {
+   "step": 4,
+   "name": "progress box: 16 px, in view, never back, until the answer",
+   "pass": true,
+   "detail": {
+    "samples": 39,
+    "withBox": 39,
+    "pcts": [
+     0,
+     8,
+     26,
+     31,
+     72,
+     73,
+     82
+    ],
+    "minFont": 16,
+    "inView": true,
+    "steps": [
+     "finding the best scanned part",
+     "finding the free space",
+     "placing the gates and obstacles"
+    ],
+    "lastText": {
+     "kind": "progress",
+     "title": "Building the course",
+     "step": "placing the gates and obstacles",
+     "pct": 82,
+     "stepOf": "Step 3 of 3",
+     "left": "About 0:05 left",
+     "cancel": "Cancel"
+    },
+    "ms": 4552
+   }
+  },
+  {
+   "step": 5,
+   "name": "course shown: gates >= 1, outside 0, closed",
+   "pass": true,
+   "detail": {
+    "gates": 7,
+    "drawn": 52,
+    "plan": {
+     "ok": true,
+     "stats": {
+      "kind": "room",
+      "gates": 7,
+      "closed": true,
+      "startFinishM": 0,
+      "startToCoreM": 55.673790664833994,
+      "finishToCoreM": 55.673790664833994,
+      "underTopShare": 1,
+      "goodShare": 1,
+      "outside": 0,
+      "underGround": 0,
+      "nearGroundShare": 0.42857142857142855,
+      "openingM": 1.536
+     },
+     "shrunk": false
+    }
+   }
+  },
+  {
+   "step": 6,
+   "name": "start line visible >= 8 s",
+   "pass": true,
+   "detail": {
+    "line": "Gates: 7. The start gate is 11 m away: follow the arrow. Key Shift+T hides the course",
+    "shownMs": 8875,
+    "lastNote": null
+   }
+  }
+ ],
+ "errors": [],
+ "verdict": {
+  "pass": false,
+  "failed": [
+   3
+  ],
+  "pending": []
+ }
+}

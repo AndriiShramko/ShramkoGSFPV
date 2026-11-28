@@ -155,7 +155,7 @@ try {
     const p3 = [await press(page, 'gen-level-beginner'), await press(page, 'gen-where-here')];
     p3.push(await press(page, 'gen-build'));
     const after3 = await page.evaluate(READ);
-    check(3, 'click Beginner, Compact, Build', p3.every(Boolean) && !after3.dialog, { pressed: p3, dialogGone: !after3.dialog, request: after3.request });
+    check(3, 'click Beginner, Here, Build', p3.every(Boolean) && !after3.dialog, { pressed: p3, dialogGone: !after3.dialog, request: after3.request });
 
     // 4 the progress box until the course is there
     const noRoom = (q) => !!(q.box && q.box.model && q.box.model.kind === 'noRoom');

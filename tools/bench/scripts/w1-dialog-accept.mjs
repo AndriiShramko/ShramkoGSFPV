@@ -39,7 +39,9 @@ const pick = pickBrowser({ expected: chromium.executablePath() });
 const browser = await chromium.launch({ ...pick.launch, headless: true });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const out = { probe: 'w1-dialog-accept', base, scene, render: RENDER, viewport: '1536x730@1.25', steps: [], blocked: [], errors: [] };
-const save = () => writeFileSync(outFile, JSON.stringify(out, null, 1));
+// ASCII only (gate B18 reads the evidence): the Polish texts are written as \u escapes, the same JSON once parsed
+const ascii = (s) => s.split('').map((c) => (c.charCodeAt(0) > 127 ? `${String.fromCharCode(92)}u${c.charCodeAt(0).toString(16).padStart(4, '0')}` : c)).join('');
+const save = () => writeFileSync(outFile, ascii(JSON.stringify(out, null, 1)));
 const check = (step, name, pass, detail) => {
     out.steps.push({ step, name, pass, detail });
     console.log(`${step} ${name} ${pass ? 'PASS' : 'FAIL'} ${JSON.stringify(detail).slice(0, 400)}`);

@@ -1,0 +1,210 @@
+{
+ "probe": "w1-dialog-accept",
+ "base": "https://gsfpv.flyreelstudio.eu/en",
+ "scene": "eb5f51dc",
+ "render": false,
+ "viewport": "1536x730@1.25",
+ "steps": [
+  {
+   "step": 1,
+   "name": "here: Shift+G offers Here (pressed) and Whole scan, the hint, it fits; Here + Build: gate 1 within 10 m of the drone",
+   "pass": false,
+   "detail": {
+    "lock": true,
+    "wheres": [],
+    "hint": null,
+    "fit": {
+     "ok": true,
+     "parts": 11,
+     "overlaps": [],
+     "outside": [],
+     "small": []
+    },
+    "pressed": [
+     false,
+     true
+    ],
+    "gates": 14,
+    "ms": 2973,
+    "gate1ToDroneM": 2,
+    "spanM": 41.9,
+    "request": {
+     "seed": 1692433795,
+     "level": "medium",
+     "spread": "compact",
+     "anyQuality": false,
+     "anchor": [
+      -9,
+      6,
+      -21
+     ]
+    }
+   }
+  },
+  {
+   "step": 2,
+   "name": "addHere: 30 m away, paused, Add here: every old gate stands, new gates round the drone, the ring closed",
+   "pass": false,
+   "detail": {
+    "flownM": 30.3,
+    "droneToSpawnM": 30.6,
+    "how": {
+     "item": true,
+     "dialog": true
+    },
+    "wheres": [],
+    "replaces": "Replaces the current course (14 gates)",
+    "afterAdd": {
+     "pressed": null,
+     "keeps": "Replaces the current course (14 gates)",
+     "main": "Replace with a new course"
+    },
+    "oldGates": 14,
+    "gates": 14,
+    "kept": 1,
+    "added": 13,
+    "nearestNewToDroneM": 3.2,
+    "stats": {
+     "closed": true,
+     "outside": 0
+    },
+    "ms": 90130,
+    "request": {
+     "seed": 573715874,
+     "level": "medium",
+     "spread": "compact",
+     "anyQuality": false,
+     "anchor": [
+      17,
+      16,
+      -4
+     ]
+    }
+   }
+  },
+  {
+   "step": 3,
+   "name": "link: the address names both parts; a fresh context lays the same gates",
+   "pass": false,
+   "detail": {
+    "share": true,
+    "course": "g2.9hkq02.mc.17.16.-4",
+    "gates": 14,
+    "same": true,
+    "ms": 4138
+   }
+  },
+  {
+   "step": 4,
+   "name": "wholeScan: the course is replaced, the ask is wide, it spreads farther than Here",
+   "pass": false,
+   "detail": {
+    "how": {
+     "item": true,
+     "dialog": true
+    },
+    "pressed": null,
+    "whereLine": null,
+    "gates": 14,
+    "keptOfOld": 2,
+    "oldGates": 14,
+    "reachM": 31,
+    "hereReachM": 33.1,
+    "spanM": 31.6,
+    "hereSpanM": 41.9,
+    "eased": null,
+    "request": {
+     "seed": 1601615535,
+     "level": "medium",
+     "spread": "compact",
+     "anyQuality": false,
+     "anchor": [
+      21,
+      16,
+      -1
+     ]
+    },
+    "ms": 4688
+   }
+  },
+  {
+   "step": 5,
+   "name": "keys: Tab reaches every choice, Space picks Add here, Tab to Cancel and Enter keep the course; a named dialog",
+   "pass": false,
+   "detail": {
+    "opened": true,
+    "order": [
+     "gen-x",
+     "gen-level-beginner",
+     "gen-level-medium",
+     "gen-level-pro",
+     "gen-spread-compact",
+     "gen-spread-wide",
+     "gen-cancel",
+     "gen-build",
+     "mode-chip",
+     "sound-toggle",
+     "fullscreen-toggle",
+     "messages-open",
+     "share-top",
+     "open-settings",
+     "open-feedback",
+     "open-controls",
+     "pause"
+    ],
+    "pressedAfterSpace": null,
+    "focused": "gen-cancel",
+    "closed": true,
+    "same": true,
+    "role": "dialog",
+    "label": "Generate a course"
+   }
+  },
+  {
+   "step": 6,
+   "name": "polish: Polish title, Here, Whole scan, the hint; it fits; Enter builds; Dodaj tutaj and the replace line over the course",
+   "pass": false,
+   "detail": {
+    "title": "Wygeneruj tor",
+    "labels": "",
+    "hint": null,
+    "fit": {
+     "ok": true,
+     "parts": 11,
+     "overlaps": [],
+     "outside": [],
+     "small": []
+    },
+    "gates": 14,
+    "ms": 6656,
+    "labelsOver": "",
+    "replaces": "Zast\u0119puje obecny tor (14 bramek)"
+   }
+  }
+ ],
+ "blocked": [
+  "POST https://gsfpv.flyreelstudio.eu/api/e",
+  "POST https://gsfpv.flyreelstudio.eu/api/e",
+  "POST https://gsfpv.flyreelstudio.eu/api/e",
+  "POST https://gsfpv.flyreelstudio.eu/api/e",
+  "POST https://gsfpv.flyreelstudio.eu/api/share",
+  "POST https://gsfpv.flyreelstudio.eu/api/e",
+  "POST https://gsfpv.flyreelstudio.eu/api/e",
+  "POST https://gsfpv.flyreelstudio.eu/api/e",
+  "POST https://gsfpv.flyreelstudio.eu/api/e",
+  "POST https://gsfpv.flyreelstudio.eu/api/e",
+  "POST https://gsfpv.flyreelstudio.eu/api/e"
+ ],
+ "errors": [],
+ "verdict": {
+  "pass": false,
+  "failed": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6
+  ]
+ }
+}
