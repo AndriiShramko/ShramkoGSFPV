@@ -3,18 +3,28 @@
 // pilot picks the level (Beginner, Medium, Pro) and the spread (Compact, Whole scene), reads what is replaced, and presses
 // the main button (or Enter). Nothing is built and nothing is deleted before that press; the cross, Cancel and Esc build
 // nothing. The model (dialogModel) is pure so the test reads every text and button without a page; GenerateDialog is its DOM.
+// Lane w1-dialog (train 5, R2 of designs/w1-diag.md; the owner's brief line 667): the spread row became WHERE. Here (the
+// default, every time the dialog opens) lays a compact course round the drone; Whole scan begins at the drone and spreads
+// over the scan. One line says the course is laid where the drone is (fly there, pause, Shift+G: the owner's idea d).
+// S2 (idea c): Add here, offered only over a course: it keeps the course's gates and adds more round the drone
+// (packages/tracks extend.ts); the line beside it says that Here and Whole scan replace the course.
 import { LEVELS, VOXEL_VIEW_GATES } from '@gsfpv/tracks';
-import type { CourseAsk, CourseLevel, CourseSpread, LevelRules } from '@gsfpv/tracks';
+import type { CourseAsk, CourseLevel, LevelRules } from '@gsfpv/tracks';
 import { h } from '../ui/dom';
 
 export type GenerateFrom = 'flight' | 'menu' | 'editor';
 export const COURSE_LEVELS: readonly CourseLevel[] = ['beginner', 'medium', 'pro'];
-export const COURSE_SPREADS: readonly CourseSpread[] = ['compact', 'wide'];
+/** Where a new course goes: 'here' a compact course round the drone, 'scan' from the drone over the whole scan, 'add' more
+ *  gates round the drone joined to the course shown (only when one is shown) */
+export type CourseWhere = 'here' | 'scan' | 'add';
+export const COURSE_WHERES: readonly CourseWhere[] = ['here', 'scan', 'add'];
+/** the dialog's choice every time it opens: no thought needed */
+export const DEFAULT_WHERE: CourseWhere = 'here';
 
 /** What the dialog is opened over. */
 export interface DialogState {
     readonly level: CourseLevel;
-    readonly spread: CourseSpread;
+    readonly where: CourseWhere;
     /** the voxels-only view is on (store 'voxels.show' is 'only'): the whole scene, any scan quality */
     readonly voxelsOnly: boolean;
     /** gates of the course shown now; 0 without one */
@@ -34,9 +44,11 @@ export interface DialogModel {
     readonly levels: readonly ChoiceButton<CourseLevel>[];
     /** the chosen level in numbers: gates, opening, turns */
     readonly levelLine: string;
-    /** empty in the voxels-only view: the spread is set there and `spreadLine` says so */
-    readonly spreads: readonly ChoiceButton<CourseSpread>[];
-    readonly spreadLine: string;
+    /** empty in the voxels-only view: the whole scene is set there and `whereLine` says so */
+    readonly wheres: readonly ChoiceButton<CourseWhere>[];
+    readonly whereLine: string;
+    /** the course is laid where the drone is: fly there, pause, Shift+G (the owner's idea d; no question stops the pilot) */
+    readonly hint: string;
     /** 'Replaces the current course (N gates)' when a course is shown, else null */
     readonly replaces: string | null;
     /** 'Your unsaved changes are lost' when the editor holds unsaved changes, else null */
@@ -45,6 +57,8 @@ export interface DialogModel {
     readonly cancel: string;
     /** what the main button asks the generator for (the seed is added by the page) */
     readonly request: CourseAsk;
+    /** Add here: the course shown keeps its gates and the request's course is joined to it */
+    readonly add: boolean;
 }
 
 type Words = (key: string, vars?: Record<string, string | number>) => string;
@@ -61,18 +75,23 @@ export function levelLine(level: CourseLevel, t: Words, rules: Readonly<Record<C
 
 /** The dialog's texts, buttons and the request of its main button. */
 export function dialogModel(s: DialogState, t: Words, rules: Readonly<Record<CourseLevel, LevelRules>> = LEVELS): DialogModel {
-    const wide = s.voxelsOnly || s.spread === 'wide';
+    const wide = s.voxelsOnly || s.where === 'scan';
+    // Add here exists only over a course (and not in the voxels-only view, which always lays the whole scene)
+    const add = s.where === 'add' && s.shownGates > 0 && !s.voxelsOnly;
+    const where: CourseWhere = s.where === 'add' && !add ? 'here' : s.where;
     return {
         title: t('course.gen.title'),
         levels: COURSE_LEVELS.map((id) => ({ id, label: t(`course.gen.level.${id}`), pressed: id === s.level })),
         levelLine: levelLine(s.level, t, rules),
-        spreads: s.voxelsOnly ? [] : COURSE_SPREADS.map((id) => ({ id, label: t(`course.gen.spread.${id}`), pressed: id === s.spread })),
-        spreadLine: s.voxelsOnly ? t('course.gen.spreadVoxels', { n: VOXEL_VIEW_GATES }) : t(`course.gen.spreadLine.${s.spread}`),
-        replaces: s.shownGates > 0 ? t('course.gen.replaces', { n: s.shownGates }) : null,
+        wheres: s.voxelsOnly ? [] : COURSE_WHERES.filter((id) => id !== 'add' || s.shownGates > 0).map((id) => ({ id, label: t(`course.gen.where.${id}`), pressed: id === where })),
+        whereLine: s.voxelsOnly ? t('course.gen.whereVoxels', { n: VOXEL_VIEW_GATES }) : t(`course.gen.whereLine.${where}`),
+        hint: t('course.gen.whereHint'),
+        replaces: s.shownGates > 0 ? t(add ? 'course.gen.keeps' : s.voxelsOnly ? 'course.gen.replacesVoxels' : 'course.gen.replaces', { n: s.shownGates }) : null,
         lost: s.unsaved ? t('course.gen.lost') : null,
-        main: t(s.shownGates > 0 ? 'course.gen.replace' : 'course.gen.build'),
+        main: t(add ? 'course.gen.add' : s.shownGates > 0 ? 'course.gen.replace' : 'course.gen.build'),
         cancel: t('course.gen.cancel'),
-        request: { level: s.level, spread: wide ? 'wide' : 'compact', anyQuality: s.voxelsOnly }
+        request: { level: s.level, spread: wide ? 'wide' : 'compact', anyQuality: s.voxelsOnly },
+        add
     };
 }
 
@@ -94,9 +113,10 @@ export function dialogKey(code: string): 'build' | 'cancel' | null {
 }
 
 export interface DialogHandlers {
-    /** the level or the spread was picked (the page remembers it) */
-    readonly pick: (p: { level?: CourseLevel; spread?: CourseSpread }) => void;
-    readonly build: (request: CourseAsk) => void;
+    /** the level was picked (the page remembers it); where is not remembered: the dialog opens on Here */
+    readonly pick: (p: { level?: CourseLevel; where?: CourseWhere }) => void;
+    /** `add`: Add here (keep the course shown and join the new gates to it) */
+    readonly build: (request: CourseAsk, add: boolean) => void;
     readonly cancel: () => void;
 }
 
@@ -162,10 +182,10 @@ export class GenerateDialog {
         const m = this.model();
         if (!m) return;
         this.close();
-        this.on.build(m.request);
+        this.on.build(m.request, m.add);
     }
 
-    private pick(p: { level?: CourseLevel; spread?: CourseSpread }): void {
+    private pick(p: { level?: CourseLevel; where?: CourseWhere }): void {
         if (!this.state) return;
         this.state = { ...this.state, ...p };
         this.on.pick(p);
@@ -182,15 +202,26 @@ export class GenerateDialog {
             h('div', { class: 'panel-head' }, h('h2', {}, m.title), x),
             h('div', { class: 'gen-row', role: 'group', 'aria-label': this.t('course.gen.levelTitle') }, ...m.levels.map((b) => choice(b, 'gen-level', () => this.pick({ level: b.id })))),
             h('p', { class: 'gen-line', 'data-testid': 'gen-level-line' }, m.levelLine),
-            m.spreads.length ? h('div', { class: 'gen-row', role: 'group', 'aria-label': this.t('course.gen.spreadTitle') }, ...m.spreads.map((b) => choice(b, 'gen-spread', () => this.pick({ spread: b.id })))) : null,
-            h('p', { class: 'gen-line', 'data-testid': 'gen-spread-line' }, m.spreadLine),
+            m.wheres.length ? h('div', { class: 'gen-row', role: 'group', 'aria-label': this.t('course.gen.whereTitle') }, ...m.wheres.map((b) => choice(b, 'gen-where', () => this.pick({ where: b.id })))) : null,
+            h('p', { class: 'gen-line', 'data-testid': 'gen-where-line' }, m.whereLine),
+            h('p', { class: 'gen-line', 'data-testid': 'gen-where-hint' }, m.hint),
             m.replaces ? h('p', { class: 'gen-warn', 'data-testid': 'gen-replaces' }, m.replaces) : null,
             m.lost ? h('p', { class: 'gen-warn', 'data-testid': 'gen-lost' }, m.lost) : null,
             h('div', { class: 'gen-actions' },
                 h('button', { type: 'button', class: 'btn gen-cancel', 'data-action': 'gen-cancel', onclick: () => this.cancel() }, m.cancel),
                 h('button', { type: 'button', class: 'btn primary gen-main', 'data-action': 'gen-build', 'aria-keyshortcuts': 'Enter', title: `${m.main} (${this.t('course.gen.enter')})`, onclick: () => this.build() }, m.main)));
+        // lane w1-dialog S3: a pick repaints the dialog; the focus stays on the button of the same action, so a pilot on keys
+        // alone goes on with Tab from the choice made (the browser would else put the focus back at the page's start)
+        const focused = this.root ? focusedAction(this.root) : null;
         this.root?.remove();
         this.parent.append(root);
         this.root = root;
+        if (focused) Array.from(root.querySelectorAll('button')).find((b) => b.getAttribute('data-action') === focused)?.focus();
     }
+}
+
+/** the data-action of the dialog's button that holds the keyboard focus, null when the focus is elsewhere */
+function focusedAction(root: HTMLElement): string | null {
+    const el = typeof document !== 'undefined' ? (document.activeElement as HTMLElement | null) : null;
+    return el && root.contains(el) ? el.getAttribute('data-action') : null;
 }

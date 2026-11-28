@@ -48,8 +48,9 @@ export const SOUND_FREE = 'fly';
 const NO_LESSON: ReadonlySet<string> = new Set([SOUND_FREE, 'scan', 'scan-free', 'start']);
 
 /** A generated course's link token: `g<n>.` and the rest as the course feature wrote it (lane w1-anchor: a 'g2.' link's
- *  anchor may be negative, `g2.7.mc.12.-3.-540`, so '-' is part of the token) */
-const GENERATED = /^g[0-9]\.[0-9a-z.-]{1,60}$/;
+ *  anchor may be negative, `g2.7.mc.12.-3.-540`, so '-' is part of the token; lane w1-dialog: a course with Add here parts
+ *  joins them with '_', `g2.7.mc.12.-3.-540_zz.pc.40.2.-500`, at most MAX_ADDS of them) */
+const GENERATED = /^g[0-9]\.[0-9a-z._-]{1,240}$/;
 
 /** A `course=` value an address may carry: a generated course's link or a saved course's `<id>[.v<n>]`. */
 export function isCourseToken(v: string): boolean {

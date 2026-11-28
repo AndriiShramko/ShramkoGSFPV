@@ -410,8 +410,11 @@ run sound6-quick-walk env SITE="$SITE" npx tsx src/sonic-quick-walk.ts "$OUT/sou
 # Train 4 integration, car 3 (t7-base: gap-gen with gen4a and gen4b, gap-save, gap-sound). Each probe's header: render
 # off, no GPU lock; read-only on any site (no save button is pressed; a generated course, the Scene size and the sound
 # progress live only in the probe's own browser profile; nothing is saved, sent or created on the site).
-# gen4-accept-probe.mjs: Shift+G opens the Generate dialog (level, spread), Build lays a course of that level.
+# gen4-accept-probe.mjs: Shift+G opens the Generate dialog (level, where: Here pressed, Whole scan), Build lays a course of that level.
+# w1-dialog-accept.mjs (train 5): Here, Add here after 30 m of flight (the old gates stay), the link of both parts in a fresh
+# context, Whole scan replaces and spreads, the dialog by keys alone, the Polish texts. Read only, as the probes above.
 run gen4-generate-dialog node scripts/gen4-accept-probe.mjs "$SITE/en" "$OUT/gen4-generate-dialog.json"
+run w1-dialog-where node scripts/w1-dialog-accept.mjs "$SITE/en" "$OUT/w1-dialog-where.json"
 # gap-gen-accept.mjs: asked courses on small and scaled scans (x15 at the skull), a room's course adopted with the
 # asker's level and spread (step 5).
 run gap-gen-asked-course node scripts/gap-gen-accept.mjs "$SITE/en" "$OUT/gap-gen-asked-course.json"

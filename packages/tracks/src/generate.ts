@@ -139,6 +139,9 @@ export interface CoursePlace {
     readonly version: string;
     /** the element kinds composed (gap-gen S1: LEVELS[level].elements); absent: every kind */
     readonly kinds?: readonly ElementKind[];
+    /** lane w1-dialog (Add here): places already taken, flown world (the kept course's gates and start): no new gate stands
+     *  within the spacing of one, and the walk's out half heads away from them as from its own gates. Absent: none. */
+    readonly occupied?: readonly Vec3[];
 }
 
 /** CR-1, CR-4: the walk of one generateCourse call, handed to CourseOptions.onWalk */
@@ -726,6 +729,7 @@ function walkCourse(free: FreeSpace, walls: VoxelCollision, opts: CourseOptions,
             }
             let near = Infinity;
             for (const g of flownGates) near = Math.min(near, dist2(g, c.pos));
+            if (P?.occupied) for (const g of P.occupied) near = Math.min(near, dist2(g, c.pos));
             near = Math.min(near, dist2(startW, c.pos));
             if (near < p.spacingM * p.spacingM) {
                 refused.space++;

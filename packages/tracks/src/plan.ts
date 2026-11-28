@@ -22,7 +22,8 @@ import { flownStart } from './check';
 import { MAX_LEG_M } from './server';
 import { analyzeScan, scanTile } from './scan';
 import type { ScanAnalysis } from './scan';
-import { LEVELS, VOXEL_VIEW_GATES, courseLinkId } from './request';
+import { LEVELS, VOXEL_VIEW_GATES, addedLinkId, courseLinkId } from './request';
+import { addRoom, joinCourses, occupiedOf } from './extend';
 import type { CourseLevel, CourseRequest, LevelRules, PlanAnswer, PlanHooks, PlanInput, PlanStats } from './request';
 import type { SceneTransform, TrackFile, TrackGate, Vec3 } from './types';
 
@@ -375,6 +376,13 @@ export function planCourse(input: PlanInput, hooks: PlanHooks = {}): PlanAnswer 
     const anchor = anchorOf(input, a);
     const craftR = input.craftRadiusM || SMALLEST_DRONE_RADIUS_M;
     const rules = planRules(request, craftR, a);
+    // lane w1-dialog, Add here: the kept course's places are taken, the walk lays at most the gates the server has room for,
+    // and a walked course counts only once it joins the kept ring (extend.ts); `need`: the kept gates and the level's least more
+    const keep = input.keep && input.keep.gates.length > 0 ? input.keep : null;
+    const occupied = keep ? occupiedOf(keep, transform) : undefined;
+    const room = keep ? addRoom(keep) : Infinity;
+    if (keep && room <= 0) return { ok: false, reason: 'no-join', kind: a.kind, fitSize: null };
+    const need = (keep?.gates.length ?? 0) + rules.level.gatesMin;
     /** the asks of one ladder: `req` itself, and when it is compact the same over the whole scan (a compact course that
      *  keeps under gatesMin in the core's zone is laid over the whole scan too: a bare room's core is a corner) before the
      *  opening steps down; the version letters stay the asked ones */
@@ -452,15 +460,16 @@ export function planCourse(input: PlanInput, hooks: PlanHooks = {}): PlanAnswer 
                     // a zone with enough cells can still be a broken sheet (Wroclaw's eye band over 7.2 m tiles at 0.4 m cells:
                     // every walk stopped at 1-2 gates): the pass's looser tier is walked at the same opening before it shrinks
                     const lay = (t: number, v: number): void => {
-                        const place: CoursePlace = { at: zoneAt(a, ask.req, R, opening, t, anchor), start, reachM: walkR, gates: R.gates, maxGates: R.level.gatesMax, climbMax: R.level.climbMax, version: v ? `${version}.w${v}` : version, kinds: R.level.elements };
+                        const place: CoursePlace = { at: zoneAt(a, ask.req, R, opening, t, anchor), start, reachM: walkR, gates: Math.min(R.gates, room), maxGates: Math.min(R.level.gatesMax, room), climbMax: R.level.climbMax, version: v ? `${version}.w${v}` : version, kinds: R.level.elements, occupied };
                         hooks.onStep?.('lay', lastMs);
                         const t0 = now ? now() : 0;
-                        const track = generateCourse(free, walls, { seed: walkSeed(request.seed, v), scene: input.scene, transform, created: input.created, spawn: start, params, place, elements, craftRadiusM: input.craftRadiusM });
+                        const walked = generateCourse(free, walls, { seed: walkSeed(request.seed, v), scene: input.scene, transform, created: input.created, spawn: start, params, place, elements, craftRadiusM: input.craftRadiusM });
+                        const track = keep && walked.gates.length > 0 ? joinCourses(keep, walked, walls, transform) : walked;
                         if (now) {
                             lastMs = now() - t0;
                             longest = Math.max(longest, lastMs);
                         }
-                        if (track.gates.length > 0 && track.gates.length > bestGates() && legsWithinServer(track)) best = { track, opening, ask, tier: t };
+                        if (track && track.gates.length > 0 && track.gates.length > bestGates() && legsWithinServer(track)) best = { track, opening, ask, tier: t };
                     };
                     // a tier with too few cells is not walked unless it is the pass's last; each tier's derived seeds are walked
                     // before the tier loosens
@@ -483,17 +492,19 @@ export function planCourse(input: PlanInput, hooks: PlanHooks = {}): PlanAnswer 
     for (let i = 0; i < chain.length && !best && !late(); i++) {
         const asks = asksOf(chain[i]!.req, chain[i]!.walk).filter((x) => !walked.has(keyOf(x)));
         for (const x of asks) walked.add(keyOf(x));
-        if (asks.length) ladder(asks, rules.level.gatesMin);
+        if (asks.length) ladder(asks, need);
     }
     // a course under gatesMin is walked once more by the next harder walk (walkedBy) down the asked level's openings, in the
     // passes a course already laid skips too, but in no tier looser than the short course's own (G3: a short course in the
     // good part is kept over a full one beside it); it is kept only with more gates
-    if (best && bestGates() < rules.level.gatesMin && HARDER[best.ask.walk] !== best.ask.walk && !late()) {
+    if (best && bestGates() < need && HARDER[best.ask.walk] !== best.ask.walk && !late()) {
         const own = best.tier;
-        ladder(asksOf(best.ask.req, HARDER[best.ask.walk]), rules.level.gatesMin, (t) => t === own || t === 0 || own === LOOSEST_TIER);
+        ladder(asksOf(best.ask.req, HARDER[best.ask.walk]), need, (t) => t === own || t === 0 || own === LOOSEST_TIER);
     }
+    if (!best && keep) return { ok: false, reason: 'no-join', kind: a.kind, fitSize: null };
     if (!best) return { ok: false, reason: 'no-room', kind: a.kind, fitSize: fitSizeFor(transform[0], ratio) };
-    const track: TrackFile = { ...best.track, id: courseLinkId(request), title: courseTitle(request.seed) };
+    // Add here: the kept course's link with this part (the kept id when it is no 'g2.' link: such a course has no link)
+    const track: TrackFile = keep ? { ...best.track, id: addedLinkId(keep.id, request) ?? keep.id, title: keep.title } : { ...best.track, id: courseLinkId(request), title: courseTitle(request.seed) };
     const start = flownStart(track, transform) ?? { pos: anchor, yawDeg: 0 };
     // eased: laid nearer the core than asked or by a sharper walk than the level's (fallbackAsks, the short course's walk)
     const b = best.ask;

@@ -42,7 +42,7 @@ import { MAX_GATES_EDIT, REQUEST_DEFAULTS, courseLinkId, courseWarnings, fixAll,
 import type { CourseAsk, CourseRequest, FixWalls, SaveVerdict, StoreBlocker } from '@gsfpv/tracks';
 import { FROM_PILOT, pilotAnchor } from '../../course/anchor';
 import type { AnchorFrom } from '../../course/anchor';
-import { COURSE_LEVELS, COURSE_SPREADS, GenerateDialog, pressAction, type GenerateFrom } from '../../course/generate-dialog';
+import { COURSE_LEVELS, DEFAULT_WHERE, GenerateDialog, pressAction, type GenerateFrom } from '../../course/generate-dialog';
 import { dialogOpen } from '../../devices/keyboard';
 import { CheckQueue, checkOnPage } from '../../course/editor/check-core';
 import type { FromCheckWorker } from '../../course/editor/check-core';
@@ -131,6 +131,7 @@ export const course: Feature = {
         // review of lane gap-gen: a room's asked course (its 'g2.' id, rooms/race.ts adoptOf) is laid with the asker's level
         // and spread, a 'g1.' course by the old generator as its link is: every racer lays the host's course, not their own ask
         hook.adopt = (c) => {
+            linkAdds = [];
             if ('id' in c) return void loadServer(0, true, c);
             if ('request' in c) {
                 // lane w1-anchor: the host's anchor too (in the course's id), so every racer's course grows from the same place
@@ -144,15 +145,16 @@ export const course: Feature = {
         const stage = new CourseStage(ctx.renderer);
         const hud = new CourseHud(ctx.ui);
         hud.setCloseLabel(t('course.hide'));
-        // lane gen4b B1 (G7-G9): the level and the spread the pilot picked last (store course.level, course.spread); the
-        // voxels-only view asks for the whole scene at any scan quality (gen4 design section 3)
+        // lane gen4b B1 (G7-G9): the level the pilot picked last (store course.level); the voxels-only view asks for the whole
+        // scene at any scan quality (gen4 design section 3). Lane w1-dialog: the dialog opens on Here every time (its where is
+        // not remembered); the stored spread (course.spread, the settings) is what Fly by Sound's direct press asks
         const remembered = (): CourseAsk => {
             const level = ctx.prefs.get<CourseRequest['level']>('course.level');
             const spread = ctx.prefs.get<CourseRequest['spread']>('course.spread');
             const only = ctx.prefs.get<string>('voxels.show') === 'only';
             return {
                 level: COURSE_LEVELS.includes(level) ? level : REQUEST_DEFAULTS.level,
-                spread: only ? 'wide' : COURSE_SPREADS.includes(spread) ? spread : REQUEST_DEFAULTS.spread,
+                spread: only || spread === 'wide' ? 'wide' : REQUEST_DEFAULTS.spread,
                 anyQuality: only
             };
         };
@@ -163,9 +165,8 @@ export const course: Feature = {
         const genDialog = new GenerateDialog(ctx.ui, t, {
             pick: (p) => {
                 if (p.level) ctx.prefs.set('course.level', p.level);
-                if (p.spread) ctx.prefs.set('course.spread', p.spread);
             },
-            build: (r) => {
+            build: (r, add) => {
                 const f = dialogFor;
                 dialogFor = null;
                 ctx.resume('panel');
@@ -175,7 +176,8 @@ export const course: Feature = {
                     askedFor = null;
                     reopenAfter = true;
                 }
-                generate(f?.seed ?? (f?.from === 'flight' ? pressSeed() : randomSeed()));
+                // lane w1-dialog, Add here: the course shown is kept and the new gates join it (packages/tracks extend.ts)
+                generate(f?.seed ?? (f?.from === 'flight' ? pressSeed() : randomSeed()), 'request', FROM_PILOT, add ? run?.track ?? null : null);
             },
             cancel: () => {
                 dialogFor = null;
@@ -192,6 +194,10 @@ export const course: Feature = {
         let saving = false;
         // lane gen4b B2: 'g1.' rebuilds the old generator's course, 'g2.' the asked one (level and spread from the link)
         let linkCourse = courseOfLink(liveSearch());
+        /** lane w1-dialog: the Add here parts of the link's course still to lay, in order, each kept-and-joined to the last */
+        let linkAdds: CourseRequest[] = [];
+        /** lane w1-dialog: the course the job in the worker joins its gates to (Add here), null for a new course */
+        let keepFor: TrackFile | null = null;
         // lane onecourse fixes (review OC-4): the course a pilot made on the ordinary page goes along to the mode's page as sg=
         // (sonic-flight.ts modeScanPage); the first Shift+G (or N) there makes that course, the next ones a new one
         let soundSeed = soundCourseSeed(liveSearch());
@@ -558,6 +564,11 @@ export const course: Feature = {
                 tell({ text: t('course.server.loaded', { n: tr.gates.length }), kind: 'done', key: COURSE_LINE });
                 return;
             }
+            if (!m.track && m.plan && !m.plan.ok && m.plan.reason === 'no-join') {
+                // lane w1-dialog: Add here found no join; the course shown stays as it was and the line says what to do
+                linkAdds = [];
+                return fail('no join', t('course.addNone'));
+            }
             if (!m.track) {
                 // course4 review CU-4: no dead end; the line names the Scene size the next Shift+G sets, and that press sets it
                 // and builds again (Forest Floor at x15, x20, x100 gave no course for any seed)
@@ -579,12 +590,23 @@ export const course: Feature = {
             const tr = m.track;
             const mine = job;
             // lane gen4b B2: the asked course's link names its level and spread ('g2.'), so the link rebuilds the same ask
-            const linkId = m.plan && hook.request ? courseLinkId(hook.request) : tr.id;
+            // lane w1-dialog: after Add here the course's id is its link with the new part (null: the kept course had no
+            // link, or it holds MAX_ADDS parts; the address then carries the scene alone and the course travels when saved)
+            const kept = keepFor;
+            keepFor = null;
+            const linkId = m.plan && hook.request ? (kept ? (tr.id !== kept.id ? tr.id : null) : courseLinkId(hook.request)) : tr.id;
             const show = (): void => {
                 if (mine !== job) return;
                 hook.progress = null;
                 setTrack(tr, 'generated', tr.generator?.seed ?? pending);
                 history.replaceState(history.state, '', withCourse(location.href, linkId));
+                // a link's next Add here part is laid on this course before the course is announced
+                const next = linkAdds.shift();
+                if (next) {
+                    const { seed, anchor, ...asked } = next;
+                    request = asked;
+                    return generate(seed, 'request', { kind: 'named', anchor }, tr);
+                }
                 // the end of G3: the line says where the start gate is from the craft; the guide arrow points at it. ux4a: it
                 // is the course's keyed line (it takes the place of a problem line); it stays the service's reading time, at least START_LINE_MS
                 const g1 = run?.gates[0];
@@ -736,7 +758,7 @@ export const course: Feature = {
 
         /** `how`: 'request' lays the dialog's ask (planCourse), 'legacy' a 'g1.' link's seed by the old generator (from the
          *  spawn, as those links laid it); `from`: where a 'request' course grows from (lane w1-anchor, course/anchor.ts) */
-        const generate = (seed: number, how: 'request' | 'legacy' = 'request', from: AnchorFrom = FROM_PILOT): void => {
+        const generate = (seed: number, how: 'request' | 'legacy' = 'request', from: AnchorFrom = FROM_PILOT, keep: TrackFile | null = null): void => {
             // course4 review CU-4: the press after 'no course fits' sets the Scene size the line named, waits until the
             // scene has it (scale.ts pending), then builds
             const sc = ctx.hook.scale;
@@ -748,13 +770,13 @@ export const course: Feature = {
                 sc.set(to);
                 const wait = (n: number): void => {
                     if (sc.pending() !== 1 && n < 50) return void window.setTimeout(() => wait(n + 1), 200);
-                    generate(seed, how, from);
+                    generate(seed, how, from, keep);
                 };
                 return wait(0);
             }
             const s = ctx.session;
             const w = walls();
-            if (!w) return wallsFirst(() => generate(seed, how, from));
+            if (!w) return wallsFirst(() => generate(seed, how, from, keep));
             // lane onecourse fixes (review OC-1): a press while a course is being made says how far it is (the progress line)
             if (busy) {
                 // lane quiet2 (review QW-2): with the narrator off the press is answered by the package's "wait" sound
@@ -770,6 +792,7 @@ export const course: Feature = {
             const anchor = from.kind === 'named' ? from.anchor : pilotAnchor(ctx.session.runner.sim.s, s.spawn);
             hook.request = how === 'request' ? { seed, ...request, anchor } : undefined;
             hook.plan = null;
+            keepFor = how === 'request' ? keep : null;
             const msg: CourseJob = {
                 t: 'generate', job: ++job, ...w,
                 spawn: [s.spawn[0], s.spawn[1], s.spawn[2]],
@@ -781,7 +804,8 @@ export const course: Feature = {
                 elements: courseElements(ctx.sonic),
                 // course5 Z2 (A3, review CU-7): the ladder's smallest gate is sized by the craft that is flown
                 craftRadiusM: s.params?.boundRadius,
-                request: hook.request
+                request: hook.request,
+                keep: keepFor ?? undefined
             };
             ensureWorker().postMessage(msg, [w.nodes.buffer, w.leaf.buffer]);
             arm(GENERATE_LIMIT_MS);
@@ -931,7 +955,7 @@ export const course: Feature = {
             // int4 car 3: from 'editor' the Course menu's own question (edit4b life.ts) has named the unsaved changes and the
             // pilot said yes (edit4s kept a draft): the dialog does not warn a second time
             const unsaved = from !== 'editor' && !!ed && edChanged;
-            genDialog.open({ level: r.level, spread: r.spread, voxelsOnly: r.anyQuality, shownGates: run?.gates.length ?? 0, unsaved });
+            genDialog.open({ level: r.level, where: DEFAULT_WHERE, voxelsOnly: r.anyQuality, shownGates: run?.gates.length ?? 0, unsaved });
         };
         hook.generateDialog = (from) => openGenerateDialog(from);
         hook.dialog = () => genDialog.model();
@@ -2065,6 +2089,8 @@ export const course: Feature = {
             // lane w1-anchor: the link's anchor (null in an old 'g2.' link: the course it laid before, from the core)
             const { seed, anchor, ...asked } = link.request;
             request = asked;
+            // lane w1-dialog: the parts laid by Add here follow in turn, each joined to the course before it (show())
+            linkAdds = [...link.adds];
             generate(seed, 'request', { kind: 'named', anchor });
         };
         tryLink();

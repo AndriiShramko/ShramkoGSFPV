@@ -31,12 +31,14 @@ export interface CourseJob {
     /** lane gen4b B2: the pilot's choice in the dialog (or a 'g2.' link): planCourse lays it. Absent: a 'g1.' link's seed,
      *  laid by the old path below, so old links rebuild the very same course */
     request?: CourseRequest;
+    /** lane w1-dialog, Add here: the course shown now; planCourse keeps its gates and splices the asked course into it */
+    keep?: TrackFile;
 }
 
 /** lane gen4b B2: what planCourse said besides the track (the page's hook, the probes, the no-room box) */
 export type PlanNote =
     | { readonly ok: true; readonly stats: PlanStats; readonly shrunk: boolean }
-    | { readonly ok: false; readonly kind: ScanKind; readonly fitSize: number | null };
+    | { readonly ok: false; readonly kind: ScanKind; readonly fitSize: number | null; readonly reason: 'no-room' | 'no-join' };
 
 /** T3: prove a course from the server on the pilot's own walls before it is shown (checkTrack, unmeasured, as the generator). */
 export interface CheckJob {
@@ -85,12 +87,12 @@ scope.onmessage = (e) => {
             // gen4 design section 3: the course the pilot asked for (level, spread, the voxels-only view), every step announced
             const res = m.grid.res;
             const a = planCourse(
-                { walls, transform: m.transform, spawn: m.spawn, scene: m.scene, created: m.created, craftRadiusM: m.craftRadiusM ?? SMALLEST_DRONE_RADIUS_M, request: m.request, elements: m.elements === true },
+                { walls, transform: m.transform, spawn: m.spawn, scene: m.scene, created: m.created, craftRadiusM: m.craftRadiusM ?? SMALLEST_DRONE_RADIUS_M, request: m.request, elements: m.elements === true, keep: m.keep ?? null },
                 { onStep: (step, estMs) => scope.postMessage({ t: 'progress', job: m.job, step, estMs: planStepMs(step, estMs, res) }), deadline: { at: t0 + FIT_BUDGET_MS, now: () => performance.now() } }
             );
             const ms = Math.round(performance.now() - t0);
             if (a.ok) scope.postMessage({ t: 'track', job: m.job, track: a.track, ms, plan: { ok: true, stats: a.stats, shrunk: a.shrunk } });
-            else scope.postMessage({ t: 'track', job: m.job, track: null, ms, plan: { ok: false, kind: a.kind, fitSize: a.fitSize } });
+            else scope.postMessage({ t: 'track', job: m.job, track: null, ms, plan: { ok: false, kind: a.kind, fitSize: a.fitSize, reason: a.reason } });
             return;
         }
         scope.postMessage({ t: 'progress', job: m.job, step: 'free', estMs: FREE_SPACE_MS });

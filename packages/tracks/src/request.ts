@@ -55,8 +55,13 @@ export const LEVELS: Readonly<Record<CourseLevel, LevelRules>> = {
     pro: { openingD: 4, legMinD: 6, legMaxD: 120, legMaxFloorM: 20, turnCosMin: -0.866025, axisCosMin: 0.866025, climbMax: 0.8, gatesMin: 12, gatesMax: 24, elements: ['single', 'square', 'tunnel', 'flat', 'cube'] }
 };
 
-/** a link's course: 'g1.<seed36>' stays the old generator (old links rebuild the very same course) */
-export type CourseLink = { readonly kind: 'legacy'; readonly seed: number } | { readonly kind: 'request'; readonly request: CourseRequest };
+/** a link's course: 'g1.<seed36>' stays the old generator (old links rebuild the very same course); a 'g2.' link's `adds`:
+ *  the parts laid by Add here after its first course, in order (lane w1-dialog; empty for a course laid at once) */
+export type CourseLink = { readonly kind: 'legacy'; readonly seed: number } | { readonly kind: 'request'; readonly request: CourseRequest; readonly adds: readonly CourseRequest[] };
+/** the Add here parts one link carries at most (the address stays short; a longer course travels as a saved one) */
+export const MAX_ADDS = 4;
+/** joins a link's parts: 'g2.<first>_<seed36>.<b|m|p><c|w|v>.<x>.<y>.<z>_...' ('_' stays as it is in an address) */
+export const ADD_SEP = '_';
 
 const LEVEL_CODE: Readonly<Record<CourseLevel, string>> = { beginner: 'b', medium: 'm', pro: 'p' };
 const CODE_LEVEL: Readonly<Record<string, CourseLevel>> = { b: 'beginner', m: 'medium', p: 'pro' };
@@ -82,6 +87,24 @@ export function courseLinkId(r: CourseRequest): string {
     return `g2.${(r.seed >>> 0).toString(36)}.${LEVEL_CODE[r.level]}${spread}${at}`;
 }
 
+/** lane w1-dialog: the link of `base` (a course's own link id) with one Add here part more; null when `base` is no 'g2.'
+ *  link, the part has no anchor, or the link holds MAX_ADDS parts already (such a course travels only when saved) */
+export function addedLinkId(base: string, add: CourseRequest): string | null {
+    const b = parseCourseLink(base);
+    if (!b || b.kind !== 'request' || !add.anchor || b.adds.length >= MAX_ADDS) return null;
+    return `${base}${ADD_SEP}${courseLinkId(add).slice('g2.'.length)}`;
+}
+
+function requestOf(m: RegExpExecArray, at: number): CourseRequest | null {
+    const seed = seedOf(m[at]!);
+    if (seed === null) return null;
+    const s = m[at + 2]!;
+    const anchor: CourseAnchor | null = m[at + 3] !== undefined ? [Number(m[at + 3]) + 0, Number(m[at + 4]) + 0, Number(m[at + 5]) + 0] : null;
+    return { seed, level: CODE_LEVEL[m[at + 1]!]!, spread: s === 'c' ? 'compact' : 'wide', anyQuality: s === 'v', anchor };
+}
+
+const ADD_RE = /^([0-9a-z]{1,7})\.([bmp])([cwv])\.(-?\d{1,6})\.(-?\d{1,6})\.(-?\d{1,6})$/;
+
 /** the course a link's `course=` value names, or null when it names no generated course */
 export function parseCourseLink(id: string): CourseLink | null {
     const old = LEGACY_RE.exec(id);
@@ -89,13 +112,19 @@ export function parseCourseLink(id: string): CourseLink | null {
         const seed = seedOf(old[1]!);
         return seed === null ? null : { kind: 'legacy', seed };
     }
-    const m = REQUEST_RE.exec(id);
-    if (!m) return null;
-    const seed = seedOf(m[1]!);
-    if (seed === null) return null;
-    const s = m[3]!;
-    const anchor: CourseAnchor | null = m[4] !== undefined ? [Number(m[4]) + 0, Number(m[5]) + 0, Number(m[6]) + 0] : null;
-    return { kind: 'request', request: { seed, level: CODE_LEVEL[m[2]!]!, spread: s === 'c' ? 'compact' : 'wide', anyQuality: s === 'v', anchor } };
+    const [first, ...rest] = id.split(ADD_SEP);
+    const m = REQUEST_RE.exec(first!);
+    if (!m || rest.length > MAX_ADDS) return null;
+    const request = requestOf(m, 1);
+    if (!request) return null;
+    const adds: CourseRequest[] = [];
+    for (const part of rest) {
+        const a = ADD_RE.exec(part);
+        const r = a ? requestOf(a, 1) : null;
+        if (!r) return null;
+        adds.push(r);
+    }
+    return { kind: 'request', request, adds };
 }
 
 /** 'analyse': the scan analysis; 'free': the free space; 'lay': one try of the gates */
@@ -120,6 +149,9 @@ export interface PlanInput {
     readonly request: CourseRequest;
     /** false for the sound mode's course ask */
     readonly elements: boolean;
+    /** lane w1-dialog, Add here: the course shown now, laid on these walls. Its gates stay gate for gate; the request's
+     *  course is laid round its anchor away from them and spliced into the ring (extend.ts joinCourses). Absent: a new course. */
+    readonly keep?: TrackFile | null;
 }
 /** the measured placement, for the page hook, the probes and the Node audit (placementStats) */
 export interface PlanStats {
@@ -149,4 +181,6 @@ export interface PlanStats {
  *  fitSize: the Scene size at which the 4 D gate fits, or null when none does */
 export type PlanAnswer =
     | { readonly ok: true; readonly track: TrackFile; readonly stats: PlanStats; readonly start: { readonly pos: Vec3; readonly yawDeg: number }; readonly shrunk: boolean; readonly eased: boolean }
-    | { readonly ok: false; readonly reason: 'no-room'; readonly kind: ScanKind; readonly fitSize: number | null };
+    | { readonly ok: false; readonly reason: 'no-room'; readonly kind: ScanKind; readonly fitSize: number | null }
+    /** Add here: no course laid round the anchor joined the kept ring (or the kept course has SERVER_MAX_GATES already) */
+    | { readonly ok: false; readonly reason: 'no-join'; readonly kind: ScanKind; readonly fitSize: null };
