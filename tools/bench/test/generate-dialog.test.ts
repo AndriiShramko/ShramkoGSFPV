@@ -28,7 +28,7 @@ describe('gen4b B1: the Generate dialog', () => {
     it('a press with a saved course shown asks first: the dialog, not a course', () => {
         expect(pressAction({ busy: false, sonic: false })).toBe('dialog');
         const m = dialogModel({ ...base, shownGates: 9 }, t);
-        expect(m.replaces).toBe('Replaces the current course (9 gates)');
+        expect(m.replaces).toBe('Here and Whole scan replace the current course (9 gates). Add here keeps it');
         expect(m.main).toBe('Replace with a new course');
         expect(m.lost).toBeNull();
     });
@@ -92,6 +92,38 @@ describe('gen4b B1: the Generate dialog', () => {
             expect(Object.keys(d).some((k) => k.startsWith('course.gen.spread'))).toBe(false);
             expect(d['course.gen.whereVoxels']).toContain('{n}');
             expect(d['course.gen.whereHint']).toContain('Shift+G');
+        }
+    });
+
+    // lane w1-dialog S2 (the owner's idea c). NEG: the dialog of S1 had no Add here and its line over a course said only
+    // 'Replaces the current course'.
+    it('w1-dialog: Add here only over a course; it keeps the course, and the line says Here and Whole scan replace it', () => {
+        expect(dialogModel(base, t).wheres.map((b) => b.id)).toEqual(['here', 'scan']);
+        // a stale 'add' with no course shown lays Here
+        const none = dialogModel({ ...base, where: 'add' }, t);
+        expect([none.add, none.wheres.find((b) => b.pressed)?.id, none.request.spread]).toEqual([false, 'here', 'compact']);
+        const over = dialogModel({ ...base, shownGates: 9 }, t);
+        expect(over.wheres.map((b) => [b.id, b.label, b.pressed])).toEqual([['here', 'Here', true], ['scan', 'Whole scan', false], ['add', 'Add here', false]]);
+        expect(over.replaces).toBe('Here and Whole scan replace the current course (9 gates). Add here keeps it');
+        expect([over.add, over.main]).toEqual([false, 'Replace with a new course']);
+        const add = dialogModel({ ...base, shownGates: 9, where: 'add' }, t);
+        expect([add.add, add.main, add.replaces, add.whereLine]).toEqual([true, 'Add the gates', 'Keeps all 9 gates of the current course', 'Keeps the course and adds gates round the drone, joined into one ring']);
+        expect(add.request).toEqual({ level: 'medium', spread: 'compact', anyQuality: false });
+        // the voxels-only view has no where row: it replaces, and says so without naming the buttons it does not show
+        const vox = dialogModel({ ...base, shownGates: 9, where: 'add', voxelsOnly: true }, t);
+        expect([vox.add, vox.wheres.length, vox.replaces]).toEqual([false, 0, 'Replaces the current course (9 gates)']);
+    });
+
+    it('w1-dialog: the Add here texts have the same keys in en, es, pl and ru; the failure line says what to press', () => {
+        const keys = ['course.gen.where.add', 'course.gen.whereLine.add', 'course.gen.replaces', 'course.gen.replacesVoxels', 'course.gen.keeps', 'course.gen.add', 'course.addNone'];
+        for (const d of [en, es, pl, ru] as Record<string, string>[]) {
+            for (const k of keys) expect(typeof d[k] === 'string' && d[k]!.length > 0 ? k : `missing ${k}`).toBe(k);
+            for (const k of ['course.gen.replaces', 'course.gen.replacesVoxels', 'course.gen.keeps']) expect(d[k]).toContain('{n}');
+            expect(d['course.addNone']).toContain('Shift+G');
+            // the line names the buttons by their own labels
+            expect(d['course.gen.replaces']).toContain(d['course.gen.where.here']!);
+            expect(d['course.gen.replaces']).toContain(d['course.gen.where.scan']!);
+            expect(d['course.gen.replaces']).toContain(d['course.gen.where.add']!);
         }
     });
 
